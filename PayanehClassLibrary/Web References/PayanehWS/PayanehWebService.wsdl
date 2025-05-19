@@ -1,0 +1,1116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:tns="http://tempuri.org/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <s:element name="WebMethodLogin">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="YourUserShenaseh" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourUserPassword" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodLoginResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="WebMethodLoginResult" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodGetDSPersonnelFingerPrints">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="YourSalFull" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourMonthCodeFull" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourComputerId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodGetDSPersonnelFingerPrintsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="WebMethodGetDSPersonnelFingerPrintsResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:element ref="s:schema" />
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerLoadPermissionsByAHSGs">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi1" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime1" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi2" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime2" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourAHId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourAHSGId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerLoadPermissionsByAHSGsResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerLoadPermissionsBySeqTs">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi1" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime1" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi2" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime2" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourSeqTId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerLoadPermissionsBySeqTsResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerSedimentedLoadsReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi1" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime1" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi2" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime2" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementHallId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourSedimentedLoadsReportType" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerSedimentedLoadsReportResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerTruckersAssociationFinancialReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi1" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime1" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi2" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime2" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerTruckersAssociationFinancialReportResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerContractorCompanyFinancialReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi1" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime1" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi2" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime2" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourVatStatus" type="s:boolean" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerContractorCompanyFinancialReportResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerDriverTruckLoadsReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourDriverId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi1" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime1" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi2" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime2" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerDriverTruckLoadsReportResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementHallId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementHallSubGroupId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourAHId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourAHSGId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourCompanyCode" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi1" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime1" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi2" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime2" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourTargetCityId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourSoftwareUserId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi1" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime1" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi2" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime2" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourAHId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi1" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime1" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi2" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime2" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGs">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementHallSubGroupId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionBySeqts">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourSeqTId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionBySeqtsResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi1" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime1" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi2" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime2" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementHallId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationProviderTransportPriceTarrifsReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementHallId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementHallSubGroupId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourOActiveStatus" type="s:boolean" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationProviderTransportPriceTarrifsReportResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReportResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerClearanceLoadsReportReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi1" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime1" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi2" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime2" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourAHId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourAHSGId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerClearanceLoadsReportReportResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerAnnounceLoadsReportReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi1" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime1" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi2" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime2" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourAHId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourAHSGId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerAnnounceLoadsReportReportResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerSaleOfCommissionSMSReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi1" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime1" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi2" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourDateShamsiFull2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourTime2" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodReportingInformationPrividerSaleOfCommissionSMSReportResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="WebMethodCarTruckHasTurn">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="YourPelak" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="YourSerial" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodCarTruckHasTurnResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="WebMethodCarTruckHasTurnResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodGetnIdCarTruckBySmartCarNo">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="YourSmartCardNo" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodGetnIdCarTruckBySmartCarNoResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="WebMethodGetnIdCarTruckBySmartCarNoResult" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodISCompanyActive">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="YourCompanyCode" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodISCompanyActiveResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="WebMethodISCompanyActiveResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodGetDriverTruckByNationalCodefromRMTO">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="YourNationalCode" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WebMethodGetDriverTruckByNationalCodefromRMTOResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="WebMethodGetDriverTruckByNationalCodefromRMTOResult" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="WebMethodLoginSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodLogin" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodLoginSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodLoginResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodGetDSPersonnelFingerPrintsSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodGetDSPersonnelFingerPrints" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodGetDSPersonnelFingerPrintsSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodGetDSPersonnelFingerPrintsResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerLoadPermissionsByAHSGsSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerLoadPermissionsByAHSGs" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerLoadPermissionsByAHSGsSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerLoadPermissionsByAHSGsResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerLoadPermissionsBySeqTsSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerLoadPermissionsBySeqTs" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerLoadPermissionsBySeqTsSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerLoadPermissionsBySeqTsResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerSedimentedLoadsReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerSedimentedLoadsReport" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerSedimentedLoadsReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerSedimentedLoadsReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerTruckersAssociationFinancialReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerTruckersAssociationFinancialReport" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerTruckersAssociationFinancialReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerTruckersAssociationFinancialReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerContractorCompanyFinancialReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerContractorCompanyFinancialReport" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerContractorCompanyFinancialReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerContractorCompanyFinancialReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerDriverTruckLoadsReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerDriverTruckLoadsReport" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerDriverTruckLoadsReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerDriverTruckLoadsReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReport" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReport" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGs" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionBySeqtsSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionBySeqts" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionBySeqtsSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionBySeqtsResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReport" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReport" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationProviderTransportPriceTarrifsReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationProviderTransportPriceTarrifsReport" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationProviderTransportPriceTarrifsReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationProviderTransportPriceTarrifsReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReport" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerClearanceLoadsReportReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerClearanceLoadsReportReport" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerClearanceLoadsReportReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerClearanceLoadsReportReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerAnnounceLoadsReportReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerAnnounceLoadsReportReport" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerAnnounceLoadsReportReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerAnnounceLoadsReportReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerSaleOfCommissionSMSReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerSaleOfCommissionSMSReport" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodReportingInformationPrividerSaleOfCommissionSMSReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerSaleOfCommissionSMSReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodCarTruckHasTurnSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodCarTruckHasTurn" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodCarTruckHasTurnSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodCarTruckHasTurnResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodGetnIdCarTruckBySmartCarNoSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodGetnIdCarTruckBySmartCarNo" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodGetnIdCarTruckBySmartCarNoSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodGetnIdCarTruckBySmartCarNoResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodISCompanyActiveSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodISCompanyActive" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodISCompanyActiveSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodISCompanyActiveResponse" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodGetDriverTruckByNationalCodefromRMTOSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodGetDriverTruckByNationalCodefromRMTO" />
+  </wsdl:message>
+  <wsdl:message name="WebMethodGetDriverTruckByNationalCodefromRMTOSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodGetDriverTruckByNationalCodefromRMTOResponse" />
+  </wsdl:message>
+  <wsdl:portType name="PayanehWebServiceSoap">
+    <wsdl:operation name="WebMethodLogin">
+      <wsdl:input message="tns:WebMethodLoginSoapIn" />
+      <wsdl:output message="tns:WebMethodLoginSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodGetDSPersonnelFingerPrints">
+      <wsdl:input message="tns:WebMethodGetDSPersonnelFingerPrintsSoapIn" />
+      <wsdl:output message="tns:WebMethodGetDSPersonnelFingerPrintsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerLoadPermissionsByAHSGs">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerLoadPermissionsByAHSGsSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerLoadPermissionsByAHSGsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerLoadPermissionsBySeqTs">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerLoadPermissionsBySeqTsSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerLoadPermissionsBySeqTsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerSedimentedLoadsReport">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerSedimentedLoadsReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerSedimentedLoadsReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerTruckersAssociationFinancialReport">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerTruckersAssociationFinancialReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerTruckersAssociationFinancialReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerContractorCompanyFinancialReport">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerContractorCompanyFinancialReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerContractorCompanyFinancialReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerDriverTruckLoadsReport">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerDriverTruckLoadsReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerDriverTruckLoadsReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReport">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReport">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGs">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionBySeqts">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionBySeqtsSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionBySeqtsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReport">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReport">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationProviderTransportPriceTarrifsReport">
+      <wsdl:input message="tns:WebMethodReportingInformationProviderTransportPriceTarrifsReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationProviderTransportPriceTarrifsReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReport">
+      <wsdl:input message="tns:WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerClearanceLoadsReportReport">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerClearanceLoadsReportReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerClearanceLoadsReportReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerAnnounceLoadsReportReport">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerAnnounceLoadsReportReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerAnnounceLoadsReportReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerSaleOfCommissionSMSReport">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerSaleOfCommissionSMSReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerSaleOfCommissionSMSReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodCarTruckHasTurn">
+      <wsdl:input message="tns:WebMethodCarTruckHasTurnSoapIn" />
+      <wsdl:output message="tns:WebMethodCarTruckHasTurnSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodGetnIdCarTruckBySmartCarNo">
+      <wsdl:input message="tns:WebMethodGetnIdCarTruckBySmartCarNoSoapIn" />
+      <wsdl:output message="tns:WebMethodGetnIdCarTruckBySmartCarNoSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodISCompanyActive">
+      <wsdl:input message="tns:WebMethodISCompanyActiveSoapIn" />
+      <wsdl:output message="tns:WebMethodISCompanyActiveSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodGetDriverTruckByNationalCodefromRMTO">
+      <wsdl:input message="tns:WebMethodGetDriverTruckByNationalCodefromRMTOSoapIn" />
+      <wsdl:output message="tns:WebMethodGetDriverTruckByNationalCodefromRMTOSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="PayanehWebServiceSoap" type="tns:PayanehWebServiceSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="WebMethodLogin">
+      <soap:operation soapAction="http://tempuri.org/WebMethodLogin" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodGetDSPersonnelFingerPrints">
+      <soap:operation soapAction="http://tempuri.org/WebMethodGetDSPersonnelFingerPrints" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerLoadPermissionsByAHSGs">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerLoadPermissionsByAHSGs" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerLoadPermissionsBySeqTs">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerLoadPermissionsBySeqTs" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerSedimentedLoadsReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerSedimentedLoadsReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerTruckersAssociationFinancialReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerTruckersAssociationFinancialReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerContractorCompanyFinancialReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerContractorCompanyFinancialReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerDriverTruckLoadsReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerDriverTruckLoadsReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGs">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGs" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionBySeqts">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionBySeqts" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationProviderTransportPriceTarrifsReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationProviderTransportPriceTarrifsReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerClearanceLoadsReportReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerClearanceLoadsReportReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerAnnounceLoadsReportReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerAnnounceLoadsReportReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerSaleOfCommissionSMSReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerSaleOfCommissionSMSReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodCarTruckHasTurn">
+      <soap:operation soapAction="http://tempuri.org/WebMethodCarTruckHasTurn" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodGetnIdCarTruckBySmartCarNo">
+      <soap:operation soapAction="http://tempuri.org/WebMethodGetnIdCarTruckBySmartCarNo" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodISCompanyActive">
+      <soap:operation soapAction="http://tempuri.org/WebMethodISCompanyActive" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodGetDriverTruckByNationalCodefromRMTO">
+      <soap:operation soapAction="http://tempuri.org/WebMethodGetDriverTruckByNationalCodefromRMTO" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="PayanehWebServiceSoap12" type="tns:PayanehWebServiceSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="WebMethodLogin">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodLogin" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodGetDSPersonnelFingerPrints">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodGetDSPersonnelFingerPrints" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerLoadPermissionsByAHSGs">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerLoadPermissionsByAHSGs" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerLoadPermissionsBySeqTs">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerLoadPermissionsBySeqTs" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerSedimentedLoadsReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerSedimentedLoadsReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerTruckersAssociationFinancialReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerTruckersAssociationFinancialReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerContractorCompanyFinancialReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerContractorCompanyFinancialReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerDriverTruckLoadsReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerDriverTruckLoadsReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGs">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGs" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionBySeqts">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionBySeqts" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationProviderTransportPriceTarrifsReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationProviderTransportPriceTarrifsReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerClearanceLoadsReportReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerClearanceLoadsReportReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerAnnounceLoadsReportReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerAnnounceLoadsReportReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodReportingInformationPrividerSaleOfCommissionSMSReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerSaleOfCommissionSMSReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodCarTruckHasTurn">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodCarTruckHasTurn" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodGetnIdCarTruckBySmartCarNo">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodGetnIdCarTruckBySmartCarNo" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodISCompanyActive">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodISCompanyActive" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WebMethodGetDriverTruckByNationalCodefromRMTO">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodGetDriverTruckByNationalCodefromRMTO" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="PayanehWebService">
+    <wsdl:port name="PayanehWebServiceSoap" binding="tns:PayanehWebServiceSoap">
+      <soap:address location="http://172.26.29.22:2012/PayanehWebService.asmx" />
+    </wsdl:port>
+    <wsdl:port name="PayanehWebServiceSoap12" binding="tns:PayanehWebServiceSoap12">
+      <soap12:address location="http://172.26.29.22:2012/PayanehWebService.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
