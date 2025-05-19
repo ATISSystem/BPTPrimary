@@ -11,9 +11,9 @@ using System.Text;
 using System.Web.Http;
 
 
-namespace AuthenticateUser.Controllers
+namespace SoftwareUser.Controllers
 {
-    public class AuthenticateUserController : ApiController
+    public class SoftwareUserController : ApiController
     {
         [HttpPost]
         [Route("api/GetCaptcha")]
