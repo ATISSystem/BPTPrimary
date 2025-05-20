@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Web.Http;
+using R2Core.SoftwareUserManagement;
 
 
 namespace SoftwareUser.Controllers
@@ -76,5 +77,30 @@ namespace SoftwareUser.Controllers
             { throw ex; }
         }
 
+        [HttpPost]
+        [Route("api/RegisteringSoftwareUser")]
+        public HttpResponseMessage RegisteringSoftwareUser()
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+
+                var Content = JsonConvert.DeserializeObject<string>(Request.Content.ReadAsStringAsync().Result);
+                var SessionId = Content.Split(';')[0];
+                var RawSaftwareUser = JsonConvert.DeserializeObject<R2CoreRawSoftwareUser>(Content.Split(';')[1]);
+
+                var APIKey = InstanceSession.ConfirmSession(SessionId);
+                var InstanceSoftwareUsers = new R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager();
+                var UserId = InstanceSoftwareUsers.RegisteringSoftwareUser(RawSaftwareUser, APIKey);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(UserId.ToString() , Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (Exception ex)
+            { throw ex; }
+        }
+
+        
     }
 }

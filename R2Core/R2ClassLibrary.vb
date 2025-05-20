@@ -1443,6 +1443,13 @@ Namespace SoftwareUserManagement
 
     End Class
 
+    'پیاده سازی های جدید
+    Public Class R2CoreRawSoftwareUser
+        Public UserName As String
+        Public MobileNumber As String
+        Public UserTypeId As Int64
+    End Class
+
     Public Class R2CoreInstanseSoftwareUsersManager
         Private _DateTime As New R2DateTime
 
@@ -1776,26 +1783,6 @@ Namespace SoftwareUserManagement
             End Try
         End Sub
 
-        Public Function GetSoftwareUserTypes(YourSearchString As String) As List(Of R2StandardStructure)
-            Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
-                InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
-
-                Dim Ds As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblSoftwareUserTypes Where Active=1 and ViewFlag=1 and UTTitle Like  '%" & YourSearchString & "%' Order By UTId", 3600, Ds, New Boolean)
-                Dim Lst As New List(Of R2StandardStructure)
-                For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
-                    Lst.Add(New R2CoreStandardSoftwareUserTypeStructure(Ds.Tables(0).Rows(Loopx).Item("UTId"), Ds.Tables(0).Rows(Loopx).Item("UTTitle").trim, Ds.Tables(0).Rows(Loopx).Item("UTTitle").trim, Color.FromName(Ds.Tables(0).Rows(Loopx).Item("UTColor").trim), Ds.Tables(0).Rows(0).Item("UserId"), Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi"), Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("Deleted")))
-                Next
-                Return Lst
-            Catch ex As SqlInjectionException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
         'Public Function GetNSSSoftwareUserType(YourSoftwareUserType As String) As R2CoreStandardSoftwareUserStructure
         '    Try
         '        Dim Instanse = New R2CoreInstanseSqlDataBOXManager
@@ -1918,6 +1905,7 @@ Namespace SoftwareUserManagement
             End Try
         End Sub
 
+        'پیاده سازی های جدید
         Public Function GetNSSUser(YourUserShenaseh As String, YourUserPassword As String) As R2CoreStandardSoftwareUserStructure
             Try
                 Dim Ds As DataSet
@@ -1954,6 +1942,53 @@ Namespace SoftwareUserManagement
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Sub
+
+        Public Function GetSoftwareUserTypes() As String
+            Try
+                Dim Ds As DataSet
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select SoftwareUserTypes.UTId,SoftwareUserTypes.UTTitle from R2Primary.dbo.TblSoftwareUserTypes Where Active=1 and ViewFlag=1 Order By UTId for json auto", 3600, Ds, New Boolean)
+                Return Ds.Tables(0).Rows(0).Item(0)
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function RegisteringSoftwareUser(YourRawSoftwareUser As R2CoreRawSoftwareUser, YourUserCreatorAPIKey As String) As Int64
+            Dim CmdSql As New SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            Dim AES As New R2Core.SecurityAlgorithmsManagement.AESAlgorithms.AESAlgorithmsManager
+            Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
+            Try
+                Dim UserCreatorId = GetNSSUser(YourUserCreatorAPIKey).UserId
+
+                Dim InstanceConfiguration As New R2CoreInstanceConfigurationManager
+                Dim APIKeyExpiration As String = _DateTime.GetNextShamsiMonth(New R2StandardDateAndTimeStructure(Nothing, _DateTime.GetCurrentDateShamsiFull, _DateTime.GetCurrentTime), InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 1)).DateShamsiFull
+                Dim UserPasswordExpiration As String = _DateTime.GetNextShamsiMonth(New R2StandardDateAndTimeStructure(Nothing, _DateTime.GetCurrentDateShamsiFull, _DateTime.GetCurrentTime), InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 2)).DateShamsiFull
+                Dim ShenasehPassword = Hasher.GenerateSHA256String(DateTime.Now.ToString() + AES.GetSalt(InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 0)))
+                Dim myShenaseh As String = ShenasehPassword
+                Dim myPassword As String = ShenasehPassword
+                Dim UIdSalt As String = AES.GetSalt(InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 0))
+                CmdSql.Connection.Open()
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                CmdSql.CommandText = "Select Top 1 UserId from R2Primary.dbo.TblSoftwareUsers with (tablockx) order by UserId desc"
+                CmdSql.ExecuteNonQuery()
+                Dim myUserId As Int64 = CmdSql.ExecuteScalar + 1
+                Dim APIKey = Hasher.GenerateSHA256String(myUserId.ToString + UIdSalt)
+
+                CmdSql.CommandText = "Insert Into R2Primary.dbo.TblSoftwareUsers(UserId,ApiKey,APIKeyExpiration,UserName,UserShenaseh,UserPassword,UserPasswordExpiration,UserPinCode,UserCanCharge,UserActive,UserTypeId,MobileNumber,UserStatus,VerificationCode,VerificationCodeTimeStamp,VerificationCodeCount,Nonce,NonceTimeStamp,NonceCount,PersonalNonce,PersonalNonceTimeStamp,Captcha,CaptchaValid,UserCreatorId,DateTimeMilladi,DateShamsi,ViewFlag,Deleted)
+                                      Values(" & myUserId & ",'" & APIKey & "','" & APIKeyExpiration & "','" & YourRawSoftwareUser.UserName & "','" & myShenaseh & "','" & myPassword & "','" & UserPasswordExpiration & "','',0,1," & YourRawSoftwareUser.UserTypeId & ",'" & YourRawSoftwareUser.MobileNumber & "','logout','','" & _DateTime.GetCurrentDateTimeMilladiFormated & "',0,'','" & _DateTime.GetCurrentDateTimeMilladiFormated & "','','" & _DateTime.GetCurrentDateTimeMilladiFormated & "',0,'',0," & UserCreatorId & ",'" & _DateTime.GetCurrentDateTimeMilladiFormated() & "','" & _DateTime.GetCurrentDateShamsiFull & "',1,0)"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+                Return myUserId
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
 
     End Class
 
