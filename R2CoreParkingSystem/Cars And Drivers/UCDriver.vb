@@ -5,6 +5,7 @@ Imports System.Reflection
 Imports System.Windows.Forms
 
 Imports R2Core.ConfigurationManagement
+Imports R2Core.DateAndTimeManagement
 Imports R2Core.EntityRelationManagement
 Imports R2Core.EntityRelationManagement.Exceptions
 Imports R2Core.ExceptionManagement
@@ -340,7 +341,7 @@ Public Class UCDriver
             Dim InstancePermissions = New R2CoreInstansePermissionsManager
             If Not InstancePermissions.ExistPermission(R2CorePermissionTypes.UserCanSendSoftwareUserShenasehPasswordViaSMS, R2CoreGUIMClassGUIManagement.FrmMainMenu.UcUserImage.UCCurrentNSS.UserId, 0) Then Throw New UserNotAllowedRunThisProccessException
             Dim NSSSoftwareUser = (New R2CoreParkingSystemInstanceSoftwareUsersManager).GetNSSSoftwareUser(UCGetNSS.nIdPerson)
-            Dim InstanceSoftwareUser = New R2CoreInstanseSoftwareUsersManager
+            Dim InstanceSoftwareUser = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
             InstanceSoftwareUser.SendUserSecurity(NSSSoftwareUser)
             UCFrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.SuccessProccess, "اطلاعات با موفقیت ارسال شد", "", FrmcMessageDialog.MessageType.PersianMessage, Nothing, Me)
         Catch ex As SendSMSSoftwareUserSecurityFailedException
@@ -379,7 +380,7 @@ Public Class UCDriver
             Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
             Dim InstanceR2CoreParkingSystemSoftwareUser = New R2CoreParkingSystemInstanceSoftwareUsersManager
             Dim NSSSoftwareUser = InstanceR2CoreParkingSystemSoftwareUser.GetNSSSoftwareUser(UCGetNSS.nIdPerson)
-            Dim InstanceR2CoreSoftwareUser = New R2CoreInstanseSoftwareUsersManager
+            Dim InstanceR2CoreSoftwareUser = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
             InstanceR2CoreSoftwareUser.SoftwareUserVerificationCodeInjection(NSSSoftwareUser)
             UCFrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.SuccessProccess, "تزریق کد فعال سازی با موفقیت انجام شد" + vbCrLf + "InjectedVerificationCode=" + InstanceConfiguration.GetConfigString(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 12), "", FrmcMessageDialog.MessageType.PersianMessage, Nothing, Me)
             CButtonSoftwareUserVerificationCodeInjection.Enabled = False
@@ -397,7 +398,7 @@ Public Class UCDriver
             CButtonATISMobileAppDownloadLink.Enabled = False
             Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
             Dim NSSSoftwareUser = (New R2CoreParkingSystemInstanceSoftwareUsersManager).GetNSSSoftwareUser(UCGetNSS.nIdPerson)
-            Dim InstanceSoftwareUser = New R2CoreInstanseSoftwareUsersManager
+            Dim InstanceSoftwareUser = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
             InstanceSoftwareUser.SendATISMobileAppDownloadLink(NSSSoftwareUser)
             UCFrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.SuccessProccess, "اطلاعات با موفقیت ارسال شد", "", FrmcMessageDialog.MessageType.PersianMessage, Nothing, Me)
         Catch ex As SendSMSATISMobileAppDownloadLinkFailedException

@@ -1045,12 +1045,6 @@
     <None Include="Resources\tik4.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\R2Core\R2Core.vbproj">
-      <Project>{B0651D1E-73A2-4E74-8483-6FBC60831969}</Project>
-      <Name>R2Core</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Audio Video Management\" />
   </ItemGroup>
   <ItemGroup>
@@ -1097,6 +1091,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Sort_Name.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\R2Core\R2Core.vbproj">
+      <Project>{b0651d1e-73a2-4e74-8483-6fbc60831969}</Project>
+      <Name>R2Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

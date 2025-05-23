@@ -4,6 +4,7 @@ Imports System.Drawing
 Imports System.Reflection
 
 Imports R2Core.ComputersManagement
+Imports R2Core.DateAndTimeManagement
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2CoreGUI
 
@@ -32,8 +33,8 @@ Public Class UCSearcherUserTypes
 
     Protected Overrides Sub UCRefreshInformation()
         Try
-            Dim InstanceSoftwareUsers = New R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager
-            UCFillListBox(InstanceSoftwareUsers.GetSoftwareUserTypes(String.Empty))
+            Dim InstanceSoftwareUsers = New R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+            'UCFillListBox(InstanceSoftwareUsers.GetSoftwareUserTypes(String.Empty))
         Catch ex As Exception
             Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
         End Try
@@ -56,8 +57,8 @@ Public Class UCSearcherUserTypes
 
     Private Sub UCSearcherUserTypes_UCSearchOptional1RequestEvent(SearchString As String) Handles Me.UCSearchOptional1RequestEvent
         Try
-            Dim InstanceSoftwareUsers = New R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager
-            UCFillListBox(InstanceSoftwareUsers.GetSoftwareUserTypes(SearchString))
+            Dim InstanceSoftwareUsers = New R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+            'UCFillListBox(InstanceSoftwareUsers.GetSoftwareUserTypes(SearchString))
         Catch ex As SqlInjectionException
             UCFrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.ErrorType, ex.Message, "", FrmcMessageDialog.MessageType.PersianMessage, Nothing, Me)
         Catch ex As Exception
@@ -67,8 +68,8 @@ Public Class UCSearcherUserTypes
 
     Private Sub UCSearcherUserTypes_UCSearchOptional2RequestEvent(SearchString As String) Handles Me.UCSearchOptional2RequestEvent
         Try
-            Dim InstanceSoftwareUsers = New R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager
-            UCFillListBox(InstanceSoftwareUsers.GetSoftwareUserTypes(SearchString))
+            Dim InstanceSoftwareUsers = New R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+            'UCFillListBox(InstanceSoftwareUsers.GetSoftwareUserTypes(SearchString))
         Catch ex As SqlInjectionException
             UCFrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.ErrorType, ex.Message, "", FrmcMessageDialog.MessageType.PersianMessage, Nothing, Me)
         Catch ex As Exception

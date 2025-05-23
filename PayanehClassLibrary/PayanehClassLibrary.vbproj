@@ -878,10 +878,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\R2CoreGUI\R2CoreGUI.vbproj">
-      <Project>{d9aef791-83e7-4238-bb9c-de0c57e0ed37}</Project>
-      <Name>R2CoreGUI</Name>
-    </ProjectReference>
     <ProjectReference Include="..\R2CoreLPR\R2CoreLPR.vbproj">
       <Project>{d3413023-d590-432c-8a6a-6bf2038624cf}</Project>
       <Name>R2CoreLPR</Name>
@@ -893,10 +889,6 @@
     <ProjectReference Include="..\R2CoreTransportationAndLoadNotification\R2CoreTransportationAndLoadNotification.vbproj">
       <Project>{ef77b294-2e31-4914-af7b-289a6a1bf8dc}</Project>
       <Name>R2CoreTransportationAndLoadNotification</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\R2Core\R2Core.vbproj">
-      <Project>{b0651d1e-73a2-4e74-8483-6fbc60831969}</Project>
-      <Name>R2Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

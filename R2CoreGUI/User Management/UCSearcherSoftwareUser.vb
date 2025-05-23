@@ -5,6 +5,7 @@ Imports System.Reflection
 
 Imports R2Core.BaseStandardClass
 Imports R2Core.ComputersManagement
+Imports R2Core.DateAndTimeManagement
 Imports R2Core.SoftwareUserManagement
 Imports R2CoreGUI
 
@@ -35,7 +36,7 @@ Public Class UCSearcherSoftwareUser
 
     Public Shadows Sub UCRefreshInformation()
         Try
-            Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+            Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
             UCFillListBox(InstanceSoftwareUsers.GetSoftwareUsers_SearchforLeftCharacters(String.Empty).Select(Function(X) New R2StandardStructure(X.OCode, X.OName)).ToList())
         Catch ex As Exception
             Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -59,7 +60,7 @@ Public Class UCSearcherSoftwareUser
 
     Private Sub UCSearcherTransportCompanies_UCSearchOptional1RequestEvent(SearchString As String) Handles Me.UCSearchOptional1RequestEvent
         Try
-            Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+            Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
             UCFillListBox(InstanceSoftwareUsers.GetSoftwareUsers_SearchforLeftCharacters(SearchString).Select(Function(X) New R2StandardStructure(X.OCode, X.OName)).ToList())
         Catch ex As Exception
             UCFrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.ErrorType, MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message, "", FrmcMessageDialog.MessageType.ErrorMessage, Nothing, Me)
@@ -68,7 +69,7 @@ Public Class UCSearcherSoftwareUser
 
     Private Sub UCSearcherTransportCompanies_UCSearchOptional2RequestEvent(SearchString As String) Handles Me.UCSearchOptional2RequestEvent
         Try
-            Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+            Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
             UCFillListBox(InstanceSoftwareUsers.GetSoftwareUsers_SearchIntroCharacters(SearchString).Select(Function(X) New R2StandardStructure(X.OCode, X.OName)).ToList())
         Catch ex As Exception
             UCFrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.ErrorType, MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message, "", FrmcMessageDialog.MessageType.ErrorMessage, Nothing, Me)

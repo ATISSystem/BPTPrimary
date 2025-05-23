@@ -1,4 +1,4 @@
-namespace AuthenticateUser.Areas.HelpPage
+namespace SoftwareUser.Areas.HelpPage
 {
     /// <summary>
     /// Indicates whether the sample is used for request or response

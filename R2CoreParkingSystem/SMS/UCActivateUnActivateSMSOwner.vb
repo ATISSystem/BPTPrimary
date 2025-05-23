@@ -4,6 +4,7 @@ Imports System.Drawing
 Imports System.Reflection
 
 Imports R2Core.ConfigurationManagement
+Imports R2Core.DateAndTimeManagement
 Imports R2Core.ExceptionManagement
 Imports R2Core.MoneyWallet.Exceptions
 Imports R2Core.PermissionManagement
@@ -72,7 +73,7 @@ Public Class UCActivateUnActivateSMSOwner
     Private Sub CButtonActivateUnActivateSMSOwner_Click(sender As Object, e As EventArgs) Handles CButtonActivateUnActivateSMSOwner.Click
         Try
             CButtonActivateUnActivateSMSOwner.Enabled = False
-            Dim InstanceSMSOwners = New R2CoreParkingSystemMClassSMSOwnersManager
+            Dim InstanceSMSOwners = New R2CoreParkingSystemMClassSMSOwnersManager(New SoftwareUserService(R2CoreGUIMClassGUIManagement.FrmMainMenu.UcUserImage.UCCurrentNSS.UserId), New R2DateTimeService)
             InstanceSMSOwners.ChangeSMSOwnerCurrentState(UCNSSCurrent, R2CoreGUIMClassGUIManagement.FrmMainMenu.UcUserImage.UCCurrentNSS)
             UCFrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.SuccessProccess, "درخواست فعال سازی یا غیرفعال سازی ارسال شد", "", FrmcMessageDialog.MessageType.PersianMessage, Nothing, Me)
             UCRefreshInformation()

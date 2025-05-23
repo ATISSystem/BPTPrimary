@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
-namespace AuthenticateUser
+namespace SoftwareUser
 {
     public static class WebApiConfig
     {
@@ -19,6 +20,12 @@ namespace AuthenticateUser
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
+
+            // Enable CORS for all origins, all headers and all methods 
+            var cors = new EnableCorsAttribute("*", "*", "*");
+            config.EnableCors(cors);
+
+            // Other Web API configuration not shown..
         }
     }
 }

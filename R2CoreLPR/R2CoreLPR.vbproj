@@ -129,7 +129,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\R2Core\R2Core.vbproj">
-      <Project>{B0651D1E-73A2-4E74-8483-6FBC60831969}</Project>
+      <Project>{b0651d1e-73a2-4e74-8483-6fbc60831969}</Project>
       <Name>R2Core</Name>
     </ProjectReference>
   </ItemGroup>

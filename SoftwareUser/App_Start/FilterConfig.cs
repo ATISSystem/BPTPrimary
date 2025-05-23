@@ -1,7 +1,8 @@
 ﻿using System.Web;
 using System.Web.Mvc;
 
-namespace AuthenticateUser
+namespace SoftwareUser
+
 {
     public class FilterConfig
     {

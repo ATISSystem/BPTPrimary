@@ -64,6 +64,10 @@ Imports R2Core.Caching
 Imports StackExchange.Redis
 Imports RestSharp.Serialization.Json
 Imports Newtonsoft.Json.Linq
+Imports R2Core.MoneyWallet.Exceptions
+
+Imports System.Data.SqlClient
+Imports System.Security.Policy
 
 Namespace MonetarySupply
 
@@ -490,10 +494,10 @@ Namespace MonetaryCreditSupplySources
                 Private Sub LoggingPosResult(YourPosResult As PosResult)
                     Try
                         Dim InstanceLogging As New R2CoreInstanceLoggingManager
-                        Dim InstanceSoftwareUsers As New R2CoreInstanseSoftwareUsersManager
+                        Dim InstanceSoftwareUsers As New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                         Dim DataStruct As DataStruct = GetPosResultComposit(YourPosResult)
                         _TransactionId = DataStruct.Data1
-                        InstanceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Note, "پوز - خرید", DataStruct.Data1, DataStruct.Data2, DataStruct.Data3, DataStruct.Data4, DataStruct.Data5, InstanceSoftwareUsers.GetNSSSystemUser().UserId, _DateTime.GetCurrentDateTimeMilladiFormated(), _DateTime.GetCurrentDateShamsiFull))
+                        InstanceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Note, "پوز - خرید", DataStruct.Data1, DataStruct.Data2, DataStruct.Data3, DataStruct.Data4, DataStruct.Data5, InstanceSoftwareUsers.GetSystemUserId, _DateTime.GetCurrentDateTimeMilladiFormated(), _DateTime.GetCurrentDateShamsiFull))
                     Catch ex As Exception
                         Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
                     End Try
@@ -1011,6 +1015,10 @@ End Namespace
 
 Namespace SessionManagement
 
+    Public Class R2CoreSessionIdStructure
+        Public SessionId As String
+    End Class
+
     Public Class R2CoreStandardSessionCaptchaBitMapStructure
 
         Public Sub New()
@@ -1077,12 +1085,12 @@ Namespace SessionManagement
             End Try
         End Function
 
-        Public Function ConfirmSession(YourSessionId As String) As String
+        Public Function ConfirmSession(YourSessionId As String) As Int64
             Try
                 Dim InstanceCacheKeys = New Caching.R2CoreCacheManager
                 Dim CachKey = InstanceCacheKeys.GetNSSCacheKey(Caching.R2CoreCacheKeys.Session).KeyName + YourSessionId
-                Dim Content = JsonConvert.DeserializeObject(Of R2CoreStandardSessionAPIKeyStructure)(InstanceCacheKeys.GetCache(CachKey).ToString)
-                Return Content.APIKey
+                Dim Content = JsonConvert.DeserializeObject(Of R2CoreStandardSessionUserIdStructure)(InstanceCacheKeys.GetCache(CachKey).ToString)
+                Return Content.UserId
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -1251,12 +1259,26 @@ Namespace SecurityAlgorithmsManagement
         Public Class AESAlgorithmsManager
 
             Private ValidChars As String = "%$#@^&!~()-+*=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-            Private Function GenerateRandomString(YourLength As Int32) As String
+            Private ValidAlphabetic As String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+            Public Function GenerateRandomString(YourLength As Int32) As String
                 Try
                     Dim Random As Random = New Random(DateTime.UtcNow.Millisecond)
                     Dim RandomString = New StringBuilder()
                     For Loopi As Int32 = 0 To YourLength - 1
                         RandomString.Append(ValidChars(Random.Next(0, ValidChars.Length - 1)))
+                    Next
+                    Return RandomString.ToString()
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+            Public Function GenerateRandomStringAlphabetic(YourLength As Int32) As String
+                Try
+                    Dim Random As Random = New Random(DateTime.UtcNow.Millisecond)
+                    Dim RandomString = New StringBuilder()
+                    For Loopi As Int32 = 0 To YourLength - 1
+                        RandomString.Append(ValidAlphabetic(Random.Next(0, ValidAlphabetic.Length - 1)))
                     Next
                     Return RandomString.ToString()
                 Catch ex As Exception
@@ -2666,6 +2688,7 @@ Namespace WebProcessesManagement
             PTitle = String.Empty
             TargetWfProcess = String.Empty
             Description = String.Empty
+            PIconName = String.Empty
             PBackColor = Color.Black
             PForeColor = Color.Black
             UserId = Int64.MinValue
@@ -2676,13 +2699,14 @@ Namespace WebProcessesManagement
             Deleted = Boolean.FalseString
         End Sub
 
-        Public Sub New(ByVal YourPId As Int64, ByVal YourPName As String, ByVal YourPTitle As String, ByVal YourTargetWfProcess As String, ByVal YourDescription As String, YourPBackColor As Color, YourPForeColor As Color, YourUserId As Int64, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
+        Public Sub New(ByVal YourPId As Int64, ByVal YourPName As String, ByVal YourPTitle As String, ByVal YourTargetWfProcess As String, ByVal YourDescription As String, YourPIconName As String, YourPBackColor As Color, YourPForeColor As Color, YourUserId As Int64, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
             MyBase.New(YourPId, YourPName.Trim())
             PId = YourPId
             PName = YourPName
             PTitle = YourPTitle
             TargetWfProcess = YourTargetWfProcess
             Description = YourDescription
+            PIconName = YourPIconName
             PBackColor = YourPBackColor
             PForeColor = YourPForeColor
             UserId = YourUserId
@@ -2698,6 +2722,7 @@ Namespace WebProcessesManagement
         Public Property PTitle As String
         Public Property TargetWfProcess As String
         Public Property Description As String
+        Public Property PIconName As String
         Public Property PBackColor As Color
         Public Property PForeColor As Color
         Public Property UserId As Int64
@@ -2721,6 +2746,7 @@ Namespace WebProcessesManagement
             PGId = Int64.MinValue
             PGName = String.Empty
             PGTitle = String.Empty
+            PGIconName = String.Empty
             PGBackColor = Color.Black
             PGForeColor = Color.Black
             UserId = Int64.MinValue
@@ -2731,11 +2757,12 @@ Namespace WebProcessesManagement
             Deleted = Boolean.FalseString
         End Sub
 
-        Public Sub New(ByVal YourPGId As Int64, ByVal YourPGName As String, ByVal YourPGTitle As String, YourPGBackColor As Color, YourPGForeColor As Color, YourUserId As Int64, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
+        Public Sub New(ByVal YourPGId As Int64, ByVal YourPGName As String, ByVal YourPGTitle As String, YourPGIconName As String, YourPGBackColor As Color, YourPGForeColor As Color, YourUserId As Int64, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
             MyBase.New(YourPGId, YourPGName.Trim())
             PGId = YourPGId
             PGName = YourPGName
             PGTitle = YourPGTitle
+            PGIconName = YourPGIconName
             PGBackColor = YourPGBackColor
             PGForeColor = YourPGForeColor
             UserId = YourUserId
@@ -2749,6 +2776,7 @@ Namespace WebProcessesManagement
         Public Property PGId As String
         Public Property PGName As String
         Public Property PGTitle As String
+        Public Property PGIconName As String
         Public Property PGBackColor As Color
         Public Property PGForeColor As Color
         Public Property UserId As Int64
@@ -2764,29 +2792,18 @@ Namespace WebProcessesManagement
 
     End Class
 
-    'Public Class R2CoreWebProcesseGroupsStructure
-    '    Public WGId As Int64
-    '    Public WGTitle As String
-    'End Class
-
-    'Public Class R2CoreWebProcesseStructure
-    '    Public WPId As Int64
-    '    Public WPTitle As String
-    '    Public WPDescription As String
-    'End Class
-
     Public Class R2CoreWebProcessesManager
-        Public Function GetWebProcesses(YourAPIKey As String) As String
+        Public Function GetWebProcesses(YourUserId As Int64) As String
             Try
                 Dim Ds As DataSet
                 If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
-                 "Select WebProcessGroups.PGTitle,WebProcesses.PTitle,WebProcesses.PName from R2Primary.dbo.TblSoftwareUsers as SoftwareUser
+                 "Select WebProcessGroups.PGTitle,WebProcessGroups.PGIconName,WebProcesses.PTitle,WebProcesses.PName,WebProcesses.Description,WebProcesses.PIconName from R2Primary.dbo.TblSoftwareUsers as SoftwareUser
                          Inner Join R2Primary.dbo.TblEntityRelations as SoftwareUserWebProcessGroup On SoftwareUser.UserId=SoftwareUserWebProcessGroup.E1 
                          Inner Join R2Primary.dbo.TblWebProcessGroups as WebProcessGroups On SoftwareUserWebProcessGroup.E2=WebProcessGroups.PGId
 						 Inner Join R2Primary.dbo.TblEntityRelations as WebProcessGroupWebProcess On WebProcessGroups.PGId=WebProcessGroupWebProcess.E1 
 						 Inner Join R2Primary.dbo.TblWebProcesses as WebProcesses on  WebProcessGroupWebProcess.E2=WebProcesses.PId 
 						 Inner Join R2Primary.dbo.TblPermissions as [Permissions] On   WebProcesses.PId=[Permissions].EntityIdSecond  
-                  Where SoftwareUser.APIKey='" & YourAPIKey & "' and SoftwareUser.UserActive=1 and SoftwareUser.Deleted=0and 
+                  Where SoftwareUser.UserId=" & YourUserId & " and SoftwareUser.UserActive=1 and SoftwareUser.Deleted=0and 
 				        SoftwareUserWebProcessGroup.ERTypeId=" & R2Core.EntityRelationManagement.R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup & " and SoftwareUserWebProcessGroup.RelationActive=1 and  
 						WebProcessGroups.ViewFlag=1 and  WebProcessGroups.Active=1 and WebProcessGroups.Deleted=0 and
 						WebProcessGroupWebProcess.RelationActive=1 and
@@ -2908,11 +2925,29 @@ Namespace WebProcessesManagement
             End Property
         End Class
 
+        Public Class SoftwareUserHasNotWebProcessPermissionException
+            Inherits ApplicationException
+            Public Overrides ReadOnly Property Message As String
+                Get
+                    Return "مجوز دسترسی به منوی مورد نظر وجود ندارد"
+                End Get
+            End Property
+        End Class
+
         Public Class SoftwareUserHasNotAnyWebProcessGroupRelationException
             Inherits ApplicationException
             Public Overrides ReadOnly Property Message As String
                 Get
-                    Return "مجوز دسترسی به هیچ یک از گروه منوهای سایت را ندارید"
+                    Return "مجوز دسترسی به هیچ یک از گروه منوهای سامانه را ندارید"
+                End Get
+            End Property
+        End Class
+
+        Public Class SoftwareUserHasNotWebProcessGroupRelationException
+            Inherits ApplicationException
+            Public Overrides ReadOnly Property Message As String
+                Get
+                    Return "مجوز دسترسی به گروه منوی مورد نظر وجود ندارد"
                 End Get
             End Property
         End Class
@@ -2921,7 +2956,7 @@ Namespace WebProcessesManagement
             Inherits ApplicationException
             Public Overrides ReadOnly Property Message As String
                 Get
-                    Return "گروه منوی مورد نظر دارای زیر گروه تعریف شده ای نیست"
+                    Return "گروه منوی مورد نظر دارای زیر منوی تعریف شده ای نیست"
                 End Get
             End Property
         End Class
@@ -3573,7 +3608,35 @@ Namespace MoneyWallet
 
         End Class
 
-        Public Class R2CoreMClassMoneyWalletManager
+        'BPTChanged
+        Public Class R2CoreMoneyWalletManager
+            Dim _DateTime As New R2DateTime
+            Public Function CreateNewMoneyWallet() As Int64
+                Dim Cmdsql As New SqlClient.SqlCommand
+                Cmdsql.Connection = (New DatabaseManagement.R2PrimarySqlConnection).GetConnection
+                Try
+                    Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                    Dim InstanceSoftwareUserService = New SoftwareUserService(Nothing)
+                    Dim AES = New AESAlgorithmsManager
+
+                    Cmdsql.Connection.Open()
+                    Cmdsql.Transaction = Cmdsql.Connection.BeginTransaction
+                    Cmdsql.CommandText = "Select Top 1 CardId from R2Primary.dbo.TblRfidCards with (tablockx) Order by Cardid Desc"
+                    Cmdsql.ExecuteNonQuery()
+                    Dim myCardID As Int64 = Cmdsql.ExecuteScalar + 1
+                    Dim cardNONew = InstancePublicProcedures.RepeatStr("0", 7 - myCardID.ToString.Length) + myCardID.ToString + AES.GetSalt(3)
+                    Cmdsql.CommandText = "Insert Into R2Primary.dbo.tblrfidcards(CardId,CardNo,Charge,UserIdSabt,UserIdEdit,PelakType,Pelak,Serial,NoMoney,Active,CompanyName,NameFamily,Mobile,Address,Tel,Tahvilg,DateTimeMilladiSabt,DateTimeMilladiEdit,DateShamsiSabt,DateShamsiEdit,CardType,TempCardType) 
+                                      values(" & myCardID & ",'" & cardNONew & "',0," & InstanceSoftwareUserService.SystemUserId & "," & InstanceSoftwareUserService.SystemUserId & ",0,'','',0,1,'','','','','','','" & _DateTime.GetCurrentDateTimeMilladiFormated() & "','" & _DateTime.GetCurrentDateTimeMilladiFormated() & "','" & _DateTime.GetCurrentDateShamsiFull() & "','" & _DateTime.GetCurrentDateShamsiFull() & "',0,0)"
+                    Cmdsql.ExecuteNonQuery()
+                    Cmdsql.Transaction.Commit() : Cmdsql.Connection.Close()
+                    Return myCardID
+                Catch ex As Exception
+                    If Cmdsql.Connection.State <> ConnectionState.Closed Then
+                        Cmdsql.Transaction.Rollback() : Cmdsql.Connection.Close()
+                    End If
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
 
         End Class
 
@@ -3646,7 +3709,7 @@ Namespace MoneyWallet
                 Dim CmdSql As New SqlClient.SqlCommand
                 CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
                 Try
-                    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+                    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                     CmdSql.Connection.Open()
                     CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
                     CmdSql.CommandText = "Select Top 1 PayId From R2Primary.dbo.TblPaymentRequests with (tablockx) Order By PayId Desc"
@@ -4768,7 +4831,7 @@ Namespace SMS
                             Inner Join R2Primary.dbo.TblSoftwareUserTypes as SoftwareUserTypes On SoftwareUsers.UserTypeId=SoftwareUserTypes.UTId 
                             Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUserTypes.UTId=EntityRelations.E1 
                             Inner Join R2PrimarySMSSystem.dbo.TblSMSOwnerTypes as SMSOwnerTypes On EntityRelations.E2=SMSOwnerTypes.SMSOTypeId 
-                           Where SoftwareUsers.UserId=" & YourNSSSoftwareUser.UserId & " and SoftwareUserTypes.Active=1 and SoftwareUserTypes.Deleted=0 and EntityRelations.RelationActive=1 and EntityRelations.ERTypeId=10 and SMSOwnerTypes.Active=1", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
+                           Where SoftwareUsers.UserId=" & YourNSSSoftwareUser.UserId & " and SoftwareUserTypes.Active=1 and SoftwareUserTypes.Deleted=0 and EntityRelations.RelationActive=1 and EntityRelations.ERTypeId=" & R2CoreEntityRelationTypes.SoftwareUserType_SMSOwnerType & " and SMSOwnerTypes.Active=1", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
                         Return New R2CoreStandardSMSOwnerTypeStructure(DS.Tables(0).Rows(0).Item("SMSOTypeId"), DS.Tables(0).Rows(0).Item("SMSOTypeName").trim, DS.Tables(0).Rows(0).Item("SMSOTypeTitle").trim, Color.FromName(DS.Tables(0).Rows(0).Item("SMSOTypeColor")), DS.Tables(0).Rows(0).Item("Price"), DS.Tables(0).Rows(0).Item("PriceMinusCommission"), DS.Tables(0).Rows(0).Item("PriceMinusCommissionMinusVAT"), DS.Tables(0).Rows(0).Item("Core").trim, DS.Tables(0).Rows(0).Item("UserId"), DS.Tables(0).Rows(0).Item("DateTimeMilladi"), DS.Tables(0).Rows(0).Item("DateShamsi").trim, DS.Tables(0).Rows(0).Item("Time").trim, DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted"))
                     Else
                         Throw New SMSOwnerTypeBySoftwareUserNotFoundException
@@ -4856,6 +4919,20 @@ Namespace SMS
                     TextToView = IIf(NSSSMSOwner.IsSendingActive, InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 15), InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 14))
                     TextToViewColor = IIf(NSSSMSOwner.IsSendingActive, InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 13), InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 12))
                     Return New SMSOwnerCurrentState With {.IsSendingActive = NSSSMSOwner.IsSendingActive, .TextToView = TextToView, .TextToViewColor = TextToViewColor}
+                Catch ex As SMSOwnerForSoftwareUserDoNotRegisteredException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+
+            Public Function GetNSSSMSOwnerCurrentState(YourSoftwareUserId As Int64) As SMSOwnerCurrentState
+                Try
+                    Dim NSS As R2CoreStandardSMSOwnerStructure = Nothing
+                    Dim InstanceSoftwareUser = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+                    Return GetNSSSMSOwnerCurrentState(InstanceSoftwareUser.GetNSSUser(YourSoftwareUserId))
+                Catch ex As UserIdNotExistException
+                    Throw ex
                 Catch ex As SMSOwnerForSoftwareUserDoNotRegisteredException
                     Throw ex
                 Catch ex As Exception
@@ -5317,5 +5394,20 @@ Namespace Caching
     End Class
 
 End Namespace
+
+Namespace AccountingManagement
+    Public Enum R2CoreAccountings
+        NoneType = 0
+        ChargeType = 3
+        TransferallChargeToAnother = 10 'انتقال همه موجودی کارت
+        MoneyWalletReturnAmount = 15 'بازگشت مبلغ مازاد کسر شده
+        XXX3 = 23 '
+        XXX4 = 24 '
+        SoftwareUserSMSOwnerServiceCost = 25 'هزینه فعال سازی سرویس اس ام اس
+        SMSControllingMoneyWallet = 26 'کارکرد کیف پول کنترلی اس ام اس
+    End Enum
+
+End Namespace
+
 
 

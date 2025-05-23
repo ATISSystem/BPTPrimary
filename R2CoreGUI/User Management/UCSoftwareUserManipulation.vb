@@ -1,6 +1,7 @@
 ﻿
 Imports System.ComponentModel
 Imports System.Reflection
+Imports R2Core.DateAndTimeManagement
 
 Imports R2Core.SoftwareUserManagement
 
@@ -75,7 +76,7 @@ Public Class UCSoftwareUserManipulation
 
     Private Sub UCSoftwareUserManipulation_UCViewNSSRequested(NSSCurrent As R2CoreStandardSoftwareUserStructure) Handles Me.UCViewNSSRequested
         Try
-            Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+            Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
             UCRefresh()
             UcPersianTextBoxSearchUserName.UCValue = NSSCurrent.UserName
             UcPersianTextBoxMobileNumber.UCValue = NSSCurrent.MobileNumber

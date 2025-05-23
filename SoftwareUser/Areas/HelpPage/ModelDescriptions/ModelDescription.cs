@@ -1,6 +1,6 @@
 using System;
 
-namespace AuthenticateUser.Areas.HelpPage.ModelDescriptions
+namespace SoftwareUser.Areas.HelpPage.ModelDescriptions
 {
     /// <summary>
     /// Describes a type model.
