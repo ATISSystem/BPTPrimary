@@ -24,6 +24,7 @@ Imports R2Core.SMS.Exceptions
 Imports R2Core.SMS.SMSHandling
 Imports R2Core.SoftwareUserManagement
 Imports R2Core.SoftwareUserManagement.Exceptions
+Imports R2Core.WebProcessesManagement.Exceptions
 Imports R2CoreGUI
 Imports R2CoreParkingSystem.BlackList
 Imports R2CoreParkingSystem.Cars
@@ -736,6 +737,25 @@ Namespace TruckDrivers
                 Return GetNSSTruckDriver(InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 2), True)
             Catch ex As TruckDriverNotFoundException
                 Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        'BPTChanged
+        Public Function GetTruckDriver(YourTruckDriverId As Int64, YourImediately As Boolean) As String
+            Try
+                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim DS As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                          "Select Top 1 Drivers.nIDDriver as DriverCode,Drivers.strSmartcardNo as SmartcardNo,Drivers.strDrivingLicenceNo as DrivingLicenceNo,Persons.strPersonFullName as FullName,Persons.strFatherName as FatherName,Persons.strNationalCode as NationalCode,Persons.strAddress as Address,Persons.strIDNO as MobileNumber
+                              from dbtransport.dbo.TbDriver as Drivers 
+                                 Inner Join dbtransport.dbo.TbPerson as Persons On Drivers.nIDDriver=Persons.nIDPerson 
+                           Where Drivers.nIDDriver=" & YourTruckDriverId & " Order By Drivers.nIDDriver Desc for json path", IIf(YourImediately, 0, 300), DS, New Boolean).GetRecordsCount() = 0 Then Throw New TruckDriverNotFoundException
+                Return InstancePublicProcedures.GetIntegratedJson(DS)
+            Catch exx As TruckDriverNotFoundException
+                Throw exx
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -2995,7 +3015,7 @@ Namespace LoadCapacitor
                 Try
                     Dim InstanceAnnouncementHalls = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementHallsManager
                     Dim InstanceConfigurationOfAnnouncementHalls = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementHallsManager
-                    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+                    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                     Dim InstancePermissions = New R2CoreInstansePermissionsManager
                     Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
 
@@ -3116,7 +3136,7 @@ Namespace LoadCapacitor
 
             Private Sub SendSMS(YourTCTitle As String, YourMessage As String)
                 Try
-                    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+                    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                     Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
                     Dim TargetUsers = InstanceSoftwareUsers.GetNSSUser(InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.SmsSystemSetting, 18))
                     Dim LstUsers = New List(Of R2CoreStandardSoftwareUserStructure)
@@ -5034,7 +5054,7 @@ Namespace LoadPermission
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
             Try
-                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 Dim InstanceTruck = New R2CoreTransportationAndLoadNotificationInstanceTrucksManager
                 Dim InstanceTruckDriver = New R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager
                 Dim IntanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
@@ -7229,7 +7249,7 @@ Namespace LoadAllocation
             Try
                 Dim InstanceSMSHandling = New R2CoreSMSHandlingManager
                 Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 Dim LstUser = New List(Of R2CoreStandardSoftwareUserStructure) From {InstanceSoftwareUsers.GetNSSUserUnChangeable(New R2CoreSoftwareUserMobile(InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 1)))}
                 Dim LstCreationData = New List(Of SMSCreationData) From {New SMSCreationData With {.Data1 = String.Empty}}
                 Dim SMSResult = InstanceSMSHandling.SendSMS(LstUser, R2CoreTransportationAndLoadNotificationSMSTypes.LoadAllocationsLoadPermissionRegisteringFailed, LstCreationData, True)
@@ -8515,7 +8535,7 @@ Namespace TransportCompanies
                 'کاربران
                 Dim TargetUsers = InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 6).Split("-")
                 Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
-                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
                     LstSoftwareUsers.Add(InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(TargetUsers(LoopxUsers))))
                 Next
@@ -8553,7 +8573,7 @@ Namespace TransportCompanies
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies on TCRelationSoftwareUsers.TCId=TransportCompanies.TCId 
                         where TCRelationSoftwareUsers.TCId=" & YourTransportCompanyId & " and TCRelationSoftwareUsers.RelationActive=1", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
                 End If
-                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 Return InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(DS.Tables(0).Rows(0).Item("UserId")))
             Catch ex As TransportCompanyNotFoundException
                 Throw ex
@@ -8580,7 +8600,7 @@ Namespace TransportCompanies
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies on TCRelationSoftwareUsers.TCId=TransportCompanies.TCId 
                         where TCRelationSoftwareUsers.TCId=" & YourTransportCompanyId & " and TCRelationSoftwareUsers.RelationActive=1", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
                 End If
-                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 Dim Lst As New List(Of R2CoreStandardSoftwareUserStructure)
                 For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
                     Lst.Add(InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(DS.Tables(0).Rows(Loopx).Item("UserId"))))
@@ -9855,7 +9875,7 @@ Namespace LoadingAndDischargingPlaces
                 'کاربران
                 Dim TargetUsers = InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotification.ConfigurationsManagement.R2CoreTransportationAndLoadNotificationConfigurations.LoadingDischargingPlaces, 2).Split("-")
                 Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
-                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
                     LstSoftwareUsers.Add(InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(TargetUsers(LoopxUsers))))
                 Next
@@ -9998,4 +10018,23 @@ Namespace LoadingAndDischargingPlaces
 
     End Namespace
 
+End Namespace
+
+Namespace LoadAnnouncementPlaces
+    Public Class R2CoreTransportationAndLoadNotificationLoadAnnouncementPlacesManager
+        Public Function GetLoadAnnouncementPlaces() As String
+            Try
+                Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim Ds As DataSet
+                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
+                 "Select Select LoadAnnouncementPlaces.LAPId,LoadAnnouncementPlaces.LAPName,LoadAnnouncementPlaces.LAPTitle,LoadAnnouncementPlaces.LAPIconName,LoadAnnouncementPlaces.LAPURL from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAnnouncementPlaces as LoadAnnouncementPlaces Where Active=1 Order By LAPId for json auto", 3600, Ds, New Boolean).GetRecordsCount <> 0 Then
+                    Return InstanccePublicProcedures.GetIntegratedJson(Ds)
+                Else
+                    Throw New SoftwareUserHasNotAnyWebProcessPermissionException
+                End If
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+    End Class
 End Namespace

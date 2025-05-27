@@ -198,6 +198,18 @@ Namespace PublicProc
     Public Class R2CoreInstancePublicProceduresManager
         Private _R2PrimaryFSWS = New R2PrimaryFileSharingWebService()
 
+        Public Function GetIntegratedJson(YourDataSet As DataSet) As String
+            Try
+                Dim SB As New StringBuilder
+                For Loopx = 0 To YourDataSet.Tables(0).Rows.Count - 1
+                    SB.Append(YourDataSet.Tables(0).Rows(Loopx).Item(0))
+                Next
+                Return SB.ToString
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Function
+
         Public Function GetBooleanVariablePersianEquivalent(YourBooleanVariable As Boolean) As String
             If YourBooleanVariable Then
                 Return "فعال"
@@ -1428,11 +1440,7 @@ Namespace SoftwareUserManagement
         End Property
     End Class
 
-    'Public Structure R2CoreStandardSessionAPIKeyStructure
-    '    Public SessionId As String
-    '    Public APIKey As String
-    'End Structure
-
+    'BPTChanged
     Public Class R2CoreStandardSessionUserIdStructure
 
         Public Sub New()
@@ -1451,7 +1459,26 @@ Namespace SoftwareUserManagement
 
     End Class
 
-    'BPTChanged
+    Public Class R2CoreStandardSessionIdVerificationCodeStructure
+
+        Public Sub New()
+            MyBase.New()
+            _SessionId = String.Empty
+            _VerificationCode = String.Empty
+            _UserId = Int64.MinValue
+        End Sub
+
+        Public Sub New(YourSessionId As String, YourVerificationCode As String, YourUserId As Int64)
+            _SessionId = YourSessionId
+            _VerificationCode = YourVerificationCode
+            _UserId = YourUserId
+        End Sub
+
+        Public Property SessionId As String
+        Public Property VerificationCode As String
+        Public Property UserId As Int64
+    End Class
+
     Public Class R2CoreRawSoftwareUserStructure
         Public UserId As Int64
         Public UserName As String
@@ -1616,7 +1643,7 @@ Namespace SoftwareUserManagement
                 Else
                     Throw New MobileNumberNotFoundException
                 End If
-            Catch ex As SendSMSApplicationActivationCodeFailedException
+            Catch ex As SendSMSVerificationCodeFailedException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                 Throw ex
             Catch ex As MobileNumberNotFoundException
@@ -1940,8 +1967,8 @@ Namespace SoftwareUserManagement
                 Dim LstCreationData = New List(Of SMSCreationData) From {New SMSCreationData With {.Data1 = YourVerificationCode}}
                 Dim SMSResult = InstanceSMSHandling.SendSMS(LstUser, R2CoreSMSTypes.ApplicationActivationCode, LstCreationData, False)
                 Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
-                If Not SMSResultAnalyze = String.Empty Then Throw New SendSMSApplicationActivationCodeFailedException(SMSResultAnalyze)
-            Catch ex As SendSMSApplicationActivationCodeFailedException
+                If Not SMSResultAnalyze = String.Empty Then Throw New SendSMSVerificationCodeFailedException(SMSResultAnalyze)
+            Catch ex As SendSMSVerificationCodeFailedException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -1967,7 +1994,9 @@ Namespace SoftwareUserManagement
             Try
                 Dim InstanceCacheKeys = New Caching.R2CoreCacheManager
                 Dim CachKey = InstanceCacheKeys.GetNSSCacheKey(Caching.R2CoreCacheKeys.Session).KeyName + YourSessionId
-                Dim Content = JsonConvert.DeserializeObject(Of R2CoreStandardSessionCaptchaWordStructure)(InstanceCacheKeys.GetCache(CachKey).ToString)
+                Dim CacheValue = DirectCast(InstanceCacheKeys.GetCache(CachKey), StackExchange.Redis.RedisValue)
+                If CacheValue.IsNullOrEmpty Then Throw New SessionOverException
+                Dim Content = JsonConvert.DeserializeObject(Of R2CoreStandardSessionCaptchaWordStructure)(CacheValue.ToString)
                 If YourCaptcha = Content.Captcha Then
                     Dim SessionUserId = New R2CoreStandardSessionUserIdStructure
                     SessionUserId.SessionId = YourSessionId
@@ -1977,6 +2006,8 @@ Namespace SoftwareUserManagement
                 Else
                     Throw New CaptchaWordNotCorrectException
                 End If
+            Catch ex As SessionOverException
+                Throw ex
             Catch ex As CaptchaWordNotCorrectException
                 Throw ex
             Catch ex As SoftWareUserNotFoundException
@@ -2102,6 +2133,51 @@ Namespace SoftwareUserManagement
             End Try
         End Function
 
+        Public Sub SoftwareUserForgetPassword(YourSessionId As String, YourSoftwareUserMobileNumber As String)
+            Dim CmdSql As New SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            Try
+                Dim InstanceSoftwareUser = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim AES = New AESAlgorithmsManager
+                Dim InstanceCacheKeys = New Caching.R2CoreCacheManager
+                Dim NSSSoftwareUser = InstanceSoftwareUser.GetNSSUserUnChangeable(New R2CoreSoftwareUserMobile(YourSoftwareUserMobileNumber))
+
+                Dim SessionVerificationCode = New R2CoreStandardSessionIdVerificationCodeStructure
+                SessionVerificationCode.SessionId = YourSessionId
+                SessionVerificationCode.VerificationCode = AES.GenerateVerificationCode(InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 9))
+                SessionVerificationCode.UserId = NSSSoftwareUser.UserId
+                Dim CachKey = InstanceCacheKeys.GetNSSCacheKey(Caching.R2CoreCacheKeys.Session).KeyName + YourSessionId
+                InstanceCacheKeys.RemoveCache(CachKey)
+                InstanceCacheKeys.SetCache(CachKey, SessionVerificationCode)
+
+                SendSMSSoftwareUserVerificationCode(NSSSoftwareUser, SessionVerificationCode.VerificationCode)
+            Catch ex As SessionOverException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub VerifySoftwareUserVerificationCode(YourSessionId As String, YourVerificationCode As String)
+            Try
+                Dim InstanceCache = New Caching.R2CoreCacheManager
+
+                Dim CachKey = InstanceCache.GetNSSCacheKey(Caching.R2CoreCacheKeys.Session).KeyName + YourSessionId
+                Dim CacheValue = DirectCast(InstanceCache.GetCache(CachKey), StackExchange.Redis.RedisValue)
+                If CacheValue.IsNullOrEmpty Then Throw New SessionOverException
+
+                Dim CacheValueCasted = DirectCast(DirectCast(CacheValue, Object), R2CoreStandardSessionIdVerificationCodeStructure)
+                If CacheValueCasted.VerificationCode = YourVerificationCode Then
+                    ResetSoftwareUserPassword(CacheValueCasted.UserId, GetSystemUserId)
+                End If
+            Catch ex As SessionOverException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
         Public Function GetSoftwareUserWebProcessGroupAccess(YourSoftwareUserId As Int64, YourWPGId As Int64) As Boolean
             Try
                 Dim DS As DataSet
@@ -2186,6 +2262,21 @@ Namespace SoftwareUserManagement
                 If CmdSql.Connection.State <> ConnectionState.Broken Then
                     CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
                 End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub SendSMSSoftwareUserVerificationCode(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure, YourVerificationCode As String)
+            Try
+                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager
+                Dim LstUser = New List(Of R2CoreStandardSoftwareUserStructure) From {YourNSSSoftwareUser}
+                Dim LstCreationData = New List(Of SMSCreationData) From {New SMSCreationData With {.Data1 = YourVerificationCode}}
+                Dim SMSResult = InstanceSMSHandling.SendSMS(LstUser, R2CoreSMSTypes.ApplicationActivationCode, LstCreationData, False)
+                Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
+                If Not SMSResultAnalyze = String.Empty Then Throw New SendSMSVerificationCodeFailedException(SMSResultAnalyze)
+            Catch ex As SendSMSVerificationCodeFailedException
+                Throw ex
+            Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Sub
@@ -2577,7 +2668,7 @@ Namespace SoftwareUserManagement
             End Property
         End Class
 
-        Public Class SendSMSApplicationActivationCodeFailedException
+        Public Class SendSMSVerificationCodeFailedException
             Inherits ApplicationException
 
             Private _Message As String
@@ -2587,7 +2678,7 @@ Namespace SoftwareUserManagement
 
             Public Overrides ReadOnly Property Message As String
                 Get
-                    Return "ارسال اس ام اس کدفعال سازی اپلیکیشن با خطا مواجه شد" + _Message
+                    Return "ارسال کد فعال سازی و یا تغییر رمز با خطا مواجه شد" + _Message
                 End Get
             End Property
         End Class

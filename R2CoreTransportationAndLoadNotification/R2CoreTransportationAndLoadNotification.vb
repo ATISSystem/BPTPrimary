@@ -122,9 +122,9 @@ Namespace Rmto
 
                 Authentication()
 
-                If InstanceLogging.GetNSSLogType(R2CoreTransportationAndLoadNotificationLogType.RmtoWebServiceRequest).Active Then
-                    InstanceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreTransportationAndLoadNotificationLogType.RmtoWebServiceRequest, InstanceLogging.GetNSSLogType(R2CoreTransportationAndLoadNotificationLogType.RmtoWebServiceRequest).LogTitle, "InfoType=" + YourInfoType.ToString(), "YourDFP=" + YourDFP, String.Empty, String.Empty, String.Empty, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser.UserId, Nothing, Nothing))
-                End If
+                'If InstanceLogging.GetNSSLogType(R2CoreTransportationAndLoadNotificationLogType.RmtoWebServiceRequest).Active Then
+                '    InstanceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreTransportationAndLoadNotificationLogType.RmtoWebServiceRequest, InstanceLogging.GetNSSLogType(R2CoreTransportationAndLoadNotificationLogType.RmtoWebServiceRequest).LogTitle, "InfoType=" + YourInfoType.ToString(), "YourDFP=" + YourDFP, String.Empty, String.Empty, String.Empty, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser.UserId, Nothing, Nothing))
+                'End If
 
                 If YourInfoType = InfoType.GET_DRIVER_BY_SHC Then
                     Return Service.RMTO_WEB_SERVICES(YourDFP, "", "", "", "", "", "", "", "", "", "2043148", 41, "Biinfo878").Split(";")
@@ -1774,7 +1774,7 @@ Namespace Turns
 	                   Order By SoftwareUsers.UserId DESC", 300, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New SoftWareUserNotFoundException
                 End If
-                Dim InstanceSoftwareUsers = New R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager
+                Dim InstanceSoftwareUsers = New R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 Return InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(Ds.Tables(0).Rows(0).Item("UserId")))
             Catch ex As SoftWareUserNotFoundException
                 Throw ex
@@ -3617,7 +3617,7 @@ Namespace SoftwareUserManagement
     Public Class R2CoreTransportationAndLoadNotificationInstanceSoftwareUsersManager
         Public Function GetNSSSoftwareUser(YourTransportCompanyId As Int64) As R2CoreStandardSoftwareUserStructure
             Dim InstanceSqlDataBOX As New R2CoreInstanseSqlDataBOXManager
-            Dim InstanceSoftwareUser As New R2CoreInstanseSoftwareUsersManager
+            Dim InstanceSoftwareUser As New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
             Try
                 Dim Ds As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
@@ -3842,7 +3842,7 @@ Namespace SMS
 
             Private Sub HandlingEvent_Handler() Handles MyBase.HandlingEvent
                 Try
-                    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+                    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                     Dim LoadCapacitorLoadManipulation = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManipulationManager
                     LoadCapacitorLoadManipulation.ChangeLoadSource(MobileNumber, SMSContent)
                 Catch ex As Exception
@@ -3861,7 +3861,7 @@ Namespace SMS
 
             Private Sub HandlingEvent_Handler() Handles MyBase.HandlingEvent
                 Try
-                    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+                    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                     Dim LoadCapacitorLoadManipulation = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManipulationManager
                     LoadCapacitorLoadManipulation.ChangeLoadTarget(MobileNumber, SMSContent)
                 Catch ex As Exception

@@ -90,13 +90,13 @@
       <Project>{68ee9753-9b39-4d0b-bfe5-0f941a5f183c}</Project>
       <Name>R2CoreParkingSystem</Name>
     </ProjectReference>
+    <ProjectReference Include="..\R2CoreTransportationAndLoadNotification\R2CoreTransportationAndLoadNotification.vbproj">
+      <Project>{ef77b294-2e31-4914-af7b-289a6a1bf8dc}</Project>
+      <Name>R2CoreTransportationAndLoadNotification</Name>
+    </ProjectReference>
     <ProjectReference Include="..\R2Core\R2Core.vbproj">
       <Project>{b0651d1e-73a2-4e74-8483-6fbc60831969}</Project>
       <Name>R2Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SoftwareUser\SoftwareUser.csproj">
-      <Project>{7ef23b0c-0926-4cdc-8a6c-335144d39e1e}</Project>
-      <Name>SoftwareUser</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

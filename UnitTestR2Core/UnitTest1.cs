@@ -47,6 +47,9 @@ namespace UnitTestR2Core
             //apikey
             var expected = 21;
             //act
+            var InstanceSession = new R2CoreSessionManager();
+            //var UserId = InstanceSession.ConfirmSession("");
+
             var actual = (new R2CoreWebProcessesManager()).GetWebProcesses(expected);
 
             //assert
@@ -128,6 +131,19 @@ namespace UnitTestR2Core
                 var Instance = new R2CoreParkingSystem.SMS.SMSOwners.R2CoreParkingSystemMClassSMSOwnersManager(new R2Core.SoftwareUserManagement.SoftwareUserService(21), new R2DateTimeService());
                 Instance.ActivateSMSOwner (21,21);
                 var d = 12;
+            }
+            catch (DataBaseException ex)
+            { var x = ex.Message; }
+            catch (Exception ex)
+            { }
+        }
+
+        [TestMethod]
+        public void RmtoWebServiceTest()
+        {
+            try
+            {
+                R2CoreTransportationAndLoadNotification.Rmto.RmtoWebService.GetNSSTruckDriver("5759871382");
             }
             catch (DataBaseException ex)
             { var x = ex.Message; }

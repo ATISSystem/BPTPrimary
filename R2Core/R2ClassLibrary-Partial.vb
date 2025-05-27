@@ -68,6 +68,7 @@ Imports R2Core.MoneyWallet.Exceptions
 
 Imports System.Data.SqlClient
 Imports System.Security.Policy
+Imports R2Core.PublicProc
 
 Namespace MonetarySupply
 
@@ -1089,13 +1090,29 @@ Namespace SessionManagement
             Try
                 Dim InstanceCacheKeys = New Caching.R2CoreCacheManager
                 Dim CachKey = InstanceCacheKeys.GetNSSCacheKey(Caching.R2CoreCacheKeys.Session).KeyName + YourSessionId
-                Dim Content = JsonConvert.DeserializeObject(Of R2CoreStandardSessionUserIdStructure)(InstanceCacheKeys.GetCache(CachKey).ToString)
+                Dim CacheValue = DirectCast(InstanceCacheKeys.GetCache(CachKey), StackExchange.Redis.RedisValue)
+                If CacheValue.IsNullOrEmpty Then Throw New SessionOverException
+                Dim Content = JsonConvert.DeserializeObject(Of R2CoreStandardSessionUserIdStructure)(CacheValue.ToString)
                 Return Content.UserId
+            Catch ex As SessionOverException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Function
+
+
     End Class
+
+    Public Class SessionOverException
+        Inherits ApplicationException
+        Public Overrides ReadOnly Property Message As String
+            Get
+                Return "نشست پایان یافته است.مجددا وارد سامانه شوید"
+            End Get
+        End Property
+    End Class
+
 
 End Namespace
 
@@ -2792,26 +2809,28 @@ Namespace WebProcessesManagement
 
     End Class
 
+
     Public Class R2CoreWebProcessesManager
         Public Function GetWebProcesses(YourUserId As Int64) As String
             Try
+                Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim Ds As DataSet
                 If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
-                 "Select WebProcessGroups.PGTitle,WebProcessGroups.PGIconName,WebProcesses.PTitle,WebProcesses.PName,WebProcesses.Description,WebProcesses.PIconName from R2Primary.dbo.TblSoftwareUsers as SoftwareUser
+                 "Select WebProcessGroups.PGId,WebProcessGroups.PGTitle,WebProcessGroups.PGIconName,WebProcesses.PId,WebProcesses.PTitle,WebProcesses.PName,WebProcesses.Description,WebProcesses.PIconName from R2Primary.dbo.TblSoftwareUsers as SoftwareUser
                          Inner Join R2Primary.dbo.TblEntityRelations as SoftwareUserWebProcessGroup On SoftwareUser.UserId=SoftwareUserWebProcessGroup.E1 
                          Inner Join R2Primary.dbo.TblWebProcessGroups as WebProcessGroups On SoftwareUserWebProcessGroup.E2=WebProcessGroups.PGId
 						 Inner Join R2Primary.dbo.TblEntityRelations as WebProcessGroupWebProcess On WebProcessGroups.PGId=WebProcessGroupWebProcess.E1 
 						 Inner Join R2Primary.dbo.TblWebProcesses as WebProcesses on  WebProcessGroupWebProcess.E2=WebProcesses.PId 
 						 Inner Join R2Primary.dbo.TblPermissions as [Permissions] On   WebProcesses.PId=[Permissions].EntityIdSecond  
                   Where SoftwareUser.UserId=" & YourUserId & " and SoftwareUser.UserActive=1 and SoftwareUser.Deleted=0and 
-				        SoftwareUserWebProcessGroup.ERTypeId=" & R2Core.EntityRelationManagement.R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup & " and SoftwareUserWebProcessGroup.RelationActive=1 and  
+				        SoftwareUserWebProcessGroup.ERTypeId=" & R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup & " and SoftwareUserWebProcessGroup.RelationActive=1 and  
 						WebProcessGroups.ViewFlag=1 and  WebProcessGroups.Active=1 and WebProcessGroups.Deleted=0 and
-						WebProcessGroupWebProcess.RelationActive=1 and
+						WebProcessGroupWebProcess.ERTypeId=" & R2CoreEntityRelationTypes.WebProcessGroup_WebProcess & " and WebProcessGroupWebProcess.RelationActive=1 and
 						WebProcesses.Active=1 and WebProcesses.ViewFlag=1 and WebProcesses.Deleted=0 and
 						[Permissions].PermissionTypeId=" & R2Core.PermissionManagement.R2CorePermissionTypes.SoftwareUsersAccessWebProcesses & "
 			      Order By WebProcessGroups.PGId,WebProcesses.PId 
 				  for json auto", 3600, Ds, New Boolean).GetRecordsCount <> 0 Then
-                    Return Ds.Tables(0).Rows(0).Item(0)
+                    Return InstanccePublicProcedures.GetIntegratedJson(Ds)
                 Else
                     Throw New SoftwareUserHasNotAnyWebProcessPermissionException
                 End If
