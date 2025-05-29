@@ -43,7 +43,7 @@ namespace APISoftwareUser.Controllers
                 return response;
             }
             catch (Exception ex)
-            { return  _APICommon.CreateErrorContentMessage(ex); }
+            { return _APICommon.CreateErrorContentMessage(ex); }
         }
 
         [HttpPost]
@@ -133,7 +133,7 @@ namespace APISoftwareUser.Controllers
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var SoftwareUserId = InstanceSoftwareUsers.RegisteringSoftwareUser(RawSoftwareUser, UserId);
+                var SoftwareUserId = InstanceSoftwareUsers.RegisteringSoftwareUser(RawSoftwareUser,true, UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { SoftwareUserId = SoftwareUserId }), Encoding.UTF8, "application/json");
@@ -233,7 +233,6 @@ namespace APISoftwareUser.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-
                 var Content = JsonConvert.DeserializeObject<R2CoreSessionIdStructure>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
 
@@ -346,7 +345,7 @@ namespace APISoftwareUser.Controllers
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var UserId=InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSMSOwners = new R2CoreParkingSystemMClassSMSOwnersManager(new SoftwareUserService(UserId), new R2DateTimeService());
                 InstanceSMSOwners.ActivateSMSOwner(SoftwareUserId, UserId);
@@ -377,10 +376,95 @@ namespace APISoftwareUser.Controllers
 
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
                 var WantedSoftwareUser = InstanceSoftwareUsers.GetNSSUserUnChangeable(new R2CoreSoftwareUserMobile(SoftwareUserMobileNumber));
-                var RawSoftwareUser = new R2CoreRawSoftwareUserStructure { UserId = WantedSoftwareUser.UserId, UserName = WantedSoftwareUser.UserName, MobileNumber = WantedSoftwareUser.MobileNumber, UserTypeId = WantedSoftwareUser.UserTypeId };
+                var RawSoftwareUser = new R2CoreRawSoftwareUserStructure { UserId = WantedSoftwareUser.UserId, UserName = WantedSoftwareUser.UserName, MobileNumber = WantedSoftwareUser.MobileNumber, UserTypeId = WantedSoftwareUser.UserTypeId,UserActive= WantedSoftwareUser.UserActive  };
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(RawSoftwareUser), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
+        [Route("api/GetAllOfWebProcessGroupsWebProcesses")]
+        public HttpResponseMessage GetAllOfWebProcessGroupsWebProcesses()
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserMobileNumber>(Request.Content.ReadAsStringAsync().Result);
+                var SessionId = Content.SessionId;
+                var SoftwareUser = InstanceSoftwareUsers.GetNSSUserUnChangeable(new R2CoreSoftwareUserMobile(Content.SoftwareUserMobileNumber));
+
+                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var InstanceWebProcesses = new R2CoreWebProcessesManager();
+
+                var AllOfWebProcessGroupsWebProcesses = InstanceWebProcesses.GetAllOfWebProcessGroupsWebProcesses(SoftwareUser.UserId);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(AllOfWebProcessGroupsWebProcesses, Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
+        [Route("api/ChangeSoftwareUserWebProcessGroupAccess")]
+        public HttpResponseMessage ChangeSoftwareUserWebProcessGroupAccess()
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+
+                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserIdWPGId>(Request.Content.ReadAsStringAsync().Result);
+                var SessionId = Content.SessionId;
+                var SoftwareUserId = Content.SoftwareUserId;
+                var WPGId = Content.WPGId;
+                var WPGAccess = Content.WPGAccess;
+
+                var UserId = InstanceSession.ConfirmSession(SessionId);
+
+                InstanceSoftwareUsers.ChangeSoftwareUserWebProcessGroupAccess(SoftwareUserId, WPGId, WPGAccess);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(string.Empty), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
+        [Route("api/ChangeSoftwareUserWebProcessAccess")]
+        public HttpResponseMessage ChangeSoftwareUserWebProcessAccess()
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+
+                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserIdWPId>(Request.Content.ReadAsStringAsync().Result);
+                var SessionId = Content.SessionId;
+                var SoftwareUserId = Content.SoftwareUserId;
+                var WPId = Content.WPId;
+                var WPAccess = Content.WPAccess;
+
+                var UserId = InstanceSession.ConfirmSession(SessionId);
+
+                InstanceSoftwareUsers.ChangeSoftwareUserWebProcessAccess(SoftwareUserId, WPId, WPAccess);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(string.Empty), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SessionOverException ex)
@@ -442,23 +526,21 @@ namespace APISoftwareUser.Controllers
         }
 
         [HttpPost]
-        [Route("api/ChangeSoftwareUserWebProcessGroupAccess")]
-        public HttpResponseMessage ChangeSoftwareUserWebProcessGroupAccess()
+        [Route("api/SendWebSiteLink")]
+        public HttpResponseMessage SendWebSiteLink()
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
 
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserIdWPGId>(Request.Content.ReadAsStringAsync().Result);
+                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
-                var WPGId = Content.WPGId;
-                var WPGAess = Content.WPGAccess;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                InstanceSoftwareUsers.ChangeSoftwareUserWebProcessGroupAccess(SoftwareUserId, WPGId, WPGAess);
+                var InstanseSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                InstanseSoftwareUsers.SendWebSiteLink(InstanseSoftwareUsers.GetNSSUser(SoftwareUserId));
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(string.Empty), Encoding.UTF8, "application/json");
@@ -470,34 +552,6 @@ namespace APISoftwareUser.Controllers
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
 
-        [HttpPost]
-        [Route("api/ChangeSoftwareUserWebProcessAccess")]
-        public HttpResponseMessage ChangeSoftwareUserWebProcessAccess()
-        {
-            try
-            {
-                var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserIdWPId>(Request.Content.ReadAsStringAsync().Result);
-                var SessionId = Content.SessionId;
-                var SoftwareUserId = Content.SoftwareUserId;
-                var WPId = Content.WPId;
-                var WPAess = Content.WPAccess;
-
-                var UserId = InstanceSession.ConfirmSession(SessionId);
-
-                InstanceSoftwareUsers.ChangeSoftwareUserWebProcessAccess(SoftwareUserId, WPId, WPAess);
-
-                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(string.Empty), Encoding.UTF8, "application/json");
-                return response;
-            }
-            catch (SessionOverException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (Exception ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-        }
 
     }
 }

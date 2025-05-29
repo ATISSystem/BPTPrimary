@@ -273,6 +273,9 @@
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <None Include="Web References\PayanehWebService\payanehwebservice.wsdl" />
+    <Content Include="Web References\PayanehWebService\R2CoreTransportationAndLoadNotificationTruckDriver.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </Content>
     <None Include="Web References\PayanehWebService\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
@@ -357,6 +360,10 @@
       <Project>{49657141-d750-4e9e-aa00-7ba8dcf767dc}</Project>
       <Name>APICommon</Name>
     </ProjectReference>
+    <ProjectReference Include="..\R2CoreParkingSystem\R2CoreParkingSystem.vbproj">
+      <Project>{68EE9753-9B39-4D0B-BFE5-0F941A5F183C}</Project>
+      <Name>R2CoreParkingSystem</Name>
+    </ProjectReference>
     <ProjectReference Include="..\R2CoreTransportationAndLoadNotification\R2CoreTransportationAndLoadNotification.vbproj">
       <Project>{ef77b294-2e31-4914-af7b-289a6a1bf8dc}</Project>
       <Name>R2CoreTransportationAndLoadNotification</Name>
@@ -373,10 +380,10 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://192.168.1.3:2012/payanehwebservice.asmx">
+    <WebReferenceUrl Include="http://192.168.1.2:2012/payanehwebservice.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\PayanehWebService\</RelPath>
-      <UpdateFromURL>http://192.168.1.3:2012/payanehwebservice.asmx</UpdateFromURL>
+      <UpdateFromURL>http://192.168.1.2:2012/payanehwebservice.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>

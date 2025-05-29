@@ -13,6 +13,8 @@ using R2Core.SecurityAlgorithmsManagement.AESAlgorithms;
 using R2Core.SessionManagement;
 using R2Core.SoftwareUserManagement;
 using R2CoreTransportationAndLoadNotification.TruckDrivers;
+using R2CoreTransportationAndLoadNotification.LoadAnnouncementPlaces;
+using System.Web.Services.Protocols;
 
 
 namespace APITransportation.Controllers
@@ -22,25 +24,25 @@ namespace APITransportation.Controllers
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
 
-        [HttpPost]
+        [HttpGet]
         [Route("api/GetLoadAnnouncementPlaces")]
         public HttpResponseMessage GetLoadAnnouncementPlaces()
         {
             try
             {
-                var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<R2CoreSessionIdStructure>(Request.Content.ReadAsStringAsync().Result);
-                var SessionId = Content.SessionId;
+                //var InstanceSession = new R2CoreSessionManager();
+                //var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                //var Content = JsonConvert.DeserializeObject<R2CoreSessionIdStructure>(Request.Content.ReadAsStringAsync().Result);
+                //var SessionId = Content.SessionId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                //var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                ////var Instance = new R2CoreTransportationAndLoadNotification.LoadAnnouncementPlaces.R2CoreTransportationAndLoadNotificationLoadAnnouncementPlaces ; 
-                ///                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                var InstanceLoadAnnouncementPlaces = new R2CoreTransportationAndLoadNotificationLoadAnnouncementPlacesManager();
+                var LoadAnnouncementPlaces = InstanceLoadAnnouncementPlaces.GetLoadAnnouncementPlaces();
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                                response.Content = new StringContent(JsonConvert.SerializeObject(new R2CoreSessionIdStructure { SessionId = Content.SessionId }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(LoadAnnouncementPlaces, Encoding.UTF8, "application/json");
                 return response;
-
             }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }

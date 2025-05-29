@@ -11,6 +11,11 @@ Imports System.IO
 Imports System.Net.NetworkInformation
 Imports System.Runtime.InteropServices
 Imports System.Text
+Imports System
+Imports System.Web.Services
+Imports System.Web.Services.Protocols
+Imports System.Xml.Serialization
+Imports System.Xml
 
 Imports R2Core.AuthenticationManagement
 Imports R2Core.BaseStandardClass
@@ -53,6 +58,7 @@ Imports R2Core.PermissionManagement
 Imports System.Object
 Imports R2Core.EntityRelationManagement
 Imports R2Core.WebProcessesManagement.Exceptions
+Imports R2Core.SMS.SMSTypes.Exceptions
 
 Public Class R2Enums
 
@@ -1945,21 +1951,6 @@ Namespace SoftwareUserManagement
             End Try
         End Sub
 
-        Public Sub SendATISMobileAppDownloadLink(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
-            Try
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager
-                Dim LstUser = New List(Of R2CoreStandardSoftwareUserStructure) From {YourNSSSoftwareUser}
-                Dim LstCreationData = New List(Of SMSCreationData) From {New SMSCreationData With {.Data1 = String.Empty}}
-                Dim SMSResult = InstanceSMSHandling.SendSMS(LstUser, R2CoreSMSTypes.ATISMobileAppDownloadLink, LstCreationData, True)
-                Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
-                If Not SMSResultAnalyze = String.Empty Then Throw New SendSMSATISMobileAppDownloadLinkFailedException(SMSResultAnalyze)
-            Catch ex As SendSMSATISMobileAppDownloadLinkFailedException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
         Public Sub SMSSendApplicationActivationCode(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure, YourVerificationCode As String)
             Try
                 Dim InstanceSMSHandling = New R2CoreSMSHandlingManager
@@ -2038,17 +2029,19 @@ Namespace SoftwareUserManagement
             End Try
         End Function
 
-        Public Function RegisteringSoftwareUser(YourRawSoftwareUser As R2CoreRawSoftwareUserStructure, YourCreatorUserId As Int64) As Int64
+        Public Function RegisteringSoftwareUser(YourRawSoftwareUser As R2CoreRawSoftwareUserStructure, YourCreateMoneyWallet As Boolean, YourCreatorUserId As Int64) As Int64
             Dim CmdSql As New SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
             Try
+                Dim InstanceSoftwareUser = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 Dim AES As New R2Core.SecurityAlgorithmsManagement.AESAlgorithms.AESAlgorithmsManager
                 Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
                 Dim InstanceConfiguration As New R2CoreInstanceConfigurationManager
                 Dim APIKeyExpiration As String = _R2DateTimeService.DateTimeServ.GetNextShamsiMonth(New R2StandardDateAndTimeStructure(Nothing, _R2DateTimeService.DateTimeServ.GetCurrentDateShamsiFull, _R2DateTimeService.DateTimeServ.GetCurrentTime), InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 1)).DateShamsiFull
                 Dim UserPasswordExpiration As String = APIKeyExpiration
                 Dim Shenaseh As String = Hasher.GenerateSHA256String(YourRawSoftwareUser.MobileNumber)
-                Dim Password As String = Hasher.GenerateSHA256String(GetaNewSoftwareUserPassword())
+                Dim PasswordTemp = GetaNewSoftwareUserPassword()
+                Dim Password As String = Hasher.GenerateSHA256String(PasswordTemp)
                 Dim UIdSalt As String = AES.GetSalt(InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 0))
 
                 CmdSql.Connection.Open()
@@ -2063,16 +2056,27 @@ Namespace SoftwareUserManagement
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
-                'ایجاد کیف پول کاربر
-                Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager
-                Dim MoneyWalletId = InstanceMoneyWallet.CreateNewMoneyWallet()
+                If YourCreateMoneyWallet Then
+                    'ایجاد کیف پول کاربر
+                    Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager
+                    Dim MoneyWalletId = InstanceMoneyWallet.CreateNewMoneyWallet()
+                    'ایجاد روابط
+                    CmdSql.Connection.Open()
+                    CmdSql.CommandText = "Insert Into R2Primary.dbo.TblSoftwareUsersRelationMoneyWallet(UserId,CardId,RelationActive) Values(" & myUserId & "," & MoneyWalletId & ",1)"
+                    CmdSql.ExecuteNonQuery()
+                    CmdSql.Connection.Close()
+                End If
 
-                'ایجاد روابط
-                CmdSql.Connection.Open()
-                CmdSql.CommandText = "Insert Into R2Primary.dbo.TblSoftwareUsersRelationMoneyWallet(UserId,CardId,RelationActive) Values(" & myUserId & "," & MoneyWalletId & ",1)"
-                CmdSql.ExecuteNonQuery()
-                CmdSql.Connection.Close()
+                'ارسال شناسه و رمز عبور
+                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager
+                InstanceSMSHandling.SendSMSFree(YourRawSoftwareUser.MobileNumber, New SMSCreationData With {.Data1 = YourRawSoftwareUser.MobileNumber, .Data2 = PasswordTemp}, R2Core.SMS.SMSTypes.R2CoreSMSTypes.SoftwareUserSecurityFree)
+
                 Return myUserId
+            Catch ex As SMSTypeIdNotFoundException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             Catch ex As SqlException
                 Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As Exception
@@ -2183,7 +2187,7 @@ Namespace SoftwareUserManagement
                 Dim DS As DataSet
                 Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
                 If InstanceSqlDataBOX.GetDataBOX(New R2Core.DatabaseManagement.R2PrimarySubscriptionDBSqlConnection,
-                               "Select RelationActive from R2Primary.dbo.TblEntityRelations Where E1=" & YourSoftwareUserId & " and E2=" & YourWPGId & " and ERTypeId=" & R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup & "", 0, DS, New Boolean).GetRecordsCount <> 0 Then
+                               "Select Top 1 RelationActive from R2Primary.dbo.TblEntityRelations Where E1=" & YourSoftwareUserId & " and E2=" & YourWPGId & " and ERTypeId=" & R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup & " Order By ERId Desc", 0, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return DS.Tables(0).Rows(0).Item("RelationActive")
                 Else
                     Return False
@@ -2198,7 +2202,7 @@ Namespace SoftwareUserManagement
                 Dim DS As DataSet
                 Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
-                               "Select RelationActive from R2Primary.dbo.TblPermissions Where EntityIdFirst=" & YourSoftwareUserId & " And EntityIdSecond=" & YourWPId & " and PermissionTypeId=" & R2Core.PermissionManagement.R2CorePermissionTypes.SoftwareUsersAccessWebProcesses & "", 0, DS, New Boolean).GetRecordsCount <> 0 Then
+                               "Select Top 1 RelationActive from R2Primary.dbo.TblPermissions Where EntityIdFirst=" & YourSoftwareUserId & " And EntityIdSecond=" & YourWPId & " and PermissionTypeId=" & R2Core.PermissionManagement.R2CorePermissionTypes.SoftwareUsersAccessWebProcesses & "Order By PId Desc", 0, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return DS.Tables(0).Rows(0).Item("RelationActive")
                 Else
                     Return False
@@ -2220,7 +2224,7 @@ Namespace SoftwareUserManagement
                 Else
                     CmdSql.CommandText = "Update R2Primary.dbo.TblEntityRelations Set RelationActive=0 Where E1=" & YourSoftwareUserId & " and E2=" & YourWPGId & " and ERTypeId=" & R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup & ""
                     CmdSql.ExecuteNonQuery()
-                    CmdSql.CommandText = "Insert Into R2Primary.dbo.TblEntityRelations(ERTypeId, E1, E2, RelationActive) Values(" & R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup & "," & YourSoftwareUserId & "," & YourWPGId & "," & YourStatus & ")"
+                    CmdSql.CommandText = "Insert Into R2Primary.dbo.TblEntityRelations(ERTypeId, E1, E2, RelationActive) Values(" & R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup & "," & YourSoftwareUserId & "," & YourWPGId & "," & IIf(YourStatus, 1, 0) & ")"
                     CmdSql.ExecuteNonQuery()
                 End If
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
@@ -2249,7 +2253,7 @@ Namespace SoftwareUserManagement
                 Else
                     CmdSql.CommandText = "Update R2Primary.dbo.TblPermissions Set RelationActive=0 Where EntityIdFirst=" & YourSoftwareUserId & " and EntityIdSecond=" & YourWPId & " and PermissionTypeId=" & R2CorePermissionTypes.SoftwareUsersAccessWebProcesses & ""
                     CmdSql.ExecuteNonQuery()
-                    CmdSql.CommandText = "Insert Into R2Primary.dbo.TblEntityRelations(EntityIdFirst, EntityIdSecond, PermissionTypeId, RelationActive) Values(" & YourSoftwareUserId & "," & YourWPId & "," & R2CorePermissionTypes.SoftwareUsersAccessWebProcesses & "," & YourStatus & ")"
+                    CmdSql.CommandText = "Insert Into R2Primary.dbo.TblPermissions(EntityIdFirst, EntityIdSecond, PermissionTypeId, RelationActive) Values(" & YourSoftwareUserId & "," & YourWPId & "," & R2CorePermissionTypes.SoftwareUsersAccessWebProcesses & "," & IIf(YourStatus, 1, 0) & ")"
                     CmdSql.ExecuteNonQuery()
                 End If
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
@@ -2275,6 +2279,40 @@ Namespace SoftwareUserManagement
                 Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
                 If Not SMSResultAnalyze = String.Empty Then Throw New SendSMSVerificationCodeFailedException(SMSResultAnalyze)
             Catch ex As SendSMSVerificationCodeFailedException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Function IsExistSoftwareUser(YourSoftwareUserMobile As R2CoreSoftwareUserMobile, ByRef UserId As Int64) As Boolean
+            Try
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourSoftwareUserMobile.SoftwareUserMobileNumber)
+
+                Dim DS As DataSet
+                If DatabaseManagement.R2ClassSqlDataBOXManagement.GetDataBOX(New DatabaseManagement.R2PrimarySqlConnection, "Select UserId from R2Primary.dbo.TblSoftwareUsers where ltrim(rtrim(MobileNumber))='" & YourSoftwareUserMobile.SoftwareUserMobileNumber & "'", 3600, DS, New Boolean).GetRecordsCount = 0 Then
+                    Return False
+                Else
+                    UserId = DS.Tables(0).Rows(0).Item("UserId")
+                    Return True
+                End If
+            Catch ex As SqlInjectionException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Sub SendWebSiteLink(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
+            Try
+                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager
+                Dim LstUser = New List(Of R2CoreStandardSoftwareUserStructure) From {YourNSSSoftwareUser}
+                Dim LstCreationData = New List(Of SMSCreationData) From {New SMSCreationData With {.Data1 = String.Empty}}
+                Dim SMSResult = InstanceSMSHandling.SendSMS(LstUser, R2CoreSMSTypes.ATISMobileAppDownloadLink, LstCreationData, True)
+                Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
+                If Not SMSResultAnalyze = String.Empty Then Throw New SendSMSWebSiteLinkFailedException(SMSResultAnalyze)
+            Catch ex As SendSMSWebSiteLinkFailedException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -2691,6 +2729,23 @@ Namespace SoftwareUserManagement
                 End Get
             End Property
         End Class
+
+        'BPTChanged
+        Public Class SendSMSWebSiteLinkFailedException
+            Inherits ApplicationException
+
+            Private _Message As String
+            Public Sub New(YourMessage As String)
+                _Message = vbCrLf + YourMessage
+            End Sub
+
+            Public Overrides ReadOnly Property Message As String
+                Get
+                    Return "ارسال اس ام اس لینک وب سایت با خطا مواجه شد" + _Message
+                End Get
+            End Property
+        End Class
+
 
     End Namespace
 
@@ -3175,6 +3230,8 @@ Namespace DatabaseManagement
                     Throw New DataBaseEquivalenceMessageNotFoundException
                 End If
             Catch ex As DataBaseException
+                Throw ex
+            Catch ex As DataBaseEquivalenceMessageNotFoundException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)

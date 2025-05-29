@@ -69,6 +69,7 @@ Imports R2Core.MoneyWallet.Exceptions
 Imports System.Data.SqlClient
 Imports System.Security.Policy
 Imports R2Core.PublicProc
+Imports System.Net.Http
 
 Namespace MonetarySupply
 
@@ -2809,6 +2810,21 @@ Namespace WebProcessesManagement
 
     End Class
 
+    Public Class R2CoreWP
+        Public WPId As Int64
+        Public WPTitle As String
+        Public WDescription As String
+        Public WPIconName As String
+        Public WPAccess As Boolean
+    End Class
+
+    Public Class R2CoreWPG
+        Public WPGId As Int64
+        Public WPGTitle As String
+        Public WPGIconName As String
+        Public WPs As List(Of R2CoreWP)
+        Public WPGAccess As Boolean
+    End Class
 
     Public Class R2CoreWebProcessesManager
         Public Function GetWebProcesses(YourUserId As Int64) As String
@@ -2821,7 +2837,7 @@ Namespace WebProcessesManagement
                          Inner Join R2Primary.dbo.TblWebProcessGroups as WebProcessGroups On SoftwareUserWebProcessGroup.E2=WebProcessGroups.PGId
 						 Inner Join R2Primary.dbo.TblEntityRelations as WebProcessGroupWebProcess On WebProcessGroups.PGId=WebProcessGroupWebProcess.E1 
 						 Inner Join R2Primary.dbo.TblWebProcesses as WebProcesses on  WebProcessGroupWebProcess.E2=WebProcesses.PId 
-						 Inner Join R2Primary.dbo.TblPermissions as [Permissions] On   WebProcesses.PId=[Permissions].EntityIdSecond  
+						 Inner Join R2Primary.dbo.TblPermissions as [Permissions] On   WebProcesses.PId=[Permissions].EntityIdSecond and SoftwareUser.UserId=[Permissions].EntityIdFirst  
                   Where SoftwareUser.UserId=" & YourUserId & " and SoftwareUser.UserActive=1 and SoftwareUser.Deleted=0and 
 				        SoftwareUserWebProcessGroup.ERTypeId=" & R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup & " and SoftwareUserWebProcessGroup.RelationActive=1 and  
 						WebProcessGroups.ViewFlag=1 and  WebProcessGroups.Active=1 and WebProcessGroups.Deleted=0 and
@@ -2835,6 +2851,53 @@ Namespace WebProcessesManagement
                     Throw New SoftwareUserHasNotAnyWebProcessPermissionException
                 End If
             Catch exx As SoftwareUserHasNotAnyWebProcessPermissionException
+                Throw exx
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetAllOfWebProcessGroupsWebProcesses(YourSoftwareUserId As Int64) As String
+            Try
+                Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+                Dim Ds As DataSet
+                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
+                 "Select WebProcessGroups.PGId,WebProcessGroups.PGTitle,WebProcessGroups.PGIconName,WebProcesses.PId,WebProcesses.PTitle,WebProcesses.PName,WebProcesses.Description,WebProcesses.PIconName from R2Primary.dbo.TblWebProcessGroups as WebProcessGroups 
+                     Inner Join R2Primary.dbo.TblEntityRelations as WebProcessGroupWebProcess On WebProcessGroups.PGId=WebProcessGroupWebProcess.E1 
+                     Inner Join R2Primary.dbo.TblWebProcesses as WebProcesses on  WebProcessGroupWebProcess.E2=WebProcesses.PId 
+                  Where WebProcessGroups.ViewFlag=1 and  WebProcessGroups.Active=1 and WebProcessGroups.Deleted=0 and
+   	                 WebProcessGroupWebProcess.ERTypeId=" & R2CoreEntityRelationTypes.WebProcessGroup_WebProcess & " and WebProcessGroupWebProcess.RelationActive=1 and
+	                 WebProcesses.Active=1 and WebProcesses.ViewFlag=1 and WebProcesses.Deleted=0 
+                     Order By WebProcessGroups.PGId,WebProcesses.PId", 3600, Ds, New Boolean).GetRecordsCount <> 0 Then
+                    Dim LstWPG = New List(Of R2CoreWPG)
+                    Dim Index As Int64 = 0
+                    While Index <= Ds.Tables(0).Rows.Count - 1
+                        Dim WPG = New R2CoreWPG
+                        WPG.WPGId = Ds.Tables(0).Rows(Index).Item("PGId")
+                        WPG.WPGTitle = Ds.Tables(0).Rows(Index).Item("PGTitle")
+                        WPG.WPGIconName = Ds.Tables(0).Rows(Index).Item("PGIconName")
+                        WPG.WPGAccess = InstanceSoftwareUsers.GetSoftwareUserWebProcessGroupAccess(YourSoftwareUserId, WPG.WPGId)
+                        Dim LstWP = New List(Of R2CoreWP)
+                        While WPG.WPGId = Ds.Tables(0).Rows(Index).Item("PGId")
+                            Dim WP = New R2CoreWP
+                            WP.WPId = Ds.Tables(0).Rows(Index).Item("PId")
+                            WP.WPTitle = Ds.Tables(0).Rows(Index).Item("PTitle")
+                            WP.WDescription = Ds.Tables(0).Rows(Index).Item("Description")
+                            WP.WPIconName = Ds.Tables(0).Rows(Index).Item("PIconName")
+                            WP.WPAccess = InstanceSoftwareUsers.GetSoftwareUserWebProcessAccess(YourSoftwareUserId, WP.WPId)
+                            LstWP.Add(WP)
+                            Index += 1
+                            If Index > Ds.Tables(0).Rows.Count - 1 Then Exit While
+                        End While
+                        WPG.WPs = LstWP
+                        LstWPG.Add(WPG)
+                    End While
+                    Return JsonConvert.SerializeObject(LstWPG)
+                Else
+                    Throw New NotAnyWebProcessGroupWebProcessFoundException
+                End If
+            Catch exx As NotAnyWebProcessGroupWebProcessFoundException
                 Throw exx
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -2935,6 +2998,15 @@ Namespace WebProcessesManagement
     End Class
 
     Namespace Exceptions
+        Public Class NotAnyWebProcessGroupWebProcessFoundException
+            Inherits ApplicationException
+            Public Overrides ReadOnly Property Message As String
+                Get
+                    Return "هیچ گونه اطلاعاتی برای گروه منو و یا منوی کاربر در سامانه یافت نشد"
+                End Get
+            End Property
+        End Class
+
         Public Class SoftwareUserHasNotAnyWebProcessPermissionException
             Inherits ApplicationException
             Public Overrides ReadOnly Property Message As String
@@ -4348,6 +4420,35 @@ Namespace SMS
                 End Try
             End Function
 
+            'BPTChanged
+            Public Sub SendSMSFree(YourMobileNumber As String, YourSMSCreationData As SMSCreationData, YourSMSTypes As Int64)
+                Dim CmdSql As New SqlClient.SqlCommand
+                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+                Try
+                    Dim myCurrentDateTime = _DateTime.GetCurrentDateTime
+                    Dim InstanceSMSTypes = New R2CoreMClassSMSTypesManager
+                    Dim NSSSMSType = InstanceSMSTypes.GetNSSSMSType(YourSMSTypes)
+                    Dim SMSContent = GetCompositedSMSCreationData(NSSSMSType, YourSMSCreationData)
+                    Dim SMS = New R2CoreStandardSMSStructure(Nothing, YourMobileNumber, SMSContent, NSSSMSType.SMSMinutes, Nothing, Nothing, Nothing, Nothing)
+                    CmdSql.Connection.Open()
+                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                    CmdSql.CommandText = "Insert Into R2PrimarySMSSystem.dbo.TblSMSWareHouse(MobileNumber,Message,EndMinutes,DateTimeMilladi,Active,DateShamsi,SmsType) values('" & SMS.MobileNumber & "','" & SMS.Message & "'," & SMS.EndMinutes & ",'" & myCurrentDateTime.DateTimeMilladiFormated & "',1,'" & myCurrentDateTime.DateShamsiFull & "'," & R2CoreSMSSendReciveType.ForSend & ")"
+                    CmdSql.ExecuteNonQuery()
+                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+                Catch ex As SMSTypeIdNotFoundException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As Exception
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+                End Try
+            End Sub
+
+
         End Class
 
         Namespace Exceptions
@@ -4556,7 +4657,7 @@ Namespace SMS
             Public Shared ReadOnly Property PleaseCharge = 8
             Public Shared ReadOnly Property ATISMobileAppDownloadLink = 14
             Public Shared ReadOnly Property ActivateSMSOwnerSuccess = 16
-
+            Public Shared ReadOnly Property SoftwareUserSecurityFree = 21
         End Class
 
         Public Class R2CoreStandardSMSTypeStructure

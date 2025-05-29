@@ -12,4 +12,27 @@ namespace APITransportation.Models
         public string TruckDriverNationalCode;
     }
 
+    public class APITransportationSessionIdSoftwareUserId
+    {
+        public String SessionId;
+        public Int64 SoftwareUserId;
+    }
+
+    public class APITransportationSessionIdTruckDriverId
+    {
+        public string SessionId;
+        public Int64 TruckDriverId;
+    }
+
+    public class APITransportationSessionIdTruckDriverIdMobileNumber
+    {
+        public string SessionId;
+        public Int64  TruckDriverId;
+        public string MobileNumber;
+    }
+
+
+
+
+
 }

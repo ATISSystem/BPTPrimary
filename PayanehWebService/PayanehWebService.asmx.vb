@@ -26,6 +26,9 @@ Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoadM
 Imports R2CoreTransportationAndLoadNotification.Turns
 Imports R2CoreTransportationAndLoadNotification.Turns.SequentialTurns
 Imports PayanehClassLibrary.HumanManagement.Personnel
+Imports System.Xml
+Imports R2CoreTransportationAndLoadNotification.Rmto
+Imports R2CoreTransportationAndLoadNotification.TruckDrivers
 
 
 ' To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line.
@@ -37,7 +40,6 @@ Public Class PayanehWebService
     Inherits System.Web.Services.WebService
 
     Private Shared _ExchangeKeyManager As New ExchangeKeyManager
-
 
     <WebMethod()>
     Public Function WebMethodLogin(YourUserShenaseh As String, YourUserPassword As String) As Int64
@@ -380,22 +382,30 @@ Public Class PayanehWebService
     End Function
 
     <WebMethod()>
-    Public Function WebMethodGetDriverTruckByNationalCodefromRMTO(YourNationalCode As String, YourExchangeKey As Int64) As Int64
+    Public Function WebMethodGetDriverTruckByNationalCodefromRMTO(YourNationalCode As String, YourExchangeKey As Int64) As R2CoreTransportationAndLoadNotificationTruckDriver
         Try
             Dim NSS = _ExchangeKeyManager.GetNSSUser(YourExchangeKey)
-            Return PayanehClassLibraryMClassDriverTrucksManagement.GetDriverTruckfromRMTOAndInsertUpdateLocalDataBaseByNationalCode(YourNationalCode).NSSDriver.nIdPerson
+            Return PayanehClassLibraryMClassDriverTrucksManagement.GetDriverTruckfromRMTOAndInsertUpdateLocalDataBaseByNationalCode(YourNationalCode)
         Catch ex As SoftwareUserMobileNumberAlreadyExistException
-            Throw ex
+            Throw GetSoapExeption(ex.Message)
         Catch ex As ExchangeKeyTimeRangePassedException
-            Throw ex
+            Throw GetSoapExeption(ex.Message)
         Catch ex As ExchangeKeyNotExistException
-            Throw ex
+            Throw GetSoapExeption(ex.Message)
         Catch ex As GetNSSException
-            Throw ex
+            Throw GetSoapExeption(ex.Message)
+        Catch ex As RMTOSmartCardSiteIsNotAvailableException
+            Throw GetSoapExeption(ex.Message)
         Catch ex As Exception
-            Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            Throw GetSoapExeption(ex.Message)
         End Try
     End Function
+
+    Private Function GetSoapExeption(YourMessage As String) As SoapException
+        Dim SoapEx As New SoapException(YourMessage, SoapException.ClientFaultCode, Context.Request.Url.AbsoluteUri, (New XmlDocument).CreateNode(XmlNodeType.Element, SoapException.DetailElementName.Name, SoapException.DetailElementName.Namespace))
+        Throw SoapEx
+    End Function
+
 
 
 End Class

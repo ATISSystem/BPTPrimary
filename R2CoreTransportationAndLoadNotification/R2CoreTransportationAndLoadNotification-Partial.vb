@@ -33,6 +33,7 @@ Imports R2CoreParkingSystem.City.Execption
 Imports R2CoreParkingSystem.Drivers
 Imports R2CoreParkingSystem.EntityRelations
 Imports R2CoreParkingSystem.MoneyWalletManagement
+Imports R2CoreParkingSystem.SoftwareUsersManagement
 Imports R2CoreParkingSystem.TrafficCardsManagement
 Imports R2CoreTransportationAndLoadNotification.AnnouncementHalls
 Imports R2CoreTransportationAndLoadNotification.AnnouncementHalls.Exceptions
@@ -641,6 +642,19 @@ Namespace TruckDrivers
 
     End Class
 
+    'BPTChanged
+    <System.Xml.Serialization.XmlTypeAttribute()>
+    Public Class R2CoreTransportationAndLoadNotificationTruckDriver
+        Public DriverId As Int64
+        Public NameFamily As String
+        Public NationalCode As String
+        Public MobileNumber As String
+        Public FatherName As String
+        Public DrivingLicenceNo As String
+        Public Address As String
+        Public SmartCardNo As String
+    End Class
+
     Public Class R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager
         Public Function GetNSSTruckDriver(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure) As R2CoreTransportationAndLoadNotificationStandardTruckDriverStructure
             Try
@@ -743,19 +757,124 @@ Namespace TruckDrivers
         End Function
 
         'BPTChanged
-        Public Function GetTruckDriver(YourTruckDriverId As Int64, YourImediately As Boolean) As String
+        Public Function GetTruckDriver(YourTruckDriverId As Int64) As String
             Try
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
                 Dim DS As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
-                          "Select Top 1 Drivers.nIDDriver as DriverCode,Drivers.strSmartcardNo as SmartcardNo,Drivers.strDrivingLicenceNo as DrivingLicenceNo,Persons.strPersonFullName as FullName,Persons.strFatherName as FatherName,Persons.strNationalCode as NationalCode,Persons.strAddress as Address,Persons.strIDNO as MobileNumber
+                      "Select Top 1 Drivers.nIDDriver as DriverId,Persons.strPersonFullName as NameFamily,Persons.strNationalCode as NationalCode,Persons.strIDNO as MobileNumber,Persons.strFatherName as FatherName,Drivers.strDrivingLicenceNo as DrivingLicenceNo,Persons.strAddress as Address,Drivers.strSmartcardNo as SmartcardNo
                               from dbtransport.dbo.TbDriver as Drivers 
                                  Inner Join dbtransport.dbo.TbPerson as Persons On Drivers.nIDDriver=Persons.nIDPerson 
-                           Where Drivers.nIDDriver=" & YourTruckDriverId & " Order By Drivers.nIDDriver Desc for json path", IIf(YourImediately, 0, 300), DS, New Boolean).GetRecordsCount() = 0 Then Throw New TruckDriverNotFoundException
+                           Where Drivers.nIDDriver=" & YourTruckDriverId & " Order By Drivers.nIDDriver Desc for json path", 300, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TruckDriverNotFoundException
                 Return InstancePublicProcedures.GetIntegratedJson(DS)
             Catch exx As TruckDriverNotFoundException
                 Throw exx
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Sub RegisteringTruckDriverMobileNumber(YourTruckDriverId As Int64, YourMobileNumber As String)
+            Dim CmdSql As SqlCommand = New SqlCommand
+            CmdSql.Connection = (New R2Core.DatabaseManagement.R2PrimarySqlConnection).GetConnection()
+            Try
+                Dim InstanceSoftwareUsers = New R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+                Dim UserId As Int64
+                If InstanceSoftwareUsers.IsExistSoftwareUser(New R2CoreSoftwareUserMobile(YourMobileNumber), UserId) Then
+                    CmdSql.Connection.Open()
+                    CmdSql.CommandText = "Update dbtransport.dbo.tbPerson Set strIDNO='" & YourMobileNumber & "' Where nIdPerson=" & YourTruckDriverId & ""
+                    CmdSql.ExecuteNonQuery()
+                    CmdSql.Connection.Close()
+                    'ایجاد رابطه کاربر موجود و راننده موجود
+                    R2CoreMClassEntityRelationManagement.RegisteringEntityRelation(New R2StandardEntityRelationStructure(Nothing, R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver, UserId, YourTruckDriverId, Nothing), RelationDeactiveTypes.BothDeactive)
+                Else
+                    Dim NSSDriver = R2CoreParkingSystemMClassDrivers.GetNSSDriver(YourTruckDriverId)
+                    UserId = InstanceSoftwareUsers.RegisteringSoftwareUser(New R2CoreRawSoftwareUserStructure With {.UserId = Nothing, .MobileNumber = YourMobileNumber, .UserActive = True, .UserName = NSSDriver.StrPersonFullName, .UserTypeId = R2CoreParkingSystemSoftwareUserTypes.Driver}, False, InstanceSoftwareUsers.GetNSSSystemUser.UserId)
+                    CmdSql.Connection.Open()
+                    CmdSql.CommandText = "Update dbtransport.dbo.tbPerson Set strIDNO='" & YourMobileNumber & "' Where nIdPerson=" & YourTruckDriverId & ""
+                    CmdSql.ExecuteNonQuery()
+                    CmdSql.Connection.Close()
+                    'ایجاد رابطه کاربر موجود و راننده موجود
+                    R2CoreMClassEntityRelationManagement.RegisteringEntityRelation(New R2StandardEntityRelationStructure(Nothing, R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver, UserId, YourTruckDriverId, Nothing), RelationDeactiveTypes.BothDeactive)
+                    'به دست آوردن لیست فرآیندهای وب قابل دسترسی برای نوع کاربر راننده و ارسال به مدیریت مجوز
+                    Dim ComposeSearchString As String = R2CoreParkingSystemSoftwareUserTypes.Driver.ToString + ":"
+                    Dim AllofSoftwareUserTypes1 As String() = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesAccessWebProcesses), ";")
+                    Dim AllofWebProcessesIds As String() = Split(Mid(AllofSoftwareUserTypes1.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes1.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
+                    R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, UserId, AllofWebProcessesIds)
+                    'به دست آوردن لیست گروههای فرآیند وب برای نوع کاربر راننده و ارسال آن به مدیریت روابط نهادی
+                    Dim AllofSoftwareUserTypes2 As String() = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesRelationWebProcessGroups), ";")
+                    Dim AllofWebProcessGroupsIds As String() = Split(Mid(AllofSoftwareUserTypes2.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes2.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
+                    R2CoreMClassEntityRelationManagement.RegisteringEntityRelations(R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup, UserId, AllofWebProcessGroupsIds)
+                End If
+            Catch ex As SqlException
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As DriverNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+
+        End Sub
+
+        Public Function GetSoftwareUserIdfromTruckDriverId(YourTruckDriverId As Int64) As Int64
+            Try
+                Dim Ds As DataSet
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                If InstanceSqlDataBOX.GetDataBOX(New R2Core.DatabaseManagement.R2PrimarySqlConnection,
+                       "Select SoftwareUsers.UserId from DBTransport.dbo.TbDriver as Drivers
+                          Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On Drivers.nIDDriver=EntityRelations.E2 
+                          Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On EntityRelations.E1=SoftwareUsers.UserId  
+                        where Drivers.nIDDriver=" & YourTruckDriverId & " and EntityRelations.ERTypeId=" & R2CoreParkingSystem.EntityRelations.R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & " and EntityRelations.RelationActive=1 and SoftwareUsers.Deleted=0", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                    Throw New SoftwareUserfromTruckDriverNotFoundException
+                Else
+                    Return Ds.Tables(0).Rows(0).Item("UserId")
+                End If
+            Catch ex As SoftwareUserfromTruckDriverNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetNSSSoftwareUserfromTruckDriverId(YourTruckDriverId As Int64) As R2CoreStandardSoftwareUserStructure
+            Try
+                Dim Ds As DataSet
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                If InstanceSqlDataBOX.GetDataBOX(New R2Core.DatabaseManagement.R2PrimarySqlConnection,
+                       "Select * from DBTransport.dbo.TbDriver as Drivers
+                          Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On Drivers.nIDDriver=EntityRelations.E2 
+                          Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On EntityRelations.E1=SoftwareUsers.UserId  
+                        where Drivers.nIDDriver=" & YourTruckDriverId & " and EntityRelations.ERTypeId=" & R2CoreParkingSystem.EntityRelations.R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & " and EntityRelations.RelationActive=1 and SoftwareUsers.Deleted=0", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                    Throw New SoftwareUserfromTruckDriverNotFoundException
+                Else
+                    Return New R2CoreStandardSoftwareUserStructure(Ds.Tables(0).Rows(0).Item("UserId"), Ds.Tables(0).Rows(0).Item("ApiKey").trim, Ds.Tables(0).Rows(0).Item("APIKeyExpiration"), Ds.Tables(0).Rows(0).Item("UserName").trim, Ds.Tables(0).Rows(0).Item("UserShenaseh").trim, Ds.Tables(0).Rows(0).Item("UserPassword").trim, Ds.Tables(0).Rows(0).Item("UserPasswordExpiration"), Ds.Tables(0).Rows(0).Item("UserPinCode"), Ds.Tables(0).Rows(0).Item("UserCanCharge"), Ds.Tables(0).Rows(0).Item("UserActive"), Ds.Tables(0).Rows(0).Item("UserTypeId"), Ds.Tables(0).Rows(0).Item("MobileNumber").trim, Ds.Tables(0).Rows(0).Item("UserStatus").trim, Ds.Tables(0).Rows(0).Item("VerificationCode").trim, Ds.Tables(0).Rows(0).Item("VerificationCodeTimeStamp"), Ds.Tables(0).Rows(0).Item("VerificationCodeCount"), Ds.Tables(0).Rows(0).Item("Nonce"), Ds.Tables(0).Rows(0).Item("NonceTimeStamp"), Ds.Tables(0).Rows(0).Item("NonceCount"), Ds.Tables(0).Rows(0).Item("PersonalNonce"), Ds.Tables(0).Rows(0).Item("PersonalNonceTimeStamp"), Ds.Tables(0).Rows(0).Item("Captcha"), Ds.Tables(0).Rows(0).Item("CaptchaValid"), Ds.Tables(0).Rows(0).Item("UserCreatorId"), Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi"), Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Deleted"))
+                End If
+            Catch ex As SoftwareUserfromTruckDriverNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetNSSTruckDriverfromNationalCode(YourNationalCode As String) As String
+            Try
+                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourNationalCode)
+
+                Dim Ds As DataSet
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                If InstanceSqlDataBOX.GetDataBOX(New R2Core.DatabaseManagement.R2PrimarySqlConnection,
+                          "Select Top 1 D.nIDDriver as DriverId,P.strPersonFullName as NameFamily,P.strNationalCode as NationalCode,p.strIDNO as MobileNumber,P.strFatherName as FatherName,d.strDrivingLicenceNo as DrivingLicenceNo,P.strAddress as Address,d.strSmartcardNo as SmartCardNo
+                             from dbtransport.dbo.TbPerson as P inner join dbtransport.dbo.TbDriver as D On P.nIDPerson=D.nIDDriver 
+                           Where P.StrNationalCode='" & YourNationalCode & "' Order By P.nIDPerson Desc
+                           for json path", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                    Throw New TruckDriverNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As TruckDriverNotFoundException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -794,7 +913,7 @@ Namespace TruckDrivers
             Try
                 Dim DS As DataSet
                 If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
-                     "Select Top 1 * from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                     "Select Top 1 * from R2Primary.dbo.TblSoftwareUsers As SoftwareUsers
                          Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
                          Inner Join dbtransport.dbo.TbDriver as Drivers On EntityRelations.E2=Drivers.nIDDriver 
                          Inner Join dbtransport.dbo.TbPerson as Persons On Drivers.nIDDriver=Persons.nIDPerson 
@@ -849,6 +968,16 @@ Namespace TruckDrivers
             Public Overrides ReadOnly Property Message As String
                 Get
                     Return "راننده ناوگان باری با مشخصات مورد نظر یافت نشد"
+                End Get
+            End Property
+        End Class
+
+        'BPTChanged
+        Public Class SoftwareUserfromTruckDriverNotFoundException
+            Inherits ApplicationException
+            Public Overrides ReadOnly Property Message As String
+                Get
+                    Return "کاربری بر اساس مشخصات راننده یافت نشد "
                 End Get
             End Property
         End Class
@@ -10027,7 +10156,7 @@ Namespace LoadAnnouncementPlaces
                 Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim Ds As DataSet
                 If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
-                 "Select Select LoadAnnouncementPlaces.LAPId,LoadAnnouncementPlaces.LAPName,LoadAnnouncementPlaces.LAPTitle,LoadAnnouncementPlaces.LAPIconName,LoadAnnouncementPlaces.LAPURL from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAnnouncementPlaces as LoadAnnouncementPlaces Where Active=1 Order By LAPId for json auto", 3600, Ds, New Boolean).GetRecordsCount <> 0 Then
+                 "Select LoadAnnouncementPlaces.LAPTitle,LoadAnnouncementPlaces.LAPIconName,LoadAnnouncementPlaces.LAPURL,LoadAnnouncementPlaces.Description from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAnnouncementPlaces as LoadAnnouncementPlaces Where Active=1 Order By LAPId for json auto", 3600, Ds, New Boolean).GetRecordsCount <> 0 Then
                     Return InstanccePublicProcedures.GetIntegratedJson(Ds)
                 Else
                     Throw New SoftwareUserHasNotAnyWebProcessPermissionException

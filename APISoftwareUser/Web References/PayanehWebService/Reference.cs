@@ -13,7 +13,7 @@
 // 
 #pragma warning disable 1591
 
-namespace APITransportation.PayanehWebService {
+namespace APISoftwareUser.PayanehWebService.asmx {
     using System.Diagnostics;
     using System;
     using System.Xml.Serialization;
@@ -84,7 +84,7 @@ namespace APITransportation.PayanehWebService {
         
         /// <remarks/>
         public PayanehWebService() {
-            this.Url = global::APITransportation.Properties.Settings.Default.APITransportation_PayanehWebService_PayanehWebService;
+            this.Url = global::APISoftwareUser.Properties.Settings.Default.APISoftwareUser_PayanehWebService_asmx_PayanehWebService;
             if ((this.IsLocalFileSystemWebService(this.Url) == true)) {
                 this.UseDefaultCredentials = true;
                 this.useDefaultCredentialsSetExplicitly = false;
@@ -1119,11 +1119,11 @@ namespace APITransportation.PayanehWebService {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodGetDriverTruckByNationalCodefromRMTO", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public R2CoreTransportationAndLoadNotificationTruckDriver WebMethodGetDriverTruckByNationalCodefromRMTO(string YourNationalCode, long YourExchangeKey) {
+        public long WebMethodGetDriverTruckByNationalCodefromRMTO(string YourNationalCode, long YourExchangeKey) {
             object[] results = this.Invoke("WebMethodGetDriverTruckByNationalCodefromRMTO", new object[] {
                         YourNationalCode,
                         YourExchangeKey});
-            return ((R2CoreTransportationAndLoadNotificationTruckDriver)(results[0]));
+            return ((long)(results[0]));
         }
         
         /// <remarks/>
@@ -1164,111 +1164,6 @@ namespace APITransportation.PayanehWebService {
                 return true;
             }
             return false;
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.8.9037.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://tempuri.org/")]
-    public partial class R2CoreTransportationAndLoadNotificationTruckDriver {
-        
-        private long driverIdField;
-        
-        private string nameFamilyField;
-        
-        private string nationalCodeField;
-        
-        private string mobileNumberField;
-        
-        private string fatherNameField;
-        
-        private string drivingLicenceNoField;
-        
-        private string addressField;
-        
-        private string smartCardNoField;
-        
-        /// <remarks/>
-        public long DriverId {
-            get {
-                return this.driverIdField;
-            }
-            set {
-                this.driverIdField = value;
-            }
-        }
-        
-        /// <remarks/>
-        public string NameFamily {
-            get {
-                return this.nameFamilyField;
-            }
-            set {
-                this.nameFamilyField = value;
-            }
-        }
-        
-        /// <remarks/>
-        public string NationalCode {
-            get {
-                return this.nationalCodeField;
-            }
-            set {
-                this.nationalCodeField = value;
-            }
-        }
-        
-        /// <remarks/>
-        public string MobileNumber {
-            get {
-                return this.mobileNumberField;
-            }
-            set {
-                this.mobileNumberField = value;
-            }
-        }
-        
-        /// <remarks/>
-        public string FatherName {
-            get {
-                return this.fatherNameField;
-            }
-            set {
-                this.fatherNameField = value;
-            }
-        }
-        
-        /// <remarks/>
-        public string DrivingLicenceNo {
-            get {
-                return this.drivingLicenceNoField;
-            }
-            set {
-                this.drivingLicenceNoField = value;
-            }
-        }
-        
-        /// <remarks/>
-        public string Address {
-            get {
-                return this.addressField;
-            }
-            set {
-                this.addressField = value;
-            }
-        }
-        
-        /// <remarks/>
-        public string SmartCardNo {
-            get {
-                return this.smartCardNoField;
-            }
-            set {
-                this.smartCardNoField = value;
-            }
         }
     }
     
@@ -1496,10 +1391,10 @@ namespace APITransportation.PayanehWebService {
         }
         
         /// <remarks/>
-        public R2CoreTransportationAndLoadNotificationTruckDriver Result {
+        public long Result {
             get {
                 this.RaiseExceptionIfNecessary();
-                return ((R2CoreTransportationAndLoadNotificationTruckDriver)(this.results[0]));
+                return ((long)(this.results[0]));
             }
         }
     }

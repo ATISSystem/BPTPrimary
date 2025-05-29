@@ -13,7 +13,7 @@
 // 
 #pragma warning disable 1591
 
-namespace APITransportation.PayanehWebService {
+namespace UnitTestR2Core.Payanehwebservice {
     using System.Diagnostics;
     using System;
     using System.Xml.Serialization;
@@ -84,7 +84,7 @@ namespace APITransportation.PayanehWebService {
         
         /// <remarks/>
         public PayanehWebService() {
-            this.Url = global::APITransportation.Properties.Settings.Default.APITransportation_PayanehWebService_PayanehWebService;
+            this.Url = global::UnitTestR2Core.Properties.Settings.Default.UnitTestR2Core_Payanehwebservice_PayanehWebService;
             if ((this.IsLocalFileSystemWebService(this.Url) == true)) {
                 this.UseDefaultCredentials = true;
                 this.useDefaultCredentialsSetExplicitly = false;

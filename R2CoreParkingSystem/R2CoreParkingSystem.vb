@@ -3245,6 +3245,50 @@ Namespace Drivers
             End Try
         End Function
 
+        'BPTChanged
+        Public Function InsertDriver(YourNSS As R2StandardDriverStructure) As Int64
+            Dim CmdSql As SqlCommand = New SqlCommand
+            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                CmdSql.CommandText = "Select top 1 * from dbtransport.dbo.tbperson with (tablockx)" : CmdSql.ExecuteNonQuery()
+                CmdSql.CommandText = "Select IDENT_CURRENT('dbtransport.dbo.tbperson')"
+                Dim mynIdPerson As Int64 = CmdSql.ExecuteScalar + 1
+                CmdSql.CommandText = "Insert Into dbtransport.dbo.tbPerson(strPersonName,strpersonFamily,strIDNO,strNationalCode,strFatherName,strAddress) Values('" & YourNSS.StrPersonFullName & "','','" & YourNSS.StrIdNo & "','" & YourNSS.StrNationalCode & "','" & YourNSS.StrFatherName & "','" & YourNSS.StrAddress & "')"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.CommandText = "Insert Into dbtransport.dbo.TbDriver(nIDDriver,StrDriverCode,strDrivingLicenceNo,strSmartcardNo) Values(" & mynIdPerson & ",0,'" & YourNSS.strDrivingLicenceNo & "','" & mynIdPerson & "')"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+                Return mynIdPerson
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Sub UpdateDriver(YourNSS As R2StandardDriverStructure)
+            Dim CmdSql As SqlCommand = New SqlCommand
+            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                Dim mynIdPerson As Int64 = YourNSS.nIdPerson
+                CmdSql.CommandText = "Update dbtransport.dbo.tbPerson Set strPersonName='" & YourNSS.StrPersonFullName & "',StrPersonFamily='',strAddress='" & YourNSS.StrAddress & "' Where nIdPerson=" & mynIdPerson & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.CommandText = "Update dbtransport.dbo.TbDriver Set strDrivingLicenceNo='" & YourNSS.strDrivingLicenceNo & "' Where nIdDriver=" & mynIdPerson & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
     End Class
 
     Public Class R2CoreParkingSystemMClassDrivers
@@ -3470,6 +3514,7 @@ Namespace Drivers
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Sub
+
 
     End Class
 

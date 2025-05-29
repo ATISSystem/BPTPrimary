@@ -13,6 +13,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http.ModelBinding.Binders;
 
+using System.Web.Services;
+using System.Web.Services.Protocols;
+using System.Xml.Serialization;
+using System.Xml;
+using R2Core.SoftwareUserManagement;
+using System.Web.Services.Description;
+using R2CoreTransportationAndLoadNotification.TruckDrivers;
+
 namespace UnitTestR2Core
 {
     [TestClass]
@@ -21,6 +29,24 @@ namespace UnitTestR2Core
         [TestMethod]
         public void StartSession__null__SessionIDCaptcha()
         {
+            Payanehwebservice.PayanehWebService _WS = new Payanehwebservice.PayanehWebService();
+            try
+            {
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+
+                _WS.WebMethodGetDriverTruckByNationalCodefromRMTO(String.Empty, _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
+            }
+            catch (SoapException ex)
+            {
+                var x = ex.Message;
+                var y = 0;
+            }
+            catch (Exception ex)
+            {
+                var x = 3;
+            }
+
+
             //arrange
             var expected = "b02cd4d58a4188ff039ac33df314f948%OwUE(6D~kJA";
             //act
@@ -83,7 +109,7 @@ namespace UnitTestR2Core
             try
             {
                 var Instance = new R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var x = Instance.RegisteringSoftwareUser(new R2Core.SoftwareUserManagement.R2CoreRawSoftwareUserStructure() { UserId = 0, MobileNumber = "09138031812", UserName = "خسروی", UserTypeId = 1 }, 21);
+                var x = Instance.RegisteringSoftwareUser(new R2Core.SoftwareUserManagement.R2CoreRawSoftwareUserStructure() { UserId = 0, MobileNumber = "09138031812", UserName = "خسروی", UserTypeId = 1 }, false,21);
                 Console.WriteLine(x);
             }
             catch (DataBaseException ex)
@@ -99,8 +125,8 @@ namespace UnitTestR2Core
             try
             {
                 var Instance = new R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                Instance.ResetSoftwareUserPassword(30,21);
-                
+                Instance.ResetSoftwareUserPassword(30, 21);
+
             }
             catch (DataBaseException ex)
             { var x = ex.Message; }
@@ -113,8 +139,8 @@ namespace UnitTestR2Core
         {
             try
             {
-                var Instance = new R2CoreParkingSystem.SMS.SMSOwners.R2CoreParkingSystemMClassSMSOwnersManager(new R2Core.SoftwareUserManagement.SoftwareUserService(21) ,new  R2DateTimeService() );
-               var x= Instance.ChangeSMSOwnerCurrentState(21);
+                var Instance = new R2CoreParkingSystem.SMS.SMSOwners.R2CoreParkingSystemMClassSMSOwnersManager(new R2Core.SoftwareUserManagement.SoftwareUserService(21), new R2DateTimeService());
+                var x = Instance.ChangeSMSOwnerCurrentState(21);
                 var d = 12;
             }
             catch (DataBaseException ex)
@@ -129,7 +155,7 @@ namespace UnitTestR2Core
             try
             {
                 var Instance = new R2CoreParkingSystem.SMS.SMSOwners.R2CoreParkingSystemMClassSMSOwnersManager(new R2Core.SoftwareUserManagement.SoftwareUserService(21), new R2DateTimeService());
-                Instance.ActivateSMSOwner (21,21);
+                Instance.ActivateSMSOwner(21, 21);
                 var d = 12;
             }
             catch (DataBaseException ex)
@@ -150,7 +176,31 @@ namespace UnitTestR2Core
             catch (Exception ex)
             { }
         }
+        [TestMethod]
+        public void GetAllOfWebProcessGroupsWebProcesses()
+        {
+            var x = new R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+            x.ChangeSoftwareUserWebProcessAccess(21, 1, true);
+            var X = 2;
+        }
 
+        [TestMethod]
+        public void GetTruckDriverfromRMTO()
+        {
+            var InstanceSoftwareUsers = new R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+            Payanehwebservice.PayanehWebService _WS = new Payanehwebservice.PayanehWebService();
+            try
+            {
+                var TruckDriver =_WS.WebMethodGetDriverTruckByNationalCodefromRMTO("5759871382", _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
+                var y = 2;
+            }
+            catch (SoapException ex)
+            {
 
+                var X = 2;
+            }
+        }
     }
+
+
 }

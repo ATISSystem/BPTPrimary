@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace APITransportation.Properties {
+namespace UnitTestR2Core.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -27,9 +27,9 @@ namespace APITransportation.Properties {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
         [global::System.Configuration.DefaultSettingValueAttribute("http://192.168.1.2:2012/payanehwebservice.asmx")]
-        public string APITransportation_PayanehWebService_PayanehWebService {
+        public string UnitTestR2Core_Payanehwebservice_PayanehWebService {
             get {
-                return ((string)(this["APITransportation_PayanehWebService_PayanehWebService"]));
+                return ((string)(this["UnitTestR2Core_Payanehwebservice_PayanehWebService"]));
             }
         }
     }

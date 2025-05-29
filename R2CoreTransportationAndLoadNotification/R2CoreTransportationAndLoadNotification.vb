@@ -125,26 +125,35 @@ Namespace Rmto
                 'If InstanceLogging.GetNSSLogType(R2CoreTransportationAndLoadNotificationLogType.RmtoWebServiceRequest).Active Then
                 '    InstanceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreTransportationAndLoadNotificationLogType.RmtoWebServiceRequest, InstanceLogging.GetNSSLogType(R2CoreTransportationAndLoadNotificationLogType.RmtoWebServiceRequest).LogTitle, "InfoType=" + YourInfoType.ToString(), "YourDFP=" + YourDFP, String.Empty, String.Empty, String.Empty, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser.UserId, Nothing, Nothing))
                 'End If
-
+                Dim Result() As String
                 If YourInfoType = InfoType.GET_DRIVER_BY_SHC Then
-                    Return Service.RMTO_WEB_SERVICES(YourDFP, "", "", "", "", "", "", "", "", "", "2043148", 41, "Biinfo878").Split(";")
+                    Result = Service.RMTO_WEB_SERVICES(YourDFP, "", "", "", "", "", "", "", "", "", "2043148", 41, "Biinfo878").Split(";")
                     'Return Service.RMTO_WEB_SERVICES("Biinfo878", 41, "2043148", "", "", "", "", "", "", "", "", "", YourDFP).Split(";")
                 ElseIf YourInfoType = InfoType.GET_DRIVER_BY_SHM Then
-                    Return Service.RMTO_WEB_SERVICES(YourDFP, "", "", "", "", "", "", "", "", "", "2043148", 3, "Biinfo878").Split(";")
+                    Result = Service.RMTO_WEB_SERVICES(YourDFP, "", "", "", "", "", "", "", "", "", "2043148", 3, "Biinfo878").Split(";")
                     'Return Service.RMTO_WEB_SERVICES("Biinfo878", 3, "2043148", "", "", "", "", "", "", "", "", "", YourDFP).Split(";")
                 ElseIf YourInfoType = InfoType.GET_FREIGHTER_BY_SHC Then
-                    Return Service.RMTO_WEB_SERVICES(YourDFP, "", "", "", "", "", "", "", "", "", "2043148", 4, "Biinfo878").Split(";")
+                    Result = Service.RMTO_WEB_SERVICES(YourDFP, "", "", "", "", "", "", "", "", "", "2043148", 4, "Biinfo878").Split(";")
                     'Return Service.RMTO_WEB_SERVICES("Biinfo878", 4, "2043148", "", "", "", "", "", "", "", "", "", YourDFP).Split(";")
                 ElseIf YourInfoType = InfoType.GET_FREIGHTER_BY_VIN Then
-                    Return Service.RMTO_WEB_SERVICES(YourDFP, "", "", "", "", "", "", "", "", "", "2043148", 6, "Biinfo878").Split(";")
+                    Result = Service.RMTO_WEB_SERVICES(YourDFP, "", "", "", "", "", "", "", "", "", "2043148", 6, "Biinfo878").Split(";")
                     'Return Service.RMTO_WEB_SERVICES("Biinfo878", 6, "2043148", "", "", "", "", "", "", "", "", "", YourDFP).Split(";")
+                Else
+                    Throw New RMTOSmartCardSiteIsNotAvailableException
                 End If
+                If Result(0) = "-1" Then
+                    Throw New RMTOSmartCardSiteIsNotAvailableException
+                End If
+                Return Result
+
             Catch ex As ConnectionIsNotAvailableException
                 Throw ex
             Catch ex As InternetIsnotAvailableException
                 Throw ex
+            Catch ex As RMTOSmartCardSiteIsNotAvailableException
+                Throw ex
             Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                Throw New RMTOSmartCardSiteIsNotAvailableException
             End Try
         End Function
 
@@ -163,6 +172,8 @@ Namespace Rmto
                 Throw ex
             Catch ex As InternetIsnotAvailableException
                 Throw ex
+            Catch ex As RMTOSmartCardSiteIsNotAvailableException
+                Throw ex
             Catch ex As Exception
                 Throw ex
             End Try
@@ -176,6 +187,8 @@ Namespace Rmto
             Catch ex As ConnectionIsNotAvailableException
                 Throw ex
             Catch ex As InternetIsnotAvailableException
+                Throw ex
+            Catch ex As RMTOSmartCardSiteIsNotAvailableException
                 Throw ex
             Catch ex As Exception
                 Throw New RMTOWebServiceSmartCardInvalidException
@@ -197,6 +210,8 @@ Namespace Rmto
                 Throw ex
             Catch ex As InternetIsnotAvailableException
                 Throw ex
+            Catch ex As RMTOSmartCardSiteIsNotAvailableException
+                Throw ex
             Catch ex As Exception
                 Throw New RMTOWebServiceSmartCardInvalidException
             End Try
@@ -210,6 +225,8 @@ Namespace Rmto
             Catch ex As ConnectionIsNotAvailableException
                 Throw ex
             Catch ex As InternetIsnotAvailableException
+                Throw ex
+            Catch ex As RMTOSmartCardSiteIsNotAvailableException
                 Throw ex
             Catch ex As Exception
                 Throw New RMTOWebServiceSmartCardInvalidException
@@ -249,14 +266,14 @@ Namespace Rmto
         End Property
     End Class
 
-    'Public Class RMTOSmartCardSiteIsNotAvailableException
-    '    Inherits ApplicationException
-    '    Public Overrides ReadOnly Property Message As String
-    '        Get
-    '            Return "سایت کارت هوشمند در دسترس نیست"
-    '        End Get
-    '    End Property
-    'End Class
+    Public Class RMTOSmartCardSiteIsNotAvailableException
+        Inherits ApplicationException
+        Public Overrides ReadOnly Property Message As String
+            Get
+                Return "دریافت خطا از سمت وب سرویس سازمان"
+            End Get
+        End Property
+    End Class
 
 
 End Namespace

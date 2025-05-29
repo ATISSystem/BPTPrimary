@@ -2717,26 +2717,30 @@ Namespace DriverTrucksManagement
             End Try
         End Function
 
-        Public Shared Function GetDriverTruckfromRMTOAndInsertUpdateLocalDataBaseByNationalCode(YourNationalCode As String) As R2StandardDriverTruckStructure
+        'BPTChanged
+        Public Shared Function GetDriverTruckfromRMTOAndInsertUpdateLocalDataBaseByNationalCode(YourNationalCode As String) As R2CoreTransportationAndLoadNotificationTruckDriver
             Try
+                Dim InstanceDrivers = New R2CoreParkingSystem.Drivers.R2CoreParkingSystemInstanceDriversManager
                 Dim NSS = PayanehClassLibraryMClassDriverTrucksManagement.GetNSSTruckDriver(RmtoWebService.GetNSSTruckDriver(YourNationalCode))
                 If IsExistDriverTruckByNationalCode(NSS.NSSDriver.StrNationalCode) = True Then
                     Dim nIdPerson As Int64 = GetNSSDriverTruckbyNationalCode(NSS.NSSDriver.StrNationalCode).NSSDriver.nIdPerson
                     NSS.NSSDriver.nIdPerson = nIdPerson
                     NSS.NSSDriver.StrIdNo = IIf(GetNSSDriverTruckbyNationalCode(NSS.NSSDriver.StrNationalCode).NSSDriver.StrIdNo = String.Empty, "09130000000", GetNSSDriverTruckbyNationalCode(NSS.NSSDriver.StrNationalCode).NSSDriver.StrIdNo)
-                    R2CoreParkingSystemMClassDrivers.UpdateDriver(NSS.NSSDriver, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser)
+                    InstanceDrivers.UpdateDriver(NSS.NSSDriver)
                     PayanehClassLibraryMClassDriverTrucksManagement.UpdateDriverTruck(NSS)
                 Else
                     If NSS.NSSDriver.StrIdNo = String.Empty Then NSS.NSSDriver.StrIdNo = "09130000000"
-                    Dim nIdPerson As Int64 = R2CoreParkingSystemMClassDrivers.InsertDriver(NSS.NSSDriver, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser)
+                    Dim nIdPerson As Int64 = InstanceDrivers.InsertDriver(NSS.NSSDriver)
                     NSS.NSSDriver.nIdPerson = nIdPerson
                     PayanehClassLibraryMClassDriverTrucksManagement.UpdateDriverTruck(NSS)
                 End If
-                Return GetNSSDriverTruckbyNationalCode(YourNationalCode)
+                Return New R2CoreTransportationAndLoadNotificationTruckDriver With {.DriverId = NSS.NSSDriver.nIdPerson, .NameFamily = NSS.NSSDriver.StrPersonFullName, .NationalCode = NSS.NSSDriver.StrNationalCode, .MobileNumber = NSS.NSSDriver.StrIdNo, .FatherName = NSS.NSSDriver.StrFatherName, .DrivingLicenceNo = NSS.NSSDriver.strDrivingLicenceNo, .Address = NSS.NSSDriver.StrAddress, .SmartCardNo = NSS.StrSmartCardNo}
             Catch ex As Exception When TypeOf ex Is InternetIsnotAvailableException OrElse
                                        TypeOf ex Is RMTOWebServiceSmartCardInvalidException OrElse
                                        TypeOf ex Is ConnectionIsNotAvailableException OrElse
                                        TypeOf ex Is SoftwareUserMobileNumberAlreadyExistException
+                Throw ex
+            Catch ex As RMTOSmartCardSiteIsNotAvailableException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
