@@ -6,5 +6,5 @@
     cause the file to be unrecognizable by the program.
 -->
 <GenericObjectDataSource DisplayName="R2CoreTransportationAndLoadNotificationTruckDriver" Version="1.0" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
-   <TypeInfo>UnitTestR2Core.Payanehwebservice.R2CoreTransportationAndLoadNotificationTruckDriver, Web References.Payanehwebservice.Reference.cs.dll, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</TypeInfo>
+   <TypeInfo>UnitTestR2Core.PayanehWebService.R2CoreTransportationAndLoadNotificationTruckDriver, Web References.PayanehWebService.Reference.cs.dll, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</TypeInfo>
 </GenericObjectDataSource>

@@ -2056,7 +2056,13 @@ Namespace PredefinedMessagesManagement
         Public Shared ReadOnly SoftWareUserPasswordExpired As Int64 = 12
         Public Shared ReadOnly VerificationCodeExpired As Int64 = 13
         Public Shared ReadOnly PersonalNonceExpired As Int64 = 14
-
+        Public Shared ReadOnly EditingSoftWareUserSuccessed As Int64 = 18
+        Public Shared ReadOnly ActivateSMSOwnerSuccessed As Int64 = 19
+        Public Shared ReadOnly SendWebSiteLink As Int64 = 20
+        Public Shared ReadOnly ChangeSoftwareUserWebProcessGroupAccessSuccessed As Int64 = 21
+        Public Shared ReadOnly ChangeSoftwareUserWebProcessAccess As Int64 = 22
+        Public Shared ReadOnly RegisteringInformationSuccessed As Int64 = 23
+        Public Shared ReadOnly ProcessSuccessed As Int64 = 24
 
 
     End Class
@@ -2449,6 +2455,11 @@ Namespace EntityRelationManagement
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 Return ERIdNew
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
             Catch ex As Exception
                 If CmdSql.Connection.State <> ConnectionState.Closed Then
                     CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
@@ -2811,19 +2822,19 @@ Namespace WebProcessesManagement
     End Class
 
     Public Class R2CoreWP
-        Public WPId As Int64
-        Public WPTitle As String
-        Public WDescription As String
-        Public WPIconName As String
-        Public WPAccess As Boolean
+        Public PId As Int64
+        Public PTitle As String
+        Public Description As String
+        Public PIconName As String
+        Public PAccess As Boolean
     End Class
 
     Public Class R2CoreWPG
-        Public WPGId As Int64
-        Public WPGTitle As String
-        Public WPGIconName As String
-        Public WPs As List(Of R2CoreWP)
-        Public WPGAccess As Boolean
+        Public PGId As Int64
+        Public PGTitle As String
+        Public PGIconName As String
+        Public WebProcesses As List(Of R2CoreWP)
+        Public PGAccess As Boolean
     End Class
 
     Public Class R2CoreWebProcessesManager
@@ -2869,28 +2880,28 @@ Namespace WebProcessesManagement
                   Where WebProcessGroups.ViewFlag=1 and  WebProcessGroups.Active=1 and WebProcessGroups.Deleted=0 and
    	                 WebProcessGroupWebProcess.ERTypeId=" & R2CoreEntityRelationTypes.WebProcessGroup_WebProcess & " and WebProcessGroupWebProcess.RelationActive=1 and
 	                 WebProcesses.Active=1 and WebProcesses.ViewFlag=1 and WebProcesses.Deleted=0 
-                     Order By WebProcessGroups.PGId,WebProcesses.PId", 3600, Ds, New Boolean).GetRecordsCount <> 0 Then
+                     Order By WebProcessGroups.PGId,WebProcesses.PId", 0, Ds, New Boolean).GetRecordsCount <> 0 Then
                     Dim LstWPG = New List(Of R2CoreWPG)
                     Dim Index As Int64 = 0
                     While Index <= Ds.Tables(0).Rows.Count - 1
                         Dim WPG = New R2CoreWPG
-                        WPG.WPGId = Ds.Tables(0).Rows(Index).Item("PGId")
-                        WPG.WPGTitle = Ds.Tables(0).Rows(Index).Item("PGTitle")
-                        WPG.WPGIconName = Ds.Tables(0).Rows(Index).Item("PGIconName")
-                        WPG.WPGAccess = InstanceSoftwareUsers.GetSoftwareUserWebProcessGroupAccess(YourSoftwareUserId, WPG.WPGId)
+                        WPG.PGId = Ds.Tables(0).Rows(Index).Item("PGId")
+                        WPG.PGTitle = Ds.Tables(0).Rows(Index).Item("PGTitle")
+                        WPG.PGIconName = Ds.Tables(0).Rows(Index).Item("PGIconName")
+                        WPG.PGAccess = InstanceSoftwareUsers.GetSoftwareUserWebProcessGroupAccess(YourSoftwareUserId, WPG.PGId)
                         Dim LstWP = New List(Of R2CoreWP)
-                        While WPG.WPGId = Ds.Tables(0).Rows(Index).Item("PGId")
+                        While WPG.PGId = Ds.Tables(0).Rows(Index).Item("PGId")
                             Dim WP = New R2CoreWP
-                            WP.WPId = Ds.Tables(0).Rows(Index).Item("PId")
-                            WP.WPTitle = Ds.Tables(0).Rows(Index).Item("PTitle")
-                            WP.WDescription = Ds.Tables(0).Rows(Index).Item("Description")
-                            WP.WPIconName = Ds.Tables(0).Rows(Index).Item("PIconName")
-                            WP.WPAccess = InstanceSoftwareUsers.GetSoftwareUserWebProcessAccess(YourSoftwareUserId, WP.WPId)
+                            WP.PId = Ds.Tables(0).Rows(Index).Item("PId")
+                            WP.PTitle = Ds.Tables(0).Rows(Index).Item("PTitle")
+                            WP.Description = Ds.Tables(0).Rows(Index).Item("Description")
+                            WP.PIconName = Ds.Tables(0).Rows(Index).Item("PIconName")
+                            WP.PAccess = InstanceSoftwareUsers.GetSoftwareUserWebProcessAccess(YourSoftwareUserId, WP.PId)
                             LstWP.Add(WP)
                             Index += 1
                             If Index > Ds.Tables(0).Rows.Count - 1 Then Exit While
                         End While
-                        WPG.WPs = LstWP
+                        WPG.WebProcesses = LstWP
                         LstWPG.Add(WPG)
                     End While
                     Return JsonConvert.SerializeObject(LstWPG)
@@ -3654,6 +3665,12 @@ End Namespace
 Namespace MoneyWallet
 
     Namespace MoneyWallet
+        'BPTChanged
+        Public Class R2CoreMoneyWallet
+            Public MoneyWalletId As Int64
+            Public MoneyWalletCode As String
+            Public Balance As Int64
+        End Class
 
         Public Class R2CoreStandardMoneyWalletStructure
             Inherits R2StandardStructure

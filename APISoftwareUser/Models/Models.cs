@@ -36,16 +36,16 @@ namespace APISoftwareUser.Models
     {
         public String SessionId;
         public Int64 SoftwareUserId;
-        public Int64 WPGId;
-        public bool WPGAccess;
+        public Int64 PGId;
+        public bool PGAccess;
     }
 
     public class APISoftwareUserSessionIdSoftwareUserIdWPId
     {
         public String SessionId;
         public Int64 SoftwareUserId;
-        public Int64 WPId;
-        public bool WPAccess;
+        public Int64 PId;
+        public bool PAccess;
     }
 
     public class APISoftwareUserSessionIdSoftwareUserMobileNumber

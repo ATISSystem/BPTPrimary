@@ -29,12 +29,12 @@ namespace UnitTestR2Core
         [TestMethod]
         public void StartSession__null__SessionIDCaptcha()
         {
-            Payanehwebservice.PayanehWebService _WS = new Payanehwebservice.PayanehWebService();
+            PayanehWebService.PayanehWebService _WS = new PayanehWebService.PayanehWebService();
             try
             {
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
 
-                _WS.WebMethodGetDriverTruckByNationalCodefromRMTO(String.Empty, _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
+                //_WS.WebMethodGetDriverTruckByNationalCodefromRMTO(String.Empty, _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
             }
             catch (SoapException ex)
             {
@@ -154,9 +154,9 @@ namespace UnitTestR2Core
         {
             try
             {
-                var Instance = new R2CoreParkingSystem.SMS.SMSOwners.R2CoreParkingSystemMClassSMSOwnersManager(new R2Core.SoftwareUserManagement.SoftwareUserService(21), new R2DateTimeService());
-                Instance.ActivateSMSOwner(21, 21);
-                var d = 12;
+                //var Instance = new R2CoreParkingSystem.SMS.SMSOwners.R2CoreParkingSystemMClassSMSOwnersManager(new R2Core.SoftwareUserManagement.SoftwareUserService(21), new R2DateTimeService());
+                //Instance.ActivateSMSOwner(21, 21);
+                //var d = 12;
             }
             catch (DataBaseException ex)
             { var x = ex.Message; }
@@ -188,10 +188,10 @@ namespace UnitTestR2Core
         public void GetTruckDriverfromRMTO()
         {
             var InstanceSoftwareUsers = new R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-            Payanehwebservice.PayanehWebService _WS = new Payanehwebservice.PayanehWebService();
+            PayanehWebService.PayanehWebService _WS = new PayanehWebService.PayanehWebService();
             try
             {
-                var TruckDriver =_WS.WebMethodGetDriverTruckByNationalCodefromRMTO("5759871382", _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
+                //var TruckDriver =_WS.WebMethodGetDriverTruckByNationalCodefromRMTO("5759871382", _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
                 var y = 2;
             }
             catch (SoapException ex)

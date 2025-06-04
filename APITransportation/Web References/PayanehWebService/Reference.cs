@@ -74,11 +74,11 @@ namespace APITransportation.PayanehWebService {
         
         private System.Threading.SendOrPostCallback WebMethodCarTruckHasTurnOperationCompleted;
         
-        private System.Threading.SendOrPostCallback WebMethodGetnIdCarTruckBySmartCarNoOperationCompleted;
-        
         private System.Threading.SendOrPostCallback WebMethodISCompanyActiveOperationCompleted;
         
-        private System.Threading.SendOrPostCallback WebMethodGetDriverTruckByNationalCodefromRMTOOperationCompleted;
+        private System.Threading.SendOrPostCallback WebMethodGetTruckDriverByNationalCodefromRMTOOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback WebMethodGetTruckBySmartCarNofromRMTOOperationCompleted;
         
         private bool useDefaultCredentialsSetExplicitly;
         
@@ -185,13 +185,13 @@ namespace APITransportation.PayanehWebService {
         public event WebMethodCarTruckHasTurnCompletedEventHandler WebMethodCarTruckHasTurnCompleted;
         
         /// <remarks/>
-        public event WebMethodGetnIdCarTruckBySmartCarNoCompletedEventHandler WebMethodGetnIdCarTruckBySmartCarNoCompleted;
-        
-        /// <remarks/>
         public event WebMethodISCompanyActiveCompletedEventHandler WebMethodISCompanyActiveCompleted;
         
         /// <remarks/>
-        public event WebMethodGetDriverTruckByNationalCodefromRMTOCompletedEventHandler WebMethodGetDriverTruckByNationalCodefromRMTOCompleted;
+        public event WebMethodGetTruckDriverByNationalCodefromRMTOCompletedEventHandler WebMethodGetTruckDriverByNationalCodefromRMTOCompleted;
+        
+        /// <remarks/>
+        public event WebMethodGetTruckBySmartCarNofromRMTOCompletedEventHandler WebMethodGetTruckBySmartCarNofromRMTOCompleted;
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodLogin", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
@@ -1056,37 +1056,6 @@ namespace APITransportation.PayanehWebService {
         }
         
         /// <remarks/>
-        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodGetnIdCarTruckBySmartCarNo", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public long WebMethodGetnIdCarTruckBySmartCarNo(string YourSmartCardNo, long YourExchangeKey) {
-            object[] results = this.Invoke("WebMethodGetnIdCarTruckBySmartCarNo", new object[] {
-                        YourSmartCardNo,
-                        YourExchangeKey});
-            return ((long)(results[0]));
-        }
-        
-        /// <remarks/>
-        public void WebMethodGetnIdCarTruckBySmartCarNoAsync(string YourSmartCardNo, long YourExchangeKey) {
-            this.WebMethodGetnIdCarTruckBySmartCarNoAsync(YourSmartCardNo, YourExchangeKey, null);
-        }
-        
-        /// <remarks/>
-        public void WebMethodGetnIdCarTruckBySmartCarNoAsync(string YourSmartCardNo, long YourExchangeKey, object userState) {
-            if ((this.WebMethodGetnIdCarTruckBySmartCarNoOperationCompleted == null)) {
-                this.WebMethodGetnIdCarTruckBySmartCarNoOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodGetnIdCarTruckBySmartCarNoOperationCompleted);
-            }
-            this.InvokeAsync("WebMethodGetnIdCarTruckBySmartCarNo", new object[] {
-                        YourSmartCardNo,
-                        YourExchangeKey}, this.WebMethodGetnIdCarTruckBySmartCarNoOperationCompleted, userState);
-        }
-        
-        private void OnWebMethodGetnIdCarTruckBySmartCarNoOperationCompleted(object arg) {
-            if ((this.WebMethodGetnIdCarTruckBySmartCarNoCompleted != null)) {
-                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
-                this.WebMethodGetnIdCarTruckBySmartCarNoCompleted(this, new WebMethodGetnIdCarTruckBySmartCarNoCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
-            }
-        }
-        
-        /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodISCompanyActive", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
         public bool WebMethodISCompanyActive(long YourCompanyCode, long YourExchangeKey) {
             object[] results = this.Invoke("WebMethodISCompanyActive", new object[] {
@@ -1118,33 +1087,64 @@ namespace APITransportation.PayanehWebService {
         }
         
         /// <remarks/>
-        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodGetDriverTruckByNationalCodefromRMTO", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public R2CoreTransportationAndLoadNotificationTruckDriver WebMethodGetDriverTruckByNationalCodefromRMTO(string YourNationalCode, long YourExchangeKey) {
-            object[] results = this.Invoke("WebMethodGetDriverTruckByNationalCodefromRMTO", new object[] {
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodGetTruckDriverByNationalCodefromRMTO", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public R2CoreTransportationAndLoadNotificationTruckDriver WebMethodGetTruckDriverByNationalCodefromRMTO(string YourNationalCode, long YourExchangeKey) {
+            object[] results = this.Invoke("WebMethodGetTruckDriverByNationalCodefromRMTO", new object[] {
                         YourNationalCode,
                         YourExchangeKey});
             return ((R2CoreTransportationAndLoadNotificationTruckDriver)(results[0]));
         }
         
         /// <remarks/>
-        public void WebMethodGetDriverTruckByNationalCodefromRMTOAsync(string YourNationalCode, long YourExchangeKey) {
-            this.WebMethodGetDriverTruckByNationalCodefromRMTOAsync(YourNationalCode, YourExchangeKey, null);
+        public void WebMethodGetTruckDriverByNationalCodefromRMTOAsync(string YourNationalCode, long YourExchangeKey) {
+            this.WebMethodGetTruckDriverByNationalCodefromRMTOAsync(YourNationalCode, YourExchangeKey, null);
         }
         
         /// <remarks/>
-        public void WebMethodGetDriverTruckByNationalCodefromRMTOAsync(string YourNationalCode, long YourExchangeKey, object userState) {
-            if ((this.WebMethodGetDriverTruckByNationalCodefromRMTOOperationCompleted == null)) {
-                this.WebMethodGetDriverTruckByNationalCodefromRMTOOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodGetDriverTruckByNationalCodefromRMTOOperationCompleted);
+        public void WebMethodGetTruckDriverByNationalCodefromRMTOAsync(string YourNationalCode, long YourExchangeKey, object userState) {
+            if ((this.WebMethodGetTruckDriverByNationalCodefromRMTOOperationCompleted == null)) {
+                this.WebMethodGetTruckDriverByNationalCodefromRMTOOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodGetTruckDriverByNationalCodefromRMTOOperationCompleted);
             }
-            this.InvokeAsync("WebMethodGetDriverTruckByNationalCodefromRMTO", new object[] {
+            this.InvokeAsync("WebMethodGetTruckDriverByNationalCodefromRMTO", new object[] {
                         YourNationalCode,
-                        YourExchangeKey}, this.WebMethodGetDriverTruckByNationalCodefromRMTOOperationCompleted, userState);
+                        YourExchangeKey}, this.WebMethodGetTruckDriverByNationalCodefromRMTOOperationCompleted, userState);
         }
         
-        private void OnWebMethodGetDriverTruckByNationalCodefromRMTOOperationCompleted(object arg) {
-            if ((this.WebMethodGetDriverTruckByNationalCodefromRMTOCompleted != null)) {
+        private void OnWebMethodGetTruckDriverByNationalCodefromRMTOOperationCompleted(object arg) {
+            if ((this.WebMethodGetTruckDriverByNationalCodefromRMTOCompleted != null)) {
                 System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
-                this.WebMethodGetDriverTruckByNationalCodefromRMTOCompleted(this, new WebMethodGetDriverTruckByNationalCodefromRMTOCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+                this.WebMethodGetTruckDriverByNationalCodefromRMTOCompleted(this, new WebMethodGetTruckDriverByNationalCodefromRMTOCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodGetTruckBySmartCarNofromRMTO", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public R2CoreTransportationAndLoadNotificationTruck WebMethodGetTruckBySmartCarNofromRMTO(string YourSmartCardNo, long YourExchangeKey) {
+            object[] results = this.Invoke("WebMethodGetTruckBySmartCarNofromRMTO", new object[] {
+                        YourSmartCardNo,
+                        YourExchangeKey});
+            return ((R2CoreTransportationAndLoadNotificationTruck)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void WebMethodGetTruckBySmartCarNofromRMTOAsync(string YourSmartCardNo, long YourExchangeKey) {
+            this.WebMethodGetTruckBySmartCarNofromRMTOAsync(YourSmartCardNo, YourExchangeKey, null);
+        }
+        
+        /// <remarks/>
+        public void WebMethodGetTruckBySmartCarNofromRMTOAsync(string YourSmartCardNo, long YourExchangeKey, object userState) {
+            if ((this.WebMethodGetTruckBySmartCarNofromRMTOOperationCompleted == null)) {
+                this.WebMethodGetTruckBySmartCarNofromRMTOOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodGetTruckBySmartCarNofromRMTOOperationCompleted);
+            }
+            this.InvokeAsync("WebMethodGetTruckBySmartCarNofromRMTO", new object[] {
+                        YourSmartCardNo,
+                        YourExchangeKey}, this.WebMethodGetTruckBySmartCarNofromRMTOOperationCompleted, userState);
+        }
+        
+        private void OnWebMethodGetTruckBySmartCarNofromRMTOOperationCompleted(object arg) {
+            if ((this.WebMethodGetTruckBySmartCarNofromRMTOCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.WebMethodGetTruckBySmartCarNofromRMTOCompleted(this, new WebMethodGetTruckBySmartCarNofromRMTOCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
             }
         }
         
@@ -1258,6 +1258,75 @@ namespace APITransportation.PayanehWebService {
             }
             set {
                 this.addressField = value;
+            }
+        }
+        
+        /// <remarks/>
+        public string SmartCardNo {
+            get {
+                return this.smartCardNoField;
+            }
+            set {
+                this.smartCardNoField = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.8.9037.0")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://tempuri.org/")]
+    public partial class R2CoreTransportationAndLoadNotificationTruck {
+        
+        private long truckIdField;
+        
+        private long loaderTypeIdField;
+        
+        private string pelakField;
+        
+        private string serialField;
+        
+        private string smartCardNoField;
+        
+        /// <remarks/>
+        public long TruckId {
+            get {
+                return this.truckIdField;
+            }
+            set {
+                this.truckIdField = value;
+            }
+        }
+        
+        /// <remarks/>
+        public long LoaderTypeId {
+            get {
+                return this.loaderTypeIdField;
+            }
+            set {
+                this.loaderTypeIdField = value;
+            }
+        }
+        
+        /// <remarks/>
+        public string Pelak {
+            get {
+                return this.pelakField;
+            }
+            set {
+                this.pelakField = value;
+            }
+        }
+        
+        /// <remarks/>
+        public string Serial {
+            get {
+                return this.serialField;
+            }
+            set {
+                this.serialField = value;
             }
         }
         
@@ -1428,32 +1497,6 @@ namespace APITransportation.PayanehWebService {
     
     /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")]
-    public delegate void WebMethodGetnIdCarTruckBySmartCarNoCompletedEventHandler(object sender, WebMethodGetnIdCarTruckBySmartCarNoCompletedEventArgs e);
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    public partial class WebMethodGetnIdCarTruckBySmartCarNoCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
-        
-        private object[] results;
-        
-        internal WebMethodGetnIdCarTruckBySmartCarNoCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
-                base(exception, cancelled, userState) {
-            this.results = results;
-        }
-        
-        /// <remarks/>
-        public long Result {
-            get {
-                this.RaiseExceptionIfNecessary();
-                return ((long)(this.results[0]));
-            }
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")]
     public delegate void WebMethodISCompanyActiveCompletedEventHandler(object sender, WebMethodISCompanyActiveCompletedEventArgs e);
     
     /// <remarks/>
@@ -1480,17 +1523,17 @@ namespace APITransportation.PayanehWebService {
     
     /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")]
-    public delegate void WebMethodGetDriverTruckByNationalCodefromRMTOCompletedEventHandler(object sender, WebMethodGetDriverTruckByNationalCodefromRMTOCompletedEventArgs e);
+    public delegate void WebMethodGetTruckDriverByNationalCodefromRMTOCompletedEventHandler(object sender, WebMethodGetTruckDriverByNationalCodefromRMTOCompletedEventArgs e);
     
     /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    public partial class WebMethodGetDriverTruckByNationalCodefromRMTOCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+    public partial class WebMethodGetTruckDriverByNationalCodefromRMTOCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
         
         private object[] results;
         
-        internal WebMethodGetDriverTruckByNationalCodefromRMTOCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+        internal WebMethodGetTruckDriverByNationalCodefromRMTOCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
                 base(exception, cancelled, userState) {
             this.results = results;
         }
@@ -1500,6 +1543,32 @@ namespace APITransportation.PayanehWebService {
             get {
                 this.RaiseExceptionIfNecessary();
                 return ((R2CoreTransportationAndLoadNotificationTruckDriver)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")]
+    public delegate void WebMethodGetTruckBySmartCarNofromRMTOCompletedEventHandler(object sender, WebMethodGetTruckBySmartCarNofromRMTOCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class WebMethodGetTruckBySmartCarNofromRMTOCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal WebMethodGetTruckBySmartCarNofromRMTOCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public R2CoreTransportationAndLoadNotificationTruck Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((R2CoreTransportationAndLoadNotificationTruck)(this.results[0]));
             }
         }
     }

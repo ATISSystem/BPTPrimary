@@ -1491,6 +1491,7 @@ Namespace SoftwareUserManagement
         Public MobileNumber As String
         Public UserTypeId As Int64
         Public UserActive As Boolean
+        Public SMSOwnerActive As Boolean
     End Class
 
     Public Class R2CoreSoftWareUserSecurity
@@ -1572,7 +1573,7 @@ Namespace SoftwareUserManagement
                 Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
                 InstanceEVA.ValidationMobileNumber(YourSoftWareUserMobile.SoftwareUserMobileNumber)
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 * from R2Primary.dbo.TblSoftwareUsers Where MobileNumber='" & YourSoftWareUserMobile.SoftwareUserMobileNumber & "' Order By UserId Desc", 32000, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 * from R2Primary.dbo.TblSoftwareUsers Where MobileNumber='" & YourSoftWareUserMobile.SoftwareUserMobileNumber & "' Order By UserId Desc", 0, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New UserNotExistByMobileNumberException
                 End If
                 Return New R2CoreStandardSoftwareUserStructure(Ds.Tables(0).Rows(0).Item("UserId"), Ds.Tables(0).Rows(0).Item("ApiKey").trim, Ds.Tables(0).Rows(0).Item("APIKeyExpiration"), Ds.Tables(0).Rows(0).Item("UserName").trim, Ds.Tables(0).Rows(0).Item("UserShenaseh").trim, Ds.Tables(0).Rows(0).Item("UserPassword").trim, Ds.Tables(0).Rows(0).Item("UserPasswordExpiration"), Ds.Tables(0).Rows(0).Item("UserPinCode").trim, Ds.Tables(0).Rows(0).Item("UserCanCharge"), Ds.Tables(0).Rows(0).Item("UserActive"), Ds.Tables(0).Rows(0).Item("UserTypeId"), Ds.Tables(0).Rows(0).Item("MobileNumber").trim, Ds.Tables(0).Rows(0).Item("UserStatus").trim, Ds.Tables(0).Rows(0).Item("VerificationCode").trim, Ds.Tables(0).Rows(0).Item("VerificationCodeTimeStamp"), Ds.Tables(0).Rows(0).Item("VerificationCodeCount"), Ds.Tables(0).Rows(0).Item("Nonce").trim, Ds.Tables(0).Rows(0).Item("NonceTimeStamp"), Ds.Tables(0).Rows(0).Item("NonceCount"), Ds.Tables(0).Rows(0).Item("PersonalNonce").trim, Ds.Tables(0).Rows(0).Item("PersonalNonceTimeStamp"), Ds.Tables(0).Rows(0).Item("Captcha").trim, Ds.Tables(0).Rows(0).Item("CaptchaValid"), Ds.Tables(0).Rows(0).Item("UserCreatorId"), Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi").trim, Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Deleted"))
@@ -2078,6 +2079,9 @@ Namespace SoftwareUserManagement
                 End If
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
                 Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As Exception
                 If CmdSql.Connection.State <> ConnectionState.Closed Then
@@ -2093,9 +2097,11 @@ Namespace SoftwareUserManagement
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Update R2Primary.dbo.TblSoftwareUsers Set UserName='" & YourRawSoftwareUser.UserName & "',MobileNumber='" & YourRawSoftwareUser.MobileNumber & "',UserTypeId=" & YourRawSoftwareUser.UserTypeId & ",UserActive=" & YourRawSoftwareUser.UserActive & " Where UserId=" & YourRawSoftwareUser.UserId & ""
+                CmdSql.CommandText = "Update R2Primary.dbo.TblSoftwareUsers Set UserName='" & YourRawSoftwareUser.UserName & "',MobileNumber='" & YourRawSoftwareUser.MobileNumber & "',UserTypeId=" & YourRawSoftwareUser.UserTypeId & ",UserActive=" & IIf(YourRawSoftwareUser.UserActive, 1, 0) & " Where UserId=" & YourRawSoftwareUser.UserId & ""
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            Catch ex As SqlException
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As Exception
                 If CmdSql.Connection.State <> ConnectionState.Closed Then
                     CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
@@ -2557,6 +2563,14 @@ Namespace SoftwareUserManagement
 
     Namespace Exceptions
 
+        Public Class SoftwareUserMobileNumberBelongsToSomeoneElseException
+            Inherits ApplicationException
+            Public Overrides ReadOnly Property Message As String
+                Get
+                    Return "شماره موبایل متعلق به دیگری است و مجاز نیست"
+                End Get
+            End Property
+        End Class
         Public Class SoftwareUserMobileNumberAlreadyExistException
             Inherits ApplicationException
             Public Overrides ReadOnly Property Message As String
@@ -4785,7 +4799,7 @@ Namespace ExceptionManagement
         Inherits ApplicationException
         Public Overrides ReadOnly Property Message As String
             Get
-                Return "اطلاعات مورد نظر یافت نشد"
+                Return "داده های مورد نظر یافت نشد"
             End Get
         End Property
     End Class

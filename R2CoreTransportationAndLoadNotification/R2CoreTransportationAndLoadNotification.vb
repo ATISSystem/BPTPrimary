@@ -95,6 +95,7 @@ Imports R2CoreTransportationAndLoadNotification.Goods
 Imports R2CoreTransportationAndLoadNotification.TrucksNativeness.Exceptions
 Imports R2Core.SMS.SMSHandling
 Imports R2CoreTransportationAndLoadNotification.LoadSources
+Imports System.Net
 
 Namespace Rmto
     Public MustInherit Class RmtoWebService
@@ -139,10 +140,10 @@ Namespace Rmto
                     Result = Service.RMTO_WEB_SERVICES(YourDFP, "", "", "", "", "", "", "", "", "", "2043148", 6, "Biinfo878").Split(";")
                     'Return Service.RMTO_WEB_SERVICES("Biinfo878", 6, "2043148", "", "", "", "", "", "", "", "", "", YourDFP).Split(";")
                 Else
-                    Throw New RMTOSmartCardSiteIsNotAvailableException
+                    Throw New RMTOWebServiceSmartCardInvalidException
                 End If
                 If Result(0) = "-1" Then
-                    Throw New RMTOSmartCardSiteIsNotAvailableException
+                    Throw New RMTOWebServiceSmartCardInvalidException
                 End If
                 Return Result
 
@@ -150,10 +151,12 @@ Namespace Rmto
                 Throw ex
             Catch ex As InternetIsnotAvailableException
                 Throw ex
-            Catch ex As RMTOSmartCardSiteIsNotAvailableException
+            Catch ex As RMTOWebServiceSmartCardInvalidException
+                Throw ex
+            Catch ex As WebException
                 Throw ex
             Catch ex As Exception
-                Throw New RMTOSmartCardSiteIsNotAvailableException
+                Throw ex
             End Try
         End Function
 
@@ -172,7 +175,13 @@ Namespace Rmto
                 Throw ex
             Catch ex As InternetIsnotAvailableException
                 Throw ex
-            Catch ex As RMTOSmartCardSiteIsNotAvailableException
+            Catch ex As RMTOWebServiceSmartCardInvalidException
+                Throw ex
+            Catch ex As GetDataException
+                Throw ex
+            Catch ex As GetNSSException
+                Throw ex
+            Catch ex As WebException
                 Throw ex
             Catch ex As Exception
                 Throw ex
@@ -188,10 +197,12 @@ Namespace Rmto
                 Throw ex
             Catch ex As InternetIsnotAvailableException
                 Throw ex
-            Catch ex As RMTOSmartCardSiteIsNotAvailableException
+            Catch ex As RMTOWebServiceSmartCardInvalidException
+                Throw ex
+            Catch ex As WebException
                 Throw ex
             Catch ex As Exception
-                Throw New RMTOWebServiceSmartCardInvalidException
+                Throw ex
             End Try
         End Function
 
@@ -210,10 +221,16 @@ Namespace Rmto
                 Throw ex
             Catch ex As InternetIsnotAvailableException
                 Throw ex
-            Catch ex As RMTOSmartCardSiteIsNotAvailableException
+            Catch ex As RMTOWebServiceSmartCardInvalidException
+                Throw ex
+            Catch ex As WebException
+                Throw ex
+            Catch ex As GetDataException
+                Throw ex
+            Catch ex As GetNSSException
                 Throw ex
             Catch ex As Exception
-                Throw New RMTOWebServiceSmartCardInvalidException
+                Throw ex
             End Try
         End Function
 
@@ -226,10 +243,12 @@ Namespace Rmto
                 Throw ex
             Catch ex As InternetIsnotAvailableException
                 Throw ex
-            Catch ex As RMTOSmartCardSiteIsNotAvailableException
+            Catch ex As RMTOWebServiceSmartCardInvalidException
+                Throw ex
+            Catch ex As WebException
                 Throw ex
             Catch ex As Exception
-                Throw New RMTOWebServiceSmartCardInvalidException
+                Throw ex
             End Try
         End Function
 
@@ -249,6 +268,8 @@ Namespace Rmto
             Catch ex As ConnectionIsNotAvailableException
                 Throw ex
             Catch ex As InternetIsnotAvailableException
+                Throw ex
+            Catch ex As WebException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -1220,6 +1241,20 @@ Namespace Turns
 
     End Class
 
+    'BPTChanged
+    Public Class R2CoreTransportationAndLoadNotificationTurn
+        Public Property nEnterExitId As Int64
+        Public Property TruckId As Int64
+        Public Property LicensePlate As String
+        Public Property EnterDate As String
+        Public Property EnterTime As String
+        Public Property TruckDriver As String
+        Public Property UserName As String
+        Public Property BillOfLadingNumber As String
+        Public Property OtaghdarTurnNumber As String
+        Public Property TurnStatusTitle As String
+    End Class
+
     Public Class R2CoreTransportationAndLoadNotificationInstanceTurnsManager
         Private _DateTime As New R2DateTime
 
@@ -1494,41 +1529,6 @@ Namespace Turns
             End Try
         End Function
 
-        Public Function GetNSSTurn(YourTurnId As Int64) As R2CoreTransportationAndLoadNotificationStandardTurnStructure
-            Try
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
-                         "Select Users.UserName,TurnStatus.TurnStatusTitle,Person.strPersonFullName,Car.strCarNo+'-'+car.strCarSerialNo as LPString, EnterExit.nEnterExitId,EnterExit.strEnterDate,EnterExit.strEnterTime,EnterExit.nDriverCode,EnterExit.bFlagDriver,EnterExit.nUserIdEnter,EnterExit.OtaghdarTurnNumber,EnterExit.strCardno,EnterExit.TurnStatus,EnterExit.RegisteringTimeStamp
-                            from dbtransport.dbo.tbEnterExit as EnterExit 
-                               Inner Join dbtransport.dbo.TbCar as Car On EnterExit.strCardno=Car.nIDCar
-                               Inner Join dbtransport.dbo.TbPerson as Person On EnterExit.nDriverCode=Person.nIDPerson
-                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTurnStatuses as TurnStatus On EnterExit.TurnStatus=TurnStatus.TurnStatusId
-                               Inner Join R2Primary.DBO.TblSoftwareUsers AS Users On EnterExit.nUserIdEnter=Users.UserId Where EnterExit.nEnterExitId=" & YourTurnId & "", 0, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnNotFoundException
-                Dim NSS As R2CoreTransportationAndLoadNotificationStandardTurnExtendedStructure = New R2CoreTransportationAndLoadNotificationStandardTurnExtendedStructure
-                NSS.nEnterExitId = Ds.Tables(0).Rows(0).Item("nEnterExitId")
-                NSS.EnterDate = Ds.Tables(0).Rows(0).Item("StrEnterDate")
-                NSS.EnterTime = Ds.Tables(0).Rows(0).Item("StrEnterTime")
-                Dim InstanceTruckDriver = New R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager
-                NSS.NSSTruckDriver = InstanceTruckDriver.GetNSSTruckDriver(Convert.ToInt64(Ds.Tables(0).Rows(0).Item("nDriverCode")), False)
-                NSS.bFlagDriver = Ds.Tables(0).Rows(0).Item("bFlagDriver")
-                NSS.nUserIdEnter = Ds.Tables(0).Rows(0).Item("nUserIdEnter")
-                NSS.OtaghdarTurnNumber = Ds.Tables(0).Rows(0).Item("OtaghdarTurnNumber")
-                NSS.StrCardNo = Ds.Tables(0).Rows(0).Item("StrCardNo")
-                NSS.TurnStatus = Ds.Tables(0).Rows(0).Item("TurnStatus")
-                NSS.LicensePlatePString = Ds.Tables(0).Rows(0).Item("LPString").trim
-                NSS.TruckDriver = Ds.Tables(0).Rows(0).Item("strPersonFullName").trim
-                NSS.TurnStatusTitle = Ds.Tables(0).Rows(0).Item("TurnStatusTitle").trim
-                NSS.UserName = Ds.Tables(0).Rows(0).Item("Username").trim
-                NSS.RegisteringTimeStamp = Ds.Tables(0).Rows(0).Item("RegisteringTimeStamp")
-                Return NSS
-            Catch exx As TurnNotFoundException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
         Public Function IsTurnReadeyforLoadAllocationRegistering(YourNSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure) As Boolean
             Try
                 Return IsTurnReadeyforLoadAllocationRegistering_(YourNSSTurn)
@@ -1794,6 +1794,68 @@ Namespace Turns
                 Dim InstanceSoftwareUsers = New R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 Return InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(Ds.Tables(0).Rows(0).Item("UserId")))
             Catch ex As SoftWareUserNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetNSSTurn(YourTurnId As Int64) As R2CoreTransportationAndLoadNotificationStandardTurnStructure
+            Try
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim Ds As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                         "Select Users.UserName,TurnStatus.TurnStatusTitle,Person.strPersonFullName,Car.strCarNo+'-'+car.strCarSerialNo as LPString, EnterExit.nEnterExitId,EnterExit.strEnterDate,EnterExit.strEnterTime,EnterExit.nDriverCode,EnterExit.bFlagDriver,EnterExit.nUserIdEnter,EnterExit.OtaghdarTurnNumber,EnterExit.strCardno,EnterExit.TurnStatus,EnterExit.RegisteringTimeStamp
+                            from dbtransport.dbo.tbEnterExit as EnterExit 
+                               Inner Join dbtransport.dbo.TbCar as Car On EnterExit.strCardno=Car.nIDCar
+                               Inner Join dbtransport.dbo.TbPerson as Person On EnterExit.nDriverCode=Person.nIDPerson
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTurnStatuses as TurnStatus On EnterExit.TurnStatus=TurnStatus.TurnStatusId
+                               Inner Join R2Primary.DBO.TblSoftwareUsers AS Users On EnterExit.nUserIdEnter=Users.UserId Where EnterExit.nEnterExitId=" & YourTurnId & "", 300, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnNotFoundException
+                Dim NSS As R2CoreTransportationAndLoadNotificationStandardTurnExtendedStructure = New R2CoreTransportationAndLoadNotificationStandardTurnExtendedStructure
+                NSS.nEnterExitId = Ds.Tables(0).Rows(0).Item("nEnterExitId")
+                NSS.EnterDate = Ds.Tables(0).Rows(0).Item("StrEnterDate")
+                NSS.EnterTime = Ds.Tables(0).Rows(0).Item("StrEnterTime")
+                Dim InstanceTruckDriver = New R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager
+                NSS.NSSTruckDriver = InstanceTruckDriver.GetNSSTruckDriver(Convert.ToInt64(Ds.Tables(0).Rows(0).Item("nDriverCode")), False)
+                NSS.bFlagDriver = Ds.Tables(0).Rows(0).Item("bFlagDriver")
+                NSS.nUserIdEnter = Ds.Tables(0).Rows(0).Item("nUserIdEnter")
+                NSS.OtaghdarTurnNumber = Ds.Tables(0).Rows(0).Item("OtaghdarTurnNumber")
+                NSS.StrCardNo = Ds.Tables(0).Rows(0).Item("StrCardNo")
+                NSS.TurnStatus = Ds.Tables(0).Rows(0).Item("TurnStatus")
+                NSS.LicensePlatePString = Ds.Tables(0).Rows(0).Item("LPString").trim
+                NSS.TruckDriver = Ds.Tables(0).Rows(0).Item("strPersonFullName").trim
+                NSS.TurnStatusTitle = Ds.Tables(0).Rows(0).Item("TurnStatusTitle").trim
+                NSS.UserName = Ds.Tables(0).Rows(0).Item("Username").trim
+                NSS.RegisteringTimeStamp = Ds.Tables(0).Rows(0).Item("RegisteringTimeStamp")
+                Return NSS
+            Catch exx As TurnNotFoundException
+                Throw exx
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        'BPTChanged
+        Public Function GetLastActiveTurnfromTruckId(YourTruckId As Int64) As R2CoreTransportationAndLoadNotificationTurn
+            Try
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim Ds As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                   "Select Top 1 Turns.nEnterExitId,Turns.strCardno,Cars.strCarNo+'-'+Cars.strCarSerialNo as LPString,Turns.strEnterDate,Turns.strEnterTime,Persons.strPersonFullName,TurnCreatorUsers.UserName,Turns.BillOfLadingNumber,Turns.OtaghdarTurnNumber,TurnStatus.TurnStatusTitle
+                   from dbtransport.dbo.tbEnterExit as Turns
+                       Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTurnStatuses as TurnStatus On Turns.TurnStatus=TurnStatus.TurnStatusId
+                       Inner Join R2Primary.DBO.TblSoftwareUsers AS TurnCreatorUsers On Turns.nUserIdEnter=TurnCreatorUsers.UserId 
+                       Inner Join dbtransport.dbo.TbCar as Cars On Turns.strCardno=Cars.nIDCar 
+                       Inner Join dbtransport.dbo.TbCarAndPerson as CarAndPersons On Cars.nIDCar=CarAndPersons.nIDCar 
+                       Inner Join dbtransport.dbo.TbDriver as Drivers On CarAndPersons.nIDPerson=Drivers.nIDDriver 
+	                   Inner Join dbtransport.dbo.TbPerson as Persons On Persons.nIDPerson=Drivers.nIDDriver 
+                     Where Turns.StrCardNo=" & YourTruckId & " and (Turns.TurnStatus=" & Turns.TurnStatuses.Registered & " or Turns.TurnStatus=" & Turns.TurnStatuses.UsedLoadAllocationRegistered & " or Turns.TurnStatus=" & Turns.TurnStatuses.ResuscitationLoadPermissionCancelled & " or Turns.TurnStatus=" & Turns.TurnStatuses.ResuscitationLoadAllocationCancelled & " or Turns.TurnStatus=" & Turns.TurnStatuses.ResuscitationUser & ") and Cars.ViewFlag=1  and CarAndPersons.snRelation=2
+                           and ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000')) 
+                     Order By Turns.nEnterExitId Desc", 300, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnNotFoundException
+                Dim Turn = New R2CoreTransportationAndLoadNotificationTurn
+                Turn = New R2CoreTransportationAndLoadNotificationTurn With {.nEnterExitId = Ds.Tables(0).Rows(0).Item("nEnterExitId"), .TruckId = Ds.Tables(0).Rows(0).Item("StrCardNo"), .LicensePlate = Ds.Tables(0).Rows(0).Item("LPString").trim, .EnterDate = Ds.Tables(0).Rows(0).Item("StrEnterDate").trim, .EnterTime = Ds.Tables(0).Rows(0).Item("StrEnterTime").trim, .TruckDriver = Ds.Tables(0).Rows(0).Item("strPersonFullName").trim, .UserName = Ds.Tables(0).Rows(0).Item("Username").trim, .BillOfLadingNumber = Ds.Tables(0).Rows(0).Item("BillOfLadingNumber").trim, .OtaghdarTurnNumber = Ds.Tables(0).Rows(0).Item("OtaghdarTurnNumber").trim, .TurnStatusTitle = Ds.Tables(0).Rows(0).Item("TurnStatusTitle").trim}
+                Return Turn
+            Catch ex As TurnNotFoundException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -3950,55 +4012,15 @@ Namespace TrucksNativeness
         Dim TruckNativenessExpireDate As R2StandardDateAndTimeStructure
     End Structure
 
+    'BPTChanged
+    Public Structure R2CoreTransportationAndLoadNotificationsTruckNativenessExtendedStructure
+        Dim TruckNativenessTypeId As Int64
+        Dim TruckNativenessTypeTitle As String
+        Dim TruckNativenessExpireDate As String
+    End Structure
+
     Public Class R2CoreTransportationAndLoadNotificationsTruckNativenessManager
         Private _DateTime As New R2DateTime
-
-        Public Function ChangeTruckNativeness(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure, YourTruckNativenessExpireDate As R2StandardDateAndTimeStructure) As R2CoreTransportationAndLoadNotificationsTruckNativenessStructure
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
-            Try
-                'کنترل محتوای پارامتر ارسالی
-                If YourNSSTruck Is Nothing Then Throw New TruckNotFoundException
-                'کنترل تغییر وضعیت بومی گری ناوگان بومی با پلاک بومی - که البته امکان پذیر نیست
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                Dim IndigenousTrucks() = InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.IndigenousTrucks, 1).Split("-")
-                If IndigenousTrucks.Contains(YourNSSTruck.NSSCar.StrCarSerialNo) Then Throw New IndigenousTruckChangeNativnessFailedException
-                'تغییر وضعیت بومی گری
-                Dim newTruckNativenessTypeId = TrucksNativeness.TruckNativenessTypes.None
-                Dim NSS = GetNSSTruckNativeness(YourNSSTruck, True)
-                If NSS.TruckNativenessTypeId = R2CoreTransportationAndLoadNotification.TrucksNativeness.TruckNativenessTypes.Native Then
-                    newTruckNativenessTypeId = TruckNativenessTypes.UnNative
-                ElseIf NSS.TruckNativenessTypeId = R2CoreTransportationAndLoadNotification.TrucksNativeness.TruckNativenessTypes.UnNative Then
-                    newTruckNativenessTypeId = TruckNativenessTypes.Native
-                Else
-                    Throw New TruckNativenessTypeNotValidException
-                End If
-                CmdSql.Connection.Open()
-                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Update dbtransport.dbo.TbCar Set CarNativenessTypeId=" & newTruckNativenessTypeId & ",CarNativenessExpireDate='" & YourTruckNativenessExpireDate.DateShamsiFull & "' Where nIdCar=" & YourNSSTruck.NSSCar.nIdCar & ""
-                CmdSql.ExecuteNonQuery()
-                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-                Dim TruckNativeness = New R2CoreTransportationAndLoadNotificationsTruckNativenessStructure
-                TruckNativeness.TruckNativenessExpireDate = YourTruckNativenessExpireDate
-                TruckNativeness.TruckNativenessTypeId = newTruckNativenessTypeId
-                Return TruckNativeness
-            Catch ex As IndigenousTruckChangeNativnessFailedException
-                Throw ex
-            Catch ex As TruckNotFoundException
-                Throw ex
-            Catch ex As TruckNativenessTypeNotValidException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
-                Throw ex
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
 
         Public Function GetNSSTruckNativeness(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationsTruckNativenessStructure
             Try
@@ -4096,6 +4118,76 @@ Namespace TrucksNativeness
             End Try
         End Function
 
+        'BPTChanged
+        Public Function GetTruckNativeness(YourTruckId As Int64) As R2CoreTransportationAndLoadNotificationsTruckNativenessExtendedStructure
+            Try
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim NSS = New R2CoreTransportationAndLoadNotificationsTruckNativenessExtendedStructure
+                Dim DS As New DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                             "Select Cars.CarNativenessTypeId,Cars.CarNativenessExpireDate ,TruckNativenessTypes.NTItle  from DBTransport.dbo.TbCar as Cars
+                                  Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTruckNativenessTypes as TruckNativenessTypes On Cars.CarNativenessTypeId=TruckNativenessTypes.NId 
+                              Where Cars.nIDCar=" & YourTruckId & " and Cars.ViewFlag=1 and TruckNativenessTypes.Deleted=0", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
+                    NSS.TruckNativenessTypeId = DS.Tables(0).Rows(0).Item("CarNativenessTypeId")
+                    NSS.TruckNativenessExpireDate = DS.Tables(0).Rows(0).Item("CarNativenessExpireDate")
+                    NSS.TruckNativenessTypeTitle = DS.Tables(0).Rows(0).Item("NTItle")
+                    Return NSS
+                Else
+                    Throw New TruckNotFoundException
+                End If
+            Catch ex As TruckNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function ChangeTruckNativeness(YourTruckId As Int64, YourTruckNativenessExpireDate As String) As R2CoreTransportationAndLoadNotificationsTruckNativenessExtendedStructure
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Try
+                Dim InstanceTruckNativeness = New R2CoreTransportationAndLoadNotificationsTruckNativenessManager
+                Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationInstanceTrucksManager
+                Dim NSSTruck = InstanceTrucks.GetNSSTruck(YourTruckId)
+                'کنترل تغییر وضعیت بومی گری ناوگان بومی با پلاک بومی - که البته امکان پذیر نیست
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim IndigenousTrucks() = InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.IndigenousTrucks, 1).Split("-")
+                If IndigenousTrucks.Contains(NSSTruck.NSSCar.StrCarSerialNo) Then Throw New IndigenousTruckChangeNativnessFailedException
+                'تغییر وضعیت بومی گری
+                Dim newTruckNativenessTypeId = TrucksNativeness.TruckNativenessTypes.None
+                Dim TruckNativeness = GetTruckNativeness(YourTruckId)
+                If TruckNativeness.TruckNativenessTypeId = TruckNativenessTypes.Native Then
+                    newTruckNativenessTypeId = TruckNativenessTypes.UnNative
+                ElseIf TruckNativeness.TruckNativenessTypeId = TruckNativenessTypes.UnNative Then
+                    newTruckNativenessTypeId = TruckNativenessTypes.Native
+                Else
+                    Throw New TruckNativenessTypeNotValidException
+                End If
+                CmdSql.Connection.Open()
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                CmdSql.CommandText = "Update dbtransport.dbo.TbCar Set CarNativenessTypeId=" & newTruckNativenessTypeId & ",CarNativenessExpireDate='" & YourTruckNativenessExpireDate & "' Where nIdCar=" & NSSTruck.NSSCar.nIdCar & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+                TruckNativeness.TruckNativenessExpireDate = YourTruckNativenessExpireDate
+                TruckNativeness.TruckNativenessTypeId = newTruckNativenessTypeId
+                TruckNativeness.TruckNativenessTypeTitle = InstanceTruckNativeness.GetNSSTruckNativenessType(newTruckNativenessTypeId).NTitle
+                Return TruckNativeness
+            Catch ex As IndigenousTruckChangeNativnessFailedException
+                Throw ex
+            Catch ex As TruckNotFoundException
+                Throw ex
+            Catch ex As TruckNativenessTypeNotValidException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
 
     End Class
 

@@ -16,6 +16,8 @@ using System.Web.Http.Cors;
 using R2Core.DateAndTimeManagement;
 using Microsoft.Ajax.Utilities;
 using APISoftwareUser.Models;
+using R2Core.PredefinedMessagesManagement;
+using R2Core.DatabaseManagement;
 
 
 
@@ -258,7 +260,7 @@ namespace APISoftwareUser.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdRawSoftwareUserStructure>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var RawSaftwareUser = Content.RawSoftwareUser;
@@ -269,9 +271,11 @@ namespace APISoftwareUser.Controllers
                 InstanceSoftwareUsers.EditSoftwareUser(RawSaftwareUser);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(string.Empty, Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.EditingSoftWareUserSuccessed ).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -339,6 +343,7 @@ namespace APISoftwareUser.Controllers
         {
             try
             {
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
 
                 var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserId>(Request.Content.ReadAsStringAsync().Result);
@@ -351,7 +356,7 @@ namespace APISoftwareUser.Controllers
                 InstanceSMSOwners.ActivateSMSOwner(SoftwareUserId, UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(string.Empty), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ActivateSMSOwnerSuccessed).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SessionOverException ex)
@@ -374,10 +379,11 @@ namespace APISoftwareUser.Controllers
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
+                var InstanceSMSOwners = new R2CoreMClassSMSOwnersManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
                 var WantedSoftwareUser = InstanceSoftwareUsers.GetNSSUserUnChangeable(new R2CoreSoftwareUserMobile(SoftwareUserMobileNumber));
-                var RawSoftwareUser = new R2CoreRawSoftwareUserStructure { UserId = WantedSoftwareUser.UserId, UserName = WantedSoftwareUser.UserName, MobileNumber = WantedSoftwareUser.MobileNumber, UserTypeId = WantedSoftwareUser.UserTypeId,UserActive= WantedSoftwareUser.UserActive  };
-
+                var RawSoftwareUser = new R2CoreRawSoftwareUserStructure  { UserId = WantedSoftwareUser.UserId, UserName = WantedSoftwareUser.UserName, MobileNumber = WantedSoftwareUser.MobileNumber, UserTypeId = WantedSoftwareUser.UserTypeId, UserActive = WantedSoftwareUser.UserActive, SMSOwnerActive = InstanceSMSOwners.GetNSSSMSOwnerCurrentState(WantedSoftwareUser).IsSendingActive };
+  
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(RawSoftwareUser), Encoding.UTF8, "application/json");
                 return response;
@@ -421,21 +427,22 @@ namespace APISoftwareUser.Controllers
         {
             try
             {
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
 
                 var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserIdWPGId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
-                var WPGId = Content.WPGId;
-                var WPGAccess = Content.WPGAccess;
+                var WPGId = Content.PGId;
+                var WPGAccess = Content.PGAccess;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
                 InstanceSoftwareUsers.ChangeSoftwareUserWebProcessGroupAccess(SoftwareUserId, WPGId, WPGAccess);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(string.Empty), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ChangeSoftwareUserWebProcessGroupAccessSuccessed).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SessionOverException ex)
@@ -450,21 +457,22 @@ namespace APISoftwareUser.Controllers
         {
             try
             {
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
 
                 var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserIdWPId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
-                var WPId = Content.WPId;
-                var WPAccess = Content.WPAccess;
+                var WPId = Content.PId;
+                var WPAccess = Content.PAccess;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
                 InstanceSoftwareUsers.ChangeSoftwareUserWebProcessAccess(SoftwareUserId, WPId, WPAccess);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(string.Empty), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ChangeSoftwareUserWebProcessAccess ).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SessionOverException ex)
@@ -485,12 +493,12 @@ namespace APISoftwareUser.Controllers
                 var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserIdWPGId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
-                var WPGId = Content.WPGId;
+                var WPGId = Content.PGId;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new APISoftwareUserSessionIdSoftwareUserIdWPGId { SessionId = SessionId, SoftwareUserId = SoftwareUserId, WPGId = WPGId, WPGAccess = InstanceSoftwareUsers.GetSoftwareUserWebProcessGroupAccess(SoftwareUserId, WPGId) }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new APISoftwareUserSessionIdSoftwareUserIdWPGId { SessionId = SessionId, SoftwareUserId = SoftwareUserId, PGId = WPGId, PGAccess = InstanceSoftwareUsers.GetSoftwareUserWebProcessGroupAccess(SoftwareUserId, WPGId) }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SessionOverException ex)
@@ -511,12 +519,12 @@ namespace APISoftwareUser.Controllers
                 var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserIdWPId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
-                var WPId = Content.WPId;
+                var WPId = Content.PId;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new APISoftwareUserSessionIdSoftwareUserIdWPId { SessionId = SessionId, SoftwareUserId = SoftwareUserId, WPId = WPId, WPAccess = InstanceSoftwareUsers.GetSoftwareUserWebProcessAccess(SoftwareUserId, WPId) }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new APISoftwareUserSessionIdSoftwareUserIdWPId { SessionId = SessionId, SoftwareUserId = SoftwareUserId, PId = WPId, PAccess = InstanceSoftwareUsers.GetSoftwareUserWebProcessAccess(SoftwareUserId, WPId) }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SessionOverException ex)
@@ -531,6 +539,7 @@ namespace APISoftwareUser.Controllers
         {
             try
             {
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
 
                 var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserId>(Request.Content.ReadAsStringAsync().Result);
@@ -543,8 +552,8 @@ namespace APISoftwareUser.Controllers
                 InstanseSoftwareUsers.SendWebSiteLink(InstanseSoftwareUsers.GetNSSUser(SoftwareUserId));
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(string.Empty), Encoding.UTF8, "application/json");
-                return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.SendWebSiteLink).MsgContent }), Encoding.UTF8, "application/json");
+                return response; 
             }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }

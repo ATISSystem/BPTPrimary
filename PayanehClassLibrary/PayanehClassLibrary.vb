@@ -117,6 +117,7 @@ Imports R2CoreTransportationAndLoadNotification.AnnouncementHalls.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TransportTarrifsParameters.Exceptions
 Imports R2CoreTransportationAndLoadNotification.LoadingAndDischargingPlaces.Exceptions
 Imports R2CoreParkingSystem.City.Execption
+Imports System.Net
 
 Namespace Logging
 
@@ -2712,6 +2713,8 @@ Namespace DriverTrucksManagement
                                        TypeOf ex Is ConnectionIsNotAvailableException OrElse
                                        TypeOf ex Is SoftwareUserMobileNumberAlreadyExistException
                 Throw ex
+            Catch ex As WebException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -2720,7 +2723,7 @@ Namespace DriverTrucksManagement
         'BPTChanged
         Public Shared Function GetDriverTruckfromRMTOAndInsertUpdateLocalDataBaseByNationalCode(YourNationalCode As String) As R2CoreTransportationAndLoadNotificationTruckDriver
             Try
-                Dim InstanceDrivers = New R2CoreParkingSystem.Drivers.R2CoreParkingSystemInstanceDriversManager
+                Dim InstanceDrivers = New R2CoreParkingSystemInstanceDriversManager
                 Dim NSS = PayanehClassLibraryMClassDriverTrucksManagement.GetNSSTruckDriver(RmtoWebService.GetNSSTruckDriver(YourNationalCode))
                 If IsExistDriverTruckByNationalCode(NSS.NSSDriver.StrNationalCode) = True Then
                     Dim nIdPerson As Int64 = GetNSSDriverTruckbyNationalCode(NSS.NSSDriver.StrNationalCode).NSSDriver.nIdPerson
@@ -2735,12 +2738,21 @@ Namespace DriverTrucksManagement
                     PayanehClassLibraryMClassDriverTrucksManagement.UpdateDriverTruck(NSS)
                 End If
                 Return New R2CoreTransportationAndLoadNotificationTruckDriver With {.DriverId = NSS.NSSDriver.nIdPerson, .NameFamily = NSS.NSSDriver.StrPersonFullName, .NationalCode = NSS.NSSDriver.StrNationalCode, .MobileNumber = NSS.NSSDriver.StrIdNo, .FatherName = NSS.NSSDriver.StrFatherName, .DrivingLicenceNo = NSS.NSSDriver.strDrivingLicenceNo, .Address = NSS.NSSDriver.StrAddress, .SmartCardNo = NSS.StrSmartCardNo}
-            Catch ex As Exception When TypeOf ex Is InternetIsnotAvailableException OrElse
-                                       TypeOf ex Is RMTOWebServiceSmartCardInvalidException OrElse
-                                       TypeOf ex Is ConnectionIsNotAvailableException OrElse
-                                       TypeOf ex Is SoftwareUserMobileNumberAlreadyExistException
+            Catch ex As InternetIsnotAvailableException
+                Throw ex
+            Catch ex As RMTOWebServiceSmartCardInvalidException
+                Throw ex
+            Catch ex As ConnectionIsNotAvailableException
+                Throw ex
+            Catch ex As SoftwareUserMobileNumberAlreadyExistException
                 Throw ex
             Catch ex As RMTOSmartCardSiteIsNotAvailableException
+                Throw ex
+            Catch ex As GetDataException
+                Throw ex
+            Catch ex As GetNSSException
+                Throw ex
+            Catch ex As WebException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -2820,6 +2832,9 @@ Namespace CarTrucksManagement
     End Class
 
     Public Class PayanehClassLibraryMClassCarTrucksManager
+
+        Private _DateTimeService As New R2DateTimeService
+
         Public Function IsExistCarTruckWithLicensePlate(YourNSS As R2StandardCarTruckStructure, ByRef TruckId As Int64) As Boolean
             Try
                 Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
@@ -2895,6 +2910,7 @@ Namespace CarTrucksManagement
             End Try
         End Function
 
+        'BPTChanged
         Public Function GetNSSCarTruckBySmartCardNo(YourSmartCardNo As String) As R2StandardCarTruckStructure
             Try
                 Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
@@ -2903,7 +2919,7 @@ Namespace CarTrucksManagement
                 Dim Ds As DataSet
                 If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
                "Select Top 1 * from dbtransport.dbo.TbCar Where StrBodyNo='" & YourSmartCardNo.Trim() & "' and ViewFlag=1 Order By nIdCar Desc",
-                                                          0, Ds, New Boolean).GetRecordsCount() <> 0 Then
+                                                          3600, Ds, New Boolean).GetRecordsCount() <> 0 Then
                     Dim NSSCarTruck As R2StandardCarTruckStructure = Nothing
                     Dim NSSCar = New R2StandardCarStructure()
                     NSSCarTruck = New R2StandardCarTruckStructure()
@@ -2927,7 +2943,6 @@ Namespace CarTrucksManagement
             End Try
         End Function
 
-
     End Class
 
     Public Class PayanehClassLibraryMClassCarTrucksManagement
@@ -2944,20 +2959,6 @@ Namespace CarTrucksManagement
             Try
                 Dim DS As New DataSet
                 If R2ClassSqlDataBOXManagement.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas, "Select StrCarNo,StrCarSerialNo from dbtransport.dbo.TbCar Where StrBodyNo='" & YourNSS.StrBodyNo & "'", 1, DS, New Boolean).GetRecordsCount <> 0 Then
-                    Return True
-                Else
-                    Return False
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Shared Function IsExistCarTruckByLP(YourNSS As R2StandardCarTruckStructure) As Boolean
-            Try
-                Dim DS As New DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas,
-                        "Select StrCarNo,StrCarSerialNo from dbtransport.dbo.TbCar Where ltrim(rtrim(strCarNo))='" & YourNSS.NSSCar.StrCarNo & "' and ltrim(rtrim(strCarSerialNo))='" & YourNSS.NSSCar.StrCarSerialNo & "' ", 0, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return True
                 Else
                     Return False
@@ -3009,7 +3010,8 @@ Namespace CarTrucksManagement
             End Try
         End Function
 
-        Public Shared Sub UpdateCarTruck(YourNSS As R2StandardCarTruckStructure)
+        'BPTChanged
+        Public Shared Sub UpdateTruck(YourNSS As R2StandardCarTruckStructure)
             Dim CmdSql As SqlCommand = New SqlCommand
             CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
             Try
@@ -3019,6 +3021,11 @@ Namespace CarTrucksManagement
                 CmdSql.CommandText = "Update dbtransport.dbo.TbCar Set StrBodyNo='" & YourNSS.StrBodyNo & "' Where nIdCar=" & mynIdCar & ""
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As Exception
                 If CmdSql.Connection.State <> ConnectionState.Closed Then
                     CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
@@ -3027,58 +3034,68 @@ Namespace CarTrucksManagement
             End Try
         End Sub
 
-        Public Shared Function GetNSSCarTruckBySmartCardNoWithUpdating(YourSmartCardNo As String, YourUserNSS As R2CoreStandardSoftwareUserStructure) As R2StandardCarTruckStructure
+        Public Shared Function IsExistTruckByLP(YourNSS As R2StandardCarTruckStructure) As Boolean
+            Try
+                Dim DS As New DataSet
+                If R2ClassSqlDataBOXManagement.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas,
+                        "Select StrCarNo,StrCarSerialNo from dbtransport.dbo.TbCar Where ltrim(rtrim(strCarNo))='" & YourNSS.NSSCar.StrCarNo & "' and ltrim(rtrim(strCarSerialNo))='" & YourNSS.NSSCar.StrCarSerialNo & "' ", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
+                    Return True
+                Else
+                    Return False
+                End If
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Shared Function IsExistTruckBySmartCardNo(YourSmartCardNo As String) As Boolean
+            Try
+                Dim DS As New DataSet
+                If R2ClassSqlDataBOXManagement.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas,
+                        "Select Top 1 * from dbtransport.dbo.TbCar Where StrBodyNo='" & YourSmartCardNo.Trim() & "' and ViewFlag=1 Order By nIdCar Desc", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
+                    Return True
+                Else
+                    Return False
+                End If
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Shared Function GetNSSTruckBySmartCardNoWithUpdatingfromRMTO(YourSmartCardNo As String) As R2CoreTransportationAndLoadNotificationTruck
             Dim NSSCarTruck As R2StandardCarTruckStructure = Nothing
             Try
                 Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSmartCardNo)
+                Dim InstanceTrucks = New PayanehClassLibraryMClassCarTrucksManager
 
-                Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
-               "Select Top 1 * from dbtransport.dbo.TbCar Where StrBodyNo='" & YourSmartCardNo.Trim() & "' and ViewFlag=1 Order By nIdCar Desc",
-                                                          0, Ds, New Boolean).GetRecordsCount() <> 0 Then
-                    Dim NSSCar = New R2StandardCarStructure()
-                    NSSCarTruck = New R2StandardCarTruckStructure()
-                    NSSCar.nIdCar = Ds.Tables(0).Rows(0).Item("nIdCar")
-                    NSSCar.StrCarNo = Ds.Tables(0).Rows(0).Item("StrCarNo").trim
-                    NSSCar.StrCarSerialNo = Ds.Tables(0).Rows(0).Item("StrCarSerialNo")
-                    NSSCar.nIdCity = Ds.Tables(0).Rows(0).Item("nIdCity")
-                    NSSCar.snCarType = Ds.Tables(0).Rows(0).Item("snCarType")
-                    NSSCarTruck.NSSCar = NSSCar
-                    NSSCarTruck.StrBodyNo = Ds.Tables(0).Rows(0).Item("StrBodyNo")
-                End If
                 Dim NSSTruckRmto As R2StandardCarTruckStructure = PayanehClassLibraryMClassCarTrucksManagement.GetNSSTruck(RmtoWebService.GetNSSTruck(YourSmartCardNo))
-                If Object.Equals(NSSCarTruck, Nothing) Then
-                    'NotExist In LocalDataBase
-                    If IsExistCarTruckByLP(NSSTruckRmto) = True Then
-                        Dim nIdCar As Int64 = GetNSSCarTruckByLP(New R2StandardLicensePlateStructure(NSSTruckRmto.NSSCar.StrCarNo, NSSTruckRmto.NSSCar.StrCarSerialNo, Nothing, Nothing)).NSSCar.nIdCar
-                        NSSTruckRmto.NSSCar.nIdCar = nIdCar
-                        PayanehClassLibraryMClassCarTrucksManagement.UpdateCarTruck(NSSTruckRmto)
-                        Return NSSTruckRmto
-                    Else
-                        Dim nIdCar As Int64 = R2CoreParkingSystemMClassCars.InsertCar(NSSTruckRmto.NSSCar, YourUserNSS)
-                        NSSTruckRmto.NSSCar.nIdCar = nIdCar
-                        PayanehClassLibraryMClassCarTrucksManagement.UpdateCarTruck(NSSTruckRmto)
-                        Return NSSTruckRmto
-                    End If
+                If IsExistTruckBySmartCardNo(YourSmartCardNo) = True Then
+                    NSSTruckRmto.NSSCar.nIdCar = InstanceTrucks.GetNSSCarTruckBySmartCardNo(YourSmartCardNo).NSSCar.nIdCar
+                    PayanehClassLibraryMClassCarTrucksManagement.UpdateTruck(NSSTruckRmto)
+                    Return New R2CoreTransportationAndLoadNotificationTruck With {.TruckId = NSSTruckRmto.NSSCar.nIdCar, .SmartCardNo = YourSmartCardNo, .Pelak = NSSTruckRmto.NSSCar.StrCarNo, .Serial = NSSTruckRmto.NSSCar.StrCarSerialNo, .LoaderTypeId = NSSTruckRmto.NSSCar.snCarType}
                 Else
-                    'Exit In LocalDataBase
-                    NSSCarTruck.NSSCar.StrCarNo = NSSTruckRmto.NSSCar.StrCarNo
-                    NSSCarTruck.NSSCar.StrCarSerialNo = NSSTruckRmto.NSSCar.StrCarSerialNo
-                    R2CoreParkingSystemMClassCars.UpdateCar(NSSCarTruck.NSSCar)
-                    Return NSSCarTruck
+                    NSSTruckRmto.NSSCar.nIdCar = R2CoreParkingSystemMClassCars.InsertCar(NSSTruckRmto.NSSCar)
+                    PayanehClassLibraryMClassCarTrucksManagement.UpdateTruck(NSSTruckRmto)
+                    Return New R2CoreTransportationAndLoadNotificationTruck With {.TruckId = NSSTruckRmto.NSSCar.nIdCar, .SmartCardNo = YourSmartCardNo, .Pelak = NSSTruckRmto.NSSCar.StrCarNo, .Serial = NSSTruckRmto.NSSCar.StrCarSerialNo, .LoaderTypeId = NSSTruckRmto.NSSCar.snCarType}
                 End If
             Catch ex As SqlInjectionException
                 Throw ex
-            Catch ex As Exception When TypeOf ex Is InternetIsnotAvailableException OrElse
-                                       TypeOf ex Is RMTOWebServiceSmartCardInvalidException OrElse
-                                       TypeOf ex Is ConnectionIsNotAvailableException
-                If Object.Equals(NSSCarTruck, Nothing) Then
-                    Throw ex
-                Else
-                    Return NSSCarTruck
-                End If
+            Catch ex As DataBaseException
+                Throw ex
+            Catch ex As RMTOWebServiceSmartCardInvalidException
+                Throw ex
+            Catch ex As ConnectionIsNotAvailableException
+                Throw ex
+            Catch ex As InternetIsnotAvailableException
+                Throw ex
+            Catch ex As RMTOSmartCardSiteIsNotAvailableException
+                Throw ex
             Catch ex As GetNSSException
+                Throw ex
+            Catch ex As WebException
+                Throw ex
+            Catch ex As GetDataException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
