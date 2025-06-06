@@ -76,11 +76,11 @@ Namespace PayanehWS
         
         Private WebMethodCarTruckHasTurnOperationCompleted As System.Threading.SendOrPostCallback
         
-        Private WebMethodGetnIdCarTruckBySmartCarNoOperationCompleted As System.Threading.SendOrPostCallback
-        
         Private WebMethodISCompanyActiveOperationCompleted As System.Threading.SendOrPostCallback
         
-        Private WebMethodGetDriverTruckByNationalCodefromRMTOOperationCompleted As System.Threading.SendOrPostCallback
+        Private WebMethodGetTruckDriverByNationalCodefromRMTOOperationCompleted As System.Threading.SendOrPostCallback
+        
+        Private WebMethodGetTruckBySmartCarNofromRMTOOperationCompleted As System.Threading.SendOrPostCallback
         
         Private useDefaultCredentialsSetExplicitly As Boolean
         
@@ -187,13 +187,13 @@ Namespace PayanehWS
         Public Event WebMethodCarTruckHasTurnCompleted As WebMethodCarTruckHasTurnCompletedEventHandler
         
         '''<remarks/>
-        Public Event WebMethodGetnIdCarTruckBySmartCarNoCompleted As WebMethodGetnIdCarTruckBySmartCarNoCompletedEventHandler
-        
-        '''<remarks/>
         Public Event WebMethodISCompanyActiveCompleted As WebMethodISCompanyActiveCompletedEventHandler
         
         '''<remarks/>
-        Public Event WebMethodGetDriverTruckByNationalCodefromRMTOCompleted As WebMethodGetDriverTruckByNationalCodefromRMTOCompletedEventHandler
+        Public Event WebMethodGetTruckDriverByNationalCodefromRMTOCompleted As WebMethodGetTruckDriverByNationalCodefromRMTOCompletedEventHandler
+        
+        '''<remarks/>
+        Public Event WebMethodGetTruckBySmartCarNofromRMTOCompleted As WebMethodGetTruckBySmartCarNofromRMTOCompletedEventHandler
         
         '''<remarks/>
         <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodLogin", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
@@ -796,33 +796,6 @@ Namespace PayanehWS
         End Sub
         
         '''<remarks/>
-        <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodGetnIdCarTruckBySmartCarNo", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
-        Public Function WebMethodGetnIdCarTruckBySmartCarNo(ByVal YourSmartCardNo As String, ByVal YourExchangeKey As Long) As Long
-            Dim results() As Object = Me.Invoke("WebMethodGetnIdCarTruckBySmartCarNo", New Object() {YourSmartCardNo, YourExchangeKey})
-            Return CType(results(0),Long)
-        End Function
-        
-        '''<remarks/>
-        Public Overloads Sub WebMethodGetnIdCarTruckBySmartCarNoAsync(ByVal YourSmartCardNo As String, ByVal YourExchangeKey As Long)
-            Me.WebMethodGetnIdCarTruckBySmartCarNoAsync(YourSmartCardNo, YourExchangeKey, Nothing)
-        End Sub
-        
-        '''<remarks/>
-        Public Overloads Sub WebMethodGetnIdCarTruckBySmartCarNoAsync(ByVal YourSmartCardNo As String, ByVal YourExchangeKey As Long, ByVal userState As Object)
-            If (Me.WebMethodGetnIdCarTruckBySmartCarNoOperationCompleted Is Nothing) Then
-                Me.WebMethodGetnIdCarTruckBySmartCarNoOperationCompleted = AddressOf Me.OnWebMethodGetnIdCarTruckBySmartCarNoOperationCompleted
-            End If
-            Me.InvokeAsync("WebMethodGetnIdCarTruckBySmartCarNo", New Object() {YourSmartCardNo, YourExchangeKey}, Me.WebMethodGetnIdCarTruckBySmartCarNoOperationCompleted, userState)
-        End Sub
-        
-        Private Sub OnWebMethodGetnIdCarTruckBySmartCarNoOperationCompleted(ByVal arg As Object)
-            If (Not (Me.WebMethodGetnIdCarTruckBySmartCarNoCompletedEvent) Is Nothing) Then
-                Dim invokeArgs As System.Web.Services.Protocols.InvokeCompletedEventArgs = CType(arg,System.Web.Services.Protocols.InvokeCompletedEventArgs)
-                RaiseEvent WebMethodGetnIdCarTruckBySmartCarNoCompleted(Me, New WebMethodGetnIdCarTruckBySmartCarNoCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState))
-            End If
-        End Sub
-        
-        '''<remarks/>
         <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodISCompanyActive", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
         Public Function WebMethodISCompanyActive(ByVal YourCompanyCode As Long, ByVal YourExchangeKey As Long) As Boolean
             Dim results() As Object = Me.Invoke("WebMethodISCompanyActive", New Object() {YourCompanyCode, YourExchangeKey})
@@ -850,29 +823,56 @@ Namespace PayanehWS
         End Sub
         
         '''<remarks/>
-        <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodGetDriverTruckByNationalCodefromRMTO", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
-        Public Function WebMethodGetDriverTruckByNationalCodefromRMTO(ByVal YourNationalCode As String, ByVal YourExchangeKey As Long) As Long
-            Dim results() As Object = Me.Invoke("WebMethodGetDriverTruckByNationalCodefromRMTO", New Object() {YourNationalCode, YourExchangeKey})
-            Return CType(results(0),Long)
+        <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodGetTruckDriverByNationalCodefromRMTO", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
+        Public Function WebMethodGetTruckDriverByNationalCodefromRMTO(ByVal YourNationalCode As String, ByVal YourExchangeKey As Long) As R2CoreTransportationAndLoadNotificationTruckDriver
+            Dim results() As Object = Me.Invoke("WebMethodGetTruckDriverByNationalCodefromRMTO", New Object() {YourNationalCode, YourExchangeKey})
+            Return CType(results(0),R2CoreTransportationAndLoadNotificationTruckDriver)
         End Function
         
         '''<remarks/>
-        Public Overloads Sub WebMethodGetDriverTruckByNationalCodefromRMTOAsync(ByVal YourNationalCode As String, ByVal YourExchangeKey As Long)
-            Me.WebMethodGetDriverTruckByNationalCodefromRMTOAsync(YourNationalCode, YourExchangeKey, Nothing)
+        Public Overloads Sub WebMethodGetTruckDriverByNationalCodefromRMTOAsync(ByVal YourNationalCode As String, ByVal YourExchangeKey As Long)
+            Me.WebMethodGetTruckDriverByNationalCodefromRMTOAsync(YourNationalCode, YourExchangeKey, Nothing)
         End Sub
         
         '''<remarks/>
-        Public Overloads Sub WebMethodGetDriverTruckByNationalCodefromRMTOAsync(ByVal YourNationalCode As String, ByVal YourExchangeKey As Long, ByVal userState As Object)
-            If (Me.WebMethodGetDriverTruckByNationalCodefromRMTOOperationCompleted Is Nothing) Then
-                Me.WebMethodGetDriverTruckByNationalCodefromRMTOOperationCompleted = AddressOf Me.OnWebMethodGetDriverTruckByNationalCodefromRMTOOperationCompleted
+        Public Overloads Sub WebMethodGetTruckDriverByNationalCodefromRMTOAsync(ByVal YourNationalCode As String, ByVal YourExchangeKey As Long, ByVal userState As Object)
+            If (Me.WebMethodGetTruckDriverByNationalCodefromRMTOOperationCompleted Is Nothing) Then
+                Me.WebMethodGetTruckDriverByNationalCodefromRMTOOperationCompleted = AddressOf Me.OnWebMethodGetTruckDriverByNationalCodefromRMTOOperationCompleted
             End If
-            Me.InvokeAsync("WebMethodGetDriverTruckByNationalCodefromRMTO", New Object() {YourNationalCode, YourExchangeKey}, Me.WebMethodGetDriverTruckByNationalCodefromRMTOOperationCompleted, userState)
+            Me.InvokeAsync("WebMethodGetTruckDriverByNationalCodefromRMTO", New Object() {YourNationalCode, YourExchangeKey}, Me.WebMethodGetTruckDriverByNationalCodefromRMTOOperationCompleted, userState)
         End Sub
         
-        Private Sub OnWebMethodGetDriverTruckByNationalCodefromRMTOOperationCompleted(ByVal arg As Object)
-            If (Not (Me.WebMethodGetDriverTruckByNationalCodefromRMTOCompletedEvent) Is Nothing) Then
+        Private Sub OnWebMethodGetTruckDriverByNationalCodefromRMTOOperationCompleted(ByVal arg As Object)
+            If (Not (Me.WebMethodGetTruckDriverByNationalCodefromRMTOCompletedEvent) Is Nothing) Then
                 Dim invokeArgs As System.Web.Services.Protocols.InvokeCompletedEventArgs = CType(arg,System.Web.Services.Protocols.InvokeCompletedEventArgs)
-                RaiseEvent WebMethodGetDriverTruckByNationalCodefromRMTOCompleted(Me, New WebMethodGetDriverTruckByNationalCodefromRMTOCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState))
+                RaiseEvent WebMethodGetTruckDriverByNationalCodefromRMTOCompleted(Me, New WebMethodGetTruckDriverByNationalCodefromRMTOCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState))
+            End If
+        End Sub
+        
+        '''<remarks/>
+        <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodGetTruckBySmartCarNofromRMTO", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
+        Public Function WebMethodGetTruckBySmartCarNofromRMTO(ByVal YourSmartCardNo As String, ByVal YourExchangeKey As Long) As R2CoreTransportationAndLoadNotificationTruck
+            Dim results() As Object = Me.Invoke("WebMethodGetTruckBySmartCarNofromRMTO", New Object() {YourSmartCardNo, YourExchangeKey})
+            Return CType(results(0),R2CoreTransportationAndLoadNotificationTruck)
+        End Function
+        
+        '''<remarks/>
+        Public Overloads Sub WebMethodGetTruckBySmartCarNofromRMTOAsync(ByVal YourSmartCardNo As String, ByVal YourExchangeKey As Long)
+            Me.WebMethodGetTruckBySmartCarNofromRMTOAsync(YourSmartCardNo, YourExchangeKey, Nothing)
+        End Sub
+        
+        '''<remarks/>
+        Public Overloads Sub WebMethodGetTruckBySmartCarNofromRMTOAsync(ByVal YourSmartCardNo As String, ByVal YourExchangeKey As Long, ByVal userState As Object)
+            If (Me.WebMethodGetTruckBySmartCarNofromRMTOOperationCompleted Is Nothing) Then
+                Me.WebMethodGetTruckBySmartCarNofromRMTOOperationCompleted = AddressOf Me.OnWebMethodGetTruckBySmartCarNofromRMTOOperationCompleted
+            End If
+            Me.InvokeAsync("WebMethodGetTruckBySmartCarNofromRMTO", New Object() {YourSmartCardNo, YourExchangeKey}, Me.WebMethodGetTruckBySmartCarNofromRMTOOperationCompleted, userState)
+        End Sub
+        
+        Private Sub OnWebMethodGetTruckBySmartCarNofromRMTOOperationCompleted(ByVal arg As Object)
+            If (Not (Me.WebMethodGetTruckBySmartCarNofromRMTOCompletedEvent) Is Nothing) Then
+                Dim invokeArgs As System.Web.Services.Protocols.InvokeCompletedEventArgs = CType(arg,System.Web.Services.Protocols.InvokeCompletedEventArgs)
+                RaiseEvent WebMethodGetTruckBySmartCarNofromRMTOCompleted(Me, New WebMethodGetTruckBySmartCarNofromRMTOCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState))
             End If
         End Sub
         
@@ -893,6 +893,180 @@ Namespace PayanehWS
             End If
             Return false
         End Function
+    End Class
+    
+    '''<remarks/>
+    <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.8.9037.0"),  _
+     System.SerializableAttribute(),  _
+     System.Diagnostics.DebuggerStepThroughAttribute(),  _
+     System.ComponentModel.DesignerCategoryAttribute("code"),  _
+     System.Xml.Serialization.XmlTypeAttribute([Namespace]:="http://tempuri.org/")>  _
+    Partial Public Class R2CoreTransportationAndLoadNotificationTruckDriver
+        
+        Private driverIdField As Long
+        
+        Private nameFamilyField As String
+        
+        Private nationalCodeField As String
+        
+        Private mobileNumberField As String
+        
+        Private fatherNameField As String
+        
+        Private drivingLicenseNoField As String
+        
+        Private addressField As String
+        
+        Private smartCardNoField As String
+        
+        '''<remarks/>
+        Public Property DriverId() As Long
+            Get
+                Return Me.driverIdField
+            End Get
+            Set
+                Me.driverIdField = value
+            End Set
+        End Property
+        
+        '''<remarks/>
+        Public Property NameFamily() As String
+            Get
+                Return Me.nameFamilyField
+            End Get
+            Set
+                Me.nameFamilyField = value
+            End Set
+        End Property
+        
+        '''<remarks/>
+        Public Property NationalCode() As String
+            Get
+                Return Me.nationalCodeField
+            End Get
+            Set
+                Me.nationalCodeField = value
+            End Set
+        End Property
+        
+        '''<remarks/>
+        Public Property MobileNumber() As String
+            Get
+                Return Me.mobileNumberField
+            End Get
+            Set
+                Me.mobileNumberField = value
+            End Set
+        End Property
+        
+        '''<remarks/>
+        Public Property FatherName() As String
+            Get
+                Return Me.fatherNameField
+            End Get
+            Set
+                Me.fatherNameField = value
+            End Set
+        End Property
+        
+        '''<remarks/>
+        Public Property DrivingLicenseNo() As String
+            Get
+                Return Me.drivingLicenseNoField
+            End Get
+            Set
+                Me.drivingLicenseNoField = value
+            End Set
+        End Property
+        
+        '''<remarks/>
+        Public Property Address() As String
+            Get
+                Return Me.addressField
+            End Get
+            Set
+                Me.addressField = value
+            End Set
+        End Property
+        
+        '''<remarks/>
+        Public Property SmartCardNo() As String
+            Get
+                Return Me.smartCardNoField
+            End Get
+            Set
+                Me.smartCardNoField = value
+            End Set
+        End Property
+    End Class
+    
+    '''<remarks/>
+    <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.8.9037.0"),  _
+     System.SerializableAttribute(),  _
+     System.Diagnostics.DebuggerStepThroughAttribute(),  _
+     System.ComponentModel.DesignerCategoryAttribute("code"),  _
+     System.Xml.Serialization.XmlTypeAttribute([Namespace]:="http://tempuri.org/")>  _
+    Partial Public Class R2CoreTransportationAndLoadNotificationTruck
+        
+        Private truckIdField As Long
+        
+        Private loaderTypeIdField As Long
+        
+        Private pelakField As String
+        
+        Private serialField As String
+        
+        Private smartCardNoField As String
+        
+        '''<remarks/>
+        Public Property TruckId() As Long
+            Get
+                Return Me.truckIdField
+            End Get
+            Set
+                Me.truckIdField = value
+            End Set
+        End Property
+        
+        '''<remarks/>
+        Public Property LoaderTypeId() As Long
+            Get
+                Return Me.loaderTypeIdField
+            End Get
+            Set
+                Me.loaderTypeIdField = value
+            End Set
+        End Property
+        
+        '''<remarks/>
+        Public Property Pelak() As String
+            Get
+                Return Me.pelakField
+            End Get
+            Set
+                Me.pelakField = value
+            End Set
+        End Property
+        
+        '''<remarks/>
+        Public Property Serial() As String
+            Get
+                Return Me.serialField
+            End Get
+            Set
+                Me.serialField = value
+            End Set
+        End Property
+        
+        '''<remarks/>
+        Public Property SmartCardNo() As String
+            Get
+                Return Me.smartCardNoField
+            End Get
+            Set
+                Me.smartCardNoField = value
+            End Set
+        End Property
     End Class
     
     '''<remarks/>
@@ -1054,33 +1228,6 @@ Namespace PayanehWS
     
     '''<remarks/>
     <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")>  _
-    Public Delegate Sub WebMethodGetnIdCarTruckBySmartCarNoCompletedEventHandler(ByVal sender As Object, ByVal e As WebMethodGetnIdCarTruckBySmartCarNoCompletedEventArgs)
-    
-    '''<remarks/>
-    <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0"),  _
-     System.Diagnostics.DebuggerStepThroughAttribute(),  _
-     System.ComponentModel.DesignerCategoryAttribute("code")>  _
-    Partial Public Class WebMethodGetnIdCarTruckBySmartCarNoCompletedEventArgs
-        Inherits System.ComponentModel.AsyncCompletedEventArgs
-        
-        Private results() As Object
-        
-        Friend Sub New(ByVal results() As Object, ByVal exception As System.Exception, ByVal cancelled As Boolean, ByVal userState As Object)
-            MyBase.New(exception, cancelled, userState)
-            Me.results = results
-        End Sub
-        
-        '''<remarks/>
-        Public ReadOnly Property Result() As Long
-            Get
-                Me.RaiseExceptionIfNecessary
-                Return CType(Me.results(0),Long)
-            End Get
-        End Property
-    End Class
-    
-    '''<remarks/>
-    <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")>  _
     Public Delegate Sub WebMethodISCompanyActiveCompletedEventHandler(ByVal sender As Object, ByVal e As WebMethodISCompanyActiveCompletedEventArgs)
     
     '''<remarks/>
@@ -1108,13 +1255,13 @@ Namespace PayanehWS
     
     '''<remarks/>
     <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")>  _
-    Public Delegate Sub WebMethodGetDriverTruckByNationalCodefromRMTOCompletedEventHandler(ByVal sender As Object, ByVal e As WebMethodGetDriverTruckByNationalCodefromRMTOCompletedEventArgs)
+    Public Delegate Sub WebMethodGetTruckDriverByNationalCodefromRMTOCompletedEventHandler(ByVal sender As Object, ByVal e As WebMethodGetTruckDriverByNationalCodefromRMTOCompletedEventArgs)
     
     '''<remarks/>
     <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0"),  _
      System.Diagnostics.DebuggerStepThroughAttribute(),  _
      System.ComponentModel.DesignerCategoryAttribute("code")>  _
-    Partial Public Class WebMethodGetDriverTruckByNationalCodefromRMTOCompletedEventArgs
+    Partial Public Class WebMethodGetTruckDriverByNationalCodefromRMTOCompletedEventArgs
         Inherits System.ComponentModel.AsyncCompletedEventArgs
         
         Private results() As Object
@@ -1125,10 +1272,37 @@ Namespace PayanehWS
         End Sub
         
         '''<remarks/>
-        Public ReadOnly Property Result() As Long
+        Public ReadOnly Property Result() As R2CoreTransportationAndLoadNotificationTruckDriver
             Get
                 Me.RaiseExceptionIfNecessary
-                Return CType(Me.results(0),Long)
+                Return CType(Me.results(0),R2CoreTransportationAndLoadNotificationTruckDriver)
+            End Get
+        End Property
+    End Class
+    
+    '''<remarks/>
+    <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")>  _
+    Public Delegate Sub WebMethodGetTruckBySmartCarNofromRMTOCompletedEventHandler(ByVal sender As Object, ByVal e As WebMethodGetTruckBySmartCarNofromRMTOCompletedEventArgs)
+    
+    '''<remarks/>
+    <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0"),  _
+     System.Diagnostics.DebuggerStepThroughAttribute(),  _
+     System.ComponentModel.DesignerCategoryAttribute("code")>  _
+    Partial Public Class WebMethodGetTruckBySmartCarNofromRMTOCompletedEventArgs
+        Inherits System.ComponentModel.AsyncCompletedEventArgs
+        
+        Private results() As Object
+        
+        Friend Sub New(ByVal results() As Object, ByVal exception As System.Exception, ByVal cancelled As Boolean, ByVal userState As Object)
+            MyBase.New(exception, cancelled, userState)
+            Me.results = results
+        End Sub
+        
+        '''<remarks/>
+        Public ReadOnly Property Result() As R2CoreTransportationAndLoadNotificationTruck
+            Get
+                Me.RaiseExceptionIfNecessary
+                Return CType(Me.results(0),R2CoreTransportationAndLoadNotificationTruck)
             End Get
         End Property
     End Class

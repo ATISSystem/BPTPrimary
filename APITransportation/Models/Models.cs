@@ -8,6 +8,8 @@ using R2CoreTransportationAndLoadNotification.TruckDrivers;
 using R2CoreTransportationAndLoadNotification.Trucks;
 using R2CoreParkingSystem.TrafficCardsManagement;
 using R2CoreTransportationAndLoadNotification.TransportCompanies;
+using R2CoreTransportationAndLoadNotification.LoadingAndDischargingPlaces;
+using R2CoreTransportationAndLoadNotification.FactoriesAndProductionCentersManagement;
 
 namespace APITransportation.Models
 {
@@ -57,7 +59,7 @@ namespace APITransportation.Models
         public class APITransportationSessionIdTruckId
         {
             public string SessionId;
-            public Int64  TruckId;
+            public Int64 TruckId;
         }
 
         public class APITransportationSessionIdTruckIdTruckNativenessExpireDate
@@ -98,15 +100,75 @@ namespace APITransportation.Models
             public Int64 TransportCompanyId;
         }
 
-        public class APITransportationSessionIdTransportCompany
+        public class APITransportationSessionIdRawTransportCompany
 
         {
             public String SessionId;
-            public TransportCompany TransportCompany;
+            public RawTransportCompany RawTransportCompany;
         }
     }
 
+    namespace LoadingAndDischargingPlaces
+    {
+        public class APITransportationSessionIdLADPlaceId
+
+        {
+            public String SessionId;
+            public Int64 LADPlaceId;
+        }
+
+        public class APITransportationSessionIdRawLADPlaceInf
+        {
+            public String SessionId;
+            public RawLoadingAndDischargingPlace RawLADPlaceInf;
+
+        }
+    }
+
+    namespace ProvincesAndCities
+    {
+        public class APITransportationSessionIdProvinceId
+        {
+            public string SessionId;
+            public Int64 ProvinceId;
+        }
+        public class APITransportationSessionIdCityId
+        {
+            public string SessionId;
+            public Int64 CityId;
+        }
+    }
+
+    namespace Products
+    {
+        public class APITransportationSessionIdProductTypeId
+        {
+            public string SessionId;
+            public Int64 ProductTypeId;
+        }
+        public class APITransportationSessionIdProductId
+        {
+            public string SessionId;
+            public Int64 ProductId;
+        }
+    }
+
+    namespace FactoriesAndProductionCenters
+    {
+        public class APITransportationSessionIdFactoryAndProductionCenterId
+
+        {
+            public String SessionId;
+            public Int64 FPCId;
+        }
+
+        public class APITransportationSessionIdRawFactoryAndProductionCenter
+
+        {
+            public String SessionId;
+            public RawFactoryAndProductionCenter RawFPC;
+        }
 
 
-
+    }
 }

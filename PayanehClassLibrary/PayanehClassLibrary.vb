@@ -914,7 +914,7 @@ Namespace CarTruckNobatManagement
             Catch ex As NonIndigenousTrucksException
                 Try
                     Dim InstancePredefinedMessages = New R2CoreMClassPredefinedMessagesManager
-                    SendingSMSResuscitationNonCreditTurn(YourSofttWareUser, InstancePredefinedMessages.GetNSS(R2CoreTransportationPredefinedMessages.UnIndigenousTrucks).MsgContent)
+                    SendingSMSResuscitationNonCreditTurn(YourSofttWareUser, InstancePredefinedMessages.GetNSS(R2CoreTransportationAndLoadNotificationPredefinedMessages.UnIndigenousTrucks).MsgContent)
                 Catch exSendingSMS As Exception
                 End Try
             Catch ex As ResuscitationReserveTurnEndDateReachedException
@@ -2737,7 +2737,7 @@ Namespace DriverTrucksManagement
                     NSS.NSSDriver.nIdPerson = nIdPerson
                     PayanehClassLibraryMClassDriverTrucksManagement.UpdateDriverTruck(NSS)
                 End If
-                Return New R2CoreTransportationAndLoadNotificationTruckDriver With {.DriverId = NSS.NSSDriver.nIdPerson, .NameFamily = NSS.NSSDriver.StrPersonFullName, .NationalCode = NSS.NSSDriver.StrNationalCode, .MobileNumber = NSS.NSSDriver.StrIdNo, .FatherName = NSS.NSSDriver.StrFatherName, .DrivingLicenceNo = NSS.NSSDriver.strDrivingLicenceNo, .Address = NSS.NSSDriver.StrAddress, .SmartCardNo = NSS.StrSmartCardNo}
+                Return New R2CoreTransportationAndLoadNotificationTruckDriver With {.DriverId = NSS.NSSDriver.nIdPerson, .NameFamily = NSS.NSSDriver.StrPersonFullName, .NationalCode = NSS.NSSDriver.StrNationalCode, .MobileNumber = NSS.NSSDriver.StrIdNo, .FatherName = NSS.NSSDriver.StrFatherName, .DrivingLicenseNo = NSS.NSSDriver.strDrivingLicenceNo, .Address = NSS.NSSDriver.StrAddress, .SmartCardNo = NSS.StrSmartCardNo}
             Catch ex As InternetIsnotAvailableException
                 Throw ex
             Catch ex As RMTOWebServiceSmartCardInvalidException
@@ -7051,7 +7051,7 @@ End Namespace
 Namespace PredefinedMessagesManagement
 
     Public MustInherit Class PayanehClassLibraryPredefinedMessages
-        Inherits R2CoreTransportationPredefinedMessages
+        Inherits R2CoreTransportationAndLoadNotificationPredefinedMessages
 
         Public Shared ReadOnly ResuscitationNonCreditTurnSuccess As Int64 = 16
         Public Shared ReadOnly ResuscitationNonCreditTurnServiceDisable As Int64 = 17

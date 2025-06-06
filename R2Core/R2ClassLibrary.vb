@@ -2291,17 +2291,30 @@ Namespace SoftwareUserManagement
             End Try
         End Sub
 
-        Public Function IsExistSoftwareUser(YourSoftwareUserMobile As R2CoreSoftwareUserMobile, ByRef UserId As Int64) As Boolean
+        Public Function IsExistSoftwareUser(YourSoftwareUserMobile As R2CoreSoftwareUserMobile, ByRef UserId As Int64, YourImmediately As Boolean) As Boolean
             Try
                 Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSoftwareUserMobile.SoftwareUserMobileNumber)
-
-                Dim DS As DataSet
-                If DatabaseManagement.R2ClassSqlDataBOXManagement.GetDataBOX(New DatabaseManagement.R2PrimarySqlConnection, "Select UserId from R2Primary.dbo.TblSoftwareUsers where ltrim(rtrim(MobileNumber))='" & YourSoftwareUserMobile.SoftwareUserMobileNumber & "'", 3600, DS, New Boolean).GetRecordsCount = 0 Then
-                    Return False
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim DS As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand("Select UserId from R2Primary.dbo.TblSoftwareUsers where ltrim(rtrim(MobileNumber))='" & YourSoftwareUserMobile.SoftwareUserMobileNumber & "'")
+                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    If Da.Fill(DS) <= 0 Then
+                        Return False
+                    Else
+                        UserId = DS.Tables(0).Rows(0).Item("UserId")
+                        Return True
+                    End If
                 Else
-                    UserId = DS.Tables(0).Rows(0).Item("UserId")
-                    Return True
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                                "Select UserId from R2Primary.dbo.TblSoftwareUsers where ltrim(rtrim(MobileNumber))='" & YourSoftwareUserMobile.SoftwareUserMobileNumber & "'", 3600, DS, New Boolean).GetRecordsCount = 0 Then
+                        Return False
+                    Else
+                        UserId = DS.Tables(0).Rows(0).Item("UserId")
+                        Return True
+                    End If
                 End If
             Catch ex As SqlInjectionException
                 Throw ex
@@ -4735,6 +4748,46 @@ End Namespace
 
 Namespace ExceptionManagement
 
+    Public Class BPTException
+        Inherits ApplicationException
+
+        Protected _Message As String
+        Protected _MessageCode As Int64
+        Protected InstancePredefinedMessages As R2CoreMClassPredefinedMessagesManager
+
+        Public Sub New()
+            InstancePredefinedMessages = New R2CoreMClassPredefinedMessagesManager
+        End Sub
+
+        Public Sub New(YourException As Exception)
+            _Message = YourException.Message
+            _MessageCode = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.None).MsgId
+        End Sub
+
+        Public Overrides ReadOnly Property Message As String
+            Get
+                Return _Message
+            End Get
+        End Property
+
+        Public ReadOnly Property MessageCode As Int64
+            Get
+                Return _MessageCode
+            End Get
+        End Property
+    End Class
+
+    Public Class BPTSoapException
+        Inherits BPTException
+
+        Public Sub New(YourSoapException As SoapException)
+            _Message = YourSoapException.Message
+            _MessageCode = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.BPTSoapException).MsgId
+        End Sub
+    End Class
+
+
+
     Public MustInherit Class R2CoreMClassExceptionsManagement
         Public Shared Function GetSqlExceptionMessage(YourSqlExceptionId As Int64) As String
             Try
@@ -4849,6 +4902,15 @@ Namespace ExceptionManagement
                 Return "اندازه تصویر ارسال شده بیش از حد مجاز است"
             End Get
         End Property
+    End Class
+
+    Public Class AnyNotFoundException
+        Inherits BPTException
+
+        Public Sub New()
+            _Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.AnyNotFoundException).MsgContent
+            _MessageCode = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.AnyNotFoundException).MsgId
+        End Sub
     End Class
 
 

@@ -33,7 +33,7 @@ Imports R2CoreParkingSystem.AccountingManagement
 Imports R2CoreParkingSystem.BlackList
 Imports R2CoreParkingSystem.CamerasManagement
 Imports R2CoreParkingSystem.Cars
-Imports R2CoreParkingSystem.City
+Imports R2CoreParkingSystem.ProvincesAndCities
 Imports R2CoreParkingSystem.ConfigurationManagement
 Imports R2CoreParkingSystem.DataBaseManagement
 Imports R2CoreParkingSystem.ExceptionManagement
@@ -3606,9 +3606,9 @@ Namespace Drivers
 
 End Namespace
 
-Namespace City
+Namespace ProvincesAndCities
 
-    Public Class R2CoreParkingSystemCitysManager
+    Public Class R2CoreParkingSystemProvincesAndCitiesManager
 
         Public Function GetCityNameFromnCityCode(YourCityCode As String) As String
             Try
@@ -3625,6 +3625,75 @@ Namespace City
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Function
+
+        'BPTChanged
+        Public Function GetListOfCitys_SearchIntroCharacters(YourSearchStr As String, YourImmediately As Boolean) As String
+            Try
+                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchStr)
+
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                           "Select Provinces.ProvinceId as ProvinceId,Provinces.ProvinceName as ProvinceName,Provinces.Active as ProvinceActive,Cities.nCityCode as CityCode,Cities.StrCityName as CityName,Cities.Active as CityActive
+                              from R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces
+                                Inner Join DBTransport.dbo.tbCity as Cities On Provinces.ProvinceId=Cities.nProvince 
+                            Where Provinces.Deleted=0 and Cities.Deleted=0 and StrCityName like N'%" & YourSearchStr & "%' Order By Provinces.ProvinceId
+                            for json auto")
+                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                           "Select Provinces.ProvinceId as ProvinceId,Provinces.ProvinceName as ProvinceName,Provinces.Active as ProvinceActive,Cities.nCityCode as CityCode,Cities.StrCityName as CityName,Cities.Active as CityActive
+                              from R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces
+                                Inner Join DBTransport.dbo.tbCity as Cities On Provinces.ProvinceId=Cities.nProvince 
+                            Where Provinces.Deleted=0 and Cities.Deleted=0 and StrCityName like N'%" & YourSearchStr & "%' Order By Provinces.ProvinceId
+                            for json auto", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                        Throw New AnyNotFoundException
+                    End If
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As SqlInjectionException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Sub ChangeActiveStatusOfProvince(YourProvinceId As Int64)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces Set Active=iif(Active=0,1,0) 
+                                      Where ProvinceId=" & YourProvinceId & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub ChangeActiveStatusOfCity(YourCityId As Int64)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Update DBTransport.dbo.tbCity Set Active=iif(Active=0,1,0) 
+                                      Where nCityCode=" & YourCityId & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
 
     End Class
 
@@ -5416,6 +5485,12 @@ Namespace MoneyWalletManagement
                                    Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On TransportCompaniesRelationSoftwareUsers.TCId=TransportCompanies.TCId 
                                    Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationMoneyWallets as TransportCompaniesRelationMoneyWallets On TransportCompanies.TCId=TransportCompaniesRelationMoneyWallets.TransportCompanyId 
                                  Where SoftwareUsers.UserId=" & YourNSSSoftwareuser.UserId & " and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and TransportCompaniesRelationSoftwareUsers.RelationActive=1 and TransportCompanies.Active=1 and TransportCompaniesRelationMoneyWallets.RelationActive=1"
+                ElseIf YourNSSSoftwareuser.UserTypeId = 15 Then
+                    SqlString = "select  Top 1 FPCsRelationMoneyWallets.CardId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationSoftwareUsers as FPCsRelationSoftwareUsers On SoftwareUsers.UserId=FPCsRelationSoftwareUsers.UserId 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters as FPCs On FPCsRelationSoftwareUsers.FPCId=FPCs.FPCId 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationMoneyWallets as FPCsRelationMoneyWallets On FPCs.FPCId=FPCsRelationMoneyWallets.FPCId 
+                                 Where SoftwareUsers.UserId=" & YourNSSSoftwareuser.UserId & " and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and FPCsRelationSoftwareUsers.RelationActive=1 and FPCs.Active=1 and FPCsRelationMoneyWallets.RelationActive=1"
                 End If
                 Dim Ds As New DataSet
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, SqlString, 0, Ds, New Boolean).GetRecordsCount <> 0 Then

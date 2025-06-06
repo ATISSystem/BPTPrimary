@@ -140,6 +140,12 @@
     </None>
     <None Include="packages.config" />
     <None Include="Web References\PayanehWS\PayanehWebService.wsdl" />
+    <None Include="Web References\PayanehWS\R2CoreTransportationAndLoadNotificationTruck.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </None>
+    <None Include="Web References\PayanehWS\R2CoreTransportationAndLoadNotificationTruckDriver.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </None>
     <None Include="Web References\PayanehWS\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.vb</LastGenOutput>
@@ -184,10 +190,10 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://192.168.1.3:2012/PayanehWebService.asmx">
+    <WebReferenceUrl Include="http://192.168.1.2:2012/PayanehWebService.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\PayanehWS\</RelPath>
-      <UpdateFromURL>http://192.168.1.3:2012/PayanehWebService.asmx</UpdateFromURL>
+      <UpdateFromURL>http://192.168.1.2:2012/PayanehWebService.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>

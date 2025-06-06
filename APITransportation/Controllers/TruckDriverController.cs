@@ -4,6 +4,7 @@ using APITransportation.Models.TruckDriver;
 using APITransportation.PayanehWebService;
 using Newtonsoft.Json;
 using R2Core.DateAndTimeManagement;
+using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SecurityAlgorithmsManagement.AESAlgorithms;
 using R2Core.SessionManagement;
@@ -51,6 +52,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(TruckDriver), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -76,9 +79,11 @@ namespace APITransportation.Controllers
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceTruckDrivers.GetNSSTruckDriverfromNationalCode(TruckDriverNationalCode), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTruckDrivers.GetTruckDriverfromNationalCode(TruckDriverNationalCode,true )), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -111,8 +116,6 @@ namespace APITransportation.Controllers
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (DriverNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
             { return _APICommon.CreateErrorContentMessage(ex); }

@@ -1,14 +1,15 @@
 ﻿using APITransportation.Models;
-using APITransportation.Models.LoadingAndDischargingPlaces;
-using APITransportation.PayanehWebService;
+using APITransportation.Models.FactoriesAndProductionCenters;
+using APITransportation.Models.TransportCompanies;
 using Newtonsoft.Json;
 using R2Core.DateAndTimeManagement;
 using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
 using R2Core.SoftwareUserManagement;
-using R2CoreTransportationAndLoadNotification;
-using R2CoreTransportationAndLoadNotification.LoadingAndDischargingPlaces;
+using R2CoreParkingSystem.SMS.SMSOwners;
+using R2CoreTransportationAndLoadNotification.FactoriesAndProductionCentersManagement;
+using R2CoreTransportationAndLoadNotification.TransportCompanies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,13 +23,13 @@ using System.Web.Services.Protocols;
 namespace APITransportation.Controllers
 {
     [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "*")]
-    public class LoadingAndDischargingPlacesController : ApiController
+    public class FactoriesAndProductionCentersController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
 
         [HttpPost]
-        [Route("api/GetLADPlaces")]
-        public HttpResponseMessage GetLADPlaces()
+        [Route("api/GetFPCs")]
+        public HttpResponseMessage GetFactoriesAndProductionCenters()
         {
             try
             {
@@ -40,10 +41,10 @@ namespace APITransportation.Controllers
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
+                var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceLoadingAndDischargingPlaces.GetLoadingAndDischargingPlaces_SearchIntroCharacters(SearchString), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(InstanceFactoriesAndProductionCenters.GetFactoriesAndProductionCenters_SearchIntroCharacters(SearchString, true), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (AnyNotFoundException ex)
@@ -57,23 +58,23 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/GetLADPlace")]
-        public HttpResponseMessage GetLADPlace()
+        [Route("api/GetFPC")]
+        public HttpResponseMessage GetFactoryAndProductionCenter()
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLADPlaceId>(Request.Content.ReadAsStringAsync().Result);
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdFactoryAndProductionCenterId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
-                var LADPlaceId = Content.LADPlaceId;
+                var FPCId = Content.FPCId ;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
+                var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceLoadingAndDischargingPlaces.GetLoadingAndDischargingPlace(LADPlaceId, true)), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceFactoriesAndProductionCenters.GetFactoryAndProductionCenter(FPCId, true )), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (AnyNotFoundException ex)
@@ -87,24 +88,24 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/LADPlaceRegister")]
-        public HttpResponseMessage LADPlaceRegister()
+        [Route("api/FPCRegistering")]
+        public HttpResponseMessage FactoryAndProductionCenterRegistering()
         {
             try
             {
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdRawLADPlaceInf>(Request.Content.ReadAsStringAsync().Result);
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdRawFactoryAndProductionCenter>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
-                var RawLADPlaceInf = Content.RawLADPlaceInf;
+                var FactoryAndProductionCenter = Content.RawFPC;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
-                var LADPlaceId = InstanceLoadingAndDischargingPlaces.LoadingAndDischargingPlaceRegister(RawLADPlaceInf);
-
+                var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
+                InstanceFactoriesAndProductionCenters.FactoryAndProductionCenterRegister (FactoryAndProductionCenter);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { LADPlaceId = LADPlaceId }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SoapException ex)
@@ -116,25 +117,25 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/LADPlaceUpdate")]
-        public HttpResponseMessage LADPlaceUpdate()
+        [Route("api/EditFPC")]
+        public HttpResponseMessage EditFactoryAndProductionCenter()
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdRawLADPlaceInf>(Request.Content.ReadAsStringAsync().Result);
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdRawFactoryAndProductionCenter>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
-                var RawLADPlaceInf = Content.RawLADPlaceInf;
+                var FactoryAndProductionCenter = Content.RawFPC;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
-                InstanceLoadingAndDischargingPlaces.LoadingAndDischargingPlaceUpdating(RawLADPlaceInf);
-
+                var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
+                InstanceFactoriesAndProductionCenters.EditFactoryAndProductionCenter(FactoryAndProductionCenter);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                return response;
             }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -145,28 +146,27 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/LADPlaceDelete")]
-        public HttpResponseMessage LADPlaceDelete()
+        [Route("api/ActivateFPCSMSOwner")]
+        public HttpResponseMessage ActivateFactoryAndProductionCenterSMSOwner()
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLADPlaceId>(Request.Content.ReadAsStringAsync().Result);
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdFactoryAndProductionCenterId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
-                var LADPlaceId = Content.LADPlaceId;
+                var FPCId = Content.FPCId ;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
-                InstanceLoadingAndDischargingPlaces.LoadingAndDischargingPlaceDelete(LADPlaceId);
+                var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
+                var InstanceSMSOwners = new R2CoreParkingSystemMClassSMSOwnersManager(new SoftwareUserService(UserId), new R2DateTimeService());
+                InstanceSMSOwners.ActivateSMSOwner(InstanceFactoriesAndProductionCenters.GetSoftwareUserIdfromFactoryAndProductionCenterId(FPCId, true));
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                return response;
             }
-            catch (SoapException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -174,28 +174,27 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/LoadingPlaceChangeActiveStatus")]
-        public HttpResponseMessage LoadingPlaceChangeActiveStatus()
+        [Route("api/ResetFPCUserPassword")]
+        public HttpResponseMessage ResetFactoryAndProductionCenterUserPassword()
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLADPlaceId>(Request.Content.ReadAsStringAsync().Result);
+
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdFactoryAndProductionCenterId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
-                var LADPlaceId = Content.LADPlaceId;
+                var FPCId = Content.FPCId;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
-                InstanceLoadingAndDischargingPlaces.LoadingPlaceChangeActiveStatus(LADPlaceId);
+                var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
+                var InstanseSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(InstanceFactoriesAndProductionCenters.GetSoftwareUserIdfromFactoryAndProductionCenterId(FPCId, true), UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(SoftWareUserSecurity), Encoding.UTF8, "application/json");
+                return response;
             }
-            catch (SoapException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -203,39 +202,32 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/DischargingPlaceChangeActiveStatus")]
-        public HttpResponseMessage DischargingPlaceChangeActiveStatus()
+        [Route("api/FPCChangeActiveStatus")]
+        public HttpResponseMessage FactoryAndProductionCenterChangeActiveStatus()
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLADPlaceId>(Request.Content.ReadAsStringAsync().Result);
+
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdFactoryAndProductionCenterId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
-                var LADPlaceId = Content.LADPlaceId;
+                var FPCId = Content.FPCId ;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
-                InstanceLoadingAndDischargingPlaces.DischargingPlaceChangeActiveStatus(LADPlaceId);
+                var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
+                var InstanseSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                InstanceFactoriesAndProductionCenters.FactoryAndProductionCenterChangeActiveStatus(FPCId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
-            catch (SoapException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
-
-
-
-
-
-
 
     }
 }

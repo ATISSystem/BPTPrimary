@@ -178,7 +178,8 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
-    <Compile Include="Controllers\GoodsController.cs" />
+    <Compile Include="Controllers\FactoriesAndProductionCentersController.cs" />
+    <Compile Include="Controllers\ProductsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LoadAnnouncementPlacesController.cs" />
     <Compile Include="Controllers\LoadingAndDischargingPlacesController.cs" />

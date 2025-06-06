@@ -1185,7 +1185,7 @@ namespace APITransportation.PayanehWebService {
         
         private string fatherNameField;
         
-        private string drivingLicenceNoField;
+        private string drivingLicenseNoField;
         
         private string addressField;
         
@@ -1242,12 +1242,12 @@ namespace APITransportation.PayanehWebService {
         }
         
         /// <remarks/>
-        public string DrivingLicenceNo {
+        public string DrivingLicenseNo {
             get {
-                return this.drivingLicenceNoField;
+                return this.drivingLicenseNoField;
             }
             set {
-                this.drivingLicenceNoField = value;
+                this.drivingLicenseNoField = value;
             }
         }
         

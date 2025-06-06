@@ -3,6 +3,7 @@ using APITransportation.Models.Truck;
 using APITransportation.Models.Turn;
 using Newtonsoft.Json;
 using R2Core.DateAndTimeManagement;
+using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
 using R2Core.SoftwareUserManagement;
@@ -54,6 +55,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(Truck), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -83,6 +86,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(Truck), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -107,12 +112,14 @@ namespace APITransportation.Controllers
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTruckNativeness = new R2CoreTransportationAndLoadNotificationsTruckNativenessManager();
-                var TruckNativenessExtended = InstanceTruckNativeness.GetTruckNativeness(TruckId);
+                var TruckNativenessExtended = InstanceTruckNativeness.GetTruckNativeness(TruckId, true);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(TruckNativenessExtended), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (TruckNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
@@ -174,6 +181,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(ComposedTruckInf), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -196,7 +205,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
                 var TruckDriverId = Content.TruckDriverId;
-                var TurnId = (Content.TurnId == Int64.MinValue ) ? Int64.MinValue : Content.TurnId;
+                var TurnId = (Content.TurnId == Int64.MinValue) ? Int64.MinValue : Content.TurnId;
                 var MoneyWalletId = Content.MoneyWalletId;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
@@ -205,7 +214,7 @@ namespace APITransportation.Controllers
                 InstanceTrucks.SetComposedTruckInf(TruckId, TruckDriverId, MoneyWalletId, TurnId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed ).MsgContent }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SoapException ex)

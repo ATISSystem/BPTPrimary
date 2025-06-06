@@ -3,6 +3,7 @@ using APITransportation.Models.Truck;
 using APITransportation.Models.Turn;
 using Newtonsoft.Json;
 using R2Core.DateAndTimeManagement;
+using R2Core.ExceptionManagement;
 using R2Core.SessionManagement;
 using R2Core.SoftwareUserManagement;
 using R2CoreParkingSystem.Cars;

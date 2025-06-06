@@ -18,6 +18,7 @@ using Microsoft.Ajax.Utilities;
 using APISoftwareUser.Models;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.DatabaseManagement;
+using R2Core.ExceptionManagement;
 
 
 
@@ -353,7 +354,7 @@ namespace APISoftwareUser.Controllers
                 var UserId=InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSMSOwners = new R2CoreParkingSystemMClassSMSOwnersManager(new SoftwareUserService(UserId), new R2DateTimeService());
-                InstanceSMSOwners.ActivateSMSOwner(SoftwareUserId, UserId);
+                InstanceSMSOwners.ActivateSMSOwner(SoftwareUserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ActivateSMSOwnerSuccessed).MsgContent }), Encoding.UTF8, "application/json");

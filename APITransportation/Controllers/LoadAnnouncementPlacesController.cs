@@ -15,6 +15,7 @@ using R2Core.SoftwareUserManagement;
 using R2CoreTransportationAndLoadNotification.TruckDrivers;
 using R2CoreTransportationAndLoadNotification.LoadAnnouncementPlaces;
 using System.Web.Services.Protocols;
+using R2Core.ExceptionManagement;
 
 
 namespace APITransportation.Controllers
@@ -30,13 +31,6 @@ namespace APITransportation.Controllers
         {
             try
             {
-                //var InstanceSession = new R2CoreSessionManager();
-                //var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                //var Content = JsonConvert.DeserializeObject<R2CoreSessionIdStructure>(Request.Content.ReadAsStringAsync().Result);
-                //var SessionId = Content.SessionId;
-
-                //var UserId = InstanceSession.ConfirmSession(SessionId);
-
                 var InstanceLoadAnnouncementPlaces = new R2CoreTransportationAndLoadNotificationLoadAnnouncementPlacesManager();
                 var LoadAnnouncementPlaces = InstanceLoadAnnouncementPlaces.GetLoadAnnouncementPlaces();
 
@@ -44,6 +38,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(LoadAnnouncementPlaces, Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)

@@ -1,5 +1,6 @@
 ﻿using APICommon;
 using Newtonsoft.Json;
+using R2Core.ExceptionManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,14 +20,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetCaptcha")]
-        public HttpResponseMessage GetCaptcha()
+        public HttpResponseMessage Getxxx()
         {
             try
             {
-                var InstanceSession = new R2Core.SessionManagement.R2CoreSessionManager();
-                var sessionStartBox = InstanceSession.StartSession();
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(sessionStartBox), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(string.Empty ), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (Exception ex)

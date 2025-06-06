@@ -53,5 +53,11 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\R2Core\R2Core.vbproj">
+      <Project>{b0651d1e-73a2-4e74-8483-6fbc60831969}</Project>
+      <Name>R2Core</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

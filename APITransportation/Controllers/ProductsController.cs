@@ -1,11 +1,13 @@
-﻿using APITransportation.Models;
-using APITransportation.Models.TruckDriver;
+﻿using APICommon;
+using APITransportation.Models;
+using APITransportation.Models.Products;
+using APITransportation.Models.ProvincesAndCities;
 using Newtonsoft.Json;
-using R2Core.DateAndTimeManagement;
+using R2Core.ExceptionManagement;
+using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
-using R2Core.SoftwareUserManagement;
-using R2CoreTransportationAndLoadNotification.TruckDrivers;
 using R2CoreParkingSystem.ProvincesAndCities;
+using R2CoreTransportationAndLoadNotification.Products;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,20 +17,17 @@ using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Services.Protocols;
-using APITransportation.Models.ProvincesAndCities;
-using R2Core.PredefinedMessagesManagement;
-using R2Core.ExceptionManagement;
 
 namespace APITransportation.Controllers
 {
     [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "*")]
-    public class ProvincesAndCitiesController : ApiController
+    public class ProductsController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
 
         [HttpPost]
-        [Route("api/GetCities")]
-        public HttpResponseMessage GetCities()
+        [Route("api/GetProducts")]
+        public HttpResponseMessage GetProducts()
         {
             try
             {
@@ -39,10 +38,10 @@ namespace APITransportation.Controllers
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager();
+                var InstanceProducts = new R2CoreTransportationAndLoadNotificationProductsManager();
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceProvincesAndCities.GetListOfCitys_SearchIntroCharacters(SearchString, true), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(InstanceProducts.GetProducts_SearchIntroCharacters(SearchString, true), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (AnyNotFoundException ex)
@@ -56,21 +55,21 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/ChangeActivateStatusOfProvince")]
-        public HttpResponseMessage ChangeActivateStatusOfProvince()
+        [Route("api/ChangeActivateStatusOfProductType")]
+        public HttpResponseMessage ChangeActivateStatusOfProductType()
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdProvinceId>(Request.Content.ReadAsStringAsync().Result);
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdProductTypeId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
-                var ProvinceId = Content.ProvinceId;
+                var ProductTypeId = Content.ProductTypeId;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager();
-                InstanceProvincesAndCities.ChangeActiveStatusOfProvince(ProvinceId);
+                var InstanceProducts = new R2CoreTransportationAndLoadNotificationProductsManager();
+                InstanceProducts.ChangeActiveStatusOfProductType(ProductTypeId);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -83,21 +82,21 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/ChangeActivateStatusOfCity")]
-        public HttpResponseMessage ChangeActivateStatusOfCity()
+        [Route("api/ChangeActivateStatusOfProduct")]
+        public HttpResponseMessage ChangeActivateStatusOfProduct()
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdCityId>(Request.Content.ReadAsStringAsync().Result);
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdProductId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
-                var CityId = Content.CityId;
+                var ProductId = Content.ProductId;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager();
-                InstanceProvincesAndCities.ChangeActiveStatusOfCity(CityId);
+                var InstanceProducts = new R2CoreTransportationAndLoadNotificationProductsManager();
+                InstanceProducts.ChangeActiveStatusOfProduct(ProductId);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -108,6 +107,7 @@ namespace APITransportation.Controllers
             catch (Exception ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
+
 
     }
 }

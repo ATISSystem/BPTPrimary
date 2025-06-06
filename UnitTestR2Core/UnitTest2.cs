@@ -5,6 +5,7 @@ using PayanehClassLibrary.DriverTrucksManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.SoftwareUserManagement;
 using R2CoreParkingSystem.SMS.SMSOwners;
+using R2CoreTransportationAndLoadNotification.FactoriesAndProductionCentersManagement;
 using R2CoreTransportationAndLoadNotification.TransportCompanies;
 using R2CoreTransportationAndLoadNotification.TruckDrivers;
 using System;
@@ -57,7 +58,7 @@ namespace UnitTestR2Core
         {
             try
             {
-                PayanehClassLibraryMClassDriverTrucksManagement.GetDriverTruckfromRMTOAndInsertUpdateLocalDataBaseByNationalCode("5759871382");
+             var x=   PayanehClassLibraryMClassDriverTrucksManagement.GetDriverTruckfromRMTOAndInsertUpdateLocalDataBaseByNationalCode("5759871382");
             }
             catch (SoapException ex)
             {
@@ -142,7 +143,7 @@ namespace UnitTestR2Core
                 InstanceSMSOwners.ActivateSMSOwner(InstanceTransportCompanies.GetSoftwareUserIdfromTransportCompanyId(21306, true));
 
 
-                InstanceTransportCompanies.EditTransportCompany(new TransportCompany { TCId= 21306 , TCTitle = "ا مانت  بار", TCOrganizationCode="", TCTel="03134721838", TCManagerNameFamily="مرتضی شاهمرادی", TCManagerMobileNumber="09122002000", TCCityTitle="", EmailAddress="", Active=true} );
+                InstanceTransportCompanies.EditTransportCompany(new RawTransportCompany { TCId= 21306 , TCTitle = "ا مانت  بار", TCOrganizationCode="", TCTel="03134721838", TCManagerNameFamily="مرتضی شاهمرادی", TCManagerMobileNumber="09122002000", TCCityTitle="", EmailAddress="", Active=true} );
                 var y = 2;
             }
             catch (SoapException ex)
@@ -152,6 +153,25 @@ namespace UnitTestR2Core
             catch (Exception ex)
             { var Y = 2; }
         }
+
+        [TestMethod]
+        public void FactoriesAndProductionCenters()
+        {
+            try
+            {
+                var Instance = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
+
+                var InstanseSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                Instance.EditFactoryAndProductionCenter(new RawFactoryAndProductionCenter {  FPCId=1014,FPCTitle="ertet",FPCTel="",FPCAddress="",FPCManagerMobileNumber= "09152043174", FPCManagerNameFamily="", EmailAddress="", Active=false } );
+            }
+            catch (SoapException ex)
+            {
+                var x = 2;
+            }
+            catch (Exception ex)
+            { var Y = 2; }
+        }
         
+
     }
 }

@@ -4,6 +4,7 @@ using APITransportation.Models.Truck;
 using APITransportation.Models.TruckDriver;
 using Newtonsoft.Json;
 using R2Core.DateAndTimeManagement;
+using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
 using R2Core.SoftwareUserManagement;
@@ -44,9 +45,11 @@ namespace APITransportation.Controllers
                 var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager();
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceTransportCompanies.GetTransportCompanies_SearchIntroCharacters(SearchString), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(InstanceTransportCompanies.GetTransportCompanies_SearchIntroCharacters(SearchString,true ), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -72,9 +75,11 @@ namespace APITransportation.Controllers
                 var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager();
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceTransportCompanies.GetTransportCompanyJSON(TCId,false ), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTransportCompanies.GetTransportCompany(TCId,true )), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -92,9 +97,9 @@ namespace APITransportation.Controllers
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTransportCompany>(Request.Content.ReadAsStringAsync().Result);
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdRawTransportCompany>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
-                var TC = Content.TransportCompany;
+                var TC = Content.RawTransportCompany;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 

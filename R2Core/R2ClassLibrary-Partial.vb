@@ -1106,12 +1106,12 @@ Namespace SessionManagement
     End Class
 
     Public Class SessionOverException
-        Inherits ApplicationException
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "نشست پایان یافته است.مجددا وارد سامانه شوید"
-            End Get
-        End Property
+        Inherits BPTException
+
+        Public Sub New()
+            _Message = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.SessionOverException).MsgContent
+            _MessageCode = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.SessionOverException).MsgId
+        End Sub
     End Class
 
 
@@ -2063,7 +2063,9 @@ Namespace PredefinedMessagesManagement
         Public Shared ReadOnly ChangeSoftwareUserWebProcessAccess As Int64 = 22
         Public Shared ReadOnly RegisteringInformationSuccessed As Int64 = 23
         Public Shared ReadOnly ProcessSuccessed As Int64 = 24
-
+        Public Shared ReadOnly SessionOverException As Int64 = 25
+        Public Shared ReadOnly BPTSoapException As Int64 = 26
+        Public Shared ReadOnly AnyNotFoundException As Int64 = 28
 
     End Class
 
@@ -2854,7 +2856,7 @@ Namespace WebProcessesManagement
 						WebProcessGroups.ViewFlag=1 and  WebProcessGroups.Active=1 and WebProcessGroups.Deleted=0 and
 						WebProcessGroupWebProcess.ERTypeId=" & R2CoreEntityRelationTypes.WebProcessGroup_WebProcess & " and WebProcessGroupWebProcess.RelationActive=1 and
 						WebProcesses.Active=1 and WebProcesses.ViewFlag=1 and WebProcesses.Deleted=0 and
-						[Permissions].PermissionTypeId=" & R2Core.PermissionManagement.R2CorePermissionTypes.SoftwareUsersAccessWebProcesses & "
+						[Permissions].PermissionTypeId=" & R2Core.PermissionManagement.R2CorePermissionTypes.SoftwareUsersAccessWebProcesses & " and [Permissions].RelationActive=1
 			      Order By WebProcessGroups.PGId,WebProcesses.PId 
 				  for json auto", 3600, Ds, New Boolean).GetRecordsCount <> 0 Then
                     Return InstanccePublicProcedures.GetIntegratedJson(Ds)
@@ -4280,12 +4282,15 @@ Namespace SMS
                 Dim CmdSql As New SqlClient.SqlCommand
                 CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
                 Try
+                    'کنترل فعال بودن سرویس اس ام اس
+                    Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager()
+                    If Not InstanceConfiguration.GetConfigBoolean(R2CoreConfigurations.SmsSystemSetting, 0) Then Throw New SmsSystemIsDisabledException
+
                     Dim LstResult = New List(Of KeyValuePair(Of Int64, String))
                     Dim myCurrentDateTime = _DateTime.GetCurrentDateTime
                     'بررسی معادل بودن تعداد اعضاء لیست ها
                     If YourSoftwareUsers.Count <> YourSMSCreationData.Count Then Throw New CreateSMSFailedArrayofSoftwareUserNotEqualtoArrayofSMSCreationDataException
                     'بررسی پارامترهای ورودی
-                    Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
                     Dim InstanceSMSOwners = New R2CoreMClassSMSOwnersManager
                     Dim InstanceSMSTypes = New R2CoreMClassSMSTypesManager
                     Dim NSSSMSType = InstanceSMSTypes.GetNSSSMSType(YourSMSTypeId)
@@ -4340,6 +4345,11 @@ Namespace SMS
                     End If
                     Throw ex
                 Catch ex As SMSTypeIdNotFoundException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As SmsSystemIsDisabledException
                     If CmdSql.Connection.State <> ConnectionState.Closed Then
                         CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
                     End If

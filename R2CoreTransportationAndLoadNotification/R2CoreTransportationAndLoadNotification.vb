@@ -27,7 +27,7 @@ Imports R2Core.ReportsManagement
 Imports R2Core.SoftwareUserManagement
 Imports R2Core.EntityRelationManagement
 Imports R2CoreParkingSystem.AccountingManagement
-Imports R2CoreParkingSystem.City
+Imports R2CoreParkingSystem.ProvincesAndCities
 Imports R2CoreParkingSystem.BlackList
 Imports R2CoreParkingSystem.Cars
 Imports R2CoreParkingSystem.Drivers
@@ -96,6 +96,7 @@ Imports R2CoreTransportationAndLoadNotification.TrucksNativeness.Exceptions
 Imports R2Core.SMS.SMSHandling
 Imports R2CoreTransportationAndLoadNotification.LoadSources
 Imports System.Net
+Imports R2CoreTransportationAndLoadNotification.PredefinedMessagesManagement
 
 Namespace Rmto
     Public MustInherit Class RmtoWebService
@@ -3471,104 +3472,6 @@ Namespace TurnAttendance
 
 End Namespace
 
-Namespace Goods
-    Public Class R2CoreTransportationAndLoadNotificationStandardGoodStructure
-        Inherits R2StandardStructure
-        Public Sub New()
-            MyBase.New()
-            _GoodId = Int64.MinValue
-            _GoodName = String.Empty
-            _ViewFlag = Boolean.FalseString
-            _Active = Boolean.FalseString
-            _Deleted = Boolean.FalseString
-        End Sub
-
-        Public Sub New(ByVal YourGoodId As Int64, ByVal YourGoodName As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
-            MyBase.New(YourGoodId, YourGoodName)
-            _GoodId = YourGoodId
-            _GoodName = YourGoodName
-            _ViewFlag = YourViewFlag
-            _Active = YourActive
-            _Deleted = YourDeleted
-        End Sub
-
-        Public Property GoodId As Int64
-        Public Property GoodName() As String
-        Public Property ViewFlag As Boolean
-        Public Property Active As Boolean
-        Public Property Deleted As Boolean
-
-
-    End Class
-
-    Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassGoodsManagement
-        Public Shared Function GetNSSGood(YourGoodId As Int64) As R2CoreTransportationAndLoadNotificationStandardGoodStructure
-            Try
-                Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from dbtransport.dbo.TbProducts Where StrGoodCode=" & YourGoodId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New GoodNotFoundException
-                Dim NSS As R2CoreTransportationAndLoadNotificationStandardGoodStructure = New R2CoreTransportationAndLoadNotificationStandardGoodStructure(Ds.Tables(0).Rows(0).Item("StrGoodCode"), Ds.Tables(0).Rows(0).Item("StrGoodName").TRIM, Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("Deleted"))
-                Return NSS
-            Catch exx As GoodNotFoundException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Shared Function GetGoods_SearchIntroCharacters(YourSearchString As String) As List(Of R2CoreTransportationAndLoadNotificationStandardGoodStructure)
-            Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
-                InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
-                Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardGoodStructure)
-                Dim DS As DataSet = Nothing
-                R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select StrGoodCode,StrGoodName,ViewFlag,Active,Deleted From DBTransport.dbo.TbProducts Where StrGoodName Like '%" & YourSearchString.Replace("ی", "ي").Replace("ک", "ك") & "%' and ViewFlag=1 Order By StrGoodCode", 3600, DS, New Boolean)
-                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
-                    Lst.Add(New R2CoreTransportationAndLoadNotificationStandardGoodStructure(DS.Tables(0).Rows(Loopx).Item("StrGoodCode"), DS.Tables(0).Rows(Loopx).Item("StrGoodName"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted")))
-                Next
-                Return Lst
-            Catch ex As SqlInjectionException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Shared Function GetGoods_SearchforLeftCharacters(YourSearchString As String) As List(Of R2CoreTransportationAndLoadNotificationStandardGoodStructure)
-            Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
-                InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
-                Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardGoodStructure)
-                Dim DS As DataSet = Nothing
-                R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select StrGoodCode,StrGoodName,ViewFlag,Active,Deleted  From DBTransport.dbo.TbProducts Where Left(StrGoodName," & YourSearchString.Length & ")='" & YourSearchString.Replace("ی", "ي").Replace("ک", "ك") & "' Order By StrGoodCode", 3600, DS, New Boolean)
-                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
-                    Lst.Add(New R2CoreTransportationAndLoadNotificationStandardGoodStructure(DS.Tables(0).Rows(Loopx).Item("StrGoodCode"), DS.Tables(0).Rows(Loopx).Item("StrGoodName"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted")))
-                Next
-                Return Lst
-            Catch ex As SqlInjectionException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-
-
-    End Class
-
-    Namespace Exceptions
-        Public Class GoodNotFoundException
-            Inherits ApplicationException
-            Public Overrides ReadOnly Property Message As String
-                Get
-                    Return "کالا با کد شاخص مورد نظر وجود ندارد"
-                End Get
-            End Property
-        End Class
-
-    End Namespace
-
-End Namespace
-
 Namespace ProcessesManagement
 
     Public MustInherit Class R2CoreTransportationAndLoadNotificationProcesses
@@ -3690,7 +3593,7 @@ Namespace SoftwareUserManagement
         Public Shared ReadOnly Property TransportCompany As Int64 = 7
         Public Shared ReadOnly Property WareHouses As Int64 = 8
         Public Shared ReadOnly Property BillOfLadingIssuingCompany As Int64 = 14
-
+        Public Shared ReadOnly Property FactoriesAndProductionCenters As Int64 = 15
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceSoftwareUsersManager
@@ -3899,6 +3802,7 @@ Namespace SMS
             Public Shared ReadOnly Property LoadingAndDischargingPLacesChangeStatus = 18
             Public Shared ReadOnly Property TransportCompanyChangeActiveStatus = 19
             Public Shared ReadOnly Property ChangeLoadInformation = 20
+            Public Shared ReadOnly Property FactoryAndProductionCenterChangeActiveStatus = 22
         End Class
 
     End Namespace
@@ -4119,22 +4023,31 @@ Namespace TrucksNativeness
         End Function
 
         'BPTChanged
-        Public Function GetTruckNativeness(YourTruckId As Int64) As R2CoreTransportationAndLoadNotificationsTruckNativenessExtendedStructure
+        Public Function GetTruckNativeness(YourTruckId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationsTruckNativenessExtendedStructure
             Try
                 Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                Dim NSS = New R2CoreTransportationAndLoadNotificationsTruckNativenessExtendedStructure
+                Dim NSS As R2CoreTransportationAndLoadNotificationsTruckNativenessExtendedStructure
                 Dim DS As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                             "Select Cars.CarNativenessTypeId,Cars.CarNativenessExpireDate ,TruckNativenessTypes.NTItle  from DBTransport.dbo.TbCar as Cars
+                                  Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTruckNativenessTypes as TruckNativenessTypes On Cars.CarNativenessTypeId=TruckNativenessTypes.NId 
+                              Where Cars.nIDCar=" & YourTruckId & " and Cars.ViewFlag=1 and TruckNativenessTypes.Deleted=0")
+                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    If Da.Fill(DS) <= 0 Then Throw New TruckNotFoundException
+                    NSS = New R2CoreTransportationAndLoadNotificationsTruckNativenessExtendedStructure With {.TruckNativenessTypeId = DS.Tables(0).Rows(0).Item("CarNativenessTypeId"), .TruckNativenessExpireDate = DS.Tables(0).Rows(0).Item("CarNativenessExpireDate").trim, .TruckNativenessTypeTitle = DS.Tables(0).Rows(0).Item("NTItle").trim}
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
                              "Select Cars.CarNativenessTypeId,Cars.CarNativenessExpireDate ,TruckNativenessTypes.NTItle  from DBTransport.dbo.TbCar as Cars
                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTruckNativenessTypes as TruckNativenessTypes On Cars.CarNativenessTypeId=TruckNativenessTypes.NId 
                               Where Cars.nIDCar=" & YourTruckId & " and Cars.ViewFlag=1 and TruckNativenessTypes.Deleted=0", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
-                    NSS.TruckNativenessTypeId = DS.Tables(0).Rows(0).Item("CarNativenessTypeId")
-                    NSS.TruckNativenessExpireDate = DS.Tables(0).Rows(0).Item("CarNativenessExpireDate")
-                    NSS.TruckNativenessTypeTitle = DS.Tables(0).Rows(0).Item("NTItle")
-                    Return NSS
-                Else
-                    Throw New TruckNotFoundException
+                        NSS = New R2CoreTransportationAndLoadNotificationsTruckNativenessExtendedStructure With {.TruckNativenessTypeId = DS.Tables(0).Rows(0).Item("CarNativenessTypeId"), .TruckNativenessExpireDate = DS.Tables(0).Rows(0).Item("CarNativenessExpireDate").trim, .TruckNativenessTypeTitle = DS.Tables(0).Rows(0).Item("NTItle").trim}
+                    Else
+                        Throw New TruckNotFoundException
+                    End If
                 End If
+                Return NSS
             Catch ex As TruckNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -4155,7 +4068,7 @@ Namespace TrucksNativeness
                 If IndigenousTrucks.Contains(NSSTruck.NSSCar.StrCarSerialNo) Then Throw New IndigenousTruckChangeNativnessFailedException
                 'تغییر وضعیت بومی گری
                 Dim newTruckNativenessTypeId = TrucksNativeness.TruckNativenessTypes.None
-                Dim TruckNativeness = GetTruckNativeness(YourTruckId)
+                Dim TruckNativeness = GetTruckNativeness(YourTruckId, True)
                 If TruckNativeness.TruckNativenessTypeId = TruckNativenessTypes.Native Then
                     newTruckNativenessTypeId = TruckNativenessTypes.UnNative
                 ElseIf TruckNativeness.TruckNativenessTypeId = TruckNativenessTypes.UnNative Then
@@ -4207,7 +4120,7 @@ Namespace TrucksNativeness
             Public Overrides ReadOnly Property Message As String
                 Get
                     Dim InstancePredefinedMessages = New R2CoreMClassPredefinedMessagesManager
-                    Return InstancePredefinedMessages.GetNSS(R2CoreTransportationAndLoadNotification.PredefinedMessagesManagement.R2CoreTransportationPredefinedMessages.UnIndigenousTrucks).MsgContent
+                    Return InstancePredefinedMessages.GetNSS(R2CoreTransportationAndLoadNotificationPredefinedMessages.UnIndigenousTrucks).MsgContent
                 End Get
             End Property
         End Class
@@ -4237,13 +4150,191 @@ End Namespace
 
 Namespace PredefinedMessagesManagement
 
-    Public MustInherit Class R2CoreTransportationPredefinedMessages
-        Inherits R2CoreParkingSystemPredefinedMessages
-
+    Public MustInherit Class R2CoreTransportationAndLoadNotificationPredefinedMessages
+        Public Shared ReadOnly LoadAllocationIdNotPairWithDriver As Int64 = 4
         Public Shared ReadOnly UnIndigenousTrucks As Int64 = 15
+        Public Shared ReadOnly TruckNotFoundException As Int64 = 27
+        Public Shared ReadOnly FactoryAndProductionCenterNotFoundException As Int64 = 29
+
+    End Class
+
+
+End Namespace
+
+Namespace Goods
+    Public Class R2CoreTransportationAndLoadNotificationStandardGoodStructure
+        Inherits R2StandardStructure
+        Public Sub New()
+            MyBase.New()
+            _GoodId = Int64.MinValue
+            _GoodName = String.Empty
+            _ViewFlag = Boolean.FalseString
+            _Active = Boolean.FalseString
+            _Deleted = Boolean.FalseString
+        End Sub
+
+        Public Sub New(ByVal YourGoodId As Int64, ByVal YourGoodName As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
+            MyBase.New(YourGoodId, YourGoodName)
+            _GoodId = YourGoodId
+            _GoodName = YourGoodName
+            _ViewFlag = YourViewFlag
+            _Active = YourActive
+            _Deleted = YourDeleted
+        End Sub
+
+        Public Property GoodId As Int64
+        Public Property GoodName() As String
+        Public Property ViewFlag As Boolean
+        Public Property Active As Boolean
+        Public Property Deleted As Boolean
 
 
     End Class
+
+    Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassGoodsManagement
+        Public Shared Function GetNSSGood(YourGoodId As Int64) As R2CoreTransportationAndLoadNotificationStandardGoodStructure
+            Try
+                Dim Ds As DataSet
+                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from dbtransport.dbo.TbProducts Where StrGoodCode=" & YourGoodId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New GoodNotFoundException
+                Dim NSS As R2CoreTransportationAndLoadNotificationStandardGoodStructure = New R2CoreTransportationAndLoadNotificationStandardGoodStructure(Ds.Tables(0).Rows(0).Item("StrGoodCode"), Ds.Tables(0).Rows(0).Item("StrGoodName").TRIM, Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("Deleted"))
+                Return NSS
+            Catch exx As GoodNotFoundException
+                Throw exx
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Shared Function GetGoods_SearchIntroCharacters(YourSearchString As String) As List(Of R2CoreTransportationAndLoadNotificationStandardGoodStructure)
+            Try
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
+                Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardGoodStructure)
+                Dim DS As DataSet = Nothing
+                R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select StrGoodCode,StrGoodName,ViewFlag,Active,Deleted From DBTransport.dbo.TbProducts Where StrGoodName Like '%" & YourSearchString.Replace("ی", "ي").Replace("ک", "ك") & "%' and ViewFlag=1 Order By StrGoodCode", 3600, DS, New Boolean)
+                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+                    Lst.Add(New R2CoreTransportationAndLoadNotificationStandardGoodStructure(DS.Tables(0).Rows(Loopx).Item("StrGoodCode"), DS.Tables(0).Rows(Loopx).Item("StrGoodName"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted")))
+                Next
+                Return Lst
+            Catch ex As SqlInjectionException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Shared Function GetGoods_SearchforLeftCharacters(YourSearchString As String) As List(Of R2CoreTransportationAndLoadNotificationStandardGoodStructure)
+            Try
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
+                Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardGoodStructure)
+                Dim DS As DataSet = Nothing
+                R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select StrGoodCode,StrGoodName,ViewFlag,Active,Deleted  From DBTransport.dbo.TbProducts Where Left(StrGoodName," & YourSearchString.Length & ")='" & YourSearchString.Replace("ی", "ي").Replace("ک", "ك") & "' Order By StrGoodCode", 3600, DS, New Boolean)
+                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+                    Lst.Add(New R2CoreTransportationAndLoadNotificationStandardGoodStructure(DS.Tables(0).Rows(Loopx).Item("StrGoodCode"), DS.Tables(0).Rows(Loopx).Item("StrGoodName"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted")))
+                Next
+                Return Lst
+            Catch ex As SqlInjectionException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+
+
+    End Class
+
+    Namespace Exceptions
+        Public Class GoodNotFoundException
+            Inherits ApplicationException
+            Public Overrides ReadOnly Property Message As String
+                Get
+                    Return "کالا با کد شاخص مورد نظر وجود ندارد"
+                End Get
+            End Property
+        End Class
+
+    End Namespace
+
+End Namespace
+
+'BPTChanged
+Namespace Products
+
+    Public Class R2CoreTransportationAndLoadNotificationProductsManager
+        Public Function GetProducts_SearchIntroCharacters(YourSearchString As String, YourImmediately As Boolean) As String
+            Try
+                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
+
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                           "Select ProductTypes.ProductTypeId as ProductTypeId,ProductTypes.ProductTypeTitle as ProductTypeTitle,ProductTypes.Active as ProductTypeActive,
+                                   Products.strGoodCode as ProductId,Products.strGoodName as ProductTitle,Products.Active as ProductActive
+                            from DBTransport.dbo.tbProductTypes as ProductTypes
+                                Inner Join DBTransport.dbo.tbProducts as Products On ProductTypes.ProductTypeId=Products.ProductTypeId 
+                            Where ProductTypes.Deleted=0 and Products.Deleted=0 and Products.strGoodName Like N'%" & YourSearchString & "%'
+                            Order By ProductTypes.ProductTypeId 
+                            for json auto")
+                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                           "Select ProductTypes.ProductTypeId as ProductTypeId,ProductTypes.ProductTypeTitle as ProductTypeTitle,ProductTypes.Active as ProductTypeActive,
+                                   Products.strGoodCode as ProductId,Products.strGoodName as ProductTitle,Products.Active as ProductActive
+                            from DBTransport.dbo.tbProductTypes as ProductTypes
+                                Inner Join DBTransport.dbo.tbProducts as Products On ProductTypes.ProductTypeId=Products.ProductTypeId 
+                            Where ProductTypes.Deleted=0 and Products.Deleted=0 and Products.strGoodName Like N'%" & YourSearchString & "%'
+                            Order By ProductTypes.ProductTypeId 
+                            for json auto", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                        Throw New AnyNotFoundException
+                    End If
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As SqlInjectionException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Sub ChangeActiveStatusOfProductType(YourProductTypeId As Int64)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Update DBTransport.dbo.tbProductTypes Set Active=iif(Active=0,1,0) 
+                                      Where ProductTypeId=" & YourProductTypeId & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub ChangeActiveStatusOfProduct(YourProductId As Int64)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Update DBTransport.dbo.tbProducts Set Active=iif(Active=0,1,0) 
+                                      Where strGoodCode=" & YourProductId & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+    End Class
+
+
 
 End Namespace
 
