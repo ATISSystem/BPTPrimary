@@ -59,6 +59,7 @@ Imports System.Object
 Imports R2Core.EntityRelationManagement
 Imports R2Core.WebProcessesManagement.Exceptions
 Imports R2Core.SMS.SMSTypes.Exceptions
+Imports R2Core.SMS.SMSOwners
 
 Public Class R2Enums
 
@@ -1968,6 +1969,27 @@ Namespace SoftwareUserManagement
         End Sub
 
         'BPTChanged
+        Public Function GetUser(YourSoftwareUserId As Int64, YourImmediately As Boolean) As R2CoreRawSoftwareUserStructure
+            Try
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSMSOwners = New R2CoreMClassSMSOwnersManager
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand("Select UserId,UserName,MobileNumber,UserTypeId,UserActive from R2Primary.dbo.TblSoftwareUsers Where UserId=" & YourSoftwareUserId & "")
+                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New UserIdNotExistException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblSoftwareUsers Where UserId=" & YourSoftwareUserId & "", 0, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New UserIdNotExistException
+                End If
+                Return New R2CoreRawSoftwareUserStructure With {.UserId = Ds.Tables(0).Rows(0).Item("UserId"), .UserName = Ds.Tables(0).Rows(0).Item("UserName").trim, .MobileNumber = Ds.Tables(0).Rows(0).Item("MobileNumber").trim, .UserActive = Ds.Tables(0).Rows(0).Item("UserActive"), .UserTypeId = Ds.Tables(0).Rows(0).Item("UserTypeId"), .SMSOwnerActive = InstanceSMSOwners.GetSMSOwnerCurrentState(YourSoftwareUserId, YourImmediately).IsSendingActive}
+            Catch ex As UserIdNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
         Public Function GetNSSUser(YourUserShenaseh As String, YourUserPassword As String) As R2CoreStandardSoftwareUserStructure
             Try
                 Dim Ds As DataSet

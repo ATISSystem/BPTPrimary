@@ -171,4 +171,14 @@ namespace APITransportation.Models
 
 
     }
+
+    namespace LoadCapacitor
+    {
+        public class APITransportationSessionIdLoadId
+        {
+            public String SessionId;
+            public Int64 LoadId;
+        }
+
+    }
 }

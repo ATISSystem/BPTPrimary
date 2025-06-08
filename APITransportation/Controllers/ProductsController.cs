@@ -55,8 +55,8 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/ChangeActivateStatusOfProductType")]
-        public HttpResponseMessage ChangeActivateStatusOfProductType()
+        [Route("api/ChangeActivateStatusOfGoodType")]
+        public HttpResponseMessage ChangeActivateStatusOfGoodType()
         {
             try
             {
@@ -82,8 +82,8 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/ChangeActivateStatusOfProduct")]
-        public HttpResponseMessage ChangeActivateStatusOfProduct()
+        [Route("api/ChangeActivateStatusOfGood")]
+        public HttpResponseMessage ChangeActivateStatusOfGood()
         {
             try
             {

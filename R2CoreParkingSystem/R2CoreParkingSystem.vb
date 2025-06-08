@@ -3637,7 +3637,7 @@ Namespace ProvincesAndCities
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
                     Da.SelectCommand = New SqlCommand(
-                           "Select Provinces.ProvinceId as ProvinceId,Provinces.ProvinceName as ProvinceName,Provinces.Active as ProvinceActive,Cities.nCityCode as CityCode,Cities.StrCityName as CityName,Cities.Active as CityActive
+                           "Select Provinces.ProvinceId as ProvinceId,Provinces.ProvinceName as ProvinceName,Provinces.Active as ProvinceActive,Cities.nCityCode as CityCode,Cities.StrCityName as CityTitle,Cities.Active as CityActive
                               from R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces
                                 Inner Join DBTransport.dbo.tbCity as Cities On Provinces.ProvinceId=Cities.nProvince 
                             Where Provinces.Deleted=0 and Cities.Deleted=0 and StrCityName like N'%" & YourSearchStr & "%' Order By Provinces.ProvinceId
@@ -3646,7 +3646,7 @@ Namespace ProvincesAndCities
                     If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
                 Else
                     If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
-                           "Select Provinces.ProvinceId as ProvinceId,Provinces.ProvinceName as ProvinceName,Provinces.Active as ProvinceActive,Cities.nCityCode as CityCode,Cities.StrCityName as CityName,Cities.Active as CityActive
+                           "Select Provinces.ProvinceId as ProvinceId,Provinces.ProvinceName as ProvinceName,Provinces.Active as ProvinceActive,Cities.nCityCode as CityCode,Cities.StrCityName as CityTitle,Cities.Active as CityActive
                               from R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces
                                 Inner Join DBTransport.dbo.tbCity as Cities On Provinces.ProvinceId=Cities.nProvince 
                             Where Provinces.Deleted=0 and Cities.Deleted=0 and StrCityName like N'%" & YourSearchStr & "%' Order By Provinces.ProvinceId

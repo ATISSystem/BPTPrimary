@@ -1441,6 +1441,44 @@ Namespace LoadCapacitor
     End Namespace
 
     Namespace LoadCapacitorLoad
+        'BPTChanged
+        Public Class R2CoreTransportationAndLoadNotificationTPTParams
+            Public Property TPTPDId As Int64
+            Public Property TPTPTitle As String
+            Public Property Cost As Int64
+            Public Property Checked As Boolean
+        End Class
+
+        Public Class R2CoreTransportationAndLoadNotificationLoad
+            Public Property LoadId As Int64
+            Public Property AnnounceDate As String
+            Public Property AnnounceTime As String
+            Public Property TransportCompanyId As Int64
+            Public Property TransportCompanyTitle As String
+            Public Property GoodId As Int64
+            Public Property GoodTitle As String
+            Public Property LoadAnnouncementGroupId As Int64
+            Public Property LoadAnnouncementGroupTitle As String
+            Public Property LoadAnnouncementSubGroupId As Int64
+            Public Property LoadAnnouncementSubGroupTitle As String
+            Public Property SourceCityId As Int64
+            Public Property SourceCityTitle As String
+            Public Property TargetCityId As Int64
+            Public Property TargetCityTitle As String
+            Public Property LoadingPlaceId As Int64
+            Public Property LoadingPlaceTitle As String
+            Public Property DischargingPlaceId As Int64
+            Public Property DischargingPlaceTitle As String
+            Public Property TotalNumber As Int64
+            Public Property Tonaj As Double
+            Public Property Tarrif As Int64
+            Public Property Recipient As String
+            Public Property Address As String
+            Public Property Description As String
+            Public Property LoadStatusId As Int64
+            Public Property LoadStatusTitle As String
+            Public Property TPTParams As List(Of R2CoreTransportationAndLoadNotificationTPTParams)
+        End Class
 
         Public Enum LoadCapacitorLoadsListType
             None = 0
@@ -2248,6 +2286,82 @@ Namespace LoadCapacitor
                 End Try
             End Sub
 
+            'BPTChanged
+            Public Function GetLoad(YournEstelamId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationLoad
+                Try
+                    Dim DS As New DataSet
+                    Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
+
+                    If YourImmediately Then
+                        Dim Da As New SqlClient.SqlDataAdapter
+                        Da.SelectCommand = New SqlCommand("
+                            Select Loads.nEstelamID as LoadId,Loads.dDateElam as AnnounceDate ,Loads.dTimeElam as AnnounceTime,TransportCompanies.TCId as TransportCompanyId,TransportCompanies.TCTitle as TransportCompanyTitle,
+                                   Goods.strGoodCode as GoodId,Goods.strGoodName as GoodTitle,AnnouncementHalls.AHId as LoadAnnouncementGroupId,AnnouncementHalls.AHTitle as LoadAnnouncementGroupTitle,
+                       	           AnnouncementHallSubGroups.AHSGId as LoadAnnouncementSubGroupId,AnnouncementHallSubGroups.AHSGTitle as LoadAnnouncementSubGroupTitle ,
+	                               SourceCities.nCityCode as SourceCityId,SourceCities.StrCityName as SourceCityTitle,TargetCities.nCityCode as TargetCityId,TargetCities.StrCityName as TargetCityTitle,
+	                               LoadingPlaces.LADPlaceId as LoadingPlaceId,LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceId as DischargingPlaceId,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,
+	                               Loads.nCarNumKol as TotalNumber,Loads.nTonaj as Tonaj,Loads.strPriceSug as Tarrif,Loads.strBarName as Recipient,Loads.strAddress as Address,Loads.strDescription as Description,
+                                   LoadStatuses.LoadStatusId as LoadStatusId,LoadStatuses.LoadStatusName as LoadStatusTitle,Loads.TPTParams as TPTParams
+                            from DBTransport.dbo.tbElam as Loads
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On Loads.nCompCode=TransportCompanies.TCId 
+                                   Inner Join DBTransport.dbo.tbProducts as Goods On Loads.nBarcode=Goods.strGoodCode 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementHalls as AnnouncementHalls On Loads.AHId=AnnouncementHalls.AHId 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementHallSubGroups as AnnouncementHallSubGroups On Loads.AHSGId=AnnouncementHallSubGroups.AHSGId
+                                   Inner Join DBTransport.dbo.tbCity as TargetCities On Loads.nCityCode=TargetCities.nCityCode 
+                                   Inner Join DBTransport.dbo.tbCity as SourceCities On Loads.nBarSource=SourceCities.nCityCode 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as LoadingPlaces On Loads.LoadingPlaceId=LoadingPlaces.LADPlaceId 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as DischargingPlaces On Loads.DischargingPlaceId=DischargingPlaces.LADPlaceId 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorLoadStatuses as LoadStatuses On Loads.LoadStatus=LoadStatuses.LoadStatusId 
+                            Where Loads.nEstelamID=" & YournEstelamId & "")
+                        Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                        If Da.Fill(DS) = 0 Then Throw New LoadCapacitorLoadNotFoundException
+                    Else
+                        Dim InstanseSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                        If Not InstanseSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                            "Select Loads.nEstelamID as LoadId,Loads.dDateElam as AnnounceDate ,Loads.dTimeElam as AnnounceTime,TransportCompanies.TCId as TransportCompanyId,TransportCompanies.TCTitle as TransportCompanyTitle,
+                                   Goods.strGoodCode as GoodId,Goods.strGoodName as GoodTitle,AnnouncementHalls.AHId as LoadAnnouncementGroupId,AnnouncementHalls.AHTitle as LoadAnnouncementGroupTitle,
+                       	           AnnouncementHallSubGroups.AHSGId as LoadAnnouncementSubGroupId,AnnouncementHallSubGroups.AHSGTitle as LoadAnnouncementSubGroupTitle ,
+	                               SourceCities.nCityCode as SourceCityId,SourceCities.StrCityName as SourceCityTitle,TargetCities.nCityCode as TargetCityId,TargetCities.StrCityName as TargetCityTitle,
+	                               LoadingPlaces.LADPlaceId as LoadingPlaceId,LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceId as DischargingPlaceId,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,
+	                               Loads.nCarNumKol as TotalNumber,Loads.nTonaj as Tonaj,Loads.strPriceSug as Tarrif,Loads.strBarName as Recipient,Loads.strAddress as Address,Loads.strDescription as Description,
+                                   LoadStatuses.LoadStatusId as LoadStatusId,LoadStatuses.LoadStatusName as LoadStatusTitle,Loads.TPTParams as TPTParams
+                            from DBTransport.dbo.tbElam as Loads
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On Loads.nCompCode=TransportCompanies.TCId 
+                                   Inner Join DBTransport.dbo.tbProducts as Goods On Loads.nBarcode=Goods.strGoodCode 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementHalls as AnnouncementHalls On Loads.AHId=AnnouncementHalls.AHId 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementHallSubGroups as AnnouncementHallSubGroups On Loads.AHSGId=AnnouncementHallSubGroups.AHSGId
+                                   Inner Join DBTransport.dbo.tbCity as TargetCities On Loads.nCityCode=TargetCities.nCityCode 
+                                   Inner Join DBTransport.dbo.tbCity as SourceCities On Loads.nBarSource=SourceCities.nCityCode 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as LoadingPlaces On Loads.LoadingPlaceId=LoadingPlaces.LADPlaceId 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as DischargingPlaces On Loads.DischargingPlaceId=DischargingPlaces.LADPlaceId 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorLoadStatuses as LoadStatuses On Loads.LoadStatus=LoadStatuses.LoadStatusId 
+                            Where Loads.nEstelamID=" & YournEstelamId & "", 120, DS, New Boolean).GetRecordsCount <> 0 Then
+                            Throw New LoadCapacitorLoadNotFoundException
+                        End If
+                    End If
+                    Dim Load = New R2CoreTransportationAndLoadNotificationLoad With
+                    {.LoadId = DS.Tables(0).Rows(0).Item("LoadId"), .AnnounceDate = DS.Tables(0).Rows(0).Item("AnnounceDate").trim, .AnnounceTime = DS.Tables(0).Rows(0).Item("AnnounceTime").trim, .TransportCompanyId = DS.Tables(0).Rows(0).Item("TransportCompanyId"), .TransportCompanyTitle = DS.Tables(0).Rows(0).Item("TransportCompanyTitle").trim,
+                     .GoodId = DS.Tables(0).Rows(0).Item("GoodId"), .GoodTitle = DS.Tables(0).Rows(0).Item("GoodTitle").trim, .LoadAnnouncementGroupId = DS.Tables(0).Rows(0).Item("LoadAnnouncementGroupId"), .LoadAnnouncementGroupTitle = DS.Tables(0).Rows(0).Item("LoadAnnouncementGroupTitle").trim, .LoadAnnouncementSubGroupId = DS.Tables(0).Rows(0).Item("LoadAnnouncementSubGroupId"), .LoadAnnouncementSubGroupTitle = DS.Tables(0).Rows(0).Item("LoadAnnouncementSubGroupTitle").trim,
+                     .SourceCityId = DS.Tables(0).Rows(0).Item("SourceCityId"), .SourceCityTitle = DS.Tables(0).Rows(0).Item("SourceCityTitle").trim, .TargetCityId = DS.Tables(0).Rows(0).Item("TargetCityId"), .TargetCityTitle = DS.Tables(0).Rows(0).Item("TargetCityTitle").trim, .LoadingPlaceId = DS.Tables(0).Rows(0).Item("LoadingPlaceId"), .LoadingPlaceTitle = DS.Tables(0).Rows(0).Item("LoadingPlaceTitle").trim,
+                     .DischargingPlaceId = DS.Tables(0).Rows(0).Item("DischargingPlaceId"), .DischargingPlaceTitle = DS.Tables(0).Rows(0).Item("DischargingPlaceTitle").trim, .TotalNumber = DS.Tables(0).Rows(0).Item("TotalNumber"), .Tonaj = DS.Tables(0).Rows(0).Item("Tonaj"), .Tarrif = DS.Tables(0).Rows(0).Item("Tarrif"), .Recipient = DS.Tables(0).Rows(0).Item("Recipient").trim, .Address = DS.Tables(0).Rows(0).Item("Address").trim, .Description = DS.Tables(0).Rows(0).Item("Description").trim,
+                     .LoadStatusId = DS.Tables(0).Rows(0).Item("LoadStatusId"), .LoadStatusTitle = DS.Tables(0).Rows(0).Item("LoadStatusTitle").trim, .TPTParams = Nothing}
+
+                    Dim LstTPTParams As List(Of R2CoreTransportationAndLoadNotificationStandardTransportTarrifsParametersDetailsStructure) = InstanceTransportTarrifsParameters.GetListofTransportTarrifsParams(DS.Tables(0).Rows(0).Item("TPTParams"))
+                    Dim TPTParams = New List(Of R2CoreTransportationAndLoadNotificationTPTParams)
+                    For Loopx As Int64 = 0 To LstTPTParams.Count - 1
+                        TPTParams.Add(New R2CoreTransportationAndLoadNotificationTPTParams With {.TPTPDId = LstTPTParams(Loopx).TPTPDId, .TPTPTitle = LstTPTParams(Loopx).TPTPTitle, .Cost = LstTPTParams(Loopx).Mblgh, .Checked = LstTPTParams(Loopx).Checked})
+                    Next
+                    Load.TPTParams = TPTParams
+                    Return Load
+                Catch ex As TransportPriceTarrifParameterDetailNotFoundException
+                    Throw ex
+                Catch ex As LoadCapacitorLoadNotFoundException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+
         End Class
 
         Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassLoadCapacitorLoadManagement
@@ -2801,6 +2915,7 @@ Namespace LoadCapacitor
 
 
         End Class
+
 
 
     End Namespace
@@ -3603,6 +3718,210 @@ Namespace LoadCapacitor
                 End Try
             End Sub
 
+            'BPTChanged
+            Public Function LoadRegistering(YourNSS As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadStructure) As Int64
+                'باید کار شود رویش
+                Dim CmdSql As New SqlCommand
+                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Try
+                    Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
+                    Dim InstanceLoadingAndDischargingPlaces = New R2CoreTransportationAndLoadNotification.LoadingAndDischargingPlaces.R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager
+                    Dim InstanceSpecializedPersianCalendar = New R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager
+                    Dim InstanceAnnouncementHalls = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementHallsManager
+                    Dim InstanceConfigurationsofAnnouncementHalls = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementHallsManager
+                    Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager
+                    Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager
+                    Dim InstanceTransportTarrifs = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsManager
+                    Dim InstanceLoadCapacitorAccounting = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorAccountingManager
+                    Dim InstanceLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
+                    Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
+                    Dim NSSAnnouncementHall = InstanceAnnouncementHalls.GetAnnouncementHallfromLoadCapacitorLoad(YourNSS)
+                    Dim NSSAnnouncementHallSubGroup = InstanceAnnouncementHalls.GetNSSAnnouncementHallSubGroupByLoaderTypeId(YourNSS.nTruckType)
+                    Dim NSSLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
+                    Dim InstancePermissions = New R2Core.PermissionManagement.R2CoreInstansePermissionsManager
+                    YourNSS.AHId = NSSAnnouncementHall.AHId
+                    YourNSS.AHSGId = NSSAnnouncementHallSubGroup.AHSGId
+
+                    'کنترل فعال بودن مبدا بارگیری و محل تخلیه
+                    If InstanceLoadingAndDischargingPlaces.IsActiveLoadingPlace(YourNSS.LoadingPlaceId) = False Then Throw New LoadingPlaceIsUnActiveException
+                    If InstanceLoadingAndDischargingPlaces.IsActiveDischargingPlace(YourNSS.DischargingPlaceId) = False Then Throw New DischargingPlaceIsUnActiveException
+
+                    'کنترل فعال بودن مبدا و مقصد
+                    If (Not NSSLoadTargets.GetNSSLoadTarget(YourNSS.nCityCode).NSSCity.Active) Or (Not NSSLoadTargets.GetNSSLoadTarget(YourNSS.nBarSource).NSSCity.Active) Then Throw New LoadTargetorLoadSourceIsUnActiveException
+
+                    'کنترل تناژ بار 
+                    If YourNSS.nTonaj > InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 7) Then If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanRegisterOrEditLoadsAnyTonaj, YourNSS.nUserId, 0) Then Throw New LoadCapacitorLoadTonajExceededException
+
+                    'Try
+                    '    Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
+                    '    InstanceLoadCapacitorLoad.LoadCapacitorLoadTonajValidate(YourNSS)
+                    'Catch ex As Exception
+                    '    Dim InstnaceLogging = New R2CoreInstanceLoggingManager
+                    '    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+                    '    InstnaceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Warn, InstnaceLogging.GetNSSLogType(R2CoreLogType.Warn).LogTitle, ex.Message, String.Empty, String.Empty, String.Empty, String.Empty, InstanceSoftwareUsers.GetSystemUserId(), _DateTime.GetCurrentDateTimeMilladi(), Nothing))
+                    'End Try
+                    'بررسی تطابق استان انتخاب شده با زیرگروه اعلام بار
+                    If Not InstanceAnnouncementHalls.HasRelationBetweenProvinceAndAnnouncementHallSubGroup(InstanceLoadTargets.GetNSSLoadTarget(YourNSS.nCityCode).NSSCity.nProvince, YourNSS.AHSGId) Then Throw New HasNotRelationBetweenProvinceAndAnnouncementHallSubGroup
+                    'بررسی اینکه آیا برای زیرگروه مربوطه امکان ثبت بار وجود دارد یا نه
+                    If Not ISActiveLoadCapacitorLoadRegistering(YourNSS) Then Throw New LoadCapacitorLoadRegisteringNotAllowedforThisAnnouncementHallSubGroupException
+                    'کنترل تعداد بار
+                    If YourNSS.nCarNumKol > InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.LoadCapacitorLoadManipulationSetting, 0) Then Throw New LoadCapacitorLoadNumberOverLimitException
+                    If YourNSS.nCarNumKol < 1 Then Throw New LoadCapacitorLoadnCarNumKolCanNotBeZeroException
+                    'کنترل اکتیو بودن شرکت حمل و نقل
+                    If InstanceTransportCompanies.ISTransportCompanyActive(New R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure(YourNSS.nCompCode, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing)) = False Then Throw New TransportCompanyISNotActiveException
+                    'بررسی بار فردا
+                    Dim ComposeSearchString As String = NSSAnnouncementHallSubGroup.AHSGId.ToString + "="
+                    Dim AllTommorowConfigforAHId As String() = Split(InstanceConfigurationsofAnnouncementHalls.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.TommorowLoads, NSSAnnouncementHall.AHId), "-")
+                    Dim AllTommorowConfigforAHSGId = Split(Mid(AllTommorowConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllTommorowConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ";")
+                    Dim IsTommorowLoadRegisteringActive As Boolean = AllTommorowConfigforAHSGId(0)
+                    Dim TommorowLoadRegisteringFirstTime As String = AllTommorowConfigforAHSGId(1)
+                    Dim TommorowLoadRegisteringEndTime As String = AllTommorowConfigforAHSGId(2)
+                    Dim CurrentTimeforRegistering As String = _DateTime.GetCurrentTime()
+                    Dim TommorowLoadRegisteringFlag As Boolean = False
+                    If IsTommorowLoadRegisteringActive And (CurrentTimeforRegistering >= TommorowLoadRegisteringFirstTime And CurrentTimeforRegistering <= TommorowLoadRegisteringEndTime) Then
+                        TommorowLoadRegisteringFlag = True
+                        If InstanceSpecializedPersianCalendar.IsTomorrowIsHolidayforLoadAnnounce Then If Not IsActiveLoadCapacitorLoadRegisteringInHoliDay(YourNSS) Then Throw New LoadCapacitorLoadRegisteringInHolidayNotAllowedException(NSSAnnouncementHallSubGroup.AHSGTitle)
+                    Else
+                        If InstanceSpecializedPersianCalendar.IsTodayIsHolidayforLoadAnnounce Then If Not IsActiveLoadCapacitorLoadRegisteringInHoliDay(YourNSS) Then Throw New LoadCapacitorLoadRegisteringInHolidayNotAllowedException(NSSAnnouncementHallSubGroup.AHSGTitle)
+                        Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
+                        If InstanceAnnouncementTiming.IsTimingActive(YourNSS.AHId, YourNSS.AHSGId) Then
+                            Dim Timing = InstanceAnnouncementTiming.GetTiming(YourNSS.AHId, YourNSS.AHSGId, _DateTime.GetCurrentTime)
+                            If _DateTime.GetCurrentTime() > InstanceAnnouncementHalls.GetAnnouncementHallLeastAnnounceTime(NSSAnnouncementHall.AHId, NSSAnnouncementHallSubGroup.AHSGId).Time Then
+                                Throw New LoadCapacitorLoadRegisterTimePassedException
+                            End If
+                            If Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadAllocationRegistering Or
+                               Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
+                                Throw New LoadCapacitorLoadRegisterTimePassedException
+                            End If
+                        Else
+                            'کنترل اتمام زمان ثبت بار
+                            If _DateTime.GetCurrentTime() > InstanceAnnouncementHalls.GetAnnouncementHallLeastAnnounceTime(NSSAnnouncementHall.AHId, NSSAnnouncementHallSubGroup.AHSGId).Time Then
+                                Throw New LoadCapacitorLoadRegisterTimePassedException
+                            End If
+                        End If
+                    End If
+                    'استاندارد سازی نرخ حمل بر اساس تعرفه های سازمانی
+                    Dim Tarrif As Int64
+                    Try
+                        Tarrif = InstanceTransportTarrifs.GetNSSTransportTarrif(YourNSS).Tarrif
+                        Tarrif = InstanceTransportTarrifs.GetUltimateTransportTarrif(YourNSS.AHSGId, YourNSS.nTonaj, Tarrif)
+                        Tarrif = Tarrif + InstanceTransportTarrifsParameters.GetTotalofTransportTarrifsParameters(YourNSS)
+                    Catch exx As TransportPriceTarrifNotFoundException
+                    End Try
+
+                    'ثبت بار
+                    CmdSql.Connection.Open()
+                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
+                    CmdSql.CommandText = "Select Top 1 nEstelamId From dbtransport.dbo.TbElam with (tablockx) Order By nEstelamId Desc"
+                    CmdSql.ExecuteNonQuery()
+                    CmdSql.CommandText = "Select IDENT_CURRENT('dbtransport.dbo.TbElam') "
+                    Dim nEstelamIdNew As Int64 = CmdSql.ExecuteScalar() + 1
+                    Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
+                    Dim P As SqlClient.SqlParameter
+                    P = New SqlClient.SqlParameter("@nEstelamKey", SqlDbType.NVarChar) : P.Value = Hasher.GenerateSHA256String(nEstelamIdNew)
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@StrBarName", SqlDbType.VarChar) : P.Value = YourNSS.StrBarName
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nCityCode", SqlDbType.Int) : P.Value = YourNSS.nCityCode
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nTonaj", SqlDbType.Float) : P.Value = YourNSS.nTonaj
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nBarCode", SqlDbType.Int) : P.Value = YourNSS.nBarCode
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@bFlag", SqlDbType.Bit) : P.Value = False
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nCompCode", SqlDbType.Int) : P.Value = YourNSS.nCompCode
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@bFlagbarType", SqlDbType.Bit) : P.Value = False
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nTruckType", SqlDbType.Int) : P.Value = YourNSS.nTruckType
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nCarNum", SqlDbType.Int) : P.Value = YourNSS.nCarNumKol
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@StrAddress", SqlDbType.VarChar) : P.Value = YourNSS.StrAddress
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nUserId", SqlDbType.Int) : P.Value = YourNSS.nUserId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@dDateElam", SqlDbType.Char) : P.Value = _DateTime.GetCurrentDateShamsiFull()
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@dTimeElam", SqlDbType.Char) : P.Value = _DateTime.GetCurrentTime()
+                    CmdSql.Parameters.Add(P)
+                    CmdSql.Parameters.AddWithValue("@bflagCarNum", 0)
+                    CmdSql.Parameters.AddWithValue("@strIssueNo", 0)
+                    CmdSql.Parameters.AddWithValue("@strIssueOwner", 0)
+                    CmdSql.Parameters.AddWithValue("@nTonajKol", 0)
+                    P = New SqlClient.SqlParameter("@nCarNumKol", SqlDbType.Int) : P.Value = YourNSS.nCarNumKol
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tarrif
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@StrDescription", SqlDbType.VarChar) : P.Value = YourNSS.StrDescription
+                    CmdSql.Parameters.Add(P)
+                    CmdSql.Parameters.AddWithValue("@dDateExit", DBNull.Value)
+                    CmdSql.Parameters.AddWithValue("@dTimeExit", DBNull.Value)
+                    If TommorowLoadRegisteringFlag Then
+                        P = New SqlClient.SqlParameter("@LoadStatus", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.RegisteredforTommorow
+                    Else
+                        P = New SqlClient.SqlParameter("@LoadStatus", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered
+                    End If
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nBarSource", SqlDbType.Int) : P.Value = YourNSS.nBarSource
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@AHId", SqlDbType.BigInt) : P.Value = NSSAnnouncementHall.AHId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@AHSGId", SqlDbType.BigInt) : P.Value = NSSAnnouncementHallSubGroup.AHSGId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@TPTParams", SqlDbType.VarChar) : P.Value = YourNSS.TPTParams
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@LoadingPlaceId", SqlDbType.BigInt) : P.Value = YourNSS.LoadingPlaceId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@DischargingPlaceId", SqlDbType.BigInt) : P.Value = YourNSS.DischargingPlaceId
+                    CmdSql.Parameters.Add(P)
+                    CmdSql.CommandText = "Insert Into dbtransport.dbo.TbElam Values(@nEstelamKey,@StrBarName,@nCityCode,@nTonaj,@nBarCode,@bFlag,@nCompCode,@bFlagbarType,@nTruckType,@nCarNum,@StrAddress,@nUserId,@dDateElam,@dTimeElam,@bflagCarNum,@strIssueNo,@strIssueOwner,@nTonajKol,@nCarNumKol,@nBarSource,@StrPriceSug,@StrDescription,@dDateExit,@dTimeExit,@LoadStatus,@AHId,@AHSGId,@TPTParams,@LoadingPlaceId,@DischargingPlaceId)"
+                    CmdSql.ExecuteNonQuery()
+                    'ثبت اکانت
+                    If TommorowLoadRegisteringFlag Then
+                        InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(nEstelamIdNew, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.RegisteringforTommorow, YourNSS.nCarNumKol, Nothing, Nothing, Nothing, YourNSS.nUserId))
+                    Else
+                        InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(nEstelamIdNew, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Registering, YourNSS.nCarNumKol, Nothing, Nothing, Nothing, YourNSS.nUserId))
+                    End If
+                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+
+                    'ثبت بار اعتباری
+                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager
+                    If InstanceTurnCancellation.IsLoadforTurnCancellation(InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(nEstelamIdNew, True)) Then
+                        InstanceTurnCancellation.LoadforTurnCancellationRegistering(nEstelamIdNew, True)
+                    Else
+                        InstanceTurnCancellation.LoadforTurnCancellationRegistering(nEstelamIdNew, False)
+                    End If
+
+                    'ارسال کد مخزن بار
+                    Return nEstelamIdNew
+                Catch ex As Exception When TypeOf ex Is LoadCapacitorLoadNumberOverLimitException _
+                                    OrElse TypeOf ex Is LoadCapacitorLoadnCarNumKolCanNotBeZeroException _
+                                    OrElse TypeOf ex Is TransportCompanyISNotActiveException _
+                                    OrElse TypeOf ex Is LoadCapacitorLoadRegisterTimePassedException _
+                                    OrElse TypeOf ex Is TimingNotReachedException _
+                                    OrElse TypeOf ex Is HasNotRelationBetweenProvinceAndAnnouncementHallSubGroup _
+                                    OrElse TypeOf ex Is LoadCapacitorLoadRegisteringNotAllowedforThisAnnouncementHallSubGroupException _
+                                    OrElse TypeOf ex Is TransportPriceTarrifParameterDetailNotFoundException _
+                                    OrElse TypeOf ex Is LoadCapacitorLoadRegisteringInHolidayNotAllowedException _
+                                    OrElse TypeOf ex Is LoadCapacitorLoadTonajExceededException _
+                                    OrElse TypeOf ex Is LoadingPlaceIsUnActiveException _
+                                    OrElse TypeOf ex Is DischargingPlaceIsUnActiveException _
+                                    OrElse TypeOf ex Is LoadingAndDischargingPlaceNotFoundException _
+                                    OrElse TypeOf ex Is LoadCapacitorLoadTonajExceededException _
+                                    OrElse TypeOf ex Is LoadTargetorLoadSourceIsUnActiveException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As Exception
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
 
         End Class
 
@@ -9138,7 +9457,7 @@ Namespace TransportCompanies
                     If InstanceSoftwareUsers.GetNSSUserUnChangeable(New R2CoreSoftwareUserMobile(YourTransportCompany.TCManagerMobileNumber)).UserTypeId <> R2CoreTransportationAndLoadNotificationSoftwareUserTypes.TransportCompany Then Throw New SoftwareUserMobileNumberBelongsToSomeoneElseException
                     'CmdSql.Connection.Open()
                     'CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                    CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers Set RelationActive=0
+                    CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers
                                           Where UserId=" & UserId & " or TCId=" & YourTransportCompany.TCId & ""
                     CmdSql.ExecuteNonQuery()
                     CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers(TCId,UserId,RelationActive,TimeStamp) Values(" & YourTransportCompany.TCId & "," & UserId & ",1,'" & _R2DateTimeService.DateTimeServ.GetCurrentDateTimeMilladiFormated & "')"
@@ -9149,7 +9468,7 @@ Namespace TransportCompanies
                     UserId = InstanceSoftwareUsers.RegisteringSoftwareUser(New R2CoreRawSoftwareUserStructure With {.UserId = Nothing, .MobileNumber = YourTransportCompany.TCManagerMobileNumber, .UserActive = True, .UserName = YourTransportCompany.TCTitle, .UserTypeId = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.TransportCompany}, False, InstanceSoftwareUsers.GetNSSSystemUser.UserId)
                     'CmdSql.Connection.Open()
                     'CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                    CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers Set RelationActive=0
+                    CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers
                                           Where UserId=" & UserId & " or TCId=" & YourTransportCompany.TCId & ""
                     CmdSql.ExecuteNonQuery()
                     CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers(TCId,UserId,RelationActive,TimeStamp) Values(" & YourTransportCompany.TCId & "," & UserId & ",1,'" & _R2DateTimeService.DateTimeServ.GetCurrentDateTimeMilladiFormated & "')"
@@ -9180,7 +9499,7 @@ Namespace TransportCompanies
                         Dim MoneyWalletId = InstanceMoneyWallet.CreateNewMoneyWallet()
                         CmdSql.Connection.Open()
                         CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                        CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationMoneyWallets Set RelationActive=0 Where CardId=" & MoneyWalletId & " or TransportCompanyId=" & YourTransportCompany.TCId & ""
+                        CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationMoneyWallets Where CardId=" & MoneyWalletId & " or TransportCompanyId=" & YourTransportCompany.TCId & ""
                         CmdSql.ExecuteNonQuery()
                         CmdSql.CommandText = "Insert R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationMoneyWallets(CardId,TransportCompanyId,RelationActive) Values(" & MoneyWalletId & "," & YourTransportCompany.TCId & ",1)"
                         CmdSql.ExecuteNonQuery()
@@ -11133,6 +11452,27 @@ Namespace FactoriesAndProductionCentersManagement
             End Try
         End Function
 
+        Public Sub DeleteFactoryAndProductionCenter(YourFPCId As Int64)
+            Dim CmdSql As SqlCommand = New SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters Set Deleted=0
+                                      Where FPCId=" & YourFPCId & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As DataBaseException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw ex
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
         Public Sub EditFactoryAndProductionCenter(YourRawFactoryAndProductionCenter As RawFactoryAndProductionCenter)
             Dim CmdSql As SqlCommand = New SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
@@ -11146,30 +11486,26 @@ Namespace FactoriesAndProductionCentersManagement
                                       Set FPCTitle='" & YourRawFactoryAndProductionCenter.FPCTitle & "',FPCTel='" & YourRawFactoryAndProductionCenter.FPCTel & "',FPCAddress='" & YourRawFactoryAndProductionCenter.FPCAddress & "',FPCManagerNameFamily='" & YourRawFactoryAndProductionCenter.FPCManagerNameFamily & "',FPCManagerMobileNumber='" & YourRawFactoryAndProductionCenter.FPCManagerMobileNumber & "',EmailAddress='" & YourRawFactoryAndProductionCenter.EmailAddress & "'
                                       Where FPCId=" & YourRawFactoryAndProductionCenter.FPCId & ""
                 CmdSql.ExecuteNonQuery()
-                'CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
                 Dim UserId As Int64 = Int64.MinValue
                 If InstanceSoftwareUsers.IsExistSoftwareUser(New R2CoreSoftwareUserMobile(YourRawFactoryAndProductionCenter.FPCManagerMobileNumber), UserId, True) Then
                     If InstanceSoftwareUsers.GetNSSUserUnChangeable(New R2CoreSoftwareUserMobile(YourRawFactoryAndProductionCenter.FPCManagerMobileNumber)).UserTypeId <> R2CoreTransportationAndLoadNotificationSoftwareUserTypes.FactoriesAndProductionCenters Then Throw New SoftwareUserMobileNumberBelongsToSomeoneElseException
-                    'CmdSql.Connection.Open()
-                    'CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                    CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationSoftwareUsers Set RelationActive=0
+
+                    CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationSoftwareUsers
                                           Where UserId=" & UserId & " or FPCId=" & YourRawFactoryAndProductionCenter.FPCId & ""
                     CmdSql.ExecuteNonQuery()
                     CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationSoftwareUsers(FPCId,UserId,RelationActive,TimeStamp) Values(" & YourRawFactoryAndProductionCenter.FPCId & "," & UserId & ",1,'" & _R2DateTimeService.DateTimeServ.GetCurrentDateTimeMilladiFormated & "')"
                     CmdSql.ExecuteNonQuery()
-                    'CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 Else
                     'ایجاد کاربر
                     UserId = InstanceSoftwareUsers.RegisteringSoftwareUser(New R2CoreRawSoftwareUserStructure With {.UserId = Nothing, .MobileNumber = YourRawFactoryAndProductionCenter.FPCManagerMobileNumber, .UserActive = True, .UserName = YourRawFactoryAndProductionCenter.FPCTitle, .UserTypeId = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.FactoriesAndProductionCenters}, False, InstanceSoftwareUsers.GetNSSSystemUser.UserId)
-                    'CmdSql.Connection.Open()
-                    'CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                    CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationSoftwareUsers Set RelationActive=0
+
+                    CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationSoftwareUsers
                                           Where UserId=" & UserId & " or FPCId=" & YourRawFactoryAndProductionCenter.FPCId & ""
                     CmdSql.ExecuteNonQuery()
                     CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationSoftwareUsers(FPCId,UserId,RelationActive,TimeStamp) Values(" & YourRawFactoryAndProductionCenter.FPCId & "," & UserId & ",1,'" & _R2DateTimeService.DateTimeServ.GetCurrentDateTimeMilladiFormated & "')"
                     CmdSql.ExecuteNonQuery()
-                    'CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+
                     'ایجاد دسترسی ها
                     Dim ComposeSearchString As String = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.FactoriesAndProductionCenters.ToString + ":"
                     Dim AllofProcessGroupsIds As String()
@@ -11193,15 +11529,11 @@ Namespace FactoriesAndProductionCentersManagement
                         'ایجاد کیف پول کاربر
                         Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager
                         Dim MoneyWalletId = InstanceMoneyWallet.CreateNewMoneyWallet()
-                        CmdSql.Connection.Open()
-                        CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                        CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationMoneyWallets Set RelationActive=0 Where CardId=" & MoneyWalletId & " or FPCId=" & YourRawFactoryAndProductionCenter.FPCId & ""
+                        CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationMoneyWallets Where CardId=" & MoneyWalletId & " or FPCId=" & YourRawFactoryAndProductionCenter.FPCId & ""
                         CmdSql.ExecuteNonQuery()
                         CmdSql.CommandText = "Insert R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationMoneyWallets(CardId,FPCId,RelationActive) Values(" & MoneyWalletId & "," & YourRawFactoryAndProductionCenter.FPCId & ",1)"
                         CmdSql.ExecuteNonQuery()
-                        CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                     End If
-
                 End If
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
             Catch ex As SMSTypeIdNotFoundException

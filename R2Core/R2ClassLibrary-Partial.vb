@@ -2066,6 +2066,7 @@ Namespace PredefinedMessagesManagement
         Public Shared ReadOnly SessionOverException As Int64 = 25
         Public Shared ReadOnly BPTSoapException As Int64 = 26
         Public Shared ReadOnly AnyNotFoundException As Int64 = 28
+        Public Shared ReadOnly MoneyWalletNotFoundException As Int64 = 30
 
     End Class
 
@@ -3748,6 +3749,34 @@ Namespace MoneyWallet
                 End Try
             End Function
 
+            Public Function GetMoneyWallet(YourMoneyWalletId As Int64, YourImmediately As Boolean) As R2CoreMoneyWallet
+                Try
+                    Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                    Dim DS As New DataSet
+                    If YourImmediately Then
+                        Dim Da As New SqlClient.SqlDataAdapter
+                        Da.SelectCommand = New SqlCommand("
+                               Select MoneyWallets.CardId As MoneyWalletId , MoneyWallets.CardNo As MoneyWalletCode , MoneyWallets.Charge As Balance  
+                               From R2Primary.dbo.TblRFIDCards as MoneyWallets
+                               Where MoneyWallets.CardId = " & YourMoneyWalletId & "")
+                        Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                        If Da.Fill(DS) <= 0 Then Throw New MoneyWalletNotFoundException
+                    Else
+                        If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                              "Select MoneyWallets.CardId As MoneyWalletId , MoneyWallets.CardNo As MoneyWalletCode , MoneyWallets.Charge As Balance
+                               From R2Primary.dbo.TblRFIDCards as MoneyWallets
+                               Where MoneyWallets.CardId = " & YourMoneyWalletId & "", 0, DS, New Boolean).GetRecordsCount = 0 Then
+                            Throw New MoneyWalletNotFoundException
+                        End If
+                    End If
+                    Return New R2CoreMoneyWallet With {.MoneyWalletId = DS.Tables(0).Rows(0).Item("MoneyWalletId"), .MoneyWalletCode = DS.Tables(0).Rows(0).Item("MoneyWalletCode"), .Balance = DS.Tables(0).Rows(0).Item("Balance")}
+                Catch ex As MoneyWalletNotFoundException
+                    Throw ex
+                Catch ex As Exception
+                    Throw ex
+                End Try
+            End Function
+
         End Class
 
     End Namespace
@@ -3964,6 +3993,16 @@ Namespace MoneyWallet
                     Return "کیف پول مرتبط با کاربر یافت نشد"
                 End Get
             End Property
+        End Class
+
+        'BPTChanged
+        Public Class MoneyWalletNotFoundException
+            Inherits BPTException
+
+            Public Sub New()
+                _Message = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.MoneyWalletNotFoundException).MsgContent
+                _MessageCode = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.MoneyWalletNotFoundException).MsgId
+            End Sub
         End Class
 
     End Namespace
@@ -5192,6 +5231,56 @@ Namespace SMS
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
                 End Try
             End Sub
+
+            'BPTChanged
+            Public Function GetSMSOwner(YourSoftwareUserId As Int64, YourImmediately As Boolean) As R2CoreStandardSMSOwnerStructure
+                Try
+                    Dim DS As New DataSet
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    If YourImmediately Then
+                        Da.SelectCommand = New SqlClient.SqlCommand("Select Top 1 * from R2PrimarySMSSystem.dbo.TblSMSOwners Where SMSOwnerUserId=" & YourSoftwareUserId & " and Active=1 and Deleted=0 Order By DateTimeMilladi Desc")
+                        Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+                        If Da.Fill(DS) <> 0 Then Return New R2CoreStandardSMSOwnerStructure(DS.Tables(0).Rows(0).Item("SMSOwnerUserId"), DS.Tables(0).Rows(0).Item("SMSOTypeId"), DS.Tables(0).Rows(0).Item("ReminderCharge"), DS.Tables(0).Rows(0).Item("ReminderHolder"), DS.Tables(0).Rows(0).Item("IsSendingActive"), DS.Tables(0).Rows(0).Item("PleaseCharge"), DS.Tables(0).Rows(0).Item("DateTimeMilladi"), DS.Tables(0).Rows(0).Item("DateShamsi").trim, DS.Tables(0).Rows(0).Item("Time").trim, DS.Tables(0).Rows(0).Item("UserId"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted"))
+                        Throw New SMSOwnerForSoftwareUserDoNotRegisteredException
+                    Else
+                        Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                        If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 * from R2PrimarySMSSystem.dbo.TblSMSOwners Where SMSOwnerUserId=" & YourSoftwareUserId & " and Active=1 and Deleted=0 Order By DateTimeMilladi Desc", 60, DS, New Boolean).GetRecordsCount <> 0 Then
+                            Return New R2CoreStandardSMSOwnerStructure(DS.Tables(0).Rows(0).Item("SMSOwnerUserId"), DS.Tables(0).Rows(0).Item("SMSOTypeId"), DS.Tables(0).Rows(0).Item("ReminderCharge"), DS.Tables(0).Rows(0).Item("ReminderHolder"), DS.Tables(0).Rows(0).Item("IsSendingActive"), DS.Tables(0).Rows(0).Item("PleaseCharge"), DS.Tables(0).Rows(0).Item("DateTimeMilladi"), DS.Tables(0).Rows(0).Item("DateShamsi").trim, DS.Tables(0).Rows(0).Item("Time").trim, DS.Tables(0).Rows(0).Item("UserId"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted"))
+                        Else
+                            Throw New SMSOwnerForSoftwareUserDoNotRegisteredException
+                        End If
+                    End If
+                Catch ex As SMSOwnerForSoftwareUserDoNotRegisteredException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+
+            Public Function GetSMSOwnerCurrentState(YourSoftwareUserId As Int64, YourImmediately As Boolean) As SMSOwnerCurrentState
+                Try
+                    Dim NSSSMSOwner As R2CoreStandardSMSOwnerStructure = Nothing
+                    Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                    Dim TextToView = String.Empty
+                    Dim TextToViewColor = String.Empty
+                    Try
+                        NSSSMSOwner = GetSMSOwner(YourSoftwareUserId, YourImmediately)
+                    Catch ex As SMSOwnerForSoftwareUserDoNotRegisteredException
+                        TextToView = InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 14)
+                        TextToViewColor = InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 12)
+                        Return New SMSOwnerCurrentState With {.IsSendingActive = False, .TextToView = TextToView, .TextToViewColor = TextToViewColor}
+                    Catch ex As Exception
+                        Throw ex
+                    End Try
+                    TextToView = IIf(NSSSMSOwner.IsSendingActive, InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 15), InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 14))
+                    TextToViewColor = IIf(NSSSMSOwner.IsSendingActive, InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 13), InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 12))
+                    Return New SMSOwnerCurrentState With {.IsSendingActive = NSSSMSOwner.IsSendingActive, .TextToView = TextToView, .TextToViewColor = TextToViewColor}
+                Catch ex As SMSOwnerForSoftwareUserDoNotRegisteredException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
 
         End Class
 

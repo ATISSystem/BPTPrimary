@@ -146,6 +146,35 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
+        [Route("api/DeleteFPC")]
+        public HttpResponseMessage DeleteFactoryAndProductionCenter()
+        {
+            try
+            {
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstanceSession = new R2CoreSessionManager();
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdFactoryAndProductionCenterId>(Request.Content.ReadAsStringAsync().Result);
+                var SessionId = Content.SessionId;
+                var FPCId = Content.FPCId;
+
+                var UserId = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
+                InstanceFactoriesAndProductionCenters.DeleteFactoryAndProductionCenter(FPCId);
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed ).MsgContent), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
         [Route("api/ActivateFPCSMSOwner")]
         public HttpResponseMessage ActivateFactoryAndProductionCenterSMSOwner()
         {

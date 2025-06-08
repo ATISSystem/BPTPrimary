@@ -19,6 +19,8 @@ using APISoftwareUser.Models;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.DatabaseManagement;
 using R2Core.ExceptionManagement;
+using R2Core.MoneyWallet.MoneyWallet;
+using R2Core.MoneyWallet.Exceptions;
 
 
 
@@ -61,6 +63,28 @@ namespace APISoftwareUser.Controllers
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(new R2CoreSessionIdStructure { SessionId = Content.SessionId }), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
+        [Route("api/GetSessionSoftwareUser")]
+        public HttpResponseMessage GetSessionSoftwareUser()
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var Content = JsonConvert.DeserializeObject<R2CoreSessionIdStructure>(Request.Content.ReadAsStringAsync().Result);
+                var SessionId = Content.SessionId;
+
+                var UserId = InstanceSession.ConfirmSession(SessionId);
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceSoftwareUsers.GetUser(UserId, true)), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SessionOverException ex)
@@ -136,7 +160,7 @@ namespace APISoftwareUser.Controllers
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var SoftwareUserId = InstanceSoftwareUsers.RegisteringSoftwareUser(RawSoftwareUser,true, UserId);
+                var SoftwareUserId = InstanceSoftwareUsers.RegisteringSoftwareUser(RawSoftwareUser, true, UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { SoftwareUserId = SoftwareUserId }), Encoding.UTF8, "application/json");
@@ -272,7 +296,7 @@ namespace APISoftwareUser.Controllers
                 InstanceSoftwareUsers.EditSoftwareUser(RawSaftwareUser);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.EditingSoftWareUserSuccessed ).MsgContent }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.EditingSoftWareUserSuccessed).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -351,7 +375,7 @@ namespace APISoftwareUser.Controllers
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
 
-                var UserId=InstanceSession.ConfirmSession(SessionId);
+                var UserId = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSMSOwners = new R2CoreParkingSystemMClassSMSOwnersManager(new SoftwareUserService(UserId), new R2DateTimeService());
                 InstanceSMSOwners.ActivateSMSOwner(SoftwareUserId);
@@ -383,8 +407,8 @@ namespace APISoftwareUser.Controllers
                 var InstanceSMSOwners = new R2CoreMClassSMSOwnersManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
                 var WantedSoftwareUser = InstanceSoftwareUsers.GetNSSUserUnChangeable(new R2CoreSoftwareUserMobile(SoftwareUserMobileNumber));
-                var RawSoftwareUser = new R2CoreRawSoftwareUserStructure  { UserId = WantedSoftwareUser.UserId, UserName = WantedSoftwareUser.UserName, MobileNumber = WantedSoftwareUser.MobileNumber, UserTypeId = WantedSoftwareUser.UserTypeId, UserActive = WantedSoftwareUser.UserActive, SMSOwnerActive = InstanceSMSOwners.GetNSSSMSOwnerCurrentState(WantedSoftwareUser).IsSendingActive };
-  
+                var RawSoftwareUser = new R2CoreRawSoftwareUserStructure { UserId = WantedSoftwareUser.UserId, UserName = WantedSoftwareUser.UserName, MobileNumber = WantedSoftwareUser.MobileNumber, UserTypeId = WantedSoftwareUser.UserTypeId, UserActive = WantedSoftwareUser.UserActive, SMSOwnerActive = InstanceSMSOwners.GetNSSSMSOwnerCurrentState(WantedSoftwareUser).IsSendingActive };
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(RawSoftwareUser), Encoding.UTF8, "application/json");
                 return response;
@@ -473,7 +497,7 @@ namespace APISoftwareUser.Controllers
                 InstanceSoftwareUsers.ChangeSoftwareUserWebProcessAccess(SoftwareUserId, WPId, WPAccess);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ChangeSoftwareUserWebProcessAccess ).MsgContent }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ChangeSoftwareUserWebProcessAccess).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SessionOverException ex)
@@ -554,13 +578,43 @@ namespace APISoftwareUser.Controllers
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.SendWebSiteLink).MsgContent }), Encoding.UTF8, "application/json");
-                return response; 
+                return response;
             }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
+
+        [HttpPost]
+        [Route("api/GetVirtualMoneyWallet")]
+        public HttpResponseMessage GetVirtualMoneyWallet()
+        {
+            try
+            {
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstanceSession = new R2CoreSessionManager();
+
+                var Content = JsonConvert.DeserializeObject<R2CoreSessionIdStructure>(Request.Content.ReadAsStringAsync().Result);
+                var SessionId = Content.SessionId;
+
+                var UserId = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceMoneyWallet = new R2CoreMoneyWalletManager();
+                var MoneyWalletId = InstanceMoneyWallet.CreateNewMoneyWallet();
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceMoneyWallet.GetMoneyWallet(MoneyWalletId,true )), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (MoneyWalletNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
 
 
     }
