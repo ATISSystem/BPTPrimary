@@ -1,5 +1,6 @@
 ﻿using APICommon;
 using Newtonsoft.Json;
+using R2Core.DatabaseManagement;
 using R2Core.ExceptionManagement;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(string.Empty ), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
         }

@@ -1,0 +1,195 @@
+﻿using APICommon.Models;
+using APITransportation.Models.Turn;
+using Newtonsoft.Json;
+using PayanehClassLibrary.TurnRegisterRequest;
+using R2Core.DatabaseManagement;
+using R2Core.DateAndTimeManagement;
+using R2Core.ExceptionManagement;
+using R2Core.PredefinedMessagesManagement;
+using R2Core.SessionManagement;
+using R2CoreParkingSystem.MoneyWalletManagement;
+using R2CoreTransportationAndLoadNotification.RequesterManagement;
+using R2CoreTransportationAndLoadNotification.TurnRegisterRequest;
+using R2CoreTransportationAndLoadNotification.Turns;
+using R2CoreTransportationAndLoadNotification.Turns.Exceptions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Web.Http;
+using System.Web.Http.Cors;
+using System.Web.Services.Protocols;
+
+namespace APITransportation.Controllers
+{
+    [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "*")]
+    public class TurnRegisterRequestController : ApiController
+    {
+        private APICommon.APICommon _APICommon = new APICommon.APICommon();
+
+        [HttpPost]
+        [Route("api/RealTimeTurnRegisterRequest")]
+        public HttpResponseMessage RealTimeTurnRegisterRequest()
+        {
+            try
+            {
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstanceSession = new R2CoreSessionManager();
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckIdSequentialTurnId>(Request.Content.ReadAsStringAsync().Result);
+                var SessionId = Content.SessionId;
+                var TruckId = Content.TruckId;
+                var SequentialTurnId = Content.SequentialTurnId;
+
+                var UserId = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceTurnRegisterRequest = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
+                Int64 TurnId = 0;
+                InstanceTurnRegisterRequest.RealTimeTurnRegisterRequest(SequentialTurnId, TruckId, ref TurnId, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_RealTimeTurnRegisterRequest, TurnType.Permanent, UserId);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+            }
+            catch (MoneyWalletNotExistException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (TurnCostNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+
+
+        }
+
+        [HttpPost]
+        [Route("api/EmergencyTurnRegisterRequest")]
+        public HttpResponseMessage EmergencyTurnRegisterRequest()
+        {
+            try
+            {
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstanceSession = new R2CoreSessionManager();
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckIdSequentialTurnIdDescription>(Request.Content.ReadAsStringAsync().Result);
+                var SessionId = Content.SessionId;
+                var TruckId = Content.TruckId;
+                var SequentialTurnId = Content.SequentialTurnId;
+                var Description = Content.Description;
+
+                var UserId = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceTurnRegisterRequest = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
+                Int64 TurnId = 0;
+                InstanceTurnRegisterRequest.EmergencyTurnRegisterRequest(SequentialTurnId, TruckId, ref TurnId, Description, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_EmergencyTurnRegisterRequest, TurnType.Permanent, UserId);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent ), Encoding.UTF8, "application/json"); return response;
+            }
+            catch (MoneyWalletNotExistException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (TurnCostNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+
+
+        }
+
+        [HttpPost]
+        [Route("api/ResuscitationReserveTurn")]
+        public HttpResponseMessage ResuscitationReserveTurn()
+        {
+            try
+            {
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstanceSession = new R2CoreSessionManager();
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckIdSequentialTurnIdDateTime>(Request.Content.ReadAsStringAsync().Result);
+                var SessionId = Content.SessionId;
+                var TruckId = Content.TruckId;
+                var SequentialTurnId = Content.SequentialTurnId;
+                var ShamsiDate = Content.ShamsiDate;
+                var Time = Content.Time;
+
+                var UserId = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceTurnRegisterRequestTransportation = new R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(new R2DateTimeService());
+                var InstanceTurnRegisterRequestPayaneh = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
+                var TRR = InstanceTurnRegisterRequestTransportation.GetTurnRegisteringRequestWithReservedDateTime(new R2StandardDateAndTimeStructure(DateTime.Now, ShamsiDate, Time), true);
+                Int64 TurnId = 0;
+                InstanceTurnRegisterRequestPayaneh.ResuscitationReserveTurn(SequentialTurnId, TRR.TRRId, TruckId, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_ResuscitationReserveTurn, TurnType.Permanent, UserId);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+            }
+            catch (MoneyWalletNotExistException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (TurnCostNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+
+
+        }
+
+        [HttpPost]
+        [Route("api/ReserveTurnRegisterRequest")]
+        public HttpResponseMessage ReserveTurnRegisterRequest()
+        {
+            try
+            {
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstanceSession = new R2CoreSessionManager();
+                var Content = JsonConvert.DeserializeObject<APICommonSessionId>(Request.Content.ReadAsStringAsync().Result);
+                var SessionId = Content.SessionId;
+
+                var UserId = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceTurnRegisterRequest = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
+                InstanceTurnRegisterRequest.ReserveTurnRegisterRequest(R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_ReserveTurnRegisterRequest,TurnType.Permanent, UserId);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent ), Encoding.UTF8, "application/json"); return response;
+            }
+            catch (MoneyWalletNotExistException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (TurnCostNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+
+
+        }
+
+    }
+}

@@ -1,7 +1,9 @@
-﻿using APITransportation.Models;
+﻿using APICommon.Models;
+using APITransportation.Models;
 using APITransportation.Models.LoadingAndDischargingPlaces;
 using APITransportation.PayanehWebService;
 using Newtonsoft.Json;
+using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
@@ -34,7 +36,7 @@ namespace APITransportation.Controllers
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdSearchString>(Request.Content.ReadAsStringAsync().Result);
+                var Content = JsonConvert.DeserializeObject<APICommonSessionIdSearchString>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
@@ -43,9 +45,11 @@ namespace APITransportation.Controllers
                 var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceLoadingAndDischargingPlaces.GetLoadingAndDischargingPlaces_SearchIntroCharacters(SearchString), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(InstanceLoadingAndDischargingPlaces.GetLoadingAndDischargingPlaces_SearchIntroCharacters(SearchString,true ), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
@@ -76,6 +80,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceLoadingAndDischargingPlaces.GetLoadingAndDischargingPlace(LADPlaceId, true)), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
@@ -107,6 +113,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { LADPlaceId = LADPlaceId }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -136,6 +144,8 @@ namespace APITransportation.Controllers
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -165,6 +175,8 @@ namespace APITransportation.Controllers
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -194,6 +206,8 @@ namespace APITransportation.Controllers
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -223,6 +237,8 @@ namespace APITransportation.Controllers
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -230,12 +246,6 @@ namespace APITransportation.Controllers
             catch (Exception ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
-
-
-
-
-
-
 
     }
 }

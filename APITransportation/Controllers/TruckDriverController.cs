@@ -3,6 +3,7 @@ using APITransportation.Models;
 using APITransportation.Models.TruckDriver;
 using APITransportation.PayanehWebService;
 using Newtonsoft.Json;
+using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
@@ -52,6 +53,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(TruckDriver), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
@@ -70,7 +73,7 @@ namespace APITransportation.Controllers
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager();
+                var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
                 var AES = new AESAlgorithmsManager();
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckDriverNationalCode>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
@@ -82,6 +85,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTruckDrivers.GetTruckDriverfromNationalCode(TruckDriverNationalCode,true )), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -99,7 +104,7 @@ namespace APITransportation.Controllers
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager();
+                var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckDriverIdMobileNumber>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckDriverId = Content.TruckDriverId;
@@ -113,6 +118,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed ).MsgContent ), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -135,7 +142,7 @@ namespace APITransportation.Controllers
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager();
+                var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
                 var InstanceSMSOwners = new R2CoreParkingSystemMClassSMSOwnersManager(new SoftwareUserService(UserId), new R2DateTimeService());
                 InstanceSMSOwners.ActivateSMSOwner(InstanceTruckDrivers.GetSoftwareUserIdfromTruckDriverId(TruckDriverId));
 
@@ -143,6 +150,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed ).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -163,14 +172,16 @@ namespace APITransportation.Controllers
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager();
-                var InstanseSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
+                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
                 var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(InstanceTruckDrivers.GetSoftwareUserIdfromTruckDriverId(TruckDriverId), UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(SoftWareUserSecurity), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -192,14 +203,16 @@ namespace APITransportation.Controllers
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager();
-                var InstanseSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                InstanseSoftwareUsers.SendWebSiteLink(InstanceTruckDrivers.GetNSSSoftwareUserfromTruckDriverId(TruckDriverId));
+                var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
+                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
+                InstanseSoftwareUsers.SendWebSiteLink(InstanceTruckDrivers.GetSoftwareUserfromTruckDriverId(TruckDriverId));
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)

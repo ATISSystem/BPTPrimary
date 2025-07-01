@@ -2,6 +2,7 @@
 using APITransportation.Models.Truck;
 using APITransportation.Models.Turn;
 using Newtonsoft.Json;
+using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
@@ -21,7 +22,6 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.ServiceModel;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -55,6 +55,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(Truck), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
@@ -73,7 +75,7 @@ namespace APITransportation.Controllers
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationInstanceTrucksManager();
+                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdSmartCardNo>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SmartCardNo = Content.SmartCardNo;
@@ -86,6 +88,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(Truck), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
@@ -118,6 +122,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(TruckNativenessExtended), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (TruckNotFoundException ex)
@@ -153,6 +159,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(TruckNativenessExtended), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -174,13 +182,15 @@ namespace APITransportation.Controllers
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationInstanceTrucksManager();
-                var ComposedTruckInf = InstanceTrucks.GetComposedTruckInf(TruckId);
+                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
+                var ComposedTruckInf = InstanceTrucks.GetComposedTruckInf(TruckId, true, true);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(ComposedTruckInf), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
@@ -205,18 +215,20 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
                 var TruckDriverId = Content.TruckDriverId;
-                var TurnId = (Content.TurnId == Int64.MinValue) ? Int64.MinValue : Content.TurnId;
+                var TurnId = Content.TurnId;
                 var MoneyWalletId = Content.MoneyWalletId;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationInstanceTrucksManager();
+                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
                 InstanceTrucks.SetComposedTruckInf(TruckId, TruckDriverId, MoneyWalletId, TurnId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -227,6 +239,39 @@ namespace APITransportation.Controllers
 
         }
 
+        [HttpPost]
+        [Route("api/GetComposedTruckInfForTurnIssue")]
+        public HttpResponseMessage GetComposedTruckInfForTurnIssue()
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckId>(Request.Content.ReadAsStringAsync().Result);
+                var SessionId = Content.SessionId;
+                var TruckId = Content.TruckId;
+
+                var UserId = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
+                var ComposedTruckInfForTurnIssue = InstanceTrucks.GetComposedTruckInf(TruckId, false, true);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(ComposedTruckInfForTurnIssue), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+
+
+        }
 
     }
 }

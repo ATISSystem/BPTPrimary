@@ -52,9 +52,9 @@ Namespace PayanehWS
         
         Private WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportOperationCompleted As System.Threading.SendOrPostCallback
         
-        Private WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportOperationCompleted As System.Threading.SendOrPostCallback
+        Private WebMethodReportingInformationPrividerAnnouncementsPerformanceReportOperationCompleted As System.Threading.SendOrPostCallback
         
-        Private WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportOperationCompleted As System.Threading.SendOrPostCallback
+        Private WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportOperationCompleted As System.Threading.SendOrPostCallback
         
         Private WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsOperationCompleted As System.Threading.SendOrPostCallback
         
@@ -151,10 +151,10 @@ Namespace PayanehWS
         Public Event WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportCompleted As WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportCompletedEventHandler
         
         '''<remarks/>
-        Public Event WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportCompleted As WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportCompletedEventHandler
+        Public Event WebMethodReportingInformationPrividerAnnouncementsPerformanceReportCompleted As WebMethodReportingInformationPrividerAnnouncementsPerformanceReportCompletedEventHandler
         
         '''<remarks/>
-        Public Event WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportCompleted As WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportCompletedEventHandler
+        Public Event WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportCompleted As WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportCompletedEventHandler
         
         '''<remarks/>
         Public Event WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsCompleted As WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsCompletedEventHandler
@@ -410,21 +410,21 @@ Namespace PayanehWS
         '''<remarks/>
         <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerCapacitorLoadsforAnnounce"& _ 
             "Report", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
-        Public Sub WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReport(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementHallSubGroupId As Long, ByVal YourExchangeKey As Long)
-            Me.Invoke("WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReport", New Object() {YourAnnouncementHallId, YourAnnouncementHallSubGroupId, YourExchangeKey})
+        Public Sub WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReport(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementsubGroupId As Long, ByVal YourExchangeKey As Long)
+            Me.Invoke("WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReport", New Object() {YourAnnouncementHallId, YourAnnouncementsubGroupId, YourExchangeKey})
         End Sub
         
         '''<remarks/>
-        Public Overloads Sub WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportAsync(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementHallSubGroupId As Long, ByVal YourExchangeKey As Long)
-            Me.WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportAsync(YourAnnouncementHallId, YourAnnouncementHallSubGroupId, YourExchangeKey, Nothing)
+        Public Overloads Sub WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportAsync(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementsubGroupId As Long, ByVal YourExchangeKey As Long)
+            Me.WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportAsync(YourAnnouncementHallId, YourAnnouncementsubGroupId, YourExchangeKey, Nothing)
         End Sub
         
         '''<remarks/>
-        Public Overloads Sub WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportAsync(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementHallSubGroupId As Long, ByVal YourExchangeKey As Long, ByVal userState As Object)
+        Public Overloads Sub WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportAsync(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementsubGroupId As Long, ByVal YourExchangeKey As Long, ByVal userState As Object)
             If (Me.WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportOperationCompleted Is Nothing) Then
                 Me.WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportOperationCompleted = AddressOf Me.OnWebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportOperationCompleted
             End If
-            Me.InvokeAsync("WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReport", New Object() {YourAnnouncementHallId, YourAnnouncementHallSubGroupId, YourExchangeKey}, Me.WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportOperationCompleted, userState)
+            Me.InvokeAsync("WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReport", New Object() {YourAnnouncementHallId, YourAnnouncementsubGroupId, YourExchangeKey}, Me.WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportOperationCompleted, userState)
         End Sub
         
         Private Sub OnWebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReportOperationCompleted(ByVal arg As Object)
@@ -464,81 +464,81 @@ Namespace PayanehWS
         End Sub
         
         '''<remarks/>
-        <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementHallsPerforma"& _ 
+        <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementsPerforma"& _ 
             "nceReport", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
-        Public Sub WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport(ByVal YourDateTimeMilladi1 As Date, ByVal YourDateShamsiFull1 As String, ByVal YourTime1 As String, ByVal YourDateTimeMilladi2 As Date, ByVal YourDateShamsiFull2 As String, ByVal YourTime2 As String, ByVal YourAHId As Long, ByVal YourExchangeKey As Long)
-            Me.Invoke("WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport", New Object() {YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourAHId, YourExchangeKey})
+        Public Sub WebMethodReportingInformationPrividerAnnouncementsPerformanceReport(ByVal YourDateTimeMilladi1 As Date, ByVal YourDateShamsiFull1 As String, ByVal YourTime1 As String, ByVal YourDateTimeMilladi2 As Date, ByVal YourDateShamsiFull2 As String, ByVal YourTime2 As String, ByVal YourAHId As Long, ByVal YourExchangeKey As Long)
+            Me.Invoke("WebMethodReportingInformationPrividerAnnouncementsPerformanceReport", New Object() {YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourAHId, YourExchangeKey})
         End Sub
         
         '''<remarks/>
-        Public Overloads Sub WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportAsync(ByVal YourDateTimeMilladi1 As Date, ByVal YourDateShamsiFull1 As String, ByVal YourTime1 As String, ByVal YourDateTimeMilladi2 As Date, ByVal YourDateShamsiFull2 As String, ByVal YourTime2 As String, ByVal YourAHId As Long, ByVal YourExchangeKey As Long)
-            Me.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportAsync(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourAHId, YourExchangeKey, Nothing)
+        Public Overloads Sub WebMethodReportingInformationPrividerAnnouncementsPerformanceReportAsync(ByVal YourDateTimeMilladi1 As Date, ByVal YourDateShamsiFull1 As String, ByVal YourTime1 As String, ByVal YourDateTimeMilladi2 As Date, ByVal YourDateShamsiFull2 As String, ByVal YourTime2 As String, ByVal YourAHId As Long, ByVal YourExchangeKey As Long)
+            Me.WebMethodReportingInformationPrividerAnnouncementsPerformanceReportAsync(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourAHId, YourExchangeKey, Nothing)
         End Sub
         
         '''<remarks/>
-        Public Overloads Sub WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportAsync(ByVal YourDateTimeMilladi1 As Date, ByVal YourDateShamsiFull1 As String, ByVal YourTime1 As String, ByVal YourDateTimeMilladi2 As Date, ByVal YourDateShamsiFull2 As String, ByVal YourTime2 As String, ByVal YourAHId As Long, ByVal YourExchangeKey As Long, ByVal userState As Object)
-            If (Me.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportOperationCompleted Is Nothing) Then
-                Me.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportOperationCompleted = AddressOf Me.OnWebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportOperationCompleted
+        Public Overloads Sub WebMethodReportingInformationPrividerAnnouncementsPerformanceReportAsync(ByVal YourDateTimeMilladi1 As Date, ByVal YourDateShamsiFull1 As String, ByVal YourTime1 As String, ByVal YourDateTimeMilladi2 As Date, ByVal YourDateShamsiFull2 As String, ByVal YourTime2 As String, ByVal YourAHId As Long, ByVal YourExchangeKey As Long, ByVal userState As Object)
+            If (Me.WebMethodReportingInformationPrividerAnnouncementsPerformanceReportOperationCompleted Is Nothing) Then
+                Me.WebMethodReportingInformationPrividerAnnouncementsPerformanceReportOperationCompleted = AddressOf Me.OnWebMethodReportingInformationPrividerAnnouncementsPerformanceReportOperationCompleted
             End If
-            Me.InvokeAsync("WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport", New Object() {YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourAHId, YourExchangeKey}, Me.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportOperationCompleted, userState)
+            Me.InvokeAsync("WebMethodReportingInformationPrividerAnnouncementsPerformanceReport", New Object() {YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourAHId, YourExchangeKey}, Me.WebMethodReportingInformationPrividerAnnouncementsPerformanceReportOperationCompleted, userState)
         End Sub
         
-        Private Sub OnWebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportOperationCompleted(ByVal arg As Object)
-            If (Not (Me.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportCompletedEvent) Is Nothing) Then
+        Private Sub OnWebMethodReportingInformationPrividerAnnouncementsPerformanceReportOperationCompleted(ByVal arg As Object)
+            If (Not (Me.WebMethodReportingInformationPrividerAnnouncementsPerformanceReportCompletedEvent) Is Nothing) Then
                 Dim invokeArgs As System.Web.Services.Protocols.InvokeCompletedEventArgs = CType(arg,System.Web.Services.Protocols.InvokeCompletedEventArgs)
-                RaiseEvent WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportCompleted(Me, New System.ComponentModel.AsyncCompletedEventArgs(invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState))
+                RaiseEvent WebMethodReportingInformationPrividerAnnouncementsPerformanceReportCompleted(Me, New System.ComponentModel.AsyncCompletedEventArgs(invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState))
             End If
         End Sub
         
         '''<remarks/>
-        <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementHallsPerforma"& _ 
+        <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementsPerforma"& _ 
             "nceGeneralStatisticsReport", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
-        Public Sub WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport(ByVal YourDateTimeMilladi1 As Date, ByVal YourDateShamsiFull1 As String, ByVal YourTime1 As String, ByVal YourDateTimeMilladi2 As Date, ByVal YourDateShamsiFull2 As String, ByVal YourTime2 As String, ByVal YourExchangeKey As Long)
-            Me.Invoke("WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatistic"& _ 
+        Public Sub WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReport(ByVal YourDateTimeMilladi1 As Date, ByVal YourDateShamsiFull1 As String, ByVal YourTime1 As String, ByVal YourDateTimeMilladi2 As Date, ByVal YourDateShamsiFull2 As String, ByVal YourTime2 As String, ByVal YourExchangeKey As Long)
+            Me.Invoke("WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatistic"& _ 
                     "sReport", New Object() {YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourExchangeKey})
         End Sub
         
         '''<remarks/>
-        Public Overloads Sub WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportAsync(ByVal YourDateTimeMilladi1 As Date, ByVal YourDateShamsiFull1 As String, ByVal YourTime1 As String, ByVal YourDateTimeMilladi2 As Date, ByVal YourDateShamsiFull2 As String, ByVal YourTime2 As String, ByVal YourExchangeKey As Long)
-            Me.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportAsync(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourExchangeKey, Nothing)
+        Public Overloads Sub WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportAsync(ByVal YourDateTimeMilladi1 As Date, ByVal YourDateShamsiFull1 As String, ByVal YourTime1 As String, ByVal YourDateTimeMilladi2 As Date, ByVal YourDateShamsiFull2 As String, ByVal YourTime2 As String, ByVal YourExchangeKey As Long)
+            Me.WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportAsync(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourExchangeKey, Nothing)
         End Sub
         
         '''<remarks/>
-        Public Overloads Sub WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportAsync(ByVal YourDateTimeMilladi1 As Date, ByVal YourDateShamsiFull1 As String, ByVal YourTime1 As String, ByVal YourDateTimeMilladi2 As Date, ByVal YourDateShamsiFull2 As String, ByVal YourTime2 As String, ByVal YourExchangeKey As Long, ByVal userState As Object)
-            If (Me.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportOperationCompleted Is Nothing) Then
-                Me.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportOperationCompleted = AddressOf Me.OnWebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportOperationCompleted
+        Public Overloads Sub WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportAsync(ByVal YourDateTimeMilladi1 As Date, ByVal YourDateShamsiFull1 As String, ByVal YourTime1 As String, ByVal YourDateTimeMilladi2 As Date, ByVal YourDateShamsiFull2 As String, ByVal YourTime2 As String, ByVal YourExchangeKey As Long, ByVal userState As Object)
+            If (Me.WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportOperationCompleted Is Nothing) Then
+                Me.WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportOperationCompleted = AddressOf Me.OnWebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportOperationCompleted
             End If
-            Me.InvokeAsync("WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatistic"& _ 
-                    "sReport", New Object() {YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourExchangeKey}, Me.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportOperationCompleted, userState)
+            Me.InvokeAsync("WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatistic"& _ 
+                    "sReport", New Object() {YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourExchangeKey}, Me.WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportOperationCompleted, userState)
         End Sub
         
-        Private Sub OnWebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportOperationCompleted(ByVal arg As Object)
-            If (Not (Me.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportCompletedEvent) Is Nothing) Then
+        Private Sub OnWebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportOperationCompleted(ByVal arg As Object)
+            If (Not (Me.WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportCompletedEvent) Is Nothing) Then
                 Dim invokeArgs As System.Web.Services.Protocols.InvokeCompletedEventArgs = CType(arg,System.Web.Services.Protocols.InvokeCompletedEventArgs)
-                RaiseEvent WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportCompleted(Me, New System.ComponentModel.AsyncCompletedEventArgs(invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState))
+                RaiseEvent WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportCompleted(Me, New System.ComponentModel.AsyncCompletedEventArgs(invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState))
             End If
         End Sub
         
         '''<remarks/>
         <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerTruckDriversWaitingToGetL"& _ 
             "oadPermissionByAHSGs", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
-        Public Sub WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGs(ByVal YourAnnouncementHallSubGroupId As Long, ByVal YourExchangeKey As Long)
+        Public Sub WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGs(ByVal YourAnnouncementsubGroupId As Long, ByVal YourExchangeKey As Long)
             Me.Invoke("WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSG"& _ 
-                    "s", New Object() {YourAnnouncementHallSubGroupId, YourExchangeKey})
+                    "s", New Object() {YourAnnouncementsubGroupId, YourExchangeKey})
         End Sub
         
         '''<remarks/>
-        Public Overloads Sub WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsAsync(ByVal YourAnnouncementHallSubGroupId As Long, ByVal YourExchangeKey As Long)
-            Me.WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsAsync(YourAnnouncementHallSubGroupId, YourExchangeKey, Nothing)
+        Public Overloads Sub WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsAsync(ByVal YourAnnouncementsubGroupId As Long, ByVal YourExchangeKey As Long)
+            Me.WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsAsync(YourAnnouncementsubGroupId, YourExchangeKey, Nothing)
         End Sub
         
         '''<remarks/>
-        Public Overloads Sub WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsAsync(ByVal YourAnnouncementHallSubGroupId As Long, ByVal YourExchangeKey As Long, ByVal userState As Object)
+        Public Overloads Sub WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsAsync(ByVal YourAnnouncementsubGroupId As Long, ByVal YourExchangeKey As Long, ByVal userState As Object)
             If (Me.WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsOperationCompleted Is Nothing) Then
                 Me.WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsOperationCompleted = AddressOf Me.OnWebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsOperationCompleted
             End If
             Me.InvokeAsync("WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSG"& _ 
-                    "s", New Object() {YourAnnouncementHallSubGroupId, YourExchangeKey}, Me.WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsOperationCompleted, userState)
+                    "s", New Object() {YourAnnouncementsubGroupId, YourExchangeKey}, Me.WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsOperationCompleted, userState)
         End Sub
         
         Private Sub OnWebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsOperationCompleted(ByVal arg As Object)
@@ -636,21 +636,21 @@ Namespace PayanehWS
         '''<remarks/>
         <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationProviderTransportPriceTarrifsRepo"& _ 
             "rt", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
-        Public Sub WebMethodReportingInformationProviderTransportPriceTarrifsReport(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementHallSubGroupId As Long, ByVal YourOActiveStatus As Boolean, ByVal YourExchangeKey As Long)
-            Me.Invoke("WebMethodReportingInformationProviderTransportPriceTarrifsReport", New Object() {YourAnnouncementHallId, YourAnnouncementHallSubGroupId, YourOActiveStatus, YourExchangeKey})
+        Public Sub WebMethodReportingInformationProviderTransportPriceTarrifsReport(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementsubGroupId As Long, ByVal YourOActiveStatus As Boolean, ByVal YourExchangeKey As Long)
+            Me.Invoke("WebMethodReportingInformationProviderTransportPriceTarrifsReport", New Object() {YourAnnouncementHallId, YourAnnouncementsubGroupId, YourOActiveStatus, YourExchangeKey})
         End Sub
         
         '''<remarks/>
-        Public Overloads Sub WebMethodReportingInformationProviderTransportPriceTarrifsReportAsync(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementHallSubGroupId As Long, ByVal YourOActiveStatus As Boolean, ByVal YourExchangeKey As Long)
-            Me.WebMethodReportingInformationProviderTransportPriceTarrifsReportAsync(YourAnnouncementHallId, YourAnnouncementHallSubGroupId, YourOActiveStatus, YourExchangeKey, Nothing)
+        Public Overloads Sub WebMethodReportingInformationProviderTransportPriceTarrifsReportAsync(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementsubGroupId As Long, ByVal YourOActiveStatus As Boolean, ByVal YourExchangeKey As Long)
+            Me.WebMethodReportingInformationProviderTransportPriceTarrifsReportAsync(YourAnnouncementHallId, YourAnnouncementsubGroupId, YourOActiveStatus, YourExchangeKey, Nothing)
         End Sub
         
         '''<remarks/>
-        Public Overloads Sub WebMethodReportingInformationProviderTransportPriceTarrifsReportAsync(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementHallSubGroupId As Long, ByVal YourOActiveStatus As Boolean, ByVal YourExchangeKey As Long, ByVal userState As Object)
+        Public Overloads Sub WebMethodReportingInformationProviderTransportPriceTarrifsReportAsync(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementsubGroupId As Long, ByVal YourOActiveStatus As Boolean, ByVal YourExchangeKey As Long, ByVal userState As Object)
             If (Me.WebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted Is Nothing) Then
                 Me.WebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted = AddressOf Me.OnWebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted
             End If
-            Me.InvokeAsync("WebMethodReportingInformationProviderTransportPriceTarrifsReport", New Object() {YourAnnouncementHallId, YourAnnouncementHallSubGroupId, YourOActiveStatus, YourExchangeKey}, Me.WebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted, userState)
+            Me.InvokeAsync("WebMethodReportingInformationProviderTransportPriceTarrifsReport", New Object() {YourAnnouncementHallId, YourAnnouncementsubGroupId, YourOActiveStatus, YourExchangeKey}, Me.WebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted, userState)
         End Sub
         
         Private Sub OnWebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted(ByVal arg As Object)
@@ -1157,11 +1157,11 @@ Namespace PayanehWS
     
     '''<remarks/>
     <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")>  _
-    Public Delegate Sub WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportCompletedEventHandler(ByVal sender As Object, ByVal e As System.ComponentModel.AsyncCompletedEventArgs)
+    Public Delegate Sub WebMethodReportingInformationPrividerAnnouncementsPerformanceReportCompletedEventHandler(ByVal sender As Object, ByVal e As System.ComponentModel.AsyncCompletedEventArgs)
     
     '''<remarks/>
     <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")>  _
-    Public Delegate Sub WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportCompletedEventHandler(ByVal sender As Object, ByVal e As System.ComponentModel.AsyncCompletedEventArgs)
+    Public Delegate Sub WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportCompletedEventHandler(ByVal sender As Object, ByVal e As System.ComponentModel.AsyncCompletedEventArgs)
     
     '''<remarks/>
     <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")>  _

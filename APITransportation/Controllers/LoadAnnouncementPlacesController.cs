@@ -16,6 +16,7 @@ using R2CoreTransportationAndLoadNotification.TruckDrivers;
 using R2CoreTransportationAndLoadNotification.LoadAnnouncementPlaces;
 using System.Web.Services.Protocols;
 using R2Core.ExceptionManagement;
+using R2Core.DatabaseManagement;
 
 
 namespace APITransportation.Controllers
@@ -38,6 +39,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(LoadAnnouncementPlaces, Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)

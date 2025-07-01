@@ -148,7 +148,7 @@
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementHallId" type="s:long" />
-            <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementHallSubGroupId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementsubGroupId" type="s:long" />
             <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
           </s:sequence>
         </s:complexType>
@@ -177,7 +177,7 @@
       <s:element name="WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportResponse">
         <s:complexType />
       </s:element>
-      <s:element name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport">
+      <s:element name="WebMethodReportingInformationPrividerAnnouncementsPerformanceReport">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi1" type="s:dateTime" />
@@ -191,10 +191,10 @@
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportResponse">
+      <s:element name="WebMethodReportingInformationPrividerAnnouncementsPerformanceReportResponse">
         <s:complexType />
       </s:element>
-      <s:element name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport">
+      <s:element name="WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReport">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="1" maxOccurs="1" name="YourDateTimeMilladi1" type="s:dateTime" />
@@ -207,13 +207,13 @@
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportResponse">
+      <s:element name="WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportResponse">
         <s:complexType />
       </s:element>
       <s:element name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGs">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementHallSubGroupId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementsubGroupId" type="s:long" />
             <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
           </s:sequence>
         </s:complexType>
@@ -263,7 +263,7 @@
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementHallId" type="s:long" />
-            <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementHallSubGroupId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementsubGroupId" type="s:long" />
             <s:element minOccurs="1" maxOccurs="1" name="YourOActiveStatus" type="s:boolean" />
             <s:element minOccurs="1" maxOccurs="1" name="YourExchangeKey" type="s:long" />
           </s:sequence>
@@ -478,17 +478,17 @@
   <wsdl:message name="WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportSoapOut">
     <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportResponse" />
   </wsdl:message>
-  <wsdl:message name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportSoapIn">
-    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport" />
+  <wsdl:message name="WebMethodReportingInformationPrividerAnnouncementsPerformanceReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerAnnouncementsPerformanceReport" />
   </wsdl:message>
-  <wsdl:message name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportSoapOut">
-    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportResponse" />
+  <wsdl:message name="WebMethodReportingInformationPrividerAnnouncementsPerformanceReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerAnnouncementsPerformanceReportResponse" />
   </wsdl:message>
-  <wsdl:message name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportSoapIn">
-    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport" />
+  <wsdl:message name="WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReport" />
   </wsdl:message>
-  <wsdl:message name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportSoapOut">
-    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportResponse" />
+  <wsdl:message name="WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportResponse" />
   </wsdl:message>
   <wsdl:message name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsSoapIn">
     <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGs" />
@@ -609,13 +609,13 @@
       <wsdl:input message="tns:WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportSoapIn" />
       <wsdl:output message="tns:WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportSoapOut" />
     </wsdl:operation>
-    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport">
-      <wsdl:input message="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportSoapIn" />
-      <wsdl:output message="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportSoapOut" />
+    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementsPerformanceReport">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerAnnouncementsPerformanceReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerAnnouncementsPerformanceReportSoapOut" />
     </wsdl:operation>
-    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport">
-      <wsdl:input message="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportSoapIn" />
-      <wsdl:output message="tns:WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportSoapOut" />
+    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReport">
+      <wsdl:input message="tns:WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportSoapOut" />
     </wsdl:operation>
     <wsdl:operation name="WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGs">
       <wsdl:input message="tns:WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGsSoapIn" />
@@ -762,8 +762,8 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport">
-      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport" style="document" />
+    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementsPerformanceReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementsPerformanceReport" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -771,8 +771,8 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport">
-      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport" style="document" />
+    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReport" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -990,8 +990,8 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport">
-      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport" style="document" />
+    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementsPerformanceReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementsPerformanceReport" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
@@ -999,8 +999,8 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport">
-      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport" style="document" />
+    <wsdl:operation name="WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReport" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

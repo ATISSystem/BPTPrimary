@@ -1,8 +1,10 @@
 ﻿using APICommon;
+using APICommon.Models;
 using APITransportation.Models;
 using APITransportation.Models.Products;
 using APITransportation.Models.ProvincesAndCities;
 using Newtonsoft.Json;
+using R2Core.DatabaseManagement;
 using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
@@ -32,7 +34,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdSearchString>(Request.Content.ReadAsStringAsync().Result);
+                var Content = JsonConvert.DeserializeObject<APICommonSessionIdSearchString>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
@@ -44,6 +46,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(InstanceProducts.GetProducts_SearchIntroCharacters(SearchString, true), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
@@ -55,24 +59,27 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/ChangeActivateStatusOfGoodType")]
-        public HttpResponseMessage ChangeActivateStatusOfGoodType()
+        [Route("api/ChangeActivateStatusOfProductType")]
+        public HttpResponseMessage ChangeActivateStatusOfProductType()
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdProductTypeId>(Request.Content.ReadAsStringAsync().Result);
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdProductTypeIdProductTypeActive>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var ProductTypeId = Content.ProductTypeId;
+                var ProductTypeActive = Content.ProductTypeActive;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceProducts = new R2CoreTransportationAndLoadNotificationProductsManager();
-                InstanceProducts.ChangeActiveStatusOfProductType(ProductTypeId);
+                InstanceProducts.ChangeActiveStatusOfProductType(ProductTypeId, ProductTypeActive);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -82,24 +89,27 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/ChangeActivateStatusOfGood")]
-        public HttpResponseMessage ChangeActivateStatusOfGood()
+        [Route("api/ChangeActivateStatusOfProduct")]
+        public HttpResponseMessage ChangeActivateStatusOfProduct()
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdProductId>(Request.Content.ReadAsStringAsync().Result);
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdProductIdProductActive>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var ProductId = Content.ProductId;
+                var ProductActive = Content.ProductActive;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceProducts = new R2CoreTransportationAndLoadNotificationProductsManager();
-                InstanceProducts.ChangeActiveStatusOfProduct(ProductId);
+                InstanceProducts.ChangeActiveStatusOfProduct(ProductId, ProductActive);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)

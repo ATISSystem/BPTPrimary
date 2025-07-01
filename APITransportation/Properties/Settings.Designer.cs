@@ -26,7 +26,7 @@ namespace APITransportation.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://192.168.1.2:2012/payanehwebservice.asmx")]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://192.168.1.2:2012/PayanehWebService.asmx")]
         public string APITransportation_PayanehWebService_PayanehWebService {
             get {
                 return ((string)(this["APITransportation_PayanehWebService_PayanehWebService"]));

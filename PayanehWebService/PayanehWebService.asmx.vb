@@ -20,7 +20,7 @@ Imports R2Core.ExceptionManagement
 Imports R2Core.SecurityAlgorithmsManagement
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SoftwareUserManagement.Exceptions
-Imports R2CoreTransportationAndLoadNotification.AnnouncementHalls
+Imports R2CoreTransportationAndLoadNotification.Announcements
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoadManipulation
 Imports R2CoreTransportationAndLoadNotification.Turns
@@ -156,10 +156,10 @@ Public Class PayanehWebService
     End Sub
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReport(YourAnnouncementHallId As Int64, YourAnnouncementHallSubGroupId As Int64, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationPrividerCapacitorLoadsforAnnounceReport(YourAnnouncementHallId As Int64, YourAnnouncementsubGroupId As Int64, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            PayanehClassLibraryMClassReportsManagement.ReportingInformationProviderCapacitorLoadsforAnnounceReport(YourAnnouncementHallId, YourAnnouncementHallSubGroupId)
+            PayanehClassLibraryMClassReportsManagement.ReportingInformationProviderCapacitorLoadsforAnnounceReport(YourAnnouncementHallId, YourAnnouncementsubGroupId)
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -184,10 +184,10 @@ Public Class PayanehWebService
     End Sub
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport(YourDateTimeMilladi1 As DateTime, YourDateShamsiFull1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourDateShamsiFull2 As String, YourTime2 As String, YourAHId As Int64, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationPrividerAnnouncementsPerformanceReport(YourDateTimeMilladi1 As DateTime, YourDateShamsiFull1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourDateShamsiFull2 As String, YourTime2 As String, YourAHId As Int64, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            PayanehClassLibraryMClassReportsManagement.ReportingInformationProviderAnnouncementHallPerformanceReport(New R2StandardDateAndTimeStructure(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1), New R2StandardDateAndTimeStructure(YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2), PayanehClassLibrary.AnnouncementHallsManagement.AnnouncementHalls.PayanehClassLibraryAnnouncementHallsManagement.GetNSSAnnouncementHall(YourAHId))
+            PayanehClassLibraryMClassReportsManagement.ReportingInformationProviderAnnouncementHallPerformanceReport(New R2StandardDateAndTimeStructure(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1), New R2StandardDateAndTimeStructure(YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2), PayanehClassLibrary.AnnouncementsManagement.Announcements.PayanehClassLibraryAnnouncementsManagement.GetNSSAnnouncementHall(YourAHId))
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -198,7 +198,7 @@ Public Class PayanehWebService
     End Sub
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport(YourDateTimeMilladi1 As DateTime, YourDateShamsiFull1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourDateShamsiFull2 As String, YourTime2 As String, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReport(YourDateTimeMilladi1 As DateTime, YourDateShamsiFull1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourDateShamsiFull2 As String, YourTime2 As String, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
             PayanehClassLibraryMClassReportsManagement.ReportingInformationProviderAnnouncementHallPerformanceGeneralStatisticsReport(New R2StandardDateAndTimeStructure(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1), New R2StandardDateAndTimeStructure(YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2))
@@ -212,10 +212,10 @@ Public Class PayanehWebService
     End Sub
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGs(YourAnnouncementHallSubGroupId As Int64, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationPrividerTruckDriversWaitingToGetLoadPermissionByAHSGs(YourAnnouncementsubGroupId As Int64, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            PayanehClassLibraryMClassReportsManagement.ReportingInformationProviderTruckDriversWaitingToGetLoadPermissionByAHSGs(R2CoreTransportationAndLoadNotificationMClassAnnouncementHallsManagement.GetNSSAnnouncementHallSubGroup(YourAnnouncementHallSubGroupId))
+            PayanehClassLibraryMClassReportsManagement.ReportingInformationProviderTruckDriversWaitingToGetLoadPermissionByAHSGs(R2CoreTransportationAndLoadNotificationMClassAnnouncementsManagement.GetNSSAnnouncementsubGroup(YourAnnouncementsubGroupId))
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -269,10 +269,10 @@ Public Class PayanehWebService
     End Sub
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationProviderTransportPriceTarrifsReport(YourAnnouncementHallId As Int64, YourAnnouncementHallSubGroupId As Int64, YourOActiveStatus As Boolean, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationProviderTransportPriceTarrifsReport(YourAnnouncementHallId As Int64, YourAnnouncementsubGroupId As Int64, YourOActiveStatus As Boolean, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            PayanehClassLibraryMClassReportsManagement.ReportingInformationProviderTransportPriceTarrifsReport(YourAnnouncementHallId, YourAnnouncementHallSubGroupId, YourOActiveStatus)
+            PayanehClassLibraryMClassReportsManagement.ReportingInformationProviderTransportPriceTarrifsReport(YourAnnouncementHallId, YourAnnouncementsubGroupId, YourOActiveStatus)
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException

@@ -108,6 +108,9 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="PayanehClassLibrary.vb" />
+    <Compile Include="TurnRegisterRequest.vb" />
+    <Compile Include="Turns.vb" />
+    <Compile Include="TWS.vb" />
     <Compile Include="Web References\PayanehWS\Reference.vb">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

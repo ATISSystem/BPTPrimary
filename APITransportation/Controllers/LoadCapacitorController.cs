@@ -1,6 +1,7 @@
 ﻿using APITransportation.Models.LoadCapacitor;
 using APITransportation.Models.TruckDriver;
 using Newtonsoft.Json;
+using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.ExceptionManagement;
 using R2Core.SecurityAlgorithmsManagement.AESAlgorithms;
@@ -42,7 +43,7 @@ namespace APITransportation.Controllers
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadCapacitorLoad = new R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager();
+                var InstanceLoadCapacitorLoad = new R2CoreTransportationAndLoadNotificationLoadManager();
                 InstanceLoadCapacitorLoad.GetLoad(LoadId, true);
 
 
@@ -50,6 +51,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceLoadCapacitorLoad.GetLoad(LoadId, true)), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (TransportPriceTarrifParameterDetailNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (LoadCapacitorLoadNotFoundException ex)

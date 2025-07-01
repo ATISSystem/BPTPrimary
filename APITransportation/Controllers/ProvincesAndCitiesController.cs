@@ -18,6 +18,9 @@ using System.Web.Services.Protocols;
 using APITransportation.Models.ProvincesAndCities;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.ExceptionManagement;
+using R2Core.DatabaseManagement;
+using APICommon.Models;
+
 
 namespace APITransportation.Controllers
 {
@@ -33,7 +36,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdSearchString>(Request.Content.ReadAsStringAsync().Result);
+                var Content = JsonConvert.DeserializeObject<APICommonSessionIdSearchString>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
@@ -45,6 +48,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(InstanceProvincesAndCities.GetListOfCitys_SearchIntroCharacters(SearchString, true), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
@@ -63,17 +68,20 @@ namespace APITransportation.Controllers
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdProvinceId>(Request.Content.ReadAsStringAsync().Result);
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdProvinceIdProvinceActive>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var ProvinceId = Content.ProvinceId;
+                var ProvineActive = Content.ProvinceActive;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager();
-                InstanceProvincesAndCities.ChangeActiveStatusOfProvince(ProvinceId);
+                InstanceProvincesAndCities.ChangeActiveStatusOfProvince(ProvinceId, ProvineActive);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -90,17 +98,20 @@ namespace APITransportation.Controllers
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdCityId>(Request.Content.ReadAsStringAsync().Result);
+                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdCityIdCityActive>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var CityId = Content.CityId;
+                var CityActive = Content.CityActive;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager();
-                InstanceProvincesAndCities.ChangeActiveStatusOfCity(CityId);
+                InstanceProvincesAndCities.ChangeActiveStatusOfCity(CityId, CityActive);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)

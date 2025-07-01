@@ -171,7 +171,43 @@ namespace UnitTestR2Core
             catch (Exception ex)
             { var Y = 2; }
         }
-        
 
+        [TestMethod]
+        public void Trucks()
+        {
+            try
+            {
+                var Instance = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
+
+                var InstanseSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceTrucks = new R2CoreTransportationAndLoadNotification.Trucks.R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService ());
+                InstanceTrucks.SetComposedTruckInf(5,1,15,-1);
+            }
+            catch (SoapException ex)
+            {
+                var x = 2;
+            }
+            catch (Exception ex)
+            { var Y = 2; }
+        }
+
+        [TestMethod]
+        public void TravelTimes()
+        {
+            try
+            {
+                var InstanceTravelTime = new R2CoreTransportationAndLoadNotification.TravelTime.R2CoreTransportationAndLoadNotificationTravelTimeManager();
+
+                var InstanseSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                InstanceTravelTime.GetTravelTimes(505,21310000,-1,true );
+            }
+            catch (SoapException ex)
+            {
+                var x = 2;
+            }
+            catch (Exception ex)
+            { var Y = 2; }
+        }
+        
     }
 }

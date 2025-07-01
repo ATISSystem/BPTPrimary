@@ -18,13 +18,12 @@ namespace APITransportation
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
                 routeTemplate: "api/{controller}/{id}",
-                defaults: new { id = RouteParameter.Optional });
-
+                defaults: new { id = RouteParameter.Optional }
+            );
 
             // Enable CORS for all origins, all headers and all methods 
             var cors = new EnableCorsAttribute("*", "*", "*");
             config.EnableCors(cors);
-
         }
     }
 }

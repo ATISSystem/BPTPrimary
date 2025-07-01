@@ -1173,12 +1173,6 @@ End Namespace
 
 Namespace TrafficCardsManagement
 
-    'BPTChanged
-    Public Class R2CoreParkingSystemTrafficCard
-        Public CardId As Int64
-        Public CardNo As String
-        Public Balance As Int64
-    End Class
 
     Public Enum TerafficCardType
         None = 0 : Savari = 1 : Tereili = 2 : TenCharkh = 3 : SixCharkh = 4
@@ -1485,25 +1479,10 @@ Namespace TrafficCardsManagement
             End Try
         End Function
 
-        'BPTChanged
-        Public Function GetTrafficCard(ByVal YourCardNo As String) As R2CoreParkingSystemTrafficCard
-            Try
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblRFIDCards Where Cardno='" & YourCardNo & "'", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
-                    Throw New TerraficCardNotFoundException
-                Else
-                    Return New R2CoreParkingSystemTrafficCard With {.CardId = Ds.Tables(0).Rows(0).Item("CardId"), .CardNo = Ds.Tables(0).Rows(0).Item("CardNo"), .Balance = Ds.Tables(0).Rows(0).Item("Charge")}
-                End If
-            Catch ex As TerraficCardNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
 
 
     End Class
+
 
     Public Class R2CoreParkingSystemMClassTrafficCardManagement
         Private Shared ReadOnly _DateTime As R2DateTime = New R2DateTime()
@@ -1806,6 +1785,94 @@ Namespace TrafficCardsManagement
         End Class
 
     End Namespace
+
+    'BPTChanged
+    Public Class R2CoreParkingSystemTrafficCard
+        Public CardId As Int64
+        Public CardNo As String
+        Public CardTypeId As Short
+        Public Balance As Int64
+    End Class
+
+    'BPTChanged
+    Public Class R2CoreParkingSystemTerraficCost
+        Public TerraficCardTypeId As Short
+        Public SelfGoverEntryCost As Int64
+        Public DelayFromEntry As Short
+    End Class
+
+    'BPTChanged
+    Public Class R2CoreParkingSystemTrafficCardsManager
+
+        Private _R2DateTimeService As IR2DateTimeService
+        Public Sub New(YourR2DateTimeService As IR2DateTimeService)
+            _R2DateTimeService = YourR2DateTimeService
+        End Sub
+
+        Public Function GetTrafficCard(ByVal YourCardNo As String) As R2CoreParkingSystemTrafficCard
+            Try
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim Ds As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblRFIDCards Where Cardno='" & YourCardNo & "'", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                    Throw New TerraficCardNotFoundException
+                Else
+                    Return New R2CoreParkingSystemTrafficCard With {.CardId = Ds.Tables(0).Rows(0).Item("CardId"), .CardNo = Ds.Tables(0).Rows(0).Item("CardNo"), .Balance = Ds.Tables(0).Rows(0).Item("Charge"), .CardTypeId = Ds.Tables(0).Rows(0).Item("CardType")}
+                End If
+            Catch ex As TerraficCardNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetTrafficCard(ByVal YourCardId As Int64) As R2CoreParkingSystemTrafficCard
+            Try
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim Ds As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblRFIDCards Where CardId=" & YourCardId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                    Throw New TerraficCardNotFoundException
+                Else
+                    Return New R2CoreParkingSystemTrafficCard With {.CardId = Ds.Tables(0).Rows(0).Item("CardId"), .CardNo = Ds.Tables(0).Rows(0).Item("CardNo"), .Balance = Ds.Tables(0).Rows(0).Item("Charge"), .CardTypeId = Ds.Tables(0).Rows(0).Item("CardType")}
+                End If
+            Catch ex As TerraficCardNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetTerraficCost(YourTerraficCardTypeId As Short, YourImmediately As Boolean) As R2CoreParkingSystemTerraficCost
+            Try
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand("Select * from R2PrimaryParkingSystem.dbo.TblTerraficCosts Where TerraficCardTypeId=" & YourTerraficCardTypeId & "")
+                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New TerraficCostNotFoundException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                      "Select * from R2PrimaryParkingSystem.dbo.TblTerraficCosts Where TerraficCardTypeId=" & YourTerraficCardTypeId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then Throw New TerraficCostNotFoundException
+                End If
+                Return New R2CoreParkingSystemTerraficCost With {.TerraficCardTypeId = Ds.Tables(0).Rows(0).Item("TerraficCardTypeId"), .SelfGoverEntryCost = Ds.Tables(0).Rows(0).Item("SelfGoverEntryCost"), .DelayFromEntry = Ds.Tables(0).Rows(0).Item("DelayFromEntry")}
+            Catch ex As TerraficCostNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+    End Class
+
+    'BPTChanged
+    Public Class TerraficCostNotFoundException
+        Inherits ApplicationException
+        Public Overrides ReadOnly Property Message As String
+            Get
+                Return "اطلاعاتی درخصوص هزینه های تردد یافت نشد"
+            End Get
+        End Property
+    End Class
 
 End Namespace
 
@@ -2189,6 +2256,43 @@ Namespace AccountingManagement
 
     End Namespace
 
+    'BPTChanged
+    Public Class R2CoreParkingSystemAccounting
+        Public MoneyWalletId As Int64
+        Public AccountingTypeId As Int64
+        Public DateShamsi As String
+        Public Time As String
+        Public DateTimeMilladi As DateTime
+        Public Mblgh As Int64
+        Public SoftwareUserId As Int64
+    End Class
+
+    'BPTChanged
+    Public Class R2CoreParkingSystemAccountingManager
+
+        Private _R2DateTimeService As IR2DateTimeService
+        Public Sub New(YourR2DateTimeService As IR2DateTimeService)
+            _R2DateTimeService = YourR2DateTimeService
+        End Sub
+
+        Public Sub InsertAccounting(ByVal YourAccounting As R2CoreParkingSystemAccounting)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                CmdSql.CommandText = "insert into R2Primary.dbo.TblAccounting(CardId,EEAccountingProcessType,DateShamsiA,TimeA,DateMilladiA,PelakA,SerialA,CityA,PelakTypeA,MaabarCode,MblghA,UseridA,CurrentChargeA,ReminderChargeA) values(" & YourAccounting.MoneyWalletId & "," & YourAccounting.AccountingTypeId & ",'" & _R2DateTimeService.DateTimeServ.GetCurrentDateShamsiFull & "','" & _R2DateTimeService.DateTimeServ.GetCurrentTime & "','" & _R2DateTimeService.DateTimeServ.GetCurrentDateTimeMilladiFormated & "','','','',0,0," & YourAccounting.Mblgh & "," & YourAccounting.SoftwareUserId & ",0,0)"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+    End Class
 
 End Namespace
 
@@ -2712,42 +2816,6 @@ Namespace Cars
             End Try
         End Sub
 
-        'BPTChanged
-        Public Shared Function InsertCar(YourNSS As R2StandardCarStructure) As Int64
-            Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
-            Try
-                Dim InstanceSoftwareUserService = New SoftwareUserService(Nothing)
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                Dim AllCarSerials = Split(InstanceConfiguration.GetConfigString(R2CoreParkingSystemConfigurations.IndigenousCars, 1), ";")
-                Dim CarSerials() = Split(AllCarSerials(0), "-")
-                Dim NativenessType As Int16 = 0
-                If CarSerials.Contains(YourNSS.StrCarSerialNo) Then
-                    NativenessType = R2CoreParkingSystem.CarsNativeness.CarNativenessTypes.Native
-                Else
-                    NativenessType = R2CoreParkingSystem.CarsNativeness.CarNativenessTypes.UnNative
-                End If
-                CmdSql.Connection.Open()
-                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Select top 1 * from dbtransport.dbo.tbcar with (tablockx)" : CmdSql.ExecuteNonQuery()
-                CmdSql.CommandText = "Select IDENT_CURRENT('dbtransport.dbo.tbCar')"
-                Dim mynIdCar As Int64 = CmdSql.ExecuteScalar + 1
-                CmdSql.CommandText = "Insert Into dbtransport.dbo.tbCar(snCarType,StrCarNo,StrCarSerialNo,nIdCity,StrBodyNo,nUserID,strFanniDate,CarNativenessTypeId,CarNativenessExpireDate,ViewFlag) Values(" & YourNSS.snCarType & ",'" & YourNSS.StrCarNo & "','" & YourNSS.StrCarSerialNo & "'," & YourNSS.nIdCity & ",'" & mynIdCar & "'," & InstanceSoftwareUserService.SystemUserId & ",'" & _DateTime.GetCurrentDateShamsiFull & "'," & NativenessType & ",'',1)"
-                CmdSql.ExecuteNonQuery()
-                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-                Return mynIdCar
-            Catch ex As SqlException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
-                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
 
     End Class
 
@@ -2785,6 +2853,52 @@ Namespace Cars
                 Return "اطلاعات خودروی مرتبط با کارت تردد یافت نشد" + vbCrLf + "به واحد ثبت مشخصات مراجعه نمایید"
             End Get
         End Property
+    End Class
+
+    'BPTChanged
+    Public Class R2CoreParkingSystemCarsManager
+
+        Private _R2DateTimeService As IR2DateTimeService
+        Public Sub New(YourR2DateTimeService As IR2DateTimeService)
+            _R2DateTimeService = YourR2DateTimeService
+        End Sub
+
+        Public Function InsertCar(YourNSS As R2StandardCarStructure) As Int64
+            Dim CmdSql As SqlCommand = New SqlCommand
+            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+            Try
+                Dim InstanceSoftwareUserService = New SoftwareUserService(Nothing)
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim AllCarSerials = Split(InstanceConfiguration.GetConfigString(R2CoreParkingSystemConfigurations.IndigenousCars, 1), ";")
+                Dim CarSerials() = Split(AllCarSerials(0), "-")
+                Dim NativenessType As Int16 = 0
+                If CarSerials.Contains(YourNSS.StrCarSerialNo) Then
+                    NativenessType = R2CoreParkingSystem.CarsNativeness.CarNativenessTypes.Native
+                Else
+                    NativenessType = R2CoreParkingSystem.CarsNativeness.CarNativenessTypes.UnNative
+                End If
+                CmdSql.Connection.Open()
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                CmdSql.CommandText = "Select top 1 * from dbtransport.dbo.tbcar with (tablockx)" : CmdSql.ExecuteNonQuery()
+                CmdSql.CommandText = "Select IDENT_CURRENT('dbtransport.dbo.tbCar')"
+                Dim mynIdCar As Int64 = CmdSql.ExecuteScalar + 1
+                CmdSql.CommandText = "Insert Into dbtransport.dbo.tbCar(snCarType,StrCarNo,StrCarSerialNo,nIdCity,StrBodyNo,nUserID,strFanniDate,CarNativenessTypeId,CarNativenessExpireDate,ViewFlag) Values(" & YourNSS.snCarType & ",'" & YourNSS.StrCarNo & "','" & YourNSS.StrCarSerialNo & "'," & YourNSS.nIdCity & ",'" & mynIdCar & "'," & InstanceSoftwareUserService.SystemUserId & ",'" & _R2DateTimeService.DateTimeServ.GetCurrentDateShamsiFull & "'," & NativenessType & ",'',1)"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+                Return mynIdCar
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
     End Class
 
 
@@ -3664,12 +3778,12 @@ Namespace ProvincesAndCities
             End Try
         End Function
 
-        Public Sub ChangeActiveStatusOfProvince(YourProvinceId As Int64)
+        Public Sub ChangeActiveStatusOfProvince(YourProvinceId As Int64, YourProvineActive As Boolean)
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
             Try
                 CmdSql.Connection.Open()
-                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces Set Active=iif(Active=0,1,0) 
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces Set Active=" & IIf(YourProvineActive, 1, 0) & " 
                                       Where ProvinceId=" & YourProvinceId & ""
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
@@ -3679,12 +3793,12 @@ Namespace ProvincesAndCities
             End Try
         End Sub
 
-        Public Sub ChangeActiveStatusOfCity(YourCityId As Int64)
+        Public Sub ChangeActiveStatusOfCity(YourCityId As Int64, YourCityActive As Boolean)
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
             Try
                 CmdSql.Connection.Open()
-                CmdSql.CommandText = "Update DBTransport.dbo.tbCity Set Active=iif(Active=0,1,0) 
+                CmdSql.CommandText = "Update DBTransport.dbo.tbCity Set Active=" & IIf(YourCityActive, 1, 0) & " 
                                       Where nCityCode=" & YourCityId & ""
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
@@ -4670,6 +4784,37 @@ Namespace SoftwareUsersManagement
 
     End Namespace
 
+    'BPTChanged
+    Public Class R2CoreParkingSystemSoftwareUsersManager
+        Public Function GetSoftwareUser(YourNSSTruck As R2StandardCarStructure) As R2CoreStandardSoftwareUserStructure
+            Try
+                Dim InstanceSqlDataBOX As New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSoftwareUser As New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+
+                Dim Ds As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                         "Select Top 1 SoftwareUsers.UserId From R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+    	                     Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1
+                             Inner Join dbtransport.dbo.TbDriver as Drivers On EntityRelations.E2=Drivers.nIDDriver 
+                             Inner Join dbtransport.dbo.TbPerson as Persons On Drivers.nIDDriver=Persons.nIDPerson 
+                             Inner Join dbtransport.dbo.TbCarAndPerson as CarAndPersons On Drivers.nIDDriver=CarAndPersons.nIDPerson
+                             Inner Join dbtransport.dbo.TbCar as Cars On CarAndPersons.nIDCar=Cars.nIDCar 
+                          Where SoftwareUsers.UserActive = 1 And SoftwareUsers.Deleted = 0 And EntityRelations.ERTypeId = 2 And EntityRelations.RelationActive = 1 And Cars.ViewFlag = 1 And CarAndPersons.snRelation = 2 
+                             And ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) Or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000'))  
+						   	 And Cars.nIDCar=" & YourNSSTruck.nIdCar & "", 300, Ds, New Boolean).GetRecordsCount = 0 Then
+                    Throw New SoftwareUserRelatedThisCarNotFoundException
+                End If
+                Return InstanceSoftwareUser.GetNSSUser(Convert.ToInt64(Ds.Tables(0).Rows(0).Item("UserId")))
+            Catch ex As SoftwareUserRelatedThisCarNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+    End Class
+
+
 End Namespace
 
 Namespace EntityRelations
@@ -4686,7 +4831,6 @@ Namespace RequesterManagement
 
     Public MustInherit Class R2CoreParkingSystemRequesters
         Inherits R2CoreRequesters
-        Public Shared ReadOnly WCMoneyWalletCharging As Int64 = 14
 
 
 
@@ -4962,13 +5106,13 @@ Namespace SMS
                     Dim NSSSMSOwnerType = InstanceSMSOwnerTypes.GetNSSSMSOwnerTypeBySoftwareUser(YourNSSSoftwareUser)
 
                     'کنترل موجودی کیف پول
-                    Dim InstanceMoneyWallet = New R2CoreParkingSystemInstanceMoneyWalletManager
-                    Dim NSSMoneyWallet = InstanceMoneyWallet.GetNSSMoneyWallet(YourNSSSoftwareUser)
+                    Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(New R2DateTimeService)
+                    Dim NSSMoneyWallet = InstanceMoneyWallet.GetMoneyWallet(YourNSSSoftwareUser)
                     If NSSMoneyWallet.Charge < NSSSMSOwnerType.Price Then
                         Throw New MoneyWalletCurrentChargeNotEnoughException
                     End If
                     'کسر هزینه فعال سازی اس ام اس مبنی بر نوع کاربر
-                    InstanceMoneyWallet.ActMoneyWalletNextStatus(NSSMoneyWallet, BagPayType.MinusMoney, NSSSMSOwnerType.Price, R2CoreParkingSystemAccountings.SoftwareUserSMSOwnerServiceCost, YourNSSUser)
+                    InstanceMoneyWallet.ActMoneyWalletNextStatus(NSSMoneyWallet.CardId, BagPayType.MinusMoney, NSSSMSOwnerType.Price, R2CoreParkingSystemAccountings.SoftwareUserSMSOwnerServiceCost, YourNSSUser.UserId)
                 Catch ex As MoneyWalletCurrentChargeNotEnoughException
                     Throw ex
                 Catch ex As SoftwareUserMoneyWalletNotFoundException
@@ -5456,80 +5600,6 @@ Namespace MoneyWalletManagement
             End Try
         End Sub
 
-        'BPTChanged
-        Public Function GetNSSMoneyWallet(YourNSSSoftwareuser As R2CoreStandardSoftwareUserStructure) As R2CoreParkingSystemStandardTrafficCardStructure
-            Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-            Dim InstanceTrafficCards = New R2CoreParkingSystemInstanceTrafficCardsManager
-            Try
-                Dim SqlString = String.Empty
-                If YourNSSSoftwareuser.UserTypeId = 1 Or YourNSSSoftwareuser.UserTypeId = 2 Then
-                    SqlString = "select  Top 1 SoftwareUsersRelationMoneyWallet.CardId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
-                                    Inner Join R2Primary.dbo.TblSoftwareUsersRelationMoneyWallet as SoftwareUsersRelationMoneyWallet On SoftwareUsers.UserId=SoftwareUsersRelationMoneyWallet.UserId 
-                                 Where SoftwareUsers.UserId=" & YourNSSSoftwareuser.UserId & "  and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and SoftwareUsersRelationMoneyWallet.RelationActive=1"
-                ElseIf YourNSSSoftwareuser.UserTypeId = 3 Then
-                    SqlString = "Select Top 1 TCardsRCar.CardId
-                    from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
-                          Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
-                          Inner Join dbtransport.dbo.TbDriver as Drivers On EntityRelations.E2=Drivers.nIDDriver 
-                          Inner Join dbtransport.dbo.TbCarAndPerson as CarAndPersons On Drivers.nIDDriver=CarAndPersons.nIDPerson
-                          Inner Join dbtransport.dbo.TbCar as Cars On CarAndPersons.nIDCar=Cars.nIDCar 
-                          Inner Join R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars as TCardsRCar On Cars.nIDCar=TCardsRCar.nCarId 
-                    Where SoftwareUsers.UserId=" & YourNSSSoftwareuser.UserId & " and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and EntityRelations.RelationActive=1 and  
-                              EntityRelations.ERTypeId=" & R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & " and Cars.ViewFlag=1 and TCardsRCar.RelationActive=1 and CarAndPersons.snRelation=2 
-                              and ((DATEDIFF(SECOND,TCardsRCar.RelationTimeStamp,getdate())<240) or (TCardsRCar.RelationTimeStamp='2015-01-01 00:00:00.000')) 
-                              and ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000')) 
-                    Order By CarAndPersons.nIDCarAndPerson Desc,TCardsRCar.RelationId Desc,TCardsRCar.RelationTimeStamp Desc"
-                ElseIf YourNSSSoftwareuser.UserTypeId = 7 Then
-                    SqlString = "select  Top 1 TransportCompaniesRelationMoneyWallets.CardId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
-                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers as TransportCompaniesRelationSoftwareUsers On SoftwareUsers.UserId=TransportCompaniesRelationSoftwareUsers.UserId 
-                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On TransportCompaniesRelationSoftwareUsers.TCId=TransportCompanies.TCId 
-                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationMoneyWallets as TransportCompaniesRelationMoneyWallets On TransportCompanies.TCId=TransportCompaniesRelationMoneyWallets.TransportCompanyId 
-                                 Where SoftwareUsers.UserId=" & YourNSSSoftwareuser.UserId & " and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and TransportCompaniesRelationSoftwareUsers.RelationActive=1 and TransportCompanies.Active=1 and TransportCompaniesRelationMoneyWallets.RelationActive=1"
-                ElseIf YourNSSSoftwareuser.UserTypeId = 15 Then
-                    SqlString = "select  Top 1 FPCsRelationMoneyWallets.CardId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
-                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationSoftwareUsers as FPCsRelationSoftwareUsers On SoftwareUsers.UserId=FPCsRelationSoftwareUsers.UserId 
-                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters as FPCs On FPCsRelationSoftwareUsers.FPCId=FPCs.FPCId 
-                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationMoneyWallets as FPCsRelationMoneyWallets On FPCs.FPCId=FPCsRelationMoneyWallets.FPCId 
-                                 Where SoftwareUsers.UserId=" & YourNSSSoftwareuser.UserId & " and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and FPCsRelationSoftwareUsers.RelationActive=1 and FPCs.Active=1 and FPCsRelationMoneyWallets.RelationActive=1"
-                End If
-                Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, SqlString, 0, Ds, New Boolean).GetRecordsCount <> 0 Then
-                    Return InstanceTrafficCards.GetNSSTrafficCard(Convert.ToInt64(Ds.Tables(0).Rows(0).Item("CardId")))
-                Else
-                    Throw New SoftwareUserMoneyWalletNotFoundException
-                End If
-            Catch ex As SoftwareUserMoneyWalletNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-
-        End Function
-
-        Public Function GetMoneyWalletfromCarId(YourTruckId As Int64) As R2CoreMoneyWallet
-            Try
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                Dim InstanceTrafficCards = New R2CoreParkingSystemInstanceTrafficCardsManager
-
-                Dim SqlString = "Select Top 1 RFIDCards.CardId,RFIDCards.CardNo,RFIDCards.Charge from dbtransport.dbo.TbCar as Cars 
-                                    Inner Join R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars as TCardsRCar On Cars.nIDCar=TCardsRCar.nCarId 
-                                    Inner Join R2Primary.dbo.TblRFIDCards as RFIDCards On TCardsRCar.CardId=RFIDCards.CardId 
-                                 Where Cars.ViewFlag=1 and Cars.nIDCar=" & YourTruckId & " and
-                                    TCardsRCar.RelationActive=1 and ((DATEDIFF(SECOND,TCardsRCar.RelationTimeStamp,getdate())<240) or (TCardsRCar.RelationTimeStamp='2015-01-01 00:00:00.000')) 
-                                 Order By TCardsRCar.RelationId Desc,TCardsRCar.RelationTimeStamp Desc"
-                Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, SqlString, 300, Ds, New Boolean).GetRecordsCount <> 0 Then
-                    Return New R2CoreMoneyWallet With {.MoneyWalletId = Ds.Tables(0).Rows(0).Item("CardId"), .MoneyWalletCode = Ds.Tables(0).Rows(0).Item("CardNo"), .Balance = Ds.Tables(0).Rows(0).Item("Charge")}
-                Else
-                    Throw New MoneyWalletNotExistException
-                End If
-            Catch ex As MoneyWalletNotExistException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-
-        End Function
 
     End Class
 
@@ -5650,6 +5720,147 @@ Namespace MoneyWalletManagement
         End Property
     End Class
 
+    'BPTChanged
+    Public Class R2CoreParkingSystemMoneyWalletManager
+
+        Private _R2DateTimeService As IR2DateTimeService
+        Public Sub New(YourR2DateTimeService As IR2DateTimeService)
+            _R2DateTimeService = YourR2DateTimeService
+        End Sub
+
+        Public Function GetMoneyWallet(YourNSSSoftwareuser As R2CoreStandardSoftwareUserStructure) As R2CoreParkingSystemStandardTrafficCardStructure
+            Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+            Dim InstanceTrafficCards = New R2CoreParkingSystemInstanceTrafficCardsManager
+            Try
+                Dim SqlString = String.Empty
+                If YourNSSSoftwareuser.UserTypeId = 1 Or YourNSSSoftwareuser.UserTypeId = 2 Then
+                    SqlString = "select  Top 1 SoftwareUsersRelationMoneyWallet.CardId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                                    Inner Join R2Primary.dbo.TblSoftwareUsersRelationMoneyWallet as SoftwareUsersRelationMoneyWallet On SoftwareUsers.UserId=SoftwareUsersRelationMoneyWallet.UserId 
+                                 Where SoftwareUsers.UserId=" & YourNSSSoftwareuser.UserId & "  and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and SoftwareUsersRelationMoneyWallet.RelationActive=1"
+                ElseIf YourNSSSoftwareuser.UserTypeId = 3 Then
+                    SqlString = "Select Top 1 TCardsRCar.CardId
+                    from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                          Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
+                          Inner Join dbtransport.dbo.TbDriver as Drivers On EntityRelations.E2=Drivers.nIDDriver 
+                          Inner Join dbtransport.dbo.TbCarAndPerson as CarAndPersons On Drivers.nIDDriver=CarAndPersons.nIDPerson
+                          Inner Join dbtransport.dbo.TbCar as Cars On CarAndPersons.nIDCar=Cars.nIDCar 
+                          Inner Join R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars as TCardsRCar On Cars.nIDCar=TCardsRCar.nCarId 
+                    Where SoftwareUsers.UserId=" & YourNSSSoftwareuser.UserId & " and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and EntityRelations.RelationActive=1 and  
+                              EntityRelations.ERTypeId=" & R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & " and Cars.ViewFlag=1 and TCardsRCar.RelationActive=1 and CarAndPersons.snRelation=2 
+                              and ((DATEDIFF(SECOND,TCardsRCar.RelationTimeStamp,getdate())<240) or (TCardsRCar.RelationTimeStamp='2015-01-01 00:00:00.000')) 
+                              and ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000')) 
+                    Order By CarAndPersons.nIDCarAndPerson Desc,TCardsRCar.RelationId Desc,TCardsRCar.RelationTimeStamp Desc"
+                ElseIf YourNSSSoftwareuser.UserTypeId = 7 Then
+                    SqlString = "select  Top 1 TransportCompaniesRelationMoneyWallets.CardId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers as TransportCompaniesRelationSoftwareUsers On SoftwareUsers.UserId=TransportCompaniesRelationSoftwareUsers.UserId 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On TransportCompaniesRelationSoftwareUsers.TCId=TransportCompanies.TCId 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationMoneyWallets as TransportCompaniesRelationMoneyWallets On TransportCompanies.TCId=TransportCompaniesRelationMoneyWallets.TransportCompanyId 
+                                 Where SoftwareUsers.UserId=" & YourNSSSoftwareuser.UserId & " and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and TransportCompanies.Active=1"
+                ElseIf YourNSSSoftwareuser.UserTypeId = 15 Then
+                    SqlString = "select  Top 1 FPCsRelationMoneyWallets.CardId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationSoftwareUsers as FPCsRelationSoftwareUsers On SoftwareUsers.UserId=FPCsRelationSoftwareUsers.UserId 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters as FPCs On FPCsRelationSoftwareUsers.FPCId=FPCs.FPCId 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationMoneyWallets as FPCsRelationMoneyWallets On FPCs.FPCId=FPCsRelationMoneyWallets.FPCId 
+                                 Where SoftwareUsers.UserId=" & YourNSSSoftwareuser.UserId & " and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and FPCs.Active=1"
+                End If
+                Dim Ds As New DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, SqlString, 0, Ds, New Boolean).GetRecordsCount <> 0 Then
+                    Return InstanceTrafficCards.GetNSSTrafficCard(Convert.ToInt64(Ds.Tables(0).Rows(0).Item("CardId")))
+                Else
+                    Throw New SoftwareUserMoneyWalletNotFoundException
+                End If
+            Catch ex As SoftwareUserMoneyWalletNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+
+        End Function
+
+        Public Function GetMoneyWalletfromCarId(YourTruckId As Int64, YourImmediately As Boolean) As R2CoreMoneyWallet
+            Try
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceTrafficCards = New R2CoreParkingSystemInstanceTrafficCardsManager
+
+                Dim SqlString = "Select Top 1 RFIDCards.CardId,RFIDCards.CardNo,RFIDCards.Charge from dbtransport.dbo.TbCar as Cars 
+                                    Inner Join R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars as TCardsRCar On Cars.nIDCar=TCardsRCar.nCarId 
+                                    Inner Join R2Primary.dbo.TblRFIDCards as RFIDCards On TCardsRCar.CardId=RFIDCards.CardId 
+                                 Where Cars.ViewFlag=1 and Cars.nIDCar=" & YourTruckId & " and
+                                    TCardsRCar.RelationActive=1 and ((DATEDIFF(SECOND,TCardsRCar.RelationTimeStamp,getdate())<240) or (TCardsRCar.RelationTimeStamp='2015-01-01 00:00:00.000')) 
+                                 Order By TCardsRCar.RelationId Desc,TCardsRCar.RelationTimeStamp Desc"
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(SqlString)
+                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New MoneyWalletNotExistException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, SqlString, 300, Ds, New Boolean).GetRecordsCount = 0 Then Throw New MoneyWalletNotExistException
+                End If
+                Return New R2CoreMoneyWallet With {.MoneyWalletId = Ds.Tables(0).Rows(0).Item("CardId"), .MoneyWalletCode = Ds.Tables(0).Rows(0).Item("CardNo"), .Balance = Ds.Tables(0).Rows(0).Item("Charge")}
+            Catch ex As MoneyWalletNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+
+        End Function
+
+        Public Function GetMoneyWalletCharge(YourMoneyWalletId As Int64) As Int64
+            Try
+                Dim Da As New SqlClient.SqlDataAdapter : Dim ds As New DataSet
+                Da.SelectCommand = New SqlClient.SqlCommand("select charge from R2Primary.dbo.tblrfidcards where CardId=" & YourMoneyWalletId & "")
+                Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                ds.Tables.Clear()
+                If Da.Fill(ds) <> 0 Then
+                    Return ds.Tables(0).Rows(0).Item("charge")
+                Else
+                    Throw New MoneyWalletNotExistException
+                End If
+            Catch ex As MoneyWalletNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Sub ActMoneyWalletNextStatus(YourMoneyWalletId As Int64, YourBagType As BagPayType, YourMblgh As Int64, YourAccountCode As Int64, YourSoftwareUserId As Int64)
+            Dim InstanceCars = New R2CoreParkingSystemInstanceCarsManager()
+            Dim InstanceAccounting = New R2CoreParkingSystemAccountingManager(New R2DateTimeService)
+            Try
+                Dim MoneyWalletCurrentCharge As Int64 = GetMoneyWalletCharge(YourMoneyWalletId)
+                Dim myMoneyWalletReminder As Int64
+                If YourBagType = BagPayType.AddMoney Then
+                    myMoneyWalletReminder = MoneyWalletCurrentCharge + YourMblgh
+                ElseIf YourBagType = BagPayType.MinusMoney Then
+                    myMoneyWalletReminder = MoneyWalletCurrentCharge - YourMblgh
+                End If
+                InstanceAccounting.InsertAccounting(New R2CoreParkingSystemAccounting With {.AccountingTypeId = YourAccountCode, .MoneyWalletId = YourMoneyWalletId, .Mblgh = YourMblgh, .SoftwareUserId = YourSoftwareUserId})
+                AddMinusMoneyWallet(YourMoneyWalletId, YourBagType, YourMblgh)
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub AddMinusMoneyWallet(YourMoneyWalletId As Int64, YourBagPayType As BagPayType, YourMblgh As Int64)
+            Dim Cmdsql As New SqlClient.SqlCommand
+            Cmdsql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            Try
+                Cmdsql.Connection.Open()
+                Cmdsql.Transaction = Cmdsql.Connection.BeginTransaction
+                If YourBagPayType = BagPayType.AddMoney Then
+                    Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards set Charge=charge+" & YourMblgh & " where CardId=" & YourMoneyWalletId & ""
+                Else
+                    Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards set Charge=charge-" & YourMblgh & " where CardId=" & YourMoneyWalletId & ""
+                End If
+                Cmdsql.ExecuteNonQuery()
+                Cmdsql.Transaction.Commit() : Cmdsql.Connection.Close()
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+    End Class
 
 End Namespace
 
@@ -5881,25 +6092,25 @@ Namespace MoneyWalletChargeManagement
 
         Public Class R2CoreParkingSystemMoneyWalletChargingAmountsManager
 
-            Public Function GetActiveAmounts(YourRequesterId As Int64) As List(Of R2CoreParkingSystemMoneyWalletChargingAmountStructure)
-                Try
-                    Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                    Dim DS As DataSet
-                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
-                        "Select MoneyWalletChargingAmounts.* from R2Primary.dbo.TblMoneyWalletChargingAmounts as MoneyWalletChargingAmounts 
-                            Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On MoneyWalletChargingAmounts.MWCAId=EntityRelations.E2 
-                         Where EntityRelations.ERTypeId=" & R2CoreParkingSystemEntityRelationTypes.Requester_MWCA & " and EntityRelations.RelationActive=1 
-                               and MoneyWalletChargingAmounts.Active=1 and MoneyWalletChargingAmounts.Deleted=0 
-                               and EntityRelations.E1=" & RequesterManagement.R2CoreParkingSystemRequesters.WCMoneyWalletCharging & " Order By MoneyWalletChargingAmounts.MWCARial", 3600, DS, New Boolean)
-                    Dim Lst = New List(Of R2CoreParkingSystemMoneyWalletChargingAmountStructure)
-                    For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
-                        Lst.Add(New R2CoreParkingSystemMoneyWalletChargingAmountStructure(DS.Tables(0).Rows(Loopx).Item("MWCAId"), DS.Tables(0).Rows(Loopx).Item("MWCAName").trim, DS.Tables(0).Rows(Loopx).Item("MWCATitle").trim, DS.Tables(0).Rows(Loopx).Item("MWCARial"), DS.Tables(0).Rows(Loopx).Item("UserId"), DS.Tables(0).Rows(Loopx).Item("DateTimeMilladi"), DS.Tables(0).Rows(Loopx).Item("DateShamsi").trim, DS.Tables(0).Rows(Loopx).Item("Time").trim, DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
-                    Next
-                    Return Lst
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            'Public Function GetActiveAmounts(YourRequesterId As Int64) As List(Of R2CoreParkingSystemMoneyWalletChargingAmountStructure)
+            '    Try
+            '        Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+            '        Dim DS As DataSet
+            '        InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+            '            "Select MoneyWalletChargingAmounts.* from R2Primary.dbo.TblMoneyWalletChargingAmounts as MoneyWalletChargingAmounts 
+            '                Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On MoneyWalletChargingAmounts.MWCAId=EntityRelations.E2 
+            '             Where EntityRelations.ERTypeId=" & R2CoreParkingSystemEntityRelationTypes.Requester_MWCA & " and EntityRelations.RelationActive=1 
+            '                   and MoneyWalletChargingAmounts.Active=1 and MoneyWalletChargingAmounts.Deleted=0 
+            '                   and EntityRelations.E1=" & RequesterManagement.R2CoreParkingSystemRequesters.WCMoneyWalletCharging & " Order By MoneyWalletChargingAmounts.MWCARial", 3600, DS, New Boolean)
+            '        Dim Lst = New List(Of R2CoreParkingSystemMoneyWalletChargingAmountStructure)
+            '        For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+            '            Lst.Add(New R2CoreParkingSystemMoneyWalletChargingAmountStructure(DS.Tables(0).Rows(Loopx).Item("MWCAId"), DS.Tables(0).Rows(Loopx).Item("MWCAName").trim, DS.Tables(0).Rows(Loopx).Item("MWCATitle").trim, DS.Tables(0).Rows(Loopx).Item("MWCARial"), DS.Tables(0).Rows(Loopx).Item("UserId"), DS.Tables(0).Rows(Loopx).Item("DateTimeMilladi"), DS.Tables(0).Rows(Loopx).Item("DateShamsi").trim, DS.Tables(0).Rows(Loopx).Item("Time").trim, DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
+            '        Next
+            '        Return Lst
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
             Public Function GetNSSAmount(YourMWCAId As Int64) As R2CoreParkingSystemMoneyWalletChargingAmountStructure
                 Try
