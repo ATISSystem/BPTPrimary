@@ -28,12 +28,11 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetSequentialTurns")]
-        public HttpResponseMessage GetSequentialTurns()
+        public HttpResponseMessage GetSequentialTurns([FromBody] APICommonSessionIdSearchString Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APICommonSessionIdSearchString>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
@@ -59,12 +58,11 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetSequentialTurnsByLoaderType")]
-        public HttpResponseMessage GetSequentialTurnsByLoaderType()
+        public HttpResponseMessage GetSequentialTurnsByLoaderType([FromBody] APITransportationSessionIdLoaderTypeId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLoaderTypeId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var LoaderTypeId = Content.LoaderTypeId ;
 
@@ -90,13 +88,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/SequentialTurnRegistering")]
-        public HttpResponseMessage SequentialTurnRegistering()
+        public HttpResponseMessage SequentialTurnRegistering([FromBody] APITransportationSessionIdSequentialTurn Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdSequentialTurn>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var RawSequentialTurn = Content.RawSequentialTurn;
 
@@ -122,13 +119,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/SequentialTurnEditing")]
-        public HttpResponseMessage SequentialTurnEditing()
+        public HttpResponseMessage SequentialTurnEditing([FromBody] APITransportationSessionIdSequentialTurn Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdSequentialTurn>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var RawSequentialTurn = Content.RawSequentialTurn;
 
@@ -154,13 +150,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/SequentialTurnDeleting")]
-        public HttpResponseMessage SequentialTurnDeleting()
+        public HttpResponseMessage SequentialTurnDeleting([FromBody] APITransportationSessionIdSequentialTurnId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdSequentialTurnId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
 
@@ -186,13 +181,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetSequentialTurnsRelationLoaderTypes")]
-        public HttpResponseMessage GetSequentialTurnsRelationLoaderTypes()
+        public HttpResponseMessage GetSequentialTurnsRelationLoaderTypes([FromBody] APITransportationSessionIdSequentialTurnId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdSequentialTurnId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
 
@@ -217,13 +211,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/SequentialTurnRelationLoaderTypeDeleting")]
-        public HttpResponseMessage SequentialTurnRelationLoaderTypeDeleting()
+        public HttpResponseMessage SequentialTurnRelationLoaderTypeDeleting([FromBody] APITransportationSessionIdSequentialTurnIdLoaderTypeId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdSequentialTurnIdLoaderTypeId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
                 var LoaderTypeId = Content.LoaderTypeId;
@@ -250,13 +243,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/SequentialTurnRelationLoaderTypeRegistering")]
-        public HttpResponseMessage SequentialTurnRelationLoaderTypeRegistering()
+        public HttpResponseMessage SequentialTurnRelationLoaderTypeRegistering([FromBody] APITransportationSessionIdSequentialTurnIdLoaderTypeId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdSequentialTurnIdLoaderTypeId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
                 var LoaderTypeId = Content.LoaderTypeId;
@@ -283,13 +275,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetSequentialTurnRelationAnnouncementSubGroups")]
-        public HttpResponseMessage GetSequentialTurnRelationAnnouncementSubGroups()
+        public HttpResponseMessage GetSequentialTurnRelationAnnouncementSubGroups([FromBody] APITransportationSessionIdSequentialTurnId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdSequentialTurnId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
 
@@ -314,13 +305,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/SequentialTurnRelationAnnouncementSubGroupDeleting")]
-        public HttpResponseMessage SequentialTurnRelationAnnouncementSubGroupDeleting()
+        public HttpResponseMessage SequentialTurnRelationAnnouncementSubGroupDeleting([FromBody] APITransportationSessionIdSequentialTurnIdAnnouncementSGId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdSequentialTurnIdAnnouncementSGId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
                 var AnnouncementSGId= Content.AnnouncementSGId;
@@ -347,13 +337,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/SequentialTurnRelationAnnouncementSubGroupRegistering")]
-        public HttpResponseMessage SequentialTurnRelationAnnouncementSubGroupRegistering()
+        public HttpResponseMessage SequentialTurnRelationAnnouncementSubGroupRegistering([FromBody] APITransportationSessionIdSequentialTurnIdAnnouncementSGId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdSequentialTurnIdAnnouncementSGId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
                 var AnnouncementSGId = Content.AnnouncementSGId;

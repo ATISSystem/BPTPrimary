@@ -18,6 +18,7 @@ namespace UnitTestR2Core
         public void Announcements()
         {
             var x = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
+            x.AnnouncementRelationAnnouncementSubGroupDeleting(2, 7);
             x.AnnouncementEditing(new R2CoreTransportationAndLoadNotificationAnnouncement { AnnouncementId = 1, AnnouncementTitle = "عمومی", Active = true });
         }
 
@@ -35,7 +36,7 @@ namespace UnitTestR2Core
             var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationTurnsManager(new R2DateTimeService());
 
 
-             InstanceLoadingAndDischargingPlaces.TurnCancellationByUser (1, true,21);
+             InstanceLoadingAndDischargingPlaces.TurnCancellationByUser (1, 21);
             var zz = 3;
         }
 

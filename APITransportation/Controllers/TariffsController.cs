@@ -28,13 +28,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetTariffs")]
-        public HttpResponseMessage GetTariffs()
+        public HttpResponseMessage GetTariffs([FromBody] APITransportationSessionIdLoaderTypeIdSourceCityIdTargetCityIdGoodId Content )
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLoaderTypeIdSourceCityIdTargetCityIdGoodId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 Int64 LoaderTypeId = Content.LoaderTypeId == 0 ? -1 : Content.LoaderTypeId;
                 Int64 SourceCityId = Content.SourceCityId == 0 ? -1 : Content.SourceCityId;
@@ -63,14 +62,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/TariffsRegistering")]
-        public HttpResponseMessage TariffsRegistering()
+        public HttpResponseMessage TariffsRegistering([FromBody] APITransportationSessionIdTariffs Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTariffs>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var Tariffs = Content.Tariffs;
 
@@ -79,7 +77,7 @@ namespace APITransportation.Controllers
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
                 InstanceTransportTariffs.TariffsRegistering(Tariffs);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent, Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -96,14 +94,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/TariffsRegisteringWithAddPercentage")]
-        public HttpResponseMessage TariffsRegisteringWithAddPercentage()
+        public HttpResponseMessage TariffsRegisteringWithAddPercentage([FromBody] APITransportationSessionIdTariffsWithAddPercentage Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTariffsWithAddPercentage>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var Tariffs = Content.Tariffs;
                 var AddPercentage = Content.AddPercentage;
@@ -113,7 +110,7 @@ namespace APITransportation.Controllers
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
                 InstanceTransportTariffs.TariffsRegistering(Tariffs, AddPercentage);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent, Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -130,14 +127,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/TariffsDeactivate")]
-        public HttpResponseMessage TariffsDeactivate()
+        public HttpResponseMessage TariffsDeactivate([FromBody] APITransportationSessionIdTariffs Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTariffs>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var Tariffs = Content.Tariffs;
 
@@ -146,7 +142,7 @@ namespace APITransportation.Controllers
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
                 InstanceTransportTariffs.TariffsDeactivate(Tariffs);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent, Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -163,14 +159,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/TariffsDeleting")]
-        public HttpResponseMessage TariffsDeleting()
+        public HttpResponseMessage TariffsDeleting([FromBody] APITransportationSessionIdTariffs Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTariffs>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var Tariffs = Content.Tariffs;
 
@@ -179,7 +174,7 @@ namespace APITransportation.Controllers
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
                 InstanceTransportTariffs.TariffsDeleting(Tariffs);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent, Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -196,14 +191,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/TariffsEditing")]
-        public HttpResponseMessage TariffsEditing()
+        public HttpResponseMessage TariffsEditing([FromBody] APITransportationSessionIdTariffs Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTariffs>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var Tariffs = Content.Tariffs;
 
@@ -212,7 +206,7 @@ namespace APITransportation.Controllers
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
                 InstanceTransportTariffs.TariffsEditing(Tariffs);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent, Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)

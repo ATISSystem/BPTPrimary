@@ -29,13 +29,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetTravelTimes")]
-        public HttpResponseMessage GetTravelTimes()
+        public HttpResponseMessage GetTravelTimes([FromBody] APITransportationSessionIdLoaderTypeIdSourceCityIdTargetCityId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLoaderTypeIdSourceCityIdTargetCityId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 Int64 LoaderTypeId = Content.LoaderTypeId == 0 ? -1 : Content.LoaderTypeId;
                 Int64 SourceCityId = Content.SourceCityId == 0 ? -1 : Content.SourceCityId;
@@ -63,13 +62,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetTravelTime")]
-        public HttpResponseMessage GetTravelTime()
+        public HttpResponseMessage GetTravelTime([FromBody] APITransportationSessionIdLoaderTypeIdSourceCityIdTargetCityId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLoaderTypeIdSourceCityIdTargetCityId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var LoaderTypeId = Content.LoaderTypeId;
                 var SourceCityId = Content.SourceCityId;
@@ -97,14 +95,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/TravelTimeRegistering")]
-        public HttpResponseMessage TravelTimeRegistering()
+        public HttpResponseMessage TravelTimeRegistering([FromBody] APITransportationSessionIdTravelTime Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTravelTime>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TravelTime = Content.TravelTime;
 
@@ -130,14 +127,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/TravelTimeDeleting")]
-        public HttpResponseMessage TravelTimeDeleting()
+        public HttpResponseMessage TravelTimeDeleting([FromBody] APITransportationSessionIdTravelTime Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTravelTime>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TravelTime = Content.TravelTime;
 
@@ -163,14 +159,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/TravelTimeEditing")]
-        public HttpResponseMessage TravelTimeEditing()
+        public HttpResponseMessage TravelTimeEditing([FromBody] APITransportationSessionIdTravelTime Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTravelTime>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TravelTime = Content.TravelTime;
 
@@ -196,14 +191,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/TravelTimeChangeActivateStatus")]
-        public HttpResponseMessage TravelTimeChangeActivateStatus()
+        public HttpResponseMessage TravelTimeChangeActivateStatus([FromBody] APITransportationSessionIdTravelTime Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTravelTime>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TravelTime = Content.TravelTime;
 

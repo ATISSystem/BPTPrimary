@@ -1916,8 +1916,9 @@ Namespace TravelTime
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
                     Da.SelectCommand = New SqlCommand("
-                     Select TravelTimes.LoaderTypeId,TravelTimes.SourceCityId,SourceCities.StrCityName SourceCityName,TravelTimes.TargetCityId,TargetCities.StrCityName as TargetCityName,TravelTimes.TravelTime,TravelTimes.Active
+                     Select LoaderTypes.LoaderTypeId,LoaderTypes.LoaderTypeTitle as LoaderTypeTitle,TravelTimes.SourceCityId,SourceCities.StrCityName SourceCityName,TravelTimes.TargetCityId,TargetCities.StrCityName as TargetCityName,TravelTimes.TravelTime,TravelTimes.Active
                      From R2PrimaryTransportationAndLoadNotification.dbo.TblTravelTimes as TravelTimes
+                       Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes On TravelTimes.LoaderTypeId=LoaderTypes.LoaderTypeId
                        Inner Join DBTransport.dbo.tbCity As SourceCities On TravelTimes.SourceCityId=SourceCities.nCityCode 
                        Inner Join DBTransport.dbo.tbCity As TargetCities On TravelTimes.TargetCityId=TargetCities.nCityCode 
                      Where (" & YourSourceCityId & "=-1 And " & YourTargetCityId & "<>-1 And TravelTimes.TargetCityId=" & YourTargetCityId & " and TravelTimes.LoaderTypeId=" & YourLoaderTypeId & ") Or 
@@ -1929,8 +1930,9 @@ Namespace TravelTime
                     If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
                 Else
                     If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "
-                     Select TravelTimes.LoaderTypeId,TravelTimes.SourceCityId,SourceCities.StrCityName SourceCityName,TravelTimes.TargetCityId,TargetCities.StrCityName as TargetCityName,TravelTimes.TravelTime,TravelTimes.Active
+                     Select LoaderTypes.LoaderTypeId,LoaderTypes.LoaderTypeTitle as LoaderTypeTitle,TravelTimes.SourceCityId,SourceCities.StrCityName SourceCityName,TravelTimes.TargetCityId,TargetCities.StrCityName as TargetCityName,TravelTimes.TravelTime,TravelTimes.Active
                      From R2PrimaryTransportationAndLoadNotification.dbo.TblTravelTimes as TravelTimes
+                       Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes On TravelTimes.LoaderTypeId=LoaderTypes.LoaderTypeId
                        Inner Join DBTransport.dbo.tbCity As SourceCities On TravelTimes.SourceCityId=SourceCities.nCityCode 
                        Inner Join DBTransport.dbo.tbCity As TargetCities On TravelTimes.TargetCityId=TargetCities.nCityCode 
                      Where (" & YourSourceCityId & "=-1 And " & YourTargetCityId & "<>-1 And TravelTimes.TargetCityId=" & YourTargetCityId & " and TravelTimes.LoaderTypeId=" & YourLoaderTypeId & ") Or 
@@ -1956,8 +1958,9 @@ Namespace TravelTime
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
                     Da.SelectCommand = New SqlCommand("
-                     Select Top 1 TravelTimes.LoaderTypeId,TravelTimes.SourceCityId,SourceCities.StrCityName SourceCityName,TravelTimes.TargetCityId,TargetCities.StrCityName as TargetCityName,TravelTimes.TravelTime,TravelTimes.Active
+                     Select Top 1 LoaderTypes.LoaderTypeId,LoaderTypes.LoaderTypeTitle as LoaderTypeTitle,TravelTimes.SourceCityId,SourceCities.StrCityName SourceCityName,TravelTimes.TargetCityId,TargetCities.StrCityName as TargetCityName,TravelTimes.TravelTime,TravelTimes.Active
                      From R2PrimaryTransportationAndLoadNotification.dbo.TblTravelTimes as TravelTimes
+                       Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes On TravelTimes.LoaderTypeId=LoaderTypes.LoaderTypeId
                        Inner Join DBTransport.dbo.tbCity As SourceCities On TravelTimes.SourceCityId=SourceCities.nCityCode 
                        Inner Join DBTransport.dbo.tbCity As TargetCities On TravelTimes.TargetCityId=TargetCities.nCityCode 
                      Where TravelTimes.LoaderTypeId=" & YourLoaderTypeId & " and TravelTimes.SourceCityId=" & YourSourceCityId & " and TravelTimes.TargetCityId=" & YourTargetCityId & " and TravelTimes.Deleted=0")
@@ -1965,8 +1968,9 @@ Namespace TravelTime
                     If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
                 Else
                     If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "
-                     Select  Top 1 TravelTimes.LoaderTypeId,TravelTimes.SourceCityId,SourceCities.StrCityName SourceCityName,TravelTimes.TargetCityId,TargetCities.StrCityName as TargetCityName,TravelTimes.TravelTime,TravelTimes.Active
+                     Select  Top 1 LoaderTypes.LoaderTypeId,LoaderTypes.LoaderTypeTitle as LoaderTypeTitle,TravelTimes.SourceCityId,SourceCities.StrCityName SourceCityName,TravelTimes.TargetCityId,TargetCities.StrCityName as TargetCityName,TravelTimes.TravelTime,TravelTimes.Active
                      From R2PrimaryTransportationAndLoadNotification.dbo.TblTravelTimes as TravelTimes
+                       Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes On TravelTimes.LoaderTypeId=LoaderTypes.LoaderTypeId
                        Inner Join DBTransport.dbo.tbCity As SourceCities On TravelTimes.SourceCityId=SourceCities.nCityCode 
                        Inner Join DBTransport.dbo.tbCity As TargetCities On TravelTimes.TargetCityId=TargetCities.nCityCode 
                      Where TravelTimes.LoaderTypeId=" & YourLoaderTypeId & " and TravelTimes.SourceCityId=" & YourSourceCityId & " and TravelTimes.TargetCityId=" & YourTargetCityId & " and TravelTimes.Deleted=0", 3600, Ds, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException

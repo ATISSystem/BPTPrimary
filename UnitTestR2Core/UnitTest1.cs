@@ -108,7 +108,7 @@ namespace UnitTestR2Core
         {
             try
             {
-                var Instance = new R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var Instance = new R2Core.SoftwareUserManagement.R2CoreSoftwareUsersManager(new R2DateTimeService());
                 var x = Instance.RegisteringSoftwareUser(new R2Core.SoftwareUserManagement.R2CoreRawSoftwareUserStructure() { UserId = 0, MobileNumber = "09138031812", UserName = "خسروی", UserTypeId = 1 }, false,21);
                 Console.WriteLine(x);
             }
@@ -124,7 +124,7 @@ namespace UnitTestR2Core
         {
             try
             {
-                var Instance = new R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var Instance = new R2Core.SoftwareUserManagement.R2CoreSoftwareUsersManager(new R2DateTimeService());
                 Instance.ResetSoftwareUserPassword(30, 21);
 
             }
@@ -179,7 +179,7 @@ namespace UnitTestR2Core
         [TestMethod]
         public void GetAllOfWebProcessGroupsWebProcesses()
         {
-            var x = new R2Core.SoftwareUserManagement.R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+            var x = new R2Core.SoftwareUserManagement.R2CoreSoftwareUsersManager(new R2DateTimeService());
             x.ChangeSoftwareUserWebProcessAccess(21, 1, true);
             var X = 2;
         }

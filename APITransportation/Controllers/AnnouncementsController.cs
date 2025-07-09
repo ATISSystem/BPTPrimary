@@ -28,12 +28,11 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetAnnouncements")]
-        public HttpResponseMessage GetAnnouncements()
+        public HttpResponseMessage GetAnnouncements([FromBody] APICommonSessionIdSearchString Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APICommonSessionIdSearchString>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
@@ -59,13 +58,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/AnnouncementRegistering")]
-        public HttpResponseMessage AnnouncementRegistering()
+        public HttpResponseMessage AnnouncementRegistering([FromBody] APITransportationSessionIdAnnouncement Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdAnnouncement>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var RawAnnouncement = Content.RawAnnouncement;
 
@@ -91,13 +89,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/AnnouncementEditing")]
-        public HttpResponseMessage AnnouncementEditing()
+        public HttpResponseMessage AnnouncementEditing([FromBody] APITransportationSessionIdAnnouncement Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdAnnouncement>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var RawAnnouncement = Content.RawAnnouncement;
 
@@ -123,13 +120,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/AnnouncementDeleting")]
-        public HttpResponseMessage AnnouncementDeleting()
+        public HttpResponseMessage AnnouncementDeleting([FromBody] APITransportationSessionIdAnnouncementId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdAnnouncementId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var AnnouncementId = Content.AnnouncementId;
 
@@ -155,12 +151,11 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetAnnouncementSubGroups")]
-        public HttpResponseMessage GetAnnouncementSubGroups()
+        public HttpResponseMessage GetAnnouncementSubGroups([FromBody] APICommonSessionIdSearchString Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APICommonSessionIdSearchString>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
@@ -186,13 +181,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/AnnouncementSubGroupRegistering")]
-        public HttpResponseMessage AnnouncementSubGroupRegistering()
+        public HttpResponseMessage AnnouncementSubGroupRegistering([FromBody] APITransportationSessionIdAnnouncementSubGroup Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdAnnouncementSubGroup>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var RawAnnouncementSubGroup = Content.RawAnnouncementSubGroup;
 
@@ -218,13 +212,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/AnnouncementSubGroupEditing")]
-        public HttpResponseMessage AnnouncementSubGroupEditing()
+        public HttpResponseMessage AnnouncementSubGroupEditing([FromBody] APITransportationSessionIdAnnouncementSubGroup Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdAnnouncementSubGroup>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var RawAnnouncementSubGroup = Content.RawAnnouncementSubGroup;
 
@@ -250,13 +243,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/AnnouncementSubGroupDeleting")]
-        public HttpResponseMessage AnnouncementSubGroupDeleting()
+        public HttpResponseMessage AnnouncementSubGroupDeleting([FromBody] APITransportationSessionIdAnnouncementSubGroupId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdAnnouncementSubGroupId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var AnnouncementSGId = Content.AnnouncementSGId;
 
@@ -282,12 +274,11 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetAnnouncementRelationAnnouncementSubGroups")]
-        public HttpResponseMessage GetAnnouncementRelationAnnouncementSubGroups()
+        public HttpResponseMessage GetAnnouncementRelationAnnouncementSubGroups([FromBody] APITransportationSessionIdAnnouncementId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdAnnouncementId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var AnnouncementId = Content.AnnouncementId ;
 
@@ -313,13 +304,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/AnnouncementRelationAnnouncementSubGroupDeleting")]
-        public HttpResponseMessage AnnouncementRelationAnnouncementSubGroupDeleting()
+        public HttpResponseMessage AnnouncementRelationAnnouncementSubGroupDeleting([FromBody] APITransportationSessionIdAnnouncementIdAnnouncementSubGroupId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdAnnouncementIdAnnouncementSubGroupId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var AnnouncementId = Content.AnnouncementId;
                 var AnnouncementSGId = Content.AnnouncementSGId;
@@ -346,13 +336,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/AnnouncementRelationAnnouncementSubGroupRegistering")]
-        public HttpResponseMessage AnnouncementRelationAnnouncementSubGroupRegistering()
+        public HttpResponseMessage AnnouncementRelationAnnouncementSubGroupRegistering([FromBody] APITransportationSessionIdAnnouncementIdAnnouncementSubGroupId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdAnnouncementIdAnnouncementSubGroupId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var AnnouncementId = Content.AnnouncementId;
                 var AnnouncementSGId = Content.AnnouncementSGId;

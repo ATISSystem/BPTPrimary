@@ -24,7 +24,7 @@ namespace UnitTestR2Core
             {
                 try
                 {
-                    var x = new R2CoreTransportationAndLoadNotification.TruckDrivers.R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager();
+                    var x = new R2CoreTransportationAndLoadNotification.TruckDrivers.R2CoreTransportationAndLoadNotificationTruckDriversManager();
                     var y=x.GetSoftwareUserIdfromTruckDriverId(1);
                     PayanehClassLibraryMClassCarTrucksManagement.GetNSSTruckBySmartCardNoWithUpdatingfromRMTO("4267898");
 
@@ -70,7 +70,7 @@ namespace UnitTestR2Core
         {
             try
             {
-                var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager();
+                var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
 
                 InstanceTruckDrivers.RegisteringTruckDriverMobileNumber(1, "09133155865");
             }
