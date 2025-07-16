@@ -31,6 +31,8 @@ Namespace R2PrimaryWS
     Partial Public Class R2PrimaryWebService
         Inherits System.Web.Services.Protocols.SoapHttpClientProtocol
         
+        Private HelloWorldOperationCompleted As System.Threading.SendOrPostCallback
+        
         Private WebMethodLoginOperationCompleted As System.Threading.SendOrPostCallback
         
         Private WebMethodReportingInformationPrividerMoneyWalletsCurrentChargeReportOperationCompleted As System.Threading.SendOrPostCallback
@@ -110,6 +112,9 @@ Namespace R2PrimaryWS
         End Property
         
         '''<remarks/>
+        Public Event HelloWorldCompleted As HelloWorldCompletedEventHandler
+        
+        '''<remarks/>
         Public Event WebMethodLoginCompleted As WebMethodLoginCompletedEventHandler
         
         '''<remarks/>
@@ -168,6 +173,33 @@ Namespace R2PrimaryWS
         
         '''<remarks/>
         Public Event WebMethodVerificationRequestCompleted As WebMethodVerificationRequestCompletedEventHandler
+        
+        '''<remarks/>
+        <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/HelloWorld", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
+        Public Function HelloWorld() As String
+            Dim results() As Object = Me.Invoke("HelloWorld", New Object(-1) {})
+            Return CType(results(0),String)
+        End Function
+        
+        '''<remarks/>
+        Public Overloads Sub HelloWorldAsync()
+            Me.HelloWorldAsync(Nothing)
+        End Sub
+        
+        '''<remarks/>
+        Public Overloads Sub HelloWorldAsync(ByVal userState As Object)
+            If (Me.HelloWorldOperationCompleted Is Nothing) Then
+                Me.HelloWorldOperationCompleted = AddressOf Me.OnHelloWorldOperationCompleted
+            End If
+            Me.InvokeAsync("HelloWorld", New Object(-1) {}, Me.HelloWorldOperationCompleted, userState)
+        End Sub
+        
+        Private Sub OnHelloWorldOperationCompleted(ByVal arg As Object)
+            If (Not (Me.HelloWorldCompletedEvent) Is Nothing) Then
+                Dim invokeArgs As System.Web.Services.Protocols.InvokeCompletedEventArgs = CType(arg,System.Web.Services.Protocols.InvokeCompletedEventArgs)
+                RaiseEvent HelloWorldCompleted(Me, New HelloWorldCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState))
+            End If
+        End Sub
         
         '''<remarks/>
         <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodLogin", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
@@ -720,6 +752,33 @@ Namespace R2PrimaryWS
             End If
             Return false
         End Function
+    End Class
+    
+    '''<remarks/>
+    <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")>  _
+    Public Delegate Sub HelloWorldCompletedEventHandler(ByVal sender As Object, ByVal e As HelloWorldCompletedEventArgs)
+    
+    '''<remarks/>
+    <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0"),  _
+     System.Diagnostics.DebuggerStepThroughAttribute(),  _
+     System.ComponentModel.DesignerCategoryAttribute("code")>  _
+    Partial Public Class HelloWorldCompletedEventArgs
+        Inherits System.ComponentModel.AsyncCompletedEventArgs
+        
+        Private results() As Object
+        
+        Friend Sub New(ByVal results() As Object, ByVal exception As System.Exception, ByVal cancelled As Boolean, ByVal userState As Object)
+            MyBase.New(exception, cancelled, userState)
+            Me.results = results
+        End Sub
+        
+        '''<remarks/>
+        Public ReadOnly Property Result() As String
+            Get
+                Me.RaiseExceptionIfNecessary
+                Return CType(Me.results(0),String)
+            End Get
+        End Property
     End Class
     
     '''<remarks/>

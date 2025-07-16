@@ -16,13 +16,6 @@ Imports System.Reflection
 Namespace MoneyWallet
 
     Namespace MoneyWallet
-        'BPTChanged
-        Public Class R2CoreMoneyWallet
-            Public MoneyWalletId As Int64
-            Public MoneyWalletCode As String
-            Public Balance As Int64
-        End Class
-
         Public Class R2CoreStandardMoneyWalletStructure
             Inherits R2StandardStructure
 
@@ -65,6 +58,13 @@ Namespace MoneyWallet
             Public Property ViewFlag As Boolean
             Public Property Deleted As Boolean
 
+        End Class
+
+        'BPTChanged
+        Public Class R2CoreMoneyWallet
+            Public MoneyWalletId As Int64
+            Public MoneyWalletCode As String
+            Public Balance As Int64
         End Class
 
         'BPTChanged
@@ -327,7 +327,15 @@ Namespace MoneyWallet
         Public Class R2CoreInstanceMoneyWalletChargingManager
             Private _DateTime As New R2DateTime
 
+            Public Function PaymentRequest(AmountRials As Int64) As Int16
+                Try
+                    Dim InstanceConfiguration = New R2Core.ConfigurationManagement.R2CoreInstanceConfigurationManager
+                    InstanceConfiguration.GetConfigInt64(R2Core.ConfigurationManagement.R2CoreConfigurations.mo)
+                Catch ex As Exception
 
+                End Try
+
+            End Function
         End Class
 
 

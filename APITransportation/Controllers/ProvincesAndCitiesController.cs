@@ -40,7 +40,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager();
 
@@ -73,7 +73,7 @@ namespace APITransportation.Controllers
                 var ProvinceId = Content.ProvinceId;
                 var ProvineActive = Content.ProvinceActive;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager();
                 InstanceProvincesAndCities.ChangeActiveStatusOfProvince(ProvinceId, ProvineActive);
@@ -103,7 +103,7 @@ namespace APITransportation.Controllers
                 var CityId = Content.CityId;
                 var CityActive = Content.CityActive;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager();
                 InstanceProvincesAndCities.ChangeActiveStatusOfCity(CityId, CityActive);

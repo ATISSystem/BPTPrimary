@@ -4,10 +4,12 @@ using APITransportation.Models.LoaderTypes;
 using APITransportation.Models.SequentialTurns;
 using Newtonsoft.Json;
 using R2Core.DatabaseManagement;
+using R2Core.DateAndTimeManagement;
 using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
 using R2CoreParkingSystem.ProvincesAndCities;
+using R2CoreTransportationAndLoadNotification.Trucks;
 using R2CoreTransportationAndLoadNotification.Turns.SequentialTurns;
 using System;
 using System.Collections.Generic;
@@ -36,7 +38,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
 
@@ -64,14 +66,45 @@ namespace APITransportation.Controllers
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
-                var LoaderTypeId = Content.LoaderTypeId ;
+                var LoaderTypeId = Content.LoaderTypeId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceSequentialTurns.GetSequentialTurnsByLoaderTypeId(LoaderTypeId, true), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
+        [Route("api/GetSequentialTurnsBySoftwareUser")]
+        public HttpResponseMessage GetSequentialTurnsBySoftwareUser([FromBody] APICommonSessionId Content)
+        {
+            try
+            {
+                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
+                var InstanceSession = new R2CoreSessionManager();
+                var SessionId = Content.SessionId;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var Truck = InstanceTrucks.GetTruckBySoftwareUser(User.UserId, false);
+                var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(InstanceSequentialTurns.GetSequentialTurnsByLoaderTypeId(Truck.LoaderTypeId, false), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -97,7 +130,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var RawSequentialTurn = Content.RawSequentialTurn;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
                 InstanceSequentialTurns.SequentialTurnRegistering(RawSequentialTurn);
@@ -128,7 +161,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var RawSequentialTurn = Content.RawSequentialTurn;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
                 InstanceSequentialTurns.SequentialTurnEditing(RawSequentialTurn);
@@ -159,7 +192,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
                 InstanceSequentialTurns.SequentialTurnDeleting(SequentialTurnId);
@@ -190,7 +223,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
 
@@ -221,7 +254,7 @@ namespace APITransportation.Controllers
                 var SequentialTurnId = Content.SequentialTurnId;
                 var LoaderTypeId = Content.LoaderTypeId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
                 InstanceSequentialTurns.SequentialTurnRelationLoaderTypeDeleting(SequentialTurnId, LoaderTypeId);
@@ -253,13 +286,13 @@ namespace APITransportation.Controllers
                 var SequentialTurnId = Content.SequentialTurnId;
                 var LoaderTypeId = Content.LoaderTypeId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
                 InstanceSequentialTurns.SequentialTurnRelationLoaderTypeRegistering(SequentialTurnId, LoaderTypeId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed ).MsgContent), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -284,12 +317,12 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceSequentialTurns.GetSequentialTurnRelationAnnouncementSubGroups(SequentialTurnId,true ), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(InstanceSequentialTurns.GetSequentialTurnRelationAnnouncementSubGroups(SequentialTurnId, true), Encoding.UTF8, "application/json"); return response;
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -313,9 +346,9 @@ namespace APITransportation.Controllers
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
-                var AnnouncementSGId= Content.AnnouncementSGId;
+                var AnnouncementSGId = Content.AnnouncementSGId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
                 InstanceSequentialTurns.SequentialTurnRelationAnnouncementSubGroupDeleting(SequentialTurnId, AnnouncementSGId);
@@ -347,13 +380,13 @@ namespace APITransportation.Controllers
                 var SequentialTurnId = Content.SequentialTurnId;
                 var AnnouncementSGId = Content.AnnouncementSGId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
                 InstanceSequentialTurns.SequentialTurnRelationAnnouncementSubGroupRegistering(SequentialTurnId, AnnouncementSGId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed ).MsgContent), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }

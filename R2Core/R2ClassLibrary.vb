@@ -2305,6 +2305,7 @@ Namespace DateAndTimeManagement
 
 
     End Class
+
     Public Class R2DateTime
         'Dim mycurrenttime As String = Trim(Mid(DateAndTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), 12, 8))
         Private myOpenConnection As R2PrimarySubscriptionDBSqlConnection = New R2PrimarySubscriptionDBSqlConnection
@@ -2653,6 +2654,7 @@ Namespace DateAndTimeManagement
             Return "00:00:00"
         End Function
     End Class
+
     Public Class HafteMahManagement
         'روتين پر کردن کمبو هفته 
         Public Shared Sub CmbHafteRefresh(ByVal cmbhafte As ComboBox)

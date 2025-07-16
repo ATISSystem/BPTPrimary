@@ -1714,6 +1714,60 @@ Namespace PredefinedMessagesManagement
 
 End Namespace
 
+Namespace TWS
+    Public Class R2CoreTransportationAndLoadNotificationsTWSManager
+
+        Private _dateTime As New R2DateTime
+
+        Public Sub TWSCapacitorSendLoadPermissions()
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Try
+                Dim InstanceLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
+                Dim InstanceLoadPermission = New R2CoreTransportationAndLoadNotificationInstanceLoadPermissionManager
+                Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationInstanceTrucksManager
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim DS As New DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                  "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblTWSCapacitor 
+                   Where TWSStatusId=" & TWSClassLibrary.NobatsManagement.NobatsStatus.Sodoor & " and ShamsiDate='" & _dateTime.GetCurrentDateShamsiFull & "'", 0, DS, New Boolean).GetRecordsCount = 0 Then Exit Try
+
+                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+                    Dim TruckId As Int64 = DS.Tables(0).Rows(Loopx).Item("TruckId")
+                    Dim TruckNSS = InstanceTrucks.GetNSSTruck(TruckId)
+                    Dim LastPermissioned = InstanceLoadPermission.GetTruckLastLoadWhichPermissioned(TruckNSS)
+                    'ارسال تاییدیه صدور مجوز به آنلاین
+                    TWSClassLibrary.TDBClientManagement.TWSClassTDBClientManagement.Sodoor(TruckNSS.NSSCar.StrCarNo, TruckNSS.NSSCar.StrCarSerialNo, InstanceLoadTargets.GetNSSLoadTarget(LastPermissioned.nCityCode).TargetTravelLength)
+                Next
+
+                'پاک کردن اطلاعات
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblTWSCapacitor 
+                                          Where ShamsiDate='" & _dateTime.GetCurrentDateShamsiFull & "' and TWSStatusId=" & TWSClassLibrary.NobatsManagement.NobatsStatus.Sodoor & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+
+            Catch ex As TruckHasNotAnyLoadPermissionException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw ex
+            Catch ex As LoadCapacitorLoadNotFoundException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw ex
+            Catch ex As GetNSSException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw ex
+            Catch ex As TruckNotFoundException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw ex
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+    End Class
+End Namespace
+
 Namespace Goods
     Public Class R2CoreTransportationAndLoadNotificationStandardGoodStructure
         Inherits R2StandardStructure
@@ -2661,6 +2715,7 @@ Namespace TransportTarrifsParameters
     End Namespace
 
 End Namespace
+
 
 
 

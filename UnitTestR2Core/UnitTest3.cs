@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using R2Core.DateAndTimeManagement;
 using R2CoreTransportationAndLoadNotification.TransportTariffs;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,16 @@ namespace UnitTestR2Core
             var y = 2;
 
         }
+
+        [TestMethod]
+        public void TURNS()
+        {
+            var X = new R2CoreTransportationAndLoadNotification.Turns.R2CoreTransportationAndLoadNotificationTurnsManager(new R2DateTimeService() );
+            X.TurnCancellationByUser(13, 21);
+            var y = 2;
+
+        }
+
 
     }
 }

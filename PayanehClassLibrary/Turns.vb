@@ -732,7 +732,7 @@ Namespace CarTruckNobatManagement
             End Try
         End Function
 
-        Public Sub ResuscitationNonCreditTurn(YourNSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnExtendedStructure, YourNSSUser As R2CoreStandardSoftwareUserStructure)
+        Public Sub ResuscitationNonCreditTurn(YourNSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnExtendedStructure, YourUserId As Int64)
             Try
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
                 Dim mySoftWareUser = InstanceTurns.GetNSSSoftwareUser(YourNSSTurn)
@@ -772,7 +772,7 @@ Namespace CarTruckNobatManagement
 
                 'هزینه نوبت انجمن و شرکت
                 Dim CostOfTurnRegistering As Int64 = PayanehClassLibraryMClassCarTruckNobatManagement.GetSherkatHazinehNobatMblgh(NSSTrafficCard)
-                If CostOfTurnRegistering > 0 Then R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.MinusMoney, CostOfTurnRegistering, R2CoreParkingSystemAccountings.SherkatHazinehNobat, YourNSSUser)
+                If CostOfTurnRegistering > 0 Then R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.MinusMoney, CostOfTurnRegistering, R2CoreParkingSystemAccountings.SherkatHazinehNobat, R2CoreMClassSoftwareUsersManagement.GetNSSUser(YourUserId))
                 If NSSTrafficCard.CardType = TerafficCardType.Tereili Then R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 1), R2CoreParkingSystemAccountings.AnjomanHazinehNobat, R2Core.SoftwareUserManagement.R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser)
                 If NSSTrafficCard.CardType = TerafficCardType.SixCharkh Or NSSTrafficCard.CardType = TerafficCardType.TenCharkh Then R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 4), R2CoreParkingSystemAccountings.AnjomanHazinehNobat, R2Core.SoftwareUserManagement.R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser)
 
@@ -808,14 +808,14 @@ Namespace CarTruckNobatManagement
             End Try
         End Sub
 
-        Public Sub ResuscitationNonCreditTurn(YourSofttWareUser As R2CoreStandardSoftwareUserStructure, YourNSSUser As R2CoreStandardSoftwareUserStructure)
+        Public Sub ResuscitationNonCreditTurn(YourSofttWareUser As R2CoreStandardSoftwareUserStructure, YourUserId As Int64)
             Try
                 Dim InstancePredefinedMessages = New R2CoreMClassPredefinedMessagesManager
 
                 Dim NSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure = Nothing
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager()
                 NSSTurn = InstanceTurns.GetNSSLastTurn(YourSofttWareUser)
-                ResuscitationNonCreditTurn(NSSTurn, YourNSSUser)
+                ResuscitationNonCreditTurn(NSSTurn, YourUserId)
 
                 'ارسال پیام به راننده 
                 Try
@@ -1954,7 +1954,7 @@ Namespace Turns
                 Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_R2DateTimeService)
                 Dim InstanceTurnRegister = New R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(_R2DateTimeService)
-                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(_R2DateTimeService)
+                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(_R2DateTimeService, Nothing)
 
                 'کاربر درخواست دهنده
                 SoftwareUser = InstanceSoftwareUsers.GetUser(YourSoftwareUserId, False)
@@ -1992,10 +1992,10 @@ Namespace Turns
 
                 'کنترل دارابودن نوبت در نوبت آنلاین
                 If InstanceConfiguration.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.TWS, 0) Then
-                    Dim TWSMessage As String = TWSClassLibrary.TDBClientManagement.TWSClassTDBClientManagement.ExistNobat(Truck.Pelak, Truck.Serial)
-                    If TWSMessage.Trim <> String.Empty Then
-                        Throw New GetNobatException("صدور نوبت امکان پذیر نیست" + vbCrLf + TWSMessage)
-                    End If
+                    'Dim TWSMessage As String = TWSClassLibrary.TDBClientManagement.TWSClassTDBClientManagement.ExistNobat(Truck.Pelak, Truck.Serial)
+                    'If TWSMessage.Trim <> String.Empty Then
+                    '    Throw New GetNobatException("صدور نوبت امکان پذیر نیست" + vbCrLf + TWSMessage)
+                    'End If
                 End If
 
                 'کنتر دارا بودن نوبت فعال قبلی
@@ -2131,7 +2131,6 @@ Namespace Turns
                 'اکانتینگ نوبت
                 InstanceTurnAccounting.TurnAccountingRegistering(mynIdEnterExit, TurnAccounting.TurnAccouningTypes.TurnIssue, SoftwareUser.UserId, CmdSql)
 
-
                 'bDelAutomated Used in AutomatedTurnRegistering for Control
                 CmdSql.CommandText = "Update dbtransport.dbo.tbEnterExit Set bDelAutomated=0 Where bDelAutomated=1 and strCardno=" & Truck.TruckId & ""
                 CmdSql.ExecuteNonQuery()
@@ -2139,6 +2138,9 @@ Namespace Turns
 
                 DoStrategyComplementaryWorks()
             Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
                 R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As Exception When TypeOf ex Is TurnNotFoundException OrElse TypeOf ex Is ReserveTurnAlreadyUsedException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then

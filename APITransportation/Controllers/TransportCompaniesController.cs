@@ -42,7 +42,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager();
 
@@ -74,7 +74,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var TCId = Content.TransportCompanyId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager();
 
@@ -107,7 +107,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var TC = Content.RawTransportCompany;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager();
                 InstanceTransportCompanies.EditTransportCompany(TC);
@@ -137,10 +137,10 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var TransportCompanyId = Content.TransportCompanyId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager();
-                var InstanceSMSOwners = new R2CoreParkingSystemMClassSMSOwnersManager(new SoftwareUserService(UserId), new R2DateTimeService());
+                var InstanceSMSOwners = new R2CoreParkingSystemSMSOwnersManager(new SoftwareUserService(User.UserId), new R2DateTimeService());
                 InstanceSMSOwners.ActivateSMSOwner(InstanceTransportCompanies.GetSoftwareUserIdfromTransportCompanyId(TransportCompanyId,true ));
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -167,11 +167,11 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var TransportCompanyId = Content.TransportCompanyId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager();
-                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
-                var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(InstanceTransportCompanies.GetSoftwareUserIdfromTransportCompanyId(TransportCompanyId,true ), UserId);
+                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(),new SoftwareUserService(User.UserId ));
+                var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(InstanceTransportCompanies.GetSoftwareUserIdfromTransportCompanyId(TransportCompanyId,true ), User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(SoftWareUserSecurity), Encoding.UTF8, "application/json");
@@ -198,7 +198,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var TransportCompanyId = Content.TransportCompanyId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager();
                 var InstanseSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());

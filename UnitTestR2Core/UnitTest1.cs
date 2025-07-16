@@ -59,7 +59,7 @@ namespace UnitTestR2Core
         public void ConfirmSession()
         {
             //arrange
-            var expected = "b02cd4d58a4188ff039ac33df314f948%OwUE(6D~kJA";
+            var expected = "562e864a9a877e64be541eac6102c4b0dAUJ-a3o%#p~";
             //act
             var actual = (new R2CoreSessionManager()).ConfirmSession(expected);
             //assert
@@ -108,7 +108,7 @@ namespace UnitTestR2Core
         {
             try
             {
-                var Instance = new R2Core.SoftwareUserManagement.R2CoreSoftwareUsersManager(new R2DateTimeService());
+                var Instance = new R2Core.SoftwareUserManagement.R2CoreSoftwareUsersManager(new R2DateTimeService(),new SoftwareUserService (21));
                 var x = Instance.RegisteringSoftwareUser(new R2Core.SoftwareUserManagement.R2CoreRawSoftwareUserStructure() { UserId = 0, MobileNumber = "09138031812", UserName = "خسروی", UserTypeId = 1 }, false,21);
                 Console.WriteLine(x);
             }
@@ -124,7 +124,7 @@ namespace UnitTestR2Core
         {
             try
             {
-                var Instance = new R2Core.SoftwareUserManagement.R2CoreSoftwareUsersManager(new R2DateTimeService());
+                var Instance = new R2Core.SoftwareUserManagement.R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(21));
                 Instance.ResetSoftwareUserPassword(30, 21);
 
             }
@@ -139,8 +139,8 @@ namespace UnitTestR2Core
         {
             try
             {
-                var Instance = new R2CoreParkingSystem.SMS.SMSOwners.R2CoreParkingSystemMClassSMSOwnersManager(new R2Core.SoftwareUserManagement.SoftwareUserService(21), new R2DateTimeService());
-                var x = Instance.ChangeSMSOwnerCurrentState(21);
+                var Instance = new R2CoreParkingSystem.SMS.SMSOwners.R2CoreParkingSystemSMSOwnersManager(new R2Core.SoftwareUserManagement.SoftwareUserService(21), new R2DateTimeService());
+                Instance.ChangeSMSOwnerCurrentState(21);
                 var d = 12;
             }
             catch (DataBaseException ex)
@@ -179,7 +179,7 @@ namespace UnitTestR2Core
         [TestMethod]
         public void GetAllOfWebProcessGroupsWebProcesses()
         {
-            var x = new R2Core.SoftwareUserManagement.R2CoreSoftwareUsersManager(new R2DateTimeService());
+            var x = new R2Core.SoftwareUserManagement.R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(21));
             x.ChangeSoftwareUserWebProcessAccess(21, 1, true);
             var X = 2;
         }

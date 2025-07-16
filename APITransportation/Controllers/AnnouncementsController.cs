@@ -36,7 +36,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
 
@@ -67,7 +67,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var RawAnnouncement = Content.RawAnnouncement;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
                 InstanceAnnouncements.AnnouncementRegistering(RawAnnouncement);
@@ -98,7 +98,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var RawAnnouncement = Content.RawAnnouncement;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
                 InstanceAnnouncements.AnnouncementEditing(RawAnnouncement);
@@ -129,7 +129,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var AnnouncementId = Content.AnnouncementId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
                 InstanceAnnouncements.AnnouncementDeleting(AnnouncementId);
@@ -159,7 +159,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
 
@@ -190,7 +190,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var RawAnnouncementSubGroup = Content.RawAnnouncementSubGroup;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
                 InstanceAnnouncements.AnnouncementSGRegistering(RawAnnouncementSubGroup);
@@ -221,7 +221,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var RawAnnouncementSubGroup = Content.RawAnnouncementSubGroup;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
                 InstanceAnnouncements.AnnouncementSGEditing(RawAnnouncementSubGroup);
@@ -252,7 +252,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var AnnouncementSGId = Content.AnnouncementSGId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
                 InstanceAnnouncements.AnnouncementSGDeleting(AnnouncementSGId);
@@ -282,7 +282,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var AnnouncementId = Content.AnnouncementId ;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
 
@@ -314,7 +314,7 @@ namespace APITransportation.Controllers
                 var AnnouncementId = Content.AnnouncementId;
                 var AnnouncementSGId = Content.AnnouncementSGId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
                 InstanceAnnouncements.AnnouncementRelationAnnouncementSubGroupDeleting(AnnouncementId,AnnouncementSGId);
@@ -346,7 +346,7 @@ namespace APITransportation.Controllers
                 var AnnouncementId = Content.AnnouncementId;
                 var AnnouncementSGId = Content.AnnouncementSGId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
                 InstanceAnnouncements.AnnouncementRelationAnnouncementSubGroupRegistering (AnnouncementId, AnnouncementSGId);

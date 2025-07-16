@@ -162,6 +162,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="SMS.vb" />
     <Compile Include="SoftwareUsers.vb" />
     <Compile Include="Web References\net.sepahansms\Reference.vb">
       <AutoGen>True</AutoGen>
@@ -236,10 +237,10 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://172.26.29.22:2011/R2PrimaryWebService.asmx">
+    <WebReferenceUrl Include="http://192.168.1.2:2011/R2PrimaryWebService.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\R2PrimaryWS\</RelPath>
-      <UpdateFromURL>http://172.26.29.22:2011/R2PrimaryWebService.asmx</UpdateFromURL>
+      <UpdateFromURL>http://192.168.1.2:2011/R2PrimaryWebService.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>

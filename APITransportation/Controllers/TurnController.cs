@@ -37,16 +37,15 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetTop10TruckTurns")]
-        public HttpResponseMessage GetTop10TruckTurns()
+        public HttpResponseMessage GetTop10TruckTurns([FromBody] APITransportationSessionIdTruckId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnsManager(new R2DateTimeService());
 
@@ -69,17 +68,47 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/GetTurnAccounting")]
-        public HttpResponseMessage GetTurnAccounting()
+        [Route("api/GetTop5TruckTurns")]
+        public HttpResponseMessage GetTop5TruckTurns([FromBody] APICommonSessionId  Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTurnId>(Request.Content.ReadAsStringAsync().Result);
+                var SessionId = Content.SessionId;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnsManager(new R2DateTimeService());
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(InstanceTurns.GetTop5TruckTurns(User.UserId), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+
+
+        }
+
+        [HttpPost]
+        [Route("api/GetTurnAccounting")]
+        public HttpResponseMessage GetTurnAccounting([FromBody] APITransportationSessionIdTurnId Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TurnId = Content.TurnId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTurnAccounting = new R2CoreTransportationAndLoadNotificationTurnAccountingManager(new R2DateTimeService());
 
@@ -103,20 +132,19 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/TurnCancellation")]
-        public HttpResponseMessage TurnCancellation()
+        public HttpResponseMessage TurnCancellation([FromBody] APITransportationSessionIdTurnId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTurnId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TurnId = Content.TurnId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnsManager(new R2DateTimeService());
-                InstanceTurns.TurnCancellationByUser(TurnId,  UserId);
+                InstanceTurns.TurnCancellationByUser(TurnId, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
@@ -137,20 +165,19 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/TurnResuscitation")]
-        public HttpResponseMessage TurnResuscitation()
+        public HttpResponseMessage TurnResuscitation([FromBody] APITransportationSessionIdTurnId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTurnId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TurnId = Content.TurnId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnsManager(new R2DateTimeService());
-                InstanceTurns.TurnResuscitationByUser(TurnId,  UserId);
+                InstanceTurns.TurnResuscitationByUser(TurnId, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;

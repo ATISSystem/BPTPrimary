@@ -22,6 +22,8 @@ using R2Core.ExceptionManagement;
 using R2Core.MoneyWallet.MoneyWallet;
 using R2Core.MoneyWallet.Exceptions;
 using APICommon.Models;
+using R2CoreParkingSystem.SoftwareUsersManagement;
+using System.Web.Services.Protocols;
 
 
 
@@ -34,6 +36,10 @@ namespace APISoftwareUser.Controllers
     public class SoftwareUserController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
+        private IR2DateTimeService _DateTimeService;
+
+        public SoftwareUserController()
+        { _DateTimeService = new R2DateTimeService(); }
 
         [HttpGet]
         [Route("api/GetCaptcha")]
@@ -54,12 +60,11 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/AuthUser")]
-        public HttpResponseMessage AuthUser()
+        public HttpResponseMessage AuthUser([FromBody] APISoftwareUserAuthUserStructure Content)
         {
             try
             {
-                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserAuthUserStructure>(Request.Content.ReadAsStringAsync().Result);
+                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), null);
                 InstanceSoftwareUsers.ConfirmUser(Content.SessionId, Content.UserShenaseh, Content.UserPassword, Content.Captcha);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -74,18 +79,16 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/GetSessionSoftwareUser")]
-        public HttpResponseMessage GetSessionSoftwareUser()
+        public HttpResponseMessage GetSessionSoftwareUser([FromBody] APICommonSessionId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APICommonSessionId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceSoftwareUsers.GetUser(UserId, true)), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(User), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SessionOverException ex)
@@ -95,18 +98,17 @@ namespace APISoftwareUser.Controllers
         }
 
         [HttpPost]
-        [Route("api/AuthUser/ISSessionLive")]
+        [Route("api/ISSessionLive")]
         [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "*")]
-        public HttpResponseMessage ISSessionLive()
+        public HttpResponseMessage ISSessionLive([FromBody] APICommonSessionId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
 
-                var Content = JsonConvert.DeserializeObject<APICommonSessionId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { ISSessionLive = true }), Encoding.UTF8, "application/json");
@@ -124,18 +126,17 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/GetWebProcesses")]
-        public HttpResponseMessage GetWebProcesses()
+        public HttpResponseMessage GetWebProcesses([FromBody] APICommonSessionId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
 
-                var Content = JsonConvert.DeserializeObject<APICommonSessionId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
                 var InstanceWebProcesses = new R2CoreWebProcessesManager();
-                var WebProccesses = InstanceWebProcesses.GetWebProcesses(UserId);
+                var WebProccesses = InstanceWebProcesses.GetWebProcesses(User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(WebProccesses, Encoding.UTF8, "application/json");
@@ -149,19 +150,18 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/RegisteringSoftwareUser")]
-        public HttpResponseMessage RegisteringSoftwareUser()
+        public HttpResponseMessage RegisteringSoftwareUser([FromBody] APISoftwareUserSessionIdRawSoftwareUserStructure Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
 
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdRawSoftwareUserStructure>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var RawSoftwareUser = Content.RawSoftwareUser;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
-                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
-                var SoftwareUserId = InstanceSoftwareUsers.RegisteringSoftwareUser(RawSoftwareUser, true, UserId);
+                var User = InstanceSession.ConfirmSession(SessionId);
+                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
+                var SoftwareUserId = InstanceSoftwareUsers.RegisteringSoftwareUser(RawSoftwareUser, true, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { SoftwareUserId = SoftwareUserId }), Encoding.UTF8, "application/json");
@@ -175,19 +175,18 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/SoftwareUserForgetPassword")]
-        public HttpResponseMessage SoftwareUserForgetPassword()
+        public HttpResponseMessage SoftwareUserForgetPassword([FromBody] APISoftwareUserSessionIdSoftwareUserMobileNumber Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
 
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserMobileNumber>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserMobileNumber = Content.SoftwareUserMobileNumber;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
+                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
                 InstanseSoftwareUsers.SoftwareUserForgetPassword(SessionId, SoftwareUserMobileNumber);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -202,19 +201,18 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/VerifySoftwareUserVerificationCode")]
-        public HttpResponseMessage VerifySoftwareUserVerificationCode()
+        public HttpResponseMessage VerifySoftwareUserVerificationCode([FromBody] APISoftwareUserSessionIdSoftwareUserVerificationCode Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
 
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserVerificationCode>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserVerificationCode = Content.VerificationCode;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
+                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
                 InstanseSoftwareUsers.VerifySoftwareUserVerificationCode(SessionId, SoftwareUserVerificationCode);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -229,20 +227,19 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/ResetSoftwareUserPassword")]
-        public HttpResponseMessage ResetSoftwareUserPassword()
+        public HttpResponseMessage ResetSoftwareUserPassword([FromBody] APISoftwareUserSessionIdSoftwareUserId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
 
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
-                var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(SoftwareUserId, UserId);
+                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
+                var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(SoftwareUserId, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(SoftWareUserSecurity), Encoding.UTF8, "application/json");
@@ -256,17 +253,16 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/GetUserTypes")]
-        public HttpResponseMessage GetUserTypes()
+        public HttpResponseMessage GetUserTypes([FromBody] APICommonSessionId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APICommonSessionId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
 
-                InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
                 var UserTypes = InstanceSoftwareUsers.GetSoftwareUserTypes();
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -281,20 +277,19 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/EditSoftwareUser")]
-        public HttpResponseMessage EditSoftwareUser()
+        public HttpResponseMessage EditSoftwareUser([FromBody] APISoftwareUserSessionIdRawSoftwareUserStructure Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdRawSoftwareUserStructure>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
-                var RawSaftwareUser = Content.RawSoftwareUser;
+                var RawSoftwareUser = Content.RawSoftwareUser;
 
-                InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
-                InstanceSoftwareUsers.EditSoftwareUser(RawSaftwareUser);
+                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
+                InstanceSoftwareUsers.EditSoftwareUser(RawSoftwareUser);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.EditingSoftWareUserSuccessed).MsgContent }), Encoding.UTF8, "application/json");
@@ -310,7 +305,7 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/GetSMSOwnerCurrentStatus")]
-        public HttpResponseMessage GetSMSOwnerCurrentStatus()
+        public HttpResponseMessage GetSMSOwnerCurrentStatus([FromBody] APISoftwareUserSessionIdSoftwareUserId Content)
         {
             try
             {
@@ -318,11 +313,10 @@ namespace APISoftwareUser.Controllers
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
                 var InstanceSMSOwners = new R2CoreMClassSMSOwnersManager();
 
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
 
-                InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var SMSOwnerCurrentState = InstanceSMSOwners.GetNSSSMSOwnerCurrentState(SoftwareUserId);
 
@@ -338,23 +332,23 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/ChangeSMSOwnerCurrentStatus")]
-        public HttpResponseMessage ChangeSMSOwnerCurrentStatus()
+        public HttpResponseMessage ChangeSMSOwnerCurrentStatus([FromBody] APISoftwareUserSessionIdSoftwareUserId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
 
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceSMSOwners = new R2CoreParkingSystemMClassSMSOwnersManager(new SoftwareUserService(UserId), new R2DateTimeService());
-                var SMSOwnerCurrentState = InstanceSMSOwners.ChangeSMSOwnerCurrentState(SoftwareUserId);
+                var InstanceSMSOwners = new R2CoreParkingSystemSMSOwnersManager(new SoftwareUserService(User.UserId), new R2DateTimeService());
+                InstanceSMSOwners.ChangeSMSOwnerCurrentState(SoftwareUserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(SMSOwnerCurrentState), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SessionOverException ex)
@@ -365,20 +359,19 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/ActivateSMSOwner")]
-        public HttpResponseMessage ActivateSMSOwner()
+        public HttpResponseMessage ActivateSMSOwner([FromBody] APISoftwareUserSessionIdSoftwareUserId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
 
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceSMSOwners = new R2CoreParkingSystemMClassSMSOwnersManager(new SoftwareUserService(UserId), new R2DateTimeService());
+                var InstanceSMSOwners = new R2CoreParkingSystemSMSOwnersManager(new SoftwareUserService(User.UserId), new R2DateTimeService());
                 InstanceSMSOwners.ActivateSMSOwner(SoftwareUserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -393,17 +386,16 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/GetSoftWareUser")]
-        public HttpResponseMessage GetSoftWareUser()
+        public HttpResponseMessage GetSoftWareUser([FromBody] APISoftwareUserSessionIdSoftwareUserMobileNumber Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
 
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserMobileNumber>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserMobileNumber = Content.SoftwareUserMobileNumber;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSMSOwners = new R2CoreMClassSMSOwnersManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
@@ -422,17 +414,16 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/GetAllOfWebProcessGroupsWebProcesses")]
-        public HttpResponseMessage GetAllOfWebProcessGroupsWebProcesses()
+        public HttpResponseMessage GetAllOfWebProcessGroupsWebProcesses([FromBody] APISoftwareUserSessionIdSoftwareUserMobileNumber Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserMobileNumber>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUser = InstanceSoftwareUsers.GetNSSUserUnChangeable(new R2CoreSoftwareUserMobile(Content.SoftwareUserMobileNumber));
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
                 var InstanceWebProcesses = new R2CoreWebProcessesManager();
 
                 var AllOfWebProcessGroupsWebProcesses = InstanceWebProcesses.GetAllOfWebProcessGroupsWebProcesses(SoftwareUser.UserId);
@@ -449,22 +440,21 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/ChangeSoftwareUserWebProcessGroupAccess")]
-        public HttpResponseMessage ChangeSoftwareUserWebProcessGroupAccess()
+        public HttpResponseMessage ChangeSoftwareUserWebProcessGroupAccess([FromBody] APISoftwareUserSessionIdSoftwareUserIdWPGId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
 
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserIdWPGId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
                 var WPGId = Content.PGId;
                 var WPGAccess = Content.PGAccess;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
+                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
                 InstanceSoftwareUsers.ChangeSoftwareUserWebProcessGroupAccess(SoftwareUserId, WPGId, WPGAccess);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -479,22 +469,21 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/ChangeSoftwareUserWebProcessAccess")]
-        public HttpResponseMessage ChangeSoftwareUserWebProcessAccess()
+        public HttpResponseMessage ChangeSoftwareUserWebProcessAccess([FromBody] APISoftwareUserSessionIdSoftwareUserIdWPId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
 
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserIdWPId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
                 var WPId = Content.PId;
                 var WPAccess = Content.PAccess;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
+                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
                 InstanceSoftwareUsers.ChangeSoftwareUserWebProcessAccess(SoftwareUserId, WPId, WPAccess);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -509,20 +498,19 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/GetSoftwareUserWebProcessGroupAccess")]
-        public HttpResponseMessage GetSoftwareUserWebProcessGroupAccess()
+        public HttpResponseMessage GetSoftwareUserWebProcessGroupAccess([FromBody] APISoftwareUserSessionIdSoftwareUserIdWPGId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
 
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserIdWPGId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
                 var WPGId = Content.PGId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
+                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(new APISoftwareUserSessionIdSoftwareUserIdWPGId { SessionId = SessionId, SoftwareUserId = SoftwareUserId, PGId = WPGId, PGAccess = InstanceSoftwareUsers.GetSoftwareUserWebProcessGroupAccess(SoftwareUserId, WPGId) }), Encoding.UTF8, "application/json");
                 return response;
@@ -535,20 +523,19 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/GetSoftwareUserWebProcessAccess")]
-        public HttpResponseMessage GetSoftwareUserWebProcessAccess()
+        public HttpResponseMessage GetSoftwareUserWebProcessAccess([FromBody] APISoftwareUserSessionIdSoftwareUserIdWPId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
 
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserIdWPId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
                 var WPId = Content.PId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
+                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(new APISoftwareUserSessionIdSoftwareUserIdWPId { SessionId = SessionId, SoftwareUserId = SoftwareUserId, PId = WPId, PAccess = InstanceSoftwareUsers.GetSoftwareUserWebProcessAccess(SoftwareUserId, WPId) }), Encoding.UTF8, "application/json");
                 return response;
@@ -561,21 +548,20 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/SendWebSiteLink")]
-        public HttpResponseMessage SendWebSiteLink()
+        public HttpResponseMessage SendWebSiteLink([FromBody] APISoftwareUserSessionIdSoftwareUserId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
 
-                var Content = JsonConvert.DeserializeObject<APISoftwareUserSessionIdSoftwareUserId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
-                InstanseSoftwareUsers.SendWebSiteLink(InstanseSoftwareUsers.GetUser(SoftwareUserId,true));
+                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(),null );
+                InstanseSoftwareUsers.SendWebSiteLink(InstanseSoftwareUsers.GetUser(SoftwareUserId, true));
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.SendWebSiteLink).MsgContent }), Encoding.UTF8, "application/json");
@@ -589,23 +575,22 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/GetVirtualMoneyWallet")]
-        public HttpResponseMessage GetVirtualMoneyWallet()
+        public HttpResponseMessage GetVirtualMoneyWallet([FromBody] APICommonSessionId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
 
-                var Content = JsonConvert.DeserializeObject<APICommonSessionId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceMoneyWallet = new R2CoreMoneyWalletManager();
                 var MoneyWalletId = InstanceMoneyWallet.CreateNewMoneyWallet();
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceMoneyWallet.GetMoneyWallet(MoneyWalletId,true )), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceMoneyWallet.GetMoneyWallet(MoneyWalletId, true)), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (MoneyWalletNotFoundException ex)
@@ -616,6 +601,38 @@ namespace APISoftwareUser.Controllers
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
 
+        [HttpPost]
+        [Route("api/GetSoftwareUserProfile")]
+        public HttpResponseMessage GetSoftwareUserProfile([FromBody] APICommonSessionId Content)
+        {
+            try
+            {
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstanceSession = new R2CoreSessionManager();
+
+                var SessionId = Content.SessionId;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceSoftwareUsers = new R2CoreParkingSystemSoftwareUsersManager(_DateTimeService, new SoftwareUserService(User.UserId));
+                var SoftwareUserComposedInf = InstanceSoftwareUsers.GetSoftwareUserComposedInf(User);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                var x = new R2CoreRawSoftwareUserStructure { UserId = SoftwareUserComposedInf.SoftwareUserExtended.UserId, UserName = SoftwareUserComposedInf.SoftwareUserExtended.UserName, MobileNumber = SoftwareUserComposedInf.SoftwareUserExtended.MobileNumber, UserTypeId = SoftwareUserComposedInf.SoftwareUserExtended.UserTypeId, UserActive = SoftwareUserComposedInf.SoftwareUserExtended.UserActive, UserTypeTitle= SoftwareUserComposedInf.SoftwareUserExtended.SoftwareUserTypeTitle };
+                response.Content = new StringContent(JsonConvert.SerializeObject(SoftwareUserComposedInf), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
 
 
     }

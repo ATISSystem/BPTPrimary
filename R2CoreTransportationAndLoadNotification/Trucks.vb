@@ -600,6 +600,47 @@ Namespace Trucks
             End Try
         End Function
 
+        Public Function GetTruckBySoftwareUser(YourSoftwareUserId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTruck
+            Try
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim DS As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand("Select Top 1 Cars.*
+                    from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                      Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
+                      Inner Join dbtransport.dbo.TbDriver as Drivers On EntityRelations.E2=Drivers.nIDDriver 
+                      Inner Join dbtransport.dbo.TbCarAndPerson as CarAndPersons On Drivers.nIDDriver=CarAndPersons.nIDPerson
+                      Inner Join dbtransport.dbo.TbCar as Cars On CarAndPersons.nIDCar=Cars.nIDCar 
+                    Where SoftwareUsers.UserId=" & YourSoftwareUserId & "  and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and 
+                          EntityRelations.ERTypeId=" & R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & "  and EntityRelations.RelationActive=1 and 
+	                      Cars.ViewFlag=1 and 
+	                      CarAndPersons.snRelation=2 and ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000'))  
+                          Order By CarAndPersons.nIDCarAndPerson Desc")
+                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    If Da.Fill(DS) <= 0 Then Throw New TruckNotFoundException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                   "Select Top 1 Cars.*
+                    from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                      Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
+                      Inner Join dbtransport.dbo.TbDriver as Drivers On EntityRelations.E2=Drivers.nIDDriver 
+                      Inner Join dbtransport.dbo.TbCarAndPerson as CarAndPersons On Drivers.nIDDriver=CarAndPersons.nIDPerson
+                      Inner Join dbtransport.dbo.TbCar as Cars On CarAndPersons.nIDCar=Cars.nIDCar 
+                    Where SoftwareUsers.UserId=" & YourSoftwareUserId & "  and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and 
+                          EntityRelations.ERTypeId=" & R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & "  and EntityRelations.RelationActive=1 and 
+	                      Cars.ViewFlag=1 and 
+	                      CarAndPersons.snRelation=2 and ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000'))  
+                          Order By CarAndPersons.nIDCarAndPerson Desc", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TruckNotFoundException
+                End If
+                Return New R2CoreTransportationAndLoadNotificationTruck With {.TruckId = DS.Tables(0).Rows(0).Item("nIdCar"), .LoaderTypeId = DS.Tables(0).Rows(0).Item("snCarType"), .SmartCardNo = DS.Tables(0).Rows(0).Item("StrBodyNo").trim, .Pelak = DS.Tables(0).Rows(0).Item("strCarNo").trim, .Serial = DS.Tables(0).Rows(0).Item("strCarSerialNo").trim}
+            Catch ex As TruckNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
         'Select Cars.nIDCar as [Car.TruckId],Cars.snCarType as [Car.LoaderTypeId],Cars.strCarNo as [Car.Pelak],Cars.strCarSerialNo as [Car.Serial],Cars.strBodyNo as [Car.SmartCardNo],
         '       Drivers.nIDDriver as [Driver.DriverId],Persons.strPersonFullName as [Driver.NameFamily],Persons.strNationalCode as [Driver.NationalCode],Persons.strIDNO as [Driver.MobileNumber],
         '    Persons.strFatherName as [Driver.FatherName],Drivers.strDrivingLicenceNo as [Driver.DrivingLicenseNo],Persons.strAddress as [Driver.address],Drivers.strSmartcardNo as [Driver.SmartCardNo],

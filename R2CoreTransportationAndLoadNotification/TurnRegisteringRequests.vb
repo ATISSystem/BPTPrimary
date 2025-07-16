@@ -395,7 +395,7 @@ Namespace TurnRegisterRequest
         Private Sub SaveTurnRegisterRequestAttachement(YourAttachement As R2CoreImage, YourTRRId As Int64)
             Try
                 Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(_R2DateTimeService)
+                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(_R2DateTimeService, Nothing)
                 Dim FileInf = New R2CoreFile(YourTRRId.ToString() + InstanceConfiguration.GetConfigString(R2CoreConfigurations.JPGBitmap, 2))
                 _R2PrimaryFSWS.WebMethodSaveFile(FileShareRawGroupsManagement.R2CoreTransportationAndLoadNotificationRawGroups.TurnRegisterRequestAttachements, FileInf.FileName, YourAttachement.GetImageByte(), _R2PrimaryFSWS.WebMethodLogin(InstanceSoftwareUsers.GetSystemUser.UserShenaseh, InstanceSoftwareUsers.GetSystemUser.UserPassword))
             Catch ex As Exception

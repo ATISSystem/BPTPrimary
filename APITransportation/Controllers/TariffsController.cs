@@ -40,7 +40,7 @@ namespace APITransportation.Controllers
                 Int64 TargetCityId = Content.TargetCityId == 0 ? -1 : Content.TargetCityId;
                 Int64 GoodId = Content.GoodId == 0 ? -1 : Content.GoodId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
 
@@ -72,7 +72,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var Tariffs = Content.Tariffs;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
                 InstanceTransportTariffs.TariffsRegistering(Tariffs);
@@ -105,7 +105,7 @@ namespace APITransportation.Controllers
                 var Tariffs = Content.Tariffs;
                 var AddPercentage = Content.AddPercentage;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
                 InstanceTransportTariffs.TariffsRegistering(Tariffs, AddPercentage);
@@ -137,7 +137,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var Tariffs = Content.Tariffs;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
                 InstanceTransportTariffs.TariffsDeactivate(Tariffs);
@@ -169,7 +169,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var Tariffs = Content.Tariffs;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
                 InstanceTransportTariffs.TariffsDeleting(Tariffs);
@@ -201,7 +201,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var Tariffs = Content.Tariffs;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
                 InstanceTransportTariffs.TariffsEditing(Tariffs);

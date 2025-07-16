@@ -31,22 +31,21 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/RealTimeTurnRegisterRequest")]
-        public HttpResponseMessage RealTimeTurnRegisterRequest()
+        public HttpResponseMessage RealTimeTurnRegisterRequest([FromBody] APITransportationSessionIdTruckIdSequentialTurnId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckIdSequentialTurnId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
                 var SequentialTurnId = Content.SequentialTurnId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTurnRegisterRequest = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
                 Int64 TurnId = 0;
-                InstanceTurnRegisterRequest.RealTimeTurnRegisterRequest(SequentialTurnId, TruckId, ref TurnId, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_RealTimeTurnRegisterRequest, TurnType.Permanent, UserId);
+                InstanceTurnRegisterRequest.RealTimeTurnRegisterRequest(SequentialTurnId, TruckId, ref TurnId, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_RealTimeTurnRegisterRequest, TurnType.Permanent, User. UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
@@ -71,23 +70,22 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/EmergencyTurnRegisterRequest")]
-        public HttpResponseMessage EmergencyTurnRegisterRequest()
+        public HttpResponseMessage EmergencyTurnRegisterRequest([FromBody] APITransportationSessionIdTruckIdSequentialTurnIdDescription Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckIdSequentialTurnIdDescription>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
                 var SequentialTurnId = Content.SequentialTurnId;
                 var Description = Content.Description;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTurnRegisterRequest = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
                 Int64 TurnId = 0;
-                InstanceTurnRegisterRequest.EmergencyTurnRegisterRequest(SequentialTurnId, TruckId, ref TurnId, Description, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_EmergencyTurnRegisterRequest, TurnType.Permanent, UserId);
+                InstanceTurnRegisterRequest.EmergencyTurnRegisterRequest(SequentialTurnId, TruckId, ref TurnId, Description, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_EmergencyTurnRegisterRequest, TurnType.Permanent, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent ), Encoding.UTF8, "application/json"); return response;
@@ -112,26 +110,25 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/ResuscitationReserveTurn")]
-        public HttpResponseMessage ResuscitationReserveTurn()
+        public HttpResponseMessage ResuscitationReserveTurn([FromBody] APITransportationSessionIdTruckIdSequentialTurnIdDateTime Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckIdSequentialTurnIdDateTime>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
                 var SequentialTurnId = Content.SequentialTurnId;
                 var ShamsiDate = Content.ShamsiDate;
                 var Time = Content.Time;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTurnRegisterRequestTransportation = new R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(new R2DateTimeService());
                 var InstanceTurnRegisterRequestPayaneh = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
                 var TRR = InstanceTurnRegisterRequestTransportation.GetTurnRegisteringRequestWithReservedDateTime(new R2StandardDateAndTimeStructure(DateTime.Now, ShamsiDate, Time), true);
                 Int64 TurnId = 0;
-                InstanceTurnRegisterRequestPayaneh.ResuscitationReserveTurn(SequentialTurnId, TRR.TRRId, TruckId, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_ResuscitationReserveTurn, TurnType.Permanent, UserId);
+                InstanceTurnRegisterRequestPayaneh.ResuscitationReserveTurn(SequentialTurnId, TRR.TRRId, TruckId, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_ResuscitationReserveTurn, TurnType.Permanent, User. UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
@@ -156,19 +153,18 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/ReserveTurnRegisterRequest")]
-        public HttpResponseMessage ReserveTurnRegisterRequest()
+        public HttpResponseMessage ReserveTurnRegisterRequest([FromBody] APICommonSessionId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APICommonSessionId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTurnRegisterRequest = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
-                InstanceTurnRegisterRequest.ReserveTurnRegisterRequest(R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_ReserveTurnRegisterRequest,TurnType.Permanent, UserId);
+                InstanceTurnRegisterRequest.ReserveTurnRegisterRequest(R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_ReserveTurnRegisterRequest,TurnType.Permanent, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent ), Encoding.UTF8, "application/json"); return response;

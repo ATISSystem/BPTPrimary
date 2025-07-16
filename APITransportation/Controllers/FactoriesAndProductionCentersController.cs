@@ -41,7 +41,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
 
@@ -73,7 +73,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var FPCId = Content.FPCId ;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
 
@@ -106,7 +106,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var FactoryAndProductionCenter = Content.RawFPC;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
                 InstanceFactoriesAndProductionCenters.FactoryAndProductionCenterRegister (FactoryAndProductionCenter);
@@ -137,7 +137,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var FactoryAndProductionCenter = Content.RawFPC;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
                 InstanceFactoriesAndProductionCenters.EditFactoryAndProductionCenter(FactoryAndProductionCenter);
@@ -168,7 +168,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var FPCId = Content.FPCId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
                 InstanceFactoriesAndProductionCenters.DeleteFactoryAndProductionCenter(FPCId);
@@ -198,10 +198,10 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var FPCId = Content.FPCId ;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
-                var InstanceSMSOwners = new R2CoreParkingSystemMClassSMSOwnersManager(new SoftwareUserService(UserId), new R2DateTimeService());
+                var InstanceSMSOwners = new R2CoreParkingSystemSMSOwnersManager(new SoftwareUserService(User.UserId), new R2DateTimeService());
                 InstanceSMSOwners.ActivateSMSOwner(InstanceFactoriesAndProductionCenters.GetSoftwareUserIdfromFactoryAndProductionCenterId(FPCId, true));
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -228,11 +228,11 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var FPCId = Content.FPCId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
-                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
-                var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(InstanceFactoriesAndProductionCenters.GetSoftwareUserIdfromFactoryAndProductionCenterId(FPCId, true), UserId);
+                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(),new SoftwareUserService(User.UserId ));
+                var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(InstanceFactoriesAndProductionCenters.GetSoftwareUserIdfromFactoryAndProductionCenterId(FPCId, true), User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(SoftWareUserSecurity), Encoding.UTF8, "application/json");
@@ -259,7 +259,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var FPCId = Content.FPCId ;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
                 var InstanseSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());

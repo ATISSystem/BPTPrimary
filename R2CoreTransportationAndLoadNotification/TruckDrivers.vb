@@ -264,6 +264,52 @@ Namespace TruckDrivers
 
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationTruckDriversManager
+        Public Function GetTruckDriverBySoftwareUser(YourSoftwareUserId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTruckDriver
+            Try
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim DS As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                     "Select Top 1 * from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                         Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
+                         Inner Join dbtransport.dbo.TbDriver as Drivers On EntityRelations.E2=Drivers.nIDDriver 
+                         Inner Join dbtransport.dbo.TbPerson as Persons On Drivers.nIDDriver=Persons.nIDPerson 
+                         Inner Join dbtransport.dbo.TbCarAndPerson as CarAndPersons On Persons.nIDPerson=CarAndPersons.nIDPerson
+                      Where SoftwareUsers.UserId=" & YourSoftwareUserId & " and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and 
+                            EntityRelations.ERTypeId=" & R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & " and EntityRelations.RelationActive=1 
+                            and CarAndPersons.snRelation=2 and ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000')) 
+                            Order By CarAndPersons.nIDCarAndPerson Desc")
+                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    If Da.Fill(DS) <= 0 Then Throw New TruckDriverNotFoundException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                     "Select Top 1 * from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                         Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
+                         Inner Join dbtransport.dbo.TbDriver as Drivers On EntityRelations.E2=Drivers.nIDDriver 
+                         Inner Join dbtransport.dbo.TbPerson as Persons On Drivers.nIDDriver=Persons.nIDPerson 
+                         Inner Join dbtransport.dbo.TbCarAndPerson as CarAndPersons On Persons.nIDPerson=CarAndPersons.nIDPerson
+                      Where SoftwareUsers.UserId=" & YourSoftwareUserId & " and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and 
+                            EntityRelations.ERTypeId=" & R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & " and EntityRelations.RelationActive=1 
+                            and CarAndPersons.snRelation=2 and ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000')) 
+                            Order By CarAndPersons.nIDCarAndPerson Desc", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TruckDriverNotFoundException
+                End If
+                Return New R2CoreTransportationAndLoadNotificationTruckDriver With
+                         {.DriverId = DS.Tables(0).Rows(0).Item("nIdDriver"),
+                          .NameFamily = DS.Tables(0).Rows(0).Item("strPersonFullName").trim,
+                          .MobileNumber = DS.Tables(0).Rows(0).Item("strIDNO").trim,
+                          .NationalCode = DS.Tables(0).Rows(0).Item("strNationalCode").trim,
+                          .FatherName = DS.Tables(0).Rows(0).Item("strFatherName").trim,
+                          .Address = DS.Tables(0).Rows(0).Item("strAddress").trim,
+                          .DrivingLicenseNo = DS.Tables(0).Rows(0).Item("strDrivingLicenceNo").trim,
+                          .SmartCardNo = DS.Tables(0).Rows(0).Item("strSmartcardNo").trim}
+            Catch ex As TruckDriverNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
         Public Function GetTruckDriverfromTruckId(YourTruckId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTruckDriver
             Try
                 Dim DS As New DataSet
@@ -348,7 +394,7 @@ Namespace TruckDrivers
             Dim CmdSql As SqlCommand = New SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
             Try
-                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(New R2DateTimeService)
+                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(New R2DateTimeService, Nothing)
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
                 Dim UserId As Int64

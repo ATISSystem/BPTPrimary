@@ -1,4 +1,5 @@
 ﻿using APICommon;
+using APICommon.Models;
 using APITransportation.Models;
 using APITransportation.Models.TruckDriver;
 using APITransportation.PayanehWebService;
@@ -44,7 +45,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var TruckDriverNationalCode = Content.TruckDriverNationalCode;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 PayanehWebService.PayanehWebService _WS = new PayanehWebService.PayanehWebService();
                 var TruckDriver = _WS.WebMethodGetTruckDriverByNationalCodefromRMTO(TruckDriverNationalCode, _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
@@ -74,12 +75,11 @@ namespace APITransportation.Controllers
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
-                var AES = new AESAlgorithmsManager();
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckDriverNationalCode>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckDriverNationalCode = Content.TruckDriverNationalCode;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTruckDrivers.GetTruckDriverfromNationalCode(TruckDriverNationalCode,true )), Encoding.UTF8, "application/json");
@@ -96,6 +96,34 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
+        [Route("api/GetTruckDriverBySoftwareUser")]
+        public HttpResponseMessage GetTruckDriverBySoftwareUser([FromBody] APICommonSessionId Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
+                var SessionId = Content.SessionId;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTruckDrivers.GetTruckDriverBySoftwareUser(User.UserId, false)), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+
+        [HttpPost]
         [Route("api/TruckDriverRegisteringMobileNumber")]
         public HttpResponseMessage TruckDriverRegisteringMobileNumber()
         {
@@ -110,7 +138,7 @@ namespace APITransportation.Controllers
                 var TruckDriverId = Content.TruckDriverId;
                 var MobileNumber = Content.MobileNumber;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 InstanceTruckDrivers.RegisteringTruckDriverMobileNumber(TruckDriverId, MobileNumber);
 
@@ -140,10 +168,10 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var TruckDriverId = Convert.ToInt64(Content.TruckDriverId);
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
-                var InstanceSMSOwners = new R2CoreParkingSystemMClassSMSOwnersManager(new SoftwareUserService(UserId), new R2DateTimeService());
+                var InstanceSMSOwners = new R2CoreParkingSystemSMSOwnersManager(new SoftwareUserService(User.UserId), new R2DateTimeService());
                 InstanceSMSOwners.ActivateSMSOwner(InstanceTruckDrivers.GetSoftwareUserIdfromTruckDriverId(TruckDriverId));
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -170,11 +198,11 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var TruckDriverId = Convert.ToInt64(Content.TruckDriverId);
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
-                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
-                var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(InstanceTruckDrivers.GetSoftwareUserIdfromTruckDriverId(TruckDriverId), UserId);
+                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
+                var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(InstanceTruckDrivers.GetSoftwareUserIdfromTruckDriverId(TruckDriverId), User. UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(SoftWareUserSecurity), Encoding.UTF8, "application/json");
@@ -201,10 +229,10 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var TruckDriverId = Convert.ToInt64(Content.TruckDriverId);
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
-                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService());
+                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
                 InstanseSoftwareUsers.SendWebSiteLink(InstanceTruckDrivers.GetSoftwareUserfromTruckDriverId(TruckDriverId));
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);

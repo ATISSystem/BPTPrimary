@@ -4885,7 +4885,7 @@ Namespace SMS
                 Try
                     Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                     Dim InstanceCarTruckNobat = New PayanehClassLibraryMClassCarTruckNobatManager
-                    InstanceCarTruckNobat.ResuscitationNonCreditTurn(InstanceSoftwareUsers.GetNSSUserUnChangeable(New R2CoreSoftwareUserMobile(_MobileNumber)), _NSSUser)
+                    InstanceCarTruckNobat.ResuscitationNonCreditTurn(InstanceSoftwareUsers.GetNSSUserUnChangeable(New R2CoreSoftwareUserMobile(_MobileNumber)), _UserId)
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
                 End Try

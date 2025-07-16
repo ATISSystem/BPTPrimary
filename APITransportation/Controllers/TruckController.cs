@@ -1,4 +1,5 @@
-﻿using APITransportation.Models;
+﻿using APICommon.Models;
+using APITransportation.Models;
 using APITransportation.Models.Truck;
 using APITransportation.Models.Turn;
 using Newtonsoft.Json;
@@ -36,17 +37,16 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetTruckfromRMTO")]
-        public HttpResponseMessage GetTruckfromRMTO()
+        public HttpResponseMessage GetTruckfromRMTO([FromBody] APITransportationSessionIdSmartCardNo Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdSmartCardNo>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SmartCardNo = Content.SmartCardNo;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 PayanehWebService.PayanehWebService _WS = new PayanehWebService.PayanehWebService();
                 var Truck = _WS.WebMethodGetTruckBySmartCarNofromRMTO(SmartCardNo, _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
@@ -69,18 +69,17 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetTruckfromWebSite")]
-        public HttpResponseMessage GetTruckfromWebSite()
+        public HttpResponseMessage GetTruckfromWebSite([FromBody] APITransportationSessionIdSmartCardNo Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
                 var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdSmartCardNo>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SmartCardNo = Content.SmartCardNo;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var Truck = InstanceTrucks.GetTruckBySmartCardNo(SmartCardNo);
 
@@ -101,19 +100,48 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
+        [Route("api/GetTruckBySoftwareUser")]
+        public HttpResponseMessage GetTruckBySoftwareUser([FromBody] APICommonSessionId Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
+                var SessionId = Content.SessionId;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var Truck = InstanceTrucks.GetTruckBySoftwareUser(User.UserId, true );
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(Truck), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
         [Route("api/GetTruckNativeness")]
-        public HttpResponseMessage GetTruckNativeness()
+        public HttpResponseMessage GetTruckNativeness([FromBody] APITransportationSessionIdTruckId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTruckNativeness = new R2CoreTransportationAndLoadNotificationsTruckNativenessManager();
                 var TruckNativenessExtended = InstanceTruckNativeness.GetTruckNativeness(TruckId, true);
@@ -138,19 +166,18 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/ChangeTruckNativeness")]
-        public HttpResponseMessage ChangeTruckNativeness()
+        public HttpResponseMessage ChangeTruckNativeness([FromBody] APITransportationSessionIdTruckIdTruckNativenessExpireDate Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckIdTruckNativenessExpireDate>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
                 var TruckNativenessExpireDate = Content.TruckNativenessExpireDate;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTruckNativeness = new R2CoreTransportationAndLoadNotificationsTruckNativenessManager();
                 var TruckNativenessExtended = InstanceTruckNativeness.ChangeTruckNativeness(TruckId, TruckNativenessExpireDate);
@@ -171,16 +198,15 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetComposedTruckInf")]
-        public HttpResponseMessage GetComposedTruckInf()
+        public HttpResponseMessage GetComposedTruckInf([FromBody] APITransportationSessionIdTruckId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
                 var ComposedTruckInf = InstanceTrucks.GetComposedTruckInf(TruckId, true, true);
@@ -205,20 +231,19 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/SetComposedTruckInf")]
-        public HttpResponseMessage SetComposedTruckInf()
+        public HttpResponseMessage SetComposedTruckInf([FromBody] APITransportationSessionIdTruckIdTruckDriverIdTurnIdMoneyWalletId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckIdTruckDriverIdTurnIdMoneyWalletId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
                 var TruckDriverId = Content.TruckDriverId;
                 var TurnId = Content.TurnId;
                 var MoneyWalletId = Content.MoneyWalletId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
                 InstanceTrucks.SetComposedTruckInf(TruckId, TruckDriverId, MoneyWalletId, TurnId);
@@ -241,16 +266,15 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetComposedTruckInfForTurnIssue")]
-        public HttpResponseMessage GetComposedTruckInfForTurnIssue()
+        public HttpResponseMessage GetComposedTruckInfForTurnIssue([FromBody] APITransportationSessionIdTruckId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
                 var ComposedTruckInfForTurnIssue = InstanceTrucks.GetComposedTruckInf(TruckId, false, true);

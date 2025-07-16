@@ -38,7 +38,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceProducts = new R2CoreTransportationAndLoadNotificationProductsManager();
 
@@ -71,7 +71,7 @@ namespace APITransportation.Controllers
                 var ProductTypeId = Content.ProductTypeId;
                 var ProductTypeActive = Content.ProductTypeActive;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceProducts = new R2CoreTransportationAndLoadNotificationProductsManager();
                 InstanceProducts.ChangeActiveStatusOfProductType(ProductTypeId, ProductTypeActive);
@@ -101,7 +101,7 @@ namespace APITransportation.Controllers
                 var ProductId = Content.ProductId;
                 var ProductActive = Content.ProductActive;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceProducts = new R2CoreTransportationAndLoadNotificationProductsManager();
                 InstanceProducts.ChangeActiveStatusOfProduct(ProductId, ProductActive);

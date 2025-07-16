@@ -40,7 +40,7 @@ namespace APITransportation.Controllers
                 Int64 SourceCityId = Content.SourceCityId == 0 ? -1 : Content.SourceCityId;
                 Int64 TargetCityId = Content.TargetCityId == 0 ? -1 : Content.TargetCityId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTravelTime = new R2CoreTransportationAndLoadNotificationTravelTimeManager();
 
@@ -73,7 +73,7 @@ namespace APITransportation.Controllers
                 var SourceCityId = Content.SourceCityId;
                 var TargetCityId = Content.TargetCityId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTravelTime = new R2CoreTransportationAndLoadNotificationTravelTimeManager();
 
@@ -105,7 +105,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var TravelTime = Content.TravelTime;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTravelTime = new R2CoreTransportationAndLoadNotificationTravelTimeManager();
                 InstanceTravelTime.TravelTimeRegistering(TravelTime);
@@ -137,7 +137,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var TravelTime = Content.TravelTime;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTravelTime = new R2CoreTransportationAndLoadNotificationTravelTimeManager();
                 InstanceTravelTime.TravelTimeDeleteting(TravelTime);
@@ -169,7 +169,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var TravelTime = Content.TravelTime;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTravelTime = new R2CoreTransportationAndLoadNotificationTravelTimeManager();
                 InstanceTravelTime.TravelTimeEditing(TravelTime);
@@ -201,7 +201,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var TravelTime = Content.TravelTime;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTravelTime = new R2CoreTransportationAndLoadNotificationTravelTimeManager();
                 InstanceTravelTime.TravelTimeChangeActivateStatus(TravelTime);

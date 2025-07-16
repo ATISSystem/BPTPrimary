@@ -28,16 +28,15 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetLoaderTypes")]
-        public HttpResponseMessage GetLoaderTypes()
+        public HttpResponseMessage GetLoaderTypes([FromBody] APICommonSessionIdSearchString Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APICommonSessionIdSearchString>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceLoaderTypes = new R2CoreTransportationAndLoadNotificationLoaderTypesManager();
 
@@ -58,6 +57,36 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
+        [Route("api/GetLoaderTypeBySoftwareUser")]
+        public HttpResponseMessage GetLoaderTypeBySoftwareUser([FromBody] APICommonSessionId Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var SessionId = Content.SessionId;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceLoaderTypes = new R2CoreTransportationAndLoadNotificationLoaderTypesManager();
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject (InstanceLoaderTypes.GetLoaderTypeBySoftwareUser(User.UserId)), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+
+        [HttpPost]
         [Route("api/ChangeActivateStatusOfLoaderType")]
         public HttpResponseMessage ChangeActivateStatusOfLoaderType()
         {
@@ -69,7 +98,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var LoaderTypeId = Content.LoaderTypeId ;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceLoaderTypes = new R2CoreTransportationAndLoadNotificationLoaderTypesManager(); 
                 InstanceLoaderTypes.LoaderTypeChangeActivate(LoaderTypeId); 

@@ -41,9 +41,9 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var LoadId = Content.LoadId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadCapacitorLoad = new R2CoreTransportationAndLoadNotificationLoadManager();
+                var InstanceLoadCapacitorLoad = new R2CoreTransportationAndLoadNotificationLoadManager(new R2DateTimeService ());
                 InstanceLoadCapacitorLoad.GetLoad(LoadId, true);
 
 

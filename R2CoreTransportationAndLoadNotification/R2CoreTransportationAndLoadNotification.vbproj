@@ -99,6 +99,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Announcements.vb" />
+    <Compile Include="LoadCapacitor.vb" />
     <Compile Include="R2CoreTransportationAndLoadNotification-Partial.vb" />
     <Compile Include="R2CoreTransportationAndLoadNotification.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />

@@ -139,7 +139,7 @@ namespace UnitTestR2Core
                 var InstanseSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
                 InstanceTransportCompanies.TransportCompanyChangeActiveStatus(21306);
 
-                var InstanceSMSOwners = new R2CoreParkingSystemMClassSMSOwnersManager(new SoftwareUserService(21), new R2DateTimeService());
+                var InstanceSMSOwners = new R2CoreParkingSystemSMSOwnersManager(new SoftwareUserService(21), new R2DateTimeService());
                 InstanceSMSOwners.ActivateSMSOwner(InstanceTransportCompanies.GetSoftwareUserIdfromTransportCompanyId(21306, true));
 
 

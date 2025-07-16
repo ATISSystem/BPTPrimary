@@ -8,6 +8,10 @@ using System.Net;
 using System.Text;
 using R2CoreTransportationAndLoadNotification.Turns;
 using R2Core.DateAndTimeManagement;
+using R2CoreTransportationAndLoadNotification.RequesterManagement;
+using R2CoreTransportationAndLoadNotification.Turns.SequentialTurns;
+using PayanehClassLibrary.TurnRegisterRequest;
+using R2CoreTransportationAndLoadNotification.TurnRegisterRequest;
 
 namespace UnitTestR2Core
 {
@@ -33,10 +37,17 @@ namespace UnitTestR2Core
         [TestMethod]
         public void LoadingAndDischargingPlaces()
         {
-            var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationTurnsManager(new R2DateTimeService());
+            var InstanceTurnRegisterRequestTransportation = new R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(new R2DateTimeService());
+            var InstanceTurnRegisterRequestPayaneh = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
+            var TRR = InstanceTurnRegisterRequestTransportation.GetTurnRegisteringRequestWithReservedDateTime(new R2StandardDateAndTimeStructure(DateTime.Now, "1404/04/25", "00:00:00"), true);
+            Int64 TurnId = 0;
+            InstanceTurnRegisterRequestPayaneh.ResuscitationReserveTurn(2, TRR.TRRId, 85183, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_ResuscitationReserveTurn, TurnType.Permanent, 21);
+
+            //var InstanceTurnRegisterRequest = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
+            //Int64 TurnId = 0;
+            //InstanceTurnRegisterRequest.EmergencyTurnRegisterRequest(2, 85183, ref TurnId, "jhgjh", R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_EmergencyTurnRegisterRequest, TurnType.Permanent, 21);
 
 
-             InstanceLoadingAndDischargingPlaces.TurnCancellationByUser (1, 21);
             var zz = 3;
         }
 

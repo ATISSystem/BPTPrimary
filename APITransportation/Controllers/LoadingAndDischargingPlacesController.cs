@@ -40,7 +40,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
 
@@ -72,7 +72,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var LADPlaceId = Content.LADPlaceId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
 
@@ -104,7 +104,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var RawLADPlaceInf = Content.RawLADPlaceInf;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
                 var LADPlaceId = InstanceLoadingAndDischargingPlaces.LoadingAndDischargingPlaceRegister(RawLADPlaceInf);
@@ -136,7 +136,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var RawLADPlaceInf = Content.RawLADPlaceInf;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
                 InstanceLoadingAndDischargingPlaces.LoadingAndDischargingPlaceUpdating(RawLADPlaceInf);
@@ -167,7 +167,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var LADPlaceId = Content.LADPlaceId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
                 InstanceLoadingAndDischargingPlaces.LoadingAndDischargingPlaceDelete(LADPlaceId);
@@ -198,7 +198,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var LADPlaceId = Content.LADPlaceId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
                 InstanceLoadingAndDischargingPlaces.LoadingPlaceChangeActiveStatus(LADPlaceId);
@@ -229,7 +229,7 @@ namespace APITransportation.Controllers
                 var SessionId = Content.SessionId;
                 var LADPlaceId = Content.LADPlaceId;
 
-                var UserId = InstanceSession.ConfirmSession(SessionId);
+                var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
                 InstanceLoadingAndDischargingPlaces.DischargingPlaceChangeActiveStatus(LADPlaceId);
