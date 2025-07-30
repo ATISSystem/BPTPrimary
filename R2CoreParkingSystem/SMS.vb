@@ -24,6 +24,7 @@ Imports R2Core.SMS.SMSHandling
 Imports R2CoreParkingSystem.SMS.SMSOwners
 Imports R2Core.SMS.SMSOwners.R2CoreMClassSMSOwnersManager
 Imports R2Core.SMS.SMSHandling.Exceptions
+Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
 
 
 
@@ -396,7 +397,7 @@ Namespace SMS
                     Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
                     Dim InstanceSoftwareUser = New R2CoreSoftwareUsersManager(_R2DateTimeService, _SoftwareUserService)
                     Dim InstanceSMSOwnerTypes = New R2CoreSMSOwnerTypesManager
-                    Dim InstanceSMSOwners = New R2CoreSMSOwnersManager(_SoftwareUserService, _R2DateTimeService)
+                    Dim InstanceSMSOwners = New R2CoreSMSOwnersManager(_R2DateTimeService, _SoftwareUserService)
                     Dim SMSOwnerType = InstanceSMSOwnerTypes.GetSMSOwnerTypeBySoftwareUser(YourSoftwareUserId)
                     Dim SMSOwner As R2CoreStandardSMSOwnerStructure = Nothing
                     Dim SoftwareUser = InstanceSoftwareUser.GetUser(YourSoftwareUserId, False)

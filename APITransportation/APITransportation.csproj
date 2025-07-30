@@ -189,7 +189,6 @@
     <Compile Include="Controllers\FactoriesAndProductionCentersController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LoadAnnouncementPlacesController.cs" />
-    <Compile Include="Controllers\LoadCapacitorController.cs" />
     <Compile Include="Controllers\LoaderTypeController.cs" />
     <Compile Include="Controllers\LoadingAndDischargingPlacesController.cs" />
     <Compile Include="Controllers\ProductsController.cs" />

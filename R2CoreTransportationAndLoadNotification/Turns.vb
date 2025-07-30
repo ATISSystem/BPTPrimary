@@ -1311,7 +1311,7 @@ Namespace Turns
                    "Select  (Select Count(*) from dbtransport.dbo.tbEnterExit as TurnsX
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT On SUBSTRING(TurnsX.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS=SeqT.SeqTKeyWord Collate Arabic_CI_AI_WS
                              Where SeqT.Active=1 and SeqT.Deleted=0 and SeqT.SeqTKeyWord Collate Arabic_CI_AI_WS=SUBSTRING(DataBox.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS and TurnsX.nEnterExitId<DataBox.nEnterExitId and (TurnsX.TurnStatus=1 or TurnsX.TurnStatus=7 or TurnsX.TurnStatus=8 or TurnsX.TurnStatus=9 or TurnsX.TurnStatus=10)) as TurnDistanceToValidity,
-							 DataBox.OtaghdarTurnNumber as SequentialTurn,DataBox.strEnterDate as TurnIssueDate,DataBox.strEnterTime as TurnIssueTime,DataBox.TurnStatusTitle,DataBox.LPString,DataBox.strPersonFullName as TruckDriverName 
+							 DataBox.nEnterExitId as TurnId,DataBox.strEnterDate as TurnIssueDate,DataBox.strEnterTime as TurnIssueTime,DataBox.strPersonFullName as TruckDriver,DataBox.OtaghdarTurnNumber as SequentialTurn,DataBox.TurnStatusTitle,DataBox.LPString
                     from
                       (Select Top 5 Turns.nEnterExitId,Turns.StrEnterDate,Turns.StrEnterTime,Turns.nDriverCode,Turns.bFlagDriver,Turns.nUserIdEnter,Turns.OtaghdarTurnNumber,Turns.StrCardNo,
                                     Turns.TurnStatus,Cars.strCarNo +'-'+ Cars.strCarSerialNo as LPString,Persons.strPersonFullName,TurnStatuses.TurnStatusTitle,SoftwareUsers.UserName as Username,Turns.RegisteringTimeStamp
@@ -1727,6 +1727,7 @@ Namespace Turns
             Public Shared ReadOnly Property TurnIssue = 1
             Public Shared ReadOnly Property TurnResuscitation = 2
             Public Shared ReadOnly Property TurnCancellation = 3
+            Public Shared ReadOnly Property LoadAllocation = 4
 
 
         End Class

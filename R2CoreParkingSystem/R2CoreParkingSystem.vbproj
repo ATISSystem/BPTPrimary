@@ -87,6 +87,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\ATISDesktopRefrences\gLabel.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Design" />
@@ -112,6 +115,10 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Accounting.vb" />
+    <Compile Include="Caching.vb" />
+    <Compile Include="Cars.vb" />
+    <Compile Include="EntityRelations.vb" />
     <Compile Include="MoneyWallet.vb" />
     <Compile Include="R2CoreParkingSystem.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
@@ -178,6 +185,7 @@
   <ItemGroup>
     <Content Include="Resources\DefaultCarImageSavari.jpg" />
     <Content Include="Resources\DefaultCarImageTereilli.jpg" />
+    <None Include="packages.config" />
     <None Include="Resources\NoImageFound.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />

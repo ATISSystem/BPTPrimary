@@ -16,6 +16,7 @@ Imports R2CoreParkingSystem.Cars
 Imports R2CoreParkingSystem.Drivers
 Imports R2CoreParkingSystem.EntityRelations
 Imports R2CoreParkingSystem.MoneyWalletManagement
+Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
 Imports R2CoreParkingSystem.TrafficCardsManagement
 Imports R2CoreParkingSystem.TrafficCardsManagement.ExceptionManagement
 Imports R2CoreTransportationAndLoadNotification.Announcements

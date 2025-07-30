@@ -8,6 +8,7 @@ using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
 using R2CoreParkingSystem.MoneyWalletManagement;
+using R2CoreParkingSystem.MoneyWalletManagement.Exceptions;
 using R2CoreTransportationAndLoadNotification.RequesterManagement;
 using R2CoreTransportationAndLoadNotification.TurnRegisterRequest;
 using R2CoreTransportationAndLoadNotification.Turns;

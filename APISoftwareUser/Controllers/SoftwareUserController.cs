@@ -618,8 +618,9 @@ namespace APISoftwareUser.Controllers
                 var SoftwareUserComposedInf = InstanceSoftwareUsers.GetSoftwareUserComposedInf(User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                var x = new R2CoreRawSoftwareUserStructure { UserId = SoftwareUserComposedInf.SoftwareUserExtended.UserId, UserName = SoftwareUserComposedInf.SoftwareUserExtended.UserName, MobileNumber = SoftwareUserComposedInf.SoftwareUserExtended.MobileNumber, UserTypeId = SoftwareUserComposedInf.SoftwareUserExtended.UserTypeId, UserActive = SoftwareUserComposedInf.SoftwareUserExtended.UserActive, UserTypeTitle= SoftwareUserComposedInf.SoftwareUserExtended.SoftwareUserTypeTitle };
-                response.Content = new StringContent(JsonConvert.SerializeObject(SoftwareUserComposedInf), Encoding.UTF8, "application/json");
+                var RawSoftwareUser = new R2CoreRawSoftwareUserStructure { UserId = SoftwareUserComposedInf.SoftwareUserExtended.UserId, UserName = SoftwareUserComposedInf.SoftwareUserExtended.UserName, MobileNumber = SoftwareUserComposedInf.SoftwareUserExtended.MobileNumber, UserTypeId = SoftwareUserComposedInf.SoftwareUserExtended.UserTypeId, UserActive = SoftwareUserComposedInf.SoftwareUserExtended.UserActive, UserTypeTitle= SoftwareUserComposedInf.SoftwareUserExtended.SoftwareUserTypeTitle };
+                var TempComposedInf = new { RawSoftwareUser = RawSoftwareUser, MoneyWallet = SoftwareUserComposedInf.MoneyWallet };
+                response.Content = new StringContent(JsonConvert.SerializeObject(TempComposedInf), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)

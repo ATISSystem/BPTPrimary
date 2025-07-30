@@ -68,6 +68,7 @@ Imports PayanehClassLibrary.CarTruckNobatManagement
 Imports R2Core.MoneyWallet.MoneyWallet
 Imports R2CoreTransportationAndLoadNotification.TurnRegisterRequest
 Imports R2CoreTransportationAndLoadNotification.Turns.TurnAccounting
+Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
 
 
 Namespace CarTruckNobatManagement
@@ -516,8 +517,8 @@ Namespace CarTruckNobatManagement
         Public Function GetHazinehSodoorNobat(YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure) As Int64
             Try
                 Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                If YourNSSTerafficCard.CardType = TerafficCardType.Tereili Then Return GetSherkatHazinehNobatMblgh(YourNSSTerafficCard) + InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 1)
-                If YourNSSTerafficCard.CardType = TerafficCardType.SixCharkh Or YourNSSTerafficCard.CardType = TerafficCardType.TenCharkh Then Return GetSherkatHazinehNobatMblgh(YourNSSTerafficCard) + InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 4)
+                If YourNSSTerafficCard.CardType = TerafficCardType.Tereili Then Return GetSherkatHazinehNobatMblgh(YourNSSTerafficCard) + InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 1) + InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 4)
+                'If YourNSSTerafficCard.CardType = TerafficCardType.SixCharkh Or YourNSSTerafficCard.CardType = TerafficCardType.TenCharkh Then Return GetSherkatHazinehNobatMblgh(YourNSSTerafficCard) + InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 4)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -1984,7 +1985,7 @@ Namespace Turns
                 'کنترل مجوز درخواست صدور نوبت توسط رکستر خاص بر اساس نوع آخرین بار دریافت شده
                 Try
                     Dim Load = InstanceLoadPermission.GetTruckLastLoadWhichPermissioned(YourTruckId, True)
-                    If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.RequesterCanSendRequestforTurnIssueByLastLoadPermissioned, YourRequesterId, Load.LoadAnnouncementSubGroupId) Then Throw New RequesterNotAllowTurnIssueByLastLoadPermissionedException
+                    If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.RequesterCanSendRequestforTurnIssueByLastLoadPermissioned, YourRequesterId, Load.AnnouncementSubGroupId) Then Throw New RequesterNotAllowTurnIssueByLastLoadPermissionedException
                 Catch ex As TruckHasNotAnyLoadPermissionException
                 Catch ex As Exception
                     Throw New Exception("CheckForTruckLastLoadWhichPermissioned:" + ex.Message)

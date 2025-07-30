@@ -28,6 +28,8 @@ Imports System.Drawing
 Imports System.Reflection
 Imports System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel
 Imports Microsoft.VisualBasic.ApplicationServices
+Imports R2Core.PermissionManagement.Exceptions
+Imports R2Core.Caching
 
 Namespace SoftwareUserManagement
 
@@ -1124,7 +1126,7 @@ Namespace SoftwareUserManagement
         Public Function GetRawSoftwareUser(YourSoftwareUserId As Int64, YourImmediately As Boolean) As R2CoreRawSoftwareUserStructure
             Try
                 Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                Dim InstanceSMSOwners = New R2CoreSMSOwnersManager(_R2DateTimeService,_SoftwareUserService)
+                Dim InstanceSMSOwners = New R2CoreSMSOwnersManager(_R2DateTimeService, _SoftwareUserService)
                 Dim Ds As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -1190,7 +1192,7 @@ Namespace SoftwareUserManagement
                         Throw New UserIdNotExistException
                     End If
                 End If
-                Return New R2CoreSoftwareUserExtended With {.UserId = Ds.Tables(0).Rows(0).Item("UserId"), .ApiKey = Ds.Tables(0).Rows(0).Item("ApiKey").trim, .APIKeyExpiration = Ds.Tables(0).Rows(0).Item("APIKeyExpiration").trim, .UserName = Ds.Tables(0).Rows(0).Item("UserName").trim, .UserShenaseh = Ds.Tables(0).Rows(0).Item("UserShenaseh").trim, .UserPassword = Ds.Tables(0).Rows(0).Item("UserPassword").trim, .UserPasswordExpiration = Ds.Tables(0).Rows(0).Item("UserPasswordExpiration").trim, .UserPinCode = Ds.Tables(0).Rows(0).Item("UserPinCode").trim, .UserCanCharge = Ds.Tables(0).Rows(0).Item("UserCanCharge"), .UserActive = Ds.Tables(0).Rows(0).Item("UserActive"), .UserTypeId = Ds.Tables(0).Rows(0).Item("UserTypeId"), .MobileNumber = Ds.Tables(0).Rows(0).Item("MobileNumber").trim, .SoftwareUserTypeTitle = Ds.Tables(0).Rows(0).Item("SoftwareUserTypeTitle").trim}
+                Return New R2CoreSoftwareUserExtended With {.UserId = Ds.Tables(0).Rows(0).Item("UserId"), .UserName = Ds.Tables(0).Rows(0).Item("UserName").trim, .MobileNumber = Ds.Tables(0).Rows(0).Item("MobileNumber").trim, .SoftwareUserTypeTitle = Ds.Tables(0).Rows(0).Item("SoftwareUserTypeTitle").trim, .ApiKey = Ds.Tables(0).Rows(0).Item("ApiKey").trim, .APIKeyExpiration = Ds.Tables(0).Rows(0).Item("APIKeyExpiration").trim, .UserPassword = Ds.Tables(0).Rows(0).Item("UserPassword").trim, .UserPasswordExpiration = Ds.Tables(0).Rows(0).Item("UserPasswordExpiration").trim, .UserActive = Ds.Tables(0).Rows(0).Item("UserActive"), .UserCanCharge = Ds.Tables(0).Rows(0).Item("UserCanCharge"), .UserPinCode = Ds.Tables(0).Rows(0).Item("UserPinCode").trim, .UserShenaseh = Ds.Tables(0).Rows(0).Item("UserShenaseh").trim, .UserTypeId = Ds.Tables(0).Rows(0).Item("UserTypeId")}
             Catch ex As UserIdNotExistException
                 Throw ex
             Catch ex As Exception
@@ -1215,8 +1217,8 @@ Namespace SoftwareUserManagement
         Public Sub ConfirmUser(YourSessionId As String, YourUserShenaseh As String, YourUserPassword As String, YourCaptcha As String)
             Try
                 Dim InstanceCacheKeys = New Caching.R2CoreCacheManager
-                Dim CachKey = InstanceCacheKeys.GetNSSCacheKey(Caching.R2CoreCacheKeys.Session).KeyName + YourSessionId
-                Dim CacheValue = DirectCast(InstanceCacheKeys.GetCache(CachKey), StackExchange.Redis.RedisValue)
+                Dim CachKey = InstanceCacheKeys.GetCacheType(Caching.R2CoreCacheTypes.Session).CacheTypeName + YourSessionId
+                Dim CacheValue = DirectCast(InstanceCacheKeys.GetCache(CachKey, R2CoreCatchDataBases.SoftwareUserSessions), StackExchange.Redis.RedisValue)
                 If CacheValue.IsNullOrEmpty Then Throw New SessionOverException
                 Dim Content = JsonConvert.DeserializeObject(Of R2CoreStandardSessionCaptchaWordStructure)(CacheValue.ToString)
                 If YourCaptcha = Content.Captcha Then
@@ -1224,7 +1226,7 @@ Namespace SoftwareUserManagement
                     SessionIdSoftwareUser.SessionId = YourSessionId
                     SessionIdSoftwareUser.SoftWareUser = GetUser(YourUserShenaseh, YourUserPassword)
                     InstanceCacheKeys.RemoveCache(CachKey)
-                    InstanceCacheKeys.SetCache(CachKey, SessionIdSoftwareUser)
+                    InstanceCacheKeys.SetCache(CachKey, SessionIdSoftwareUser, R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions)
                 Else
                     Throw New CaptchaWordNotCorrectException
                 End If
@@ -1344,6 +1346,9 @@ Namespace SoftwareUserManagement
             Dim CmdSql As New SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
             Try
+                Dim InstancePermissions = New R2CoreInstansePermissionsManager
+                If Not InstancePermissions.ExistPermission(R2CorePermissionTypes.UserCanSendSoftwareUserShenasehPasswordViaSMS, YourUserId, 0) Then Throw New UserNotAllowedRunThisProccessException
+
                 Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
                 Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
                 Dim InstanceSoftwareUser = New R2CoreSoftwareUsersManager(_R2DateTimeService, _SoftwareUserService)
@@ -1359,15 +1364,17 @@ Namespace SoftwareUserManagement
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
 
-                Dim InstancePermissions = New R2CoreInstansePermissionsManager
-                If Not InstancePermissions.ExistPermission(R2CorePermissionTypes.UserCanSendSoftwareUserShenasehPasswordViaSMS, YourUserId, 0) Then Throw New UserNotAllowedRunThisProccessException
                 InstanceSoftwareUser.SendUserSecurity(SoftwareUser)
                 Dim SoftWareUserSecurity = New R2CoreSoftWareUserSecurity
                 SoftWareUserSecurity.UserShenaseh = SoftwareUser.MobileNumber
                 SoftWareUserSecurity.UserPassword = newPassword
                 Return SoftWareUserSecurity
+            Catch ex As PermissionException
+                Throw ex
             Catch ex As DataBaseException
+                Throw ex
             Catch ex As SqlException
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -1387,9 +1394,9 @@ Namespace SoftwareUserManagement
                 SessionVerificationCode.SessionId = YourSessionId
                 SessionVerificationCode.VerificationCode = AES.GenerateVerificationCode(InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 9))
                 SessionVerificationCode.UserId = NSSSoftwareUser.UserId
-                Dim CachKey = InstanceCacheKeys.GetNSSCacheKey(Caching.R2CoreCacheKeys.Session).KeyName + YourSessionId
+                Dim CachKey = InstanceCacheKeys.GetCacheType(Caching.R2CoreCacheTypes.Session).CacheTypeName + YourSessionId
                 InstanceCacheKeys.RemoveCache(CachKey)
-                InstanceCacheKeys.SetCache(CachKey, SessionVerificationCode)
+                InstanceCacheKeys.SetCache(CachKey, SessionVerificationCode, R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions)
 
                 SendSMSSoftwareUserVerificationCode(NSSSoftwareUser, SessionVerificationCode.VerificationCode)
             Catch ex As SessionOverException
@@ -1403,8 +1410,8 @@ Namespace SoftwareUserManagement
             Try
                 Dim InstanceCache = New Caching.R2CoreCacheManager
 
-                Dim CachKey = InstanceCache.GetNSSCacheKey(Caching.R2CoreCacheKeys.Session).KeyName + YourSessionId
-                Dim CacheValue = DirectCast(InstanceCache.GetCache(CachKey), StackExchange.Redis.RedisValue)
+                Dim CachKey = InstanceCache.GetCacheType(Caching.R2CoreCacheTypes.Session).CacheTypeName + YourSessionId
+                Dim CacheValue = DirectCast(InstanceCache.GetCache(CachKey, R2CoreCatchDataBases.SoftwareUserSessions), StackExchange.Redis.RedisValue)
                 If CacheValue.IsNullOrEmpty Then Throw New SessionOverException
 
                 Dim CacheValueCasted = DirectCast(DirectCast(CacheValue, Object), R2CoreStandardSessionIdVerificationCodeStructure)
@@ -1605,6 +1612,26 @@ Namespace SoftwareUserManagement
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Sub
+
+        Public Sub AuthenticationUserByPinCode(YourUser As R2CoreSoftwareUser)
+            Try
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim DS As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                      "Select UserActive from R2Primary.dbo.TblSoftwareUsers where UserPinCode='" & YourUser.UserPinCode & "'", 32767, DS, New Boolean).GetRecordsCount = 0 Then
+                    Throw New UserNotExistException
+                Else
+                    If Convert.ToBoolean(DS.Tables(0).Rows(0).Item("UserActive")) = False Then Throw New UserIsNotActiveException
+                End If
+            Catch ex As UserIsNotActiveException
+                Throw ex
+            Catch ex As UserNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
 
     End Class
 

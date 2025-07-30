@@ -135,7 +135,8 @@ namespace APITransportation.Controllers
                 InstanceAnnouncements.AnnouncementDeleting(AnnouncementId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                return response;
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -165,6 +166,36 @@ namespace APITransportation.Controllers
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceAnnouncements.GetAnnouncementSGs(SearchString, true), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
+        [Route("api/GetAnnouncementSubGroupsByAnnouncementId")]
+        public HttpResponseMessage GetAnnouncementSubGroupsByAnnouncementId([FromBody] APITransportationSessionIdAnnouncementId Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var SessionId = Content.SessionId;
+                var AnnouncementId = Content.AnnouncementId ;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(InstanceAnnouncements.GetAnnouncementSGsByAnnouncementId(AnnouncementId, false), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)

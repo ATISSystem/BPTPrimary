@@ -23,6 +23,9 @@ Imports R2Core.MonetaryCreditSupplySources
 Imports R2Core.MoneyWallet.PaymentRequests
 Imports System.Net
 Imports System.Net.Http
+Imports Newtonsoft.Json
+Imports R2Core.PublicProc
+Imports R2CoreParkingSystem.UserChargeProcessManagement
 
 Namespace MoneyWalletManagement
 
@@ -285,6 +288,24 @@ Namespace MoneyWalletManagement
 
         End Function
 
+        Public Function GetMoneyWalletfromTransportCompanyId(YourTransportCompanyId As Int64) As R2CoreMoneyWallet
+            Try
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim DS As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                       "Select Top 1 MoneyWallets.CardId as MoneyWalletId,MoneyWallets.CardNo as MoneyWalletCode,MoneyWallets.Charge as Balance
+                        from R2Primary.dbo.TblRFIDCards as MoneyWallets 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationMoneyWallets as TCRMoneyWallets On MoneyWallets.CardId=TCRMoneyWallets.CardId 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On TCRMoneyWallets.TCId=TransportCompanies.TCId 
+                        Where MoneyWallets.Active=1 and TransportCompanies.TCId=" & YourTransportCompanyId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New RelatedMoneyWalletNotFoundException
+                Return New R2CoreMoneyWallet With {.MoneyWalletId = DS.Tables(0).Rows(0).Item("MoneyWalletId"), .MoneyWalletCode = DS.Tables(0).Rows(0).Item("MoneyWalletCode").trim, .Balance = DS.Tables(0).Rows(0).Item("Balance")}
+            Catch ex As RelatedMoneyWalletNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
         Public Function GetMoneyWalletCharge(YourMoneyWalletId As Int64) As Int64
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim ds As New DataSet
@@ -359,6 +380,15 @@ Namespace MoneyWalletManagement
             Public Overrides ReadOnly Property Message As String
                 Get
                     Return "موجودی کیف پول کافی نیست"
+                End Get
+            End Property
+        End Class
+
+        Public Class RelatedMoneyWalletNotFoundException
+            Inherits ApplicationException
+            Public Overrides ReadOnly Property Message As String
+                Get
+                    Return "کیف پول مرتبط یافت نشد"
                 End Get
             End Property
         End Class
@@ -630,38 +660,116 @@ Namespace MoneyWalletChargeManagement
         End Sub
 
         'مبلغ امانت به واحد ریال است
-        Public Function PaymentRequest(YourAmount As Int64, YourUserId As Int64) As Int16
+        Public Function PaymentRequest(YourAmount As Int64, YourUserId As Int64) As String
             Try
                 Dim InstanceConfiguration = New R2Core.ConfigurationManagement.R2CoreInstanceConfigurationManager
                 Dim MaxChargeAmount = InstanceConfiguration.GetConfigInt64(R2CoreParkingSystemConfigurations.MoneyWalletCharge, 0)
-                If YourAmount > MaxChargeAmount Then Throw New ChargingAmountInvalidException
+                Dim Amount = YourAmount * 10
+                If Amount > MaxChargeAmount Then Throw New ChargingAmountInvalidException
 
                 Dim WS = New R2Core.R2PrimaryWS.R2PrimaryWebService()
-                Dim PayId = WS.WebMethodPaymentRequest(R2CoreMonetaryCreditSupplySources.AqayepardakhtPaymentGate, YourAmount, YourUserId, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword))
+                Dim PayId = WS.WebMethodPaymentRequest(R2CoreMonetaryCreditSupplySources.AqayepardakhtPaymentGate, Amount, YourUserId, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword))
                 'Dim PayId = WS.WebMethodPaymentRequest(R2CoreMonetaryCreditSupplySources.ZarrinPalPaymentGate, YourAmount, YourUserId, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword))
                 'Dim PayId = WS.WebMethodPaymentRequest(R2CoreMonetaryCreditSupplySources.ShepaPaymentGate, YourAmount, YourUserId, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword))
                 Dim InstancePaymentRequests = New R2CoreInstansePaymentRequestsManager()
                 Dim NSSPaymentRequest = InstancePaymentRequests.GetNSSPayment(PayId)
-                While ((NSSPaymentRequest.Authority == String.Empty) & (NSSPaymentRequest.PaymentErrors == String.Empty))
-                { System.Threading.Thread.Sleep(500); NSSPaymentRequest = InstancePaymentRequests.GetNSSPayment(PayId); }
-                If (NSSPaymentRequest.Authority!= String.Empty) Then
-                                        {
-                    HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK);
-                    response.Content = New StringContent(JsonConvert.SerializeObject(New MessageStruct { ErrorCode = False, Message1 = NSSPaymentRequest.Authority, Message2 = InstanceConfiguration.GetConfigString(R2CoreConfigurations.AqayepardakhtPaymentGate, 2), Message3 = String.Empty }), Encoding.UTF8, "application/json");
-                    //response.Content = New StringContent(JsonConvert.SerializeObject(New MessageStruct { ErrorCode = false, Message1 = NSSPaymentRequest.Authority, Message2 = InstanceConfiguration.GetConfigString(R2CoreConfigurations.ZarrinPalPaymentGate, 2), Message3 = string.Empty }), Encoding.UTF8, "application/json");
-                    //response.Content = New StringContent(JsonConvert.SerializeObject(New MessageStruct { ErrorCode = false, Message1 = NSSPaymentRequest.Authority, Message2 = InstanceConfiguration.GetConfigString(R2CoreConfigurations.ShepaPaymentGate, 2), Message3 = string.Empty }), Encoding.UTF8, "application/json");
-                    Return response;
-                }
+                While ((NSSPaymentRequest.Authority = String.Empty) And (NSSPaymentRequest.PaymentErrors = String.Empty))
+                    System.Threading.Thread.Sleep(500) : NSSPaymentRequest = InstancePaymentRequests.GetNSSPayment(PayId)
+                End While
+                If NSSPaymentRequest.Authority <> String.Empty Then
+                    Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceConfiguration.GetConfigString(R2CoreConfigurations.AqayepardakhtPaymentGate, 2)})
+                    'Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceConfiguration.GetConfigString(R2CoreConfigurations.ZarrinPalPaymentGate, 2)})
+                    'Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceConfiguration.GetConfigString(R2CoreConfigurations.ShepaPaymentGate, 2)})
                 Else
-                { throw New Exception(NSSPaymentRequest.PaymentErrors); }
-
+                    Throw New PaymentWebServiceConnectingException(NSSPaymentRequest.PaymentErrors)
+                End If
+            Catch ex As PaymentWebServiceConnectingException
+                Throw ex
             Catch ex As ChargingAmountInvalidException
                 Throw ex
             Catch ex As Exception
-
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
 
         End Function
+
+        Public Function GetDefaultAmounts() As String
+            Try
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim DS As DataSet
+                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                  "Select AmountTitle,Amount from R2Primary.dbo.TblDefaultMoneyWalletChargingAmounts Order By Amount for json auto", 32767, DS, New Boolean)
+                Return InstancePublicProcedures.GetIntegratedJson(DS)
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetMoneyWalletChargeRecords(ByVal YourMoneyWalletId As Int64) As String
+            Try
+                Dim Ds As New DataSet
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                          "Select Top 100  Charges.DateShamsi as ShamsiDate,Charges.TimeCharge as Time,Charges.Mblgh as Amount,SoftwareUsers.UserName as UserName
+                           from R2Primary.dbo.TblMoneyWalletCharges AS Charges 
+                              Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Charges.UserId=SoftwareUsers.UserId
+                           Where Charges.CardId=" & YourMoneyWalletId & " Order by Charges.DateTimeMilladi Desc for json path", 300, Ds, New Boolean).GetRecordsCount = 0 Then
+                    Throw New AnyNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetUserChargeFunction(YourUserId As Int64, YourDate1 As String, YourDate2 As String, YourTime1 As String, YourTime2 As String) As String
+            Try
+                Dim PublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim myConcat1 As String = YourDate1 + YourTime1
+                Dim myConcat2 As String = YourDate2 + YourTime2
+                Dim Lst As List(Of R2StandardUserChargeProcessStructure) = New List(Of R2StandardUserChargeProcessStructure)
+                Dim Ds As New DataSet
+                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
+                      "Select Top 100 Charges.DateShamsi as ShamsiDate,Charges.TimeCharge as Time,Charges.Mblgh as Amount,MoneyWallets.CardNo 
+                       From R2Primary.dbo.TblMoneyWalletCharges as Charges
+                          Inner Join R2Primary.dbo.TblRFIDCards as MoneyWallets On Charges.CardId=MoneyWallets.CardId
+                       Where (Charges.DateShamsi+Charges.TimeCharge>='" & myConcat1 & "') and (Charges.DateShamsi+Charges.TimeCharge<='" & myConcat2 & "') and UserId=" & YourUserId & "
+                       Order by DateTimeMilladi Desc for json path", 0, Ds, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                Return PublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetTotalAmountofUserFunction(YourUserId As Int64, YourDate1 As String, YourDate2 As String, YourTime1 As String, YourTime2 As String) As Int64
+            Try
+                Dim myConcat1 As String = YourDate1 + YourTime1
+                Dim myConcat2 As String = YourDate2 + YourTime2
+                Dim DS As New DataSet
+                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
+                    "Select sum(Charges.Mblgh) as Total 
+                     From R2Primary.dbo.TblMoneyWalletCharges as Charges
+                        Inner Join R2Primary.dbo.TblRFIDCards as MoneyWallets On Charges.CardId=MoneyWallets.CardId
+                     Where (Charges.DateShamsi+Charges.TimeCharge>='" & myConcat1 & "') and (Charges.DateShamsi+Charges.TimeCharge<='" & myConcat2 & "') and UserId= " & YourUserId & "", 0, DS, New Boolean).GetRecordsCount() <> 0 Then
+                    If Object.Equals(DBNull.Value, DS.Tables(0).Rows(0).Item("Total")) Then
+                        Return 0
+                    Else
+                        Return Convert.ToInt64(DS.Tables(0).Rows(0).Item("Total"))
+                    End If
+                Else
+                    Return 0
+                End If
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
 
     End Class
 
@@ -672,8 +780,22 @@ Namespace MoneyWalletChargeManagement
 
             Public Overrides ReadOnly Property Message As String
                 Get
-                    'مبلغ مورد نظر در محدوده مجاز نیست
                     Return (New R2CoreMClassPredefinedMessagesManager).GetNSS(R2CoreParkingSystemPredefinedMessages.AmountInvalid).MsgContent
+                End Get
+            End Property
+        End Class
+
+        Public Class PaymentWebServiceConnectingException
+            Inherits ApplicationException
+
+            Private _Message As String
+            Public Sub New(YourMessage As String)
+                _Message = YourMessage
+            End Sub
+
+            Public Overrides ReadOnly Property Message As String
+                Get
+                    Return (New R2CoreMClassPredefinedMessagesManager).GetNSS(R2CorePredefinedMessages.WebServiceConnectingException).MsgContent + vbCrLf + _Message
                 End Get
             End Property
         End Class

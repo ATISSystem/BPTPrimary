@@ -32,13 +32,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetTransportCompanies")]
-        public HttpResponseMessage GetTransportCompanies()
+        public HttpResponseMessage GetTransportCompanies([FromBody] APICommonSessionIdSearchString Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APICommonSessionIdSearchString>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
@@ -64,13 +63,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetTransportCompany")]
-        public HttpResponseMessage GetTransportCompany()
+        public HttpResponseMessage GetTransportCompany([FromBody] APITransportationSessionIdTransportCompanyId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTransportCompanyId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TCId = Content.TransportCompanyId;
 
@@ -96,14 +94,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/EditTransportCompany")]
-        public HttpResponseMessage EditTransportCompany()
+        public HttpResponseMessage EditTransportCompany([FromBody] APITransportationSessionIdRawTransportCompany Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdRawTransportCompany>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TC = Content.RawTransportCompany;
 
@@ -127,13 +124,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/ActivateTransportCompanySMSOwner")]
-        public HttpResponseMessage ActivateTransportCompanySMSOwner()
+        public HttpResponseMessage ActivateTransportCompanySMSOwner([FromBody] APITransportationSessionIdTransportCompanyId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTransportCompanyId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TransportCompanyId = Content.TransportCompanyId;
 
@@ -157,13 +153,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/ResetTransportCompanyUserPassword")]
-        public HttpResponseMessage ResetTransportCompanyUserPassword()
+        public HttpResponseMessage ResetTransportCompanyUserPassword([FromBody] APITransportationSessionIdTransportCompanyId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
 
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTransportCompanyId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TransportCompanyId = Content.TransportCompanyId;
 
@@ -187,14 +182,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/TransportCompanyChangeActiveStatus")]
-        public HttpResponseMessage TransportCompanyChangeActiveStatus()
+        public HttpResponseMessage TransportCompanyChangeActiveStatus([FromBody] APITransportationSessionIdTransportCompanyId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
 
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTransportCompanyId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TransportCompanyId = Content.TransportCompanyId;
 

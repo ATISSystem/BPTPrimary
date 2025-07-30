@@ -19,12 +19,6 @@ using R2CoreTransportationAndLoadNotification.Turns.SequentialTurns;
 
 namespace APITransportation.Models
 {
-    public class APITransportationSessionIdSoftwareUserId
-    {
-        public String SessionId;
-        public Int64 SoftwareUserId;
-    }
-
     namespace TruckDriver
     {
         public class APITransportationSessionIdTruckDriverNationalCode
@@ -230,16 +224,6 @@ namespace APITransportation.Models
             public RawFactoryAndProductionCenter RawFPC;
         }
 
-
-    }
-
-    namespace LoadCapacitor
-    {
-        public class APITransportationSessionIdLoadId
-        {
-            public String SessionId;
-            public Int64 LoadId;
-        }
 
     }
 

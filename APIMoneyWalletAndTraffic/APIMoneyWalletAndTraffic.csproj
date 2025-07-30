@@ -183,6 +183,7 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\MoneyWalletChargeController.cs" />
     <Compile Include="Controllers\MoneyWalletController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
@@ -336,9 +337,17 @@
       <Project>{49657141-d750-4e9e-aa00-7ba8dcf767dc}</Project>
       <Name>APICommon</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PayanehClassLibrary\PayanehClassLibrary.vbproj">
+      <Project>{8bcfe2ef-2c83-4137-baaf-87e380d41971}</Project>
+      <Name>PayanehClassLibrary</Name>
+    </ProjectReference>
     <ProjectReference Include="..\R2CoreParkingSystem\R2CoreParkingSystem.vbproj">
       <Project>{68ee9753-9b39-4d0b-bfe5-0f941a5f183c}</Project>
       <Name>R2CoreParkingSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\R2CoreTransportationAndLoadNotification\R2CoreTransportationAndLoadNotification.vbproj">
+      <Project>{EF77B294-2E31-4914-AF7B-289A6A1BF8DC}</Project>
+      <Name>R2CoreTransportationAndLoadNotification</Name>
     </ProjectReference>
     <ProjectReference Include="..\R2Core\R2Core.vbproj">
       <Project>{b0651d1e-73a2-4e74-8483-6fbc60831969}</Project>

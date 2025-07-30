@@ -538,6 +538,39 @@ Namespace Announcements
             End Try
         End Function
 
+        Public Function GetAnnouncementSGsByAnnouncementId(YourAnnouncementId As Int64, YourImmediately As Boolean) As String
+            Try
+                Dim InstanceSqlDataBox = New R2CoreInstanseSqlDataBOXManager
+                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim DS As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand("
+                      Select AnnouncementSGs.AnnouncementSGId ,AnnouncementSGs.AnnouncementSGTitle ,AnnouncementSGs.Active 
+                      from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSGs 
+                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as AnnouncementsRelationAnnouncementSubGroups On AnnouncementSGs.AnnouncementSGId=AnnouncementsRelationAnnouncementSubGroups.AnnouncementSGId 
+                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On AnnouncementsRelationAnnouncementSubGroups.AnnouncementId=Announcements.AnnouncementId 
+                      Where Announcements.AnnouncementId=" & YourAnnouncementId & " and AnnouncementSGs.Deleted=0 
+                      for JSON path")
+                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                     "Select AnnouncementSGs.AnnouncementSGId ,AnnouncementSGs.AnnouncementSGTitle ,AnnouncementSGs.Active 
+                      from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSGs 
+                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as AnnouncementsRelationAnnouncementSubGroups On AnnouncementSGs.AnnouncementSGId=AnnouncementsRelationAnnouncementSubGroups.AnnouncementSGId 
+                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On AnnouncementsRelationAnnouncementSubGroups.AnnouncementId=Announcements.AnnouncementId 
+                      Where Announcements.AnnouncementId=" & YourAnnouncementId & " and AnnouncementSGs.Deleted=0 
+                      for JSON path", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(DS)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
         Public Sub AnnouncementSGRegistering(YourRawAnnouncementSG As R2CoreTransportationAndLoadNotificationAnnouncementSubGroup)
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection

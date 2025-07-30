@@ -208,6 +208,26 @@ namespace UnitTestR2Core
             catch (Exception ex)
             { var Y = 2; }
         }
+
+        [TestMethod]
+        public void ActivateSMSOwner()
+        {
+            try
+            {
+                var xx = new R2CoreParkingSystemSMSOwnersManager(new SoftwareUserService (21),new R2DateTimeService() );
+
+                xx.ActivateSMSOwner(7083);
+                var ry = 3;
+            }
+            catch (SoapException ex)
+            {
+                var x = 2;
+            }
+            catch (Exception ex)
+            { var Y = 2; }
+        }
+
+
         
     }
 }

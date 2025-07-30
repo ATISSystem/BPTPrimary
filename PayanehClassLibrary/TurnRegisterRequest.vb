@@ -27,6 +27,7 @@ Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.Exceptions
 Imports PayanehClassLibrary.Turns
 Imports R2CoreTransportationAndLoadNotification.TurnRegisterRequest
 Imports R2Core.DatabaseManagement
+Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
 
 
 Namespace TurnRegisterRequest

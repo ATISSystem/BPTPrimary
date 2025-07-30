@@ -1016,106 +1016,6 @@ Namespace MonetarySettingTools
 
 End Namespace
 
-Namespace SessionManagement
-
-
-    Public Class R2CoreStandardSessionCaptchaBitMapStructure
-
-        Public Sub New()
-            MyBase.New()
-            _SessionId = String.Empty
-            _Captcha = New Byte() {}
-        End Sub
-
-        Public Sub New(YourSessionId As String, YourCaptcha As Byte())
-            _SessionId = YourSessionId
-            _Captcha = YourCaptcha
-        End Sub
-
-        Public Property SessionId As String
-        Public Property Captcha As Byte()
-
-    End Class
-
-    Public Class R2CoreStandardSessionCaptchaWordStructure
-
-        Public Sub New()
-            MyBase.New()
-            _SessionId = String.Empty
-            _Captcha = String.Empty
-        End Sub
-
-        Public Sub New(YourSessionId As String, YourCaptcha As String)
-            _SessionId = YourSessionId
-            _Captcha = YourCaptcha
-        End Sub
-
-        Public Property SessionId As String
-        Public Property Captcha As String
-
-    End Class
-
-    Public Class R2CoreSessionManager
-        Private _DateTime As New R2DateTime
-
-        Public Function GetNewSessionId() As String
-            Try
-                Dim InstanceAESAlgorithms = New AESAlgorithmsManager
-                Dim InstanceMD5Hasher = New MD5Hasher
-                Dim Instance = New R2Core.DateAndTimeManagement.R2DateTime
-                Dim SessionId = InstanceMD5Hasher.GenerateMD5String(_DateTime.GetCurrentDateTimeMilladi) + InstanceAESAlgorithms.GetSalt(12)
-                Return SessionId
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Function StartSession() As R2CoreStandardSessionCaptchaBitMapStructure
-            Try
-                Dim InstanceCaptcha = New R2CoreInstanceCaptchaManager
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                Dim InstanceCaching = New R2CoreCacheManager
-                Dim CaptchaWord = InstanceCaptcha.GenerateFakeWordNumeric(InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 6))
-                Dim CaptchaBitMap = InstanceCaptcha.GetCaptcha(CaptchaWord)
-                Dim SessionId = GetNewSessionId()
-                InstanceCaching.SetCache(InstanceCaching.GetNSSCacheKey(R2CoreCacheKeys.Session).KeyName + SessionId, New R2CoreStandardSessionCaptchaWordStructure(SessionId, CaptchaWord))
-                Return New R2CoreStandardSessionCaptchaBitMapStructure(SessionId, CaptchaBitMap)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Function ConfirmSession(YourSessionId As String) As R2CoreSoftwareUser
-            Try
-                Dim InstanceCacheKeys = New Caching.R2CoreCacheManager
-                Dim CachKey = InstanceCacheKeys.GetNSSCacheKey(Caching.R2CoreCacheKeys.Session).KeyName + YourSessionId
-                Dim CacheValue = DirectCast(InstanceCacheKeys.GetCache(CachKey), StackExchange.Redis.RedisValue)
-                If CacheValue.IsNullOrEmpty Then Throw New SessionOverException
-                If Not CacheValue.ToString.ToUpper().Contains("SOFTWAREUSER") Then Throw New SessionOverException
-                Dim Content = JsonConvert.DeserializeObject(Of R2CoreSessionIdSoftwareUser)(CacheValue.ToString)
-                Return Content.SoftWareUser
-            Catch ex As SessionOverException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-
-    End Class
-
-    Public Class SessionOverException
-        Inherits BPTException
-
-        Public Sub New()
-            _Message = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.SessionOverException).MsgContent
-            _MessageCode = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.SessionOverException).MsgId
-        End Sub
-    End Class
-
-
-End Namespace
-
 Namespace SecurityAlgorithmsManagement
 
 
@@ -2066,7 +1966,7 @@ Namespace PredefinedMessagesManagement
         Public Shared ReadOnly BPTSoapException As Int64 = 26
         Public Shared ReadOnly AnyNotFoundException As Int64 = 28
         Public Shared ReadOnly MoneyWalletNotFoundException As Int64 = 30
-
+        Public Shared ReadOnly WebServiceConnectingException As Int64 = 31
     End Class
 
     Public Class R2CoreStandardPredefinedMessageStructure
@@ -2640,7 +2540,7 @@ Namespace PermissionManagement
                 Dim Ds As DataSet
                 If Instanse.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
                       "Select * from R2Primary.dbo.TblPermissions as Permissions 
-                       Where Permissions.PermissionTypeId=" & YourPermissionTypeId & " and Permissions.RelationActive=1 and Permissions.EntityIdFirst=" & YourEntityIdFirst & " and Permissions.EntityIdSecond=" & YourEntityIdSecond & "", 32000, Ds, New Boolean).GetRecordsCount() = 0 Then
+                       Where Permissions.PermissionTypeId=" & YourPermissionTypeId & " and Permissions.RelationActive=1 and Permissions.EntityIdFirst=" & YourEntityIdFirst & " and Permissions.EntityIdSecond=" & YourEntityIdSecond & "", 32767, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Return False
                 Else
                     Return True
@@ -3766,131 +3666,6 @@ Namespace SiteIsBusy
         End Class
 
     End Namespace
-
-End Namespace
-
-Namespace Caching
-
-    Public MustInherit Class R2CoreCacheKeys
-        Public Shared ReadOnly Property None As Int64 = 0
-        Public Shared ReadOnly Property Session As Int64 = 1
-    End Class
-
-    Public Class R2CoreStandardCacheKeyStructure
-
-        Public Sub New()
-            MyBase.New()
-            _KeyId = Int64.MinValue
-            _KeyName = String.Empty
-            _CacheTime = String.Empty
-            _DateTimeMilladi = DateTime.Now
-            _DateShamsi = String.Empty
-            _Time = String.Empty
-            _UserId = Int64.MinValue
-            _Core = String.Empty
-            _ViewFlag = Boolean.FalseString
-            _Active = Boolean.FalseString
-            _Deleted = Boolean.FalseString
-        End Sub
-
-        Public Sub New(YourKeyId As Int64, YourKeyName As String, YourCacheTime As String, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourTime As String, YourUserId As Int64, YourCore As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
-            _KeyId = YourKeyId
-            _KeyName = YourKeyName
-            _CacheTime = YourCacheTime
-            _DateTimeMilladi = YourDateTimeMilladi
-            _DateShamsi = YourDateShamsi
-            _Time = YourTime
-            _UserId = YourUserId
-            _Core = YourCore
-            _ViewFlag = YourViewFlag
-            _Active = YourActive
-            _Deleted = YourDeleted
-        End Sub
-
-        Public Property KeyId As Int64
-        Public Property KeyName As String
-        Public Property CacheTime As Int64
-        Public Property DateTimeMilladi As DateTime
-        Public Property DateShamsi As String
-        Public Property Time As String
-        Public Property UserId As Int64
-        Public Property Core As String
-        Public Property ViewFlag As Boolean
-        Public Property Active As Boolean
-        Public Property Deleted As Boolean
-
-    End Class
-
-    Public NotInheritable Class RedisConnectorHelper
-        Private Shared ReadOnly lazyConnection As New Lazy(Of ConnectionMultiplexer)(
-        Function()
-            Return ConnectionMultiplexer.Connect("192.168.1.4:6379")
-        End Function
-    )
-
-        Public Shared ReadOnly Property Connection As ConnectionMultiplexer
-            Get
-                Return lazyConnection.Value
-            End Get
-        End Property
-    End Class
-
-    Public Class R2CoreCacheManager
-
-        Public Function GetNSSCacheKey(YourKeyId As Int64) As R2CoreStandardCacheKeyStructure
-            Try
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 * from R2Primary.dbo.TblCacheKeys Where KeyId=" & YourKeyId& & "", 10000, DS, New Boolean).GetRecordsCount = 0 Then
-                    Throw New CacheKeyNotFoundException
-
-                Else
-                    Return New R2CoreStandardCacheKeyStructure(DS.Tables(0).Rows(0).Item("KeyId"), DS.Tables(0).Rows(0).Item("KeyName").trim, DS.Tables(0).Rows(0).Item("CacheTime"), DS.Tables(0).Rows(0).Item("DateTimeMilladi"), DS.Tables(0).Rows(0).Item("DateShamsi").trim, DS.Tables(0).Rows(0).Item("Time").trim, DS.Tables(0).Rows(0).Item("UserId"), DS.Tables(0).Rows(0).Item("Core").trim, DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted"))
-                End If
-            Catch ex As CacheKeyNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-
-        Public Sub SetCache(YourKeyId As String, YourCacheValue As Object)
-            Try
-                Dim Cache = RedisConnectorHelper.Connection.GetDatabase
-                Cache.StringSet(YourKeyId, JsonConvert.SerializeObject(YourCacheValue), TimeSpan.FromSeconds(GetNSSCacheKey(R2CoreCacheKeys.Session).CacheTime))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Sub
-
-        Public Function GetCache(YourKeyId As String) As Object
-            Try
-                Dim Cache = RedisConnectorHelper.Connection.GetDatabase
-                Return Cache.StringGet(YourKeyId)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-
-        Public Sub RemoveCache(YourCacheKey As String)
-            Try
-                Dim Cache = RedisConnectorHelper.Connection.GetDatabase
-                Cache.KeyDelete(YourCacheKey)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Sub
-
-    End Class
-
-    Public Class CacheKeyNotFoundException
-        Inherits ApplicationException
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "کلید شاخص بافرینگ یا کش در سیستم وجود ندارد"
-            End Get
-        End Property
-    End Class
 
 End Namespace
 
