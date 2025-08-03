@@ -1192,8 +1192,6 @@ Namespace Turns
                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SequentialTurns on substring(Turns.OtaghdarTurnNumber,1,1)=SequentialTurns.SeqTKeyWord  
                         Where Turns.StrCardNo=" & YourTruckId & "  and (Turns.TurnStatus=" & Turns.TurnStatuses.Registered & " or Turns.TurnStatus=" & Turns.TurnStatuses.UsedLoadAllocationRegistered & " or Turns.TurnStatus=" & Turns.TurnStatuses.ResuscitationLoadPermissionCancelled & " or Turns.TurnStatus=" & Turns.TurnStatuses.ResuscitationLoadAllocationCancelled & " or Turns.TurnStatus=" & Turns.TurnStatuses.ResuscitationUser & ")
                         Order By nEnterExitId Desc")
-
-
                     Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
                     If Da.Fill(Ds) <= 0 Then Throw New TurnNotFoundException
                 Else

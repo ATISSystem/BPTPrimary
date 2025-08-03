@@ -1796,7 +1796,7 @@ Namespace LoadCapacitor
                     Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
                     Dim DSLoads As DataSet = Nothing
                     Dim SqlQuery =
-                        "Select Provinces.ProvinceName,Provinces.ProvinceId,MyLoad.* from 
+                        "Select Provinces.ProvinceName,Provinces.ProvinceId,MyLoads.* from 
                            (Select Loads.nEstelamId LoadId,TransportCompanies.TCTitle as TCTitle,TransportCompanies.TCTel as TCTel,Products.strGoodName as GoodTitle,
                                    Loads.nTonaj as Tonaj,LoadSources.strCityName as SoureCityTitle,LoadTargets.strCityName as TargetCityTitle,LoadTargets.nProvince as ProvinceId,
                                    LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,
@@ -1813,9 +1813,9 @@ Namespace LoadCapacitor
                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.tblLoadsViewConditions as LoadsViewConditions On Loads.AHSGId=LoadsViewConditions.AHSGId
                               Inner join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadsforTurnCancellation as LoadsforTurnCancellation on Loads.nEstelamID=LoadsforTurnCancellation.nEstelamID
                             Where Loads.dDateElam='" & _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull() & "' and Loads.LoadStatus=" & YourLoadStatusId & " and LoadsViewConditions.LoadStatusId=" & YourLoadStatusId & " and 
-                                  LoadsViewConditions.RequesterId=" & YourRequesterId & " and Loads.nCarNum>0 and Loads.AHSGId=" & YourAnnouncementSGId & " and LoadsViewConditions.SeqTId=" & TurnInfo.SeqTId & " and LoadsViewConditions.NativenessTypeId=" & TurnInfo.NativenessTypeId & ") as myLoad
-                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces On MyLoad.ProvinceId=Provinces.ProvinceId  
-						 Order By ProvinceName,MyLoad.TargetCityTitle 
+                                  LoadsViewConditions.RequesterId=" & YourRequesterId & " and Loads.nCarNum>0 and Loads.AHSGId=" & YourAnnouncementSGId & " and LoadsViewConditions.SeqTId=" & TurnInfo.SeqTId & " and LoadsViewConditions.NativenessTypeId=" & TurnInfo.NativenessTypeId & ") as myLoads
+                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces On MyLoads.ProvinceId=Provinces.ProvinceId  
+						 Order By ProvinceName,MyLoads.TargetCityTitle 
 						 for JSON AUTO"
                     Dim DataChangeStatus As Boolean = False
                     If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
@@ -1834,6 +1834,168 @@ Namespace LoadCapacitor
                     Throw ex
                 Catch ex As BaseInfFailedException
                     Throw
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+
+            Public Function GetLoadsforTransportCompanies(YourSoftwareUser As R2CoreSoftwareUser, Optional YourAnnouncementGroupId As Int64 = Int64.MinValue, Optional YourAnnouncementSubGroupId As Int64 = Int64.MinValue, Optional YourInventory As Boolean = False, Optional YourShamsiDate As String = "", Optional YourLoadStatusId As Int64 = Int64.MinValue, Optional YourLoadSourceId As Int64 = Int64.MinValue, Optional YourLoadTargetId As Int64 = Int64.MinValue) As String
+                Try
+                    Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                    Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                    Dim DSLoads As DataSet = Nothing
+                    'کامپوزیت ساب کووری
+                    Dim SubQuery As String = String.Empty
+                    If YourAnnouncementGroupId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.AHSGId=" & YourAnnouncementGroupId & ""
+                    If YourInventory = Boolean.FalseString Then SubQuery += SubQuery + " and Loads.nCarNumKol>0"
+                    If YourShamsiDate = String.Empty Then
+                        SubQuery += SubQuery + "and Loads.dDateElam='" & _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull & "'"
+                    Else
+                        SubQuery += SubQuery + "and Loads.dDateElam='" & YourShamsiDate & "'"
+                    End If
+                    If YourLoadStatusId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.LoadStatus=" & YourLoadStatusId & ""
+                    If YourLoadSourceId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nBarSource=" & YourLoadSourceId & ""
+                    If YourLoadTargetId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nCityCode=" & YourLoadTargetId & ""
+
+                    'کووری اصلی
+                    Dim SqlQuery =
+                        "Declare @TCId BigInt
+                         Select Top 1 @TCId=TransportCompanies.TCId from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies
+                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers as TransportCompaniesRelationSoftwareUsers On TransportCompanies.TCId=TransportCompaniesRelationSoftwareUsers.TCId 
+                         Where TransportCompaniesRelationSoftwareUsers.UserId=" & YourSoftwareUser.UserId & "
+
+                         Select Provinces.ProvinceName,Provinces.ProvinceId,myLoads.* from 
+                           (Select Loads.nEstelamId LoadId,TransportCompanies.TCTitle as TCTitle,Products.strGoodName as GoodTitle,Loads.nTonaj as Tonaj,
+                                   LoadSources.strCityName as SoureCityTitle,LoadTargets.strCityName as TargetCityTitle,LoadTargets.nProvince as ProvinceId,
+                                   LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,
+                                   Loads.nCarNumKol as Total,Loads.nCarNum as Reminder,Loads.StrPriceSug as Tarrif,LoadStatuses.LoadStatusName,Loads.dDateElam as LoadIssueDate,Loads.dTimeElam as LoadIssueTime, 
+                                   Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGTitle,Loads.StrBarName as Recipient,Loads.StrAddress as Address,Loads.strDescription as Description,
+                                   SoftwareUsers.UserName,Loads.TPTParamsJoint as TPTParamsJoint
+                            from DBTransport.dbo.TbElam as Loads
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On Loads.nCompCode=TransportCompanies.TCId 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On Loads.AHId=Announcements.AnnouncementId 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On Loads.AHSGId=AnnouncementSubGroups.AnnouncementSGId 
+                               Inner Join dbtransport.dbo.tbProducts as Products On Loads.nBarcode=Products.strGoodCode 
+                               Inner Join dbtransport.dbo.tbCity as LoadSources On Loads.nBarSource=LoadSources.nCityCode
+                               Inner Join dbtransport.dbo.tbCity as LoadTargets On Loads.nCityCode=LoadTargets.nCityCode 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as LoadingPlaces On Loads.LoadingPlaceId=LoadingPlaces.LADPlaceId 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as DischargingPlaces On Loads.DischargingPlaceId=DischargingPlaces.LADPlaceId 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorLoadStatuses as LoadStatuses On Loads.LoadStatus=LoadStatuses.LoadStatusId
+                               Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Loads.nUserId=SoftwareUsers.UserId
+                            Where Loads.nCompCode=@TCId + " & SubQuery & "+) as myLoads
+                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces On MyLoads.ProvinceId=Provinces.ProvinceId  
+                         Order By ProvinceName,MyLoads.TargetCityTitle 
+                         for JSON Auto"
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                           SqlQuery, 180, DSLoads, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                    Return InstancePublicProcedures.GetIntegratedJson(DSLoads)
+                Catch ex As AnyNotFoundException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+
+            Public Function GetLoadsforFactoriesAndProductionCenters(YourSoftwareUser As R2CoreSoftwareUser, Optional YourTransportCompanyId As Int64 = Int64.MinValue, Optional YourAnnouncementGroupId As Int64 = Int64.MinValue, Optional YourAnnouncementSubGroupId As Int64 = Int64.MinValue, Optional YourInventory As Boolean = False, Optional YourShamsiDate As String = "", Optional YourLoadStatusId As Int64 = Int64.MinValue, Optional YourLoadSourceId As Int64 = Int64.MinValue, Optional YourLoadTargetId As Int64 = Int64.MinValue) As String
+                Try
+                    Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                    Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                    Dim DSLoads As DataSet = Nothing
+                    'کامپوزیت ساب کووری
+                    Dim SubQuery As String = String.Empty
+                    If YourTransportCompanyId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nCompCode=" & YourTransportCompanyId & ""
+                    If YourAnnouncementGroupId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.AHSGId=" & YourAnnouncementGroupId & ""
+                    If YourInventory = Boolean.FalseString Then SubQuery += SubQuery + " and Loads.nCarNumKol>0"
+                    If YourShamsiDate = String.Empty Then
+                        SubQuery += SubQuery + "and Loads.dDateElam='" & _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull & "'"
+                    Else
+                        SubQuery += SubQuery + "and Loads.dDateElam='" & YourShamsiDate & "'"
+                    End If
+                    If YourLoadStatusId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.LoadStatus=" & YourLoadStatusId & ""
+                    If YourLoadSourceId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nBarSource=" & YourLoadSourceId & ""
+                    If YourLoadTargetId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nCityCode=" & YourLoadTargetId & ""
+
+                    'کووری اصلی
+                    Dim SqlQuery =
+                        "Select Provinces.ProvinceName,Provinces.ProvinceId,myLoads.* from 
+                           (Select Loads.nEstelamId LoadId,TransportCompanies.TCTitle as TCTitle,Products.strGoodName as GoodTitle,Loads.nTonaj as Tonaj,
+                                   LoadSources.strCityName as SoureCityTitle,LoadTargets.strCityName as TargetCityTitle,LoadTargets.nProvince as ProvinceId,
+                                   LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,
+                                   Loads.nCarNumKol as Total,Loads.nCarNum as Reminder,Loads.StrPriceSug as Tarrif,LoadStatuses.LoadStatusName,Loads.dDateElam as LoadIssueDate,Loads.dTimeElam as LoadIssueTime, 
+                                   Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGTitle,Loads.StrBarName as Recipient,Loads.StrAddress as Address,Loads.strDescription as Description,
+                                   SoftwareUsers.UserName,Loads.TPTParamsJoint as TPTParamsJoint
+                            from DBTransport.dbo.TbElam as Loads
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On Loads.nCompCode=TransportCompanies.TCId 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On Loads.AHId=Announcements.AnnouncementId 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On Loads.AHSGId=AnnouncementSubGroups.AnnouncementSGId 
+                               Inner Join dbtransport.dbo.tbProducts as Products On Loads.nBarcode=Products.strGoodCode 
+                               Inner Join dbtransport.dbo.tbCity as LoadSources On Loads.nBarSource=LoadSources.nCityCode
+                               Inner Join dbtransport.dbo.tbCity as LoadTargets On Loads.nCityCode=LoadTargets.nCityCode 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as LoadingPlaces On Loads.LoadingPlaceId=LoadingPlaces.LADPlaceId 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as DischargingPlaces On Loads.DischargingPlaceId=DischargingPlaces.LADPlaceId 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorLoadStatuses as LoadStatuses On Loads.LoadStatus=LoadStatuses.LoadStatusId
+                               Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Loads.nUserId=SoftwareUsers.UserId
+                            Where Loads.nUserID=" & YourSoftwareUser.UserId & " + " & SubQuery & "+) as myLoads
+                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces On MyLoads.ProvinceId=Provinces.ProvinceId  
+                         Order By ProvinceName,MyLoads.TargetCityTitle 
+                         for JSON Auto"
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                           SqlQuery, 180, DSLoads, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                    Return InstancePublicProcedures.GetIntegratedJson(DSLoads)
+                Catch ex As AnyNotFoundException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+
+            Public Function GetLoadsforaAdministrator(YourAnnouncementGroupId As Int64, YourAnnouncementSubGroupId As Int64, Optional YourTransportCompanyId As Int64 = Int64.MinValue, Optional YourInventory As Boolean = False, Optional YourShamsiDate As String = "", Optional YourLoadStatusId As Int64 = Int64.MinValue, Optional YourLoadSourceId As Int64 = Int64.MinValue, Optional YourLoadTargetId As Int64 = Int64.MinValue) As String
+                Try
+                    Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                    Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                    Dim DSLoads As DataSet = Nothing
+                    'کامپوزیت ساب کووری
+                    Dim SubQuery As String = String.Empty
+                    If YourTransportCompanyId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nCompCode=" & YourTransportCompanyId & ""
+                    If YourInventory = Boolean.FalseString Then SubQuery += SubQuery + " and Loads.nCarNumKol>0"
+                    If YourShamsiDate = String.Empty Then
+                        SubQuery += SubQuery + "and Loads.dDateElam='" & _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull & "'"
+                    Else
+                        SubQuery += SubQuery + "and Loads.dDateElam='" & YourShamsiDate & "'"
+                    End If
+                    If YourLoadStatusId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.LoadStatus=" & YourLoadStatusId & ""
+                    If YourLoadSourceId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nBarSource=" & YourLoadSourceId & ""
+                    If YourLoadTargetId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nCityCode=" & YourLoadTargetId & ""
+
+                    'کووری اصلی
+                    Dim SqlQuery =
+                        "Select Provinces.ProvinceName,Provinces.ProvinceId,myLoads.* from 
+                           (Select Loads.nEstelamId LoadId,TransportCompanies.TCTitle as TCTitle,Products.strGoodName as GoodTitle,Loads.nTonaj as Tonaj,
+                                   LoadSources.strCityName as SoureCityTitle,LoadTargets.strCityName as TargetCityTitle,LoadTargets.nProvince as ProvinceId,
+                                   LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,
+                                   Loads.nCarNumKol as Total,Loads.nCarNum as Reminder,Loads.StrPriceSug as Tarrif,LoadStatuses.LoadStatusName,Loads.dDateElam as LoadIssueDate,Loads.dTimeElam as LoadIssueTime, 
+                                   Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGTitle,Loads.StrBarName as Recipient,Loads.StrAddress as Address,Loads.strDescription as Description,
+                                   SoftwareUsers.UserName,Loads.TPTParamsJoint as TPTParamsJoint
+                            from DBTransport.dbo.TbElam as Loads
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On Loads.nCompCode=TransportCompanies.TCId 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On Loads.AHId=Announcements.AnnouncementId 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On Loads.AHSGId=AnnouncementSubGroups.AnnouncementSGId 
+                               Inner Join dbtransport.dbo.tbProducts as Products On Loads.nBarcode=Products.strGoodCode 
+                               Inner Join dbtransport.dbo.tbCity as LoadSources On Loads.nBarSource=LoadSources.nCityCode
+                               Inner Join dbtransport.dbo.tbCity as LoadTargets On Loads.nCityCode=LoadTargets.nCityCode 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as LoadingPlaces On Loads.LoadingPlaceId=LoadingPlaces.LADPlaceId 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as DischargingPlaces On Loads.DischargingPlaceId=DischargingPlaces.LADPlaceId 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorLoadStatuses as LoadStatuses On Loads.LoadStatus=LoadStatuses.LoadStatusId
+                               Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Loads.nUserId=SoftwareUsers.UserId
+                            Where Loads.AHSGId=" & YourAnnouncementSubGroupId & " + " & SubQuery & "+) as myLoads
+                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces On MyLoads.ProvinceId=Provinces.ProvinceId  
+                         Order By ProvinceName,MyLoads.TargetCityTitle 
+                         for JSON Auto"
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                           SqlQuery, 0, DSLoads, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                    Return InstancePublicProcedures.GetIntegratedJson(DSLoads)
+                Catch ex As AnyNotFoundException
+                    Throw ex
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
                 End Try
@@ -1976,6 +2138,16 @@ Namespace LoadCapacitor
 
         'BPTChanged
         Namespace Exceptions
+            Public Class NoLoadsorLoadsViewConditionsMismatchException
+                Inherits ApplicationException
+
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "بار موجود نیست" + vbCrLf + "عدم تطابق صف نوبت ، بار و وضعیت بار"
+                    End Get
+                End Property
+            End Class
+
             Public Class LoadStatusesForSoftwareUserTypeNotFoundException
                 Inherits BPTException
 
@@ -2004,7 +2176,6 @@ Namespace LoadCapacitor
                     End Get
                 End Property
             End Class
-
 
 
         End Namespace
@@ -3511,16 +3682,6 @@ Namespace LoadCapacitor
     End Namespace
 
     Namespace Exceptions
-        Public Class NoLoadsorLoadsViewConditionsMismatchException
-            Inherits ApplicationException
-
-            Public Overrides ReadOnly Property Message As String
-                Get
-                    Return "بار موجود نیست" + vbCrLf + "عدم تطابق صف نوبت ، بار و وضعیت بار"
-                End Get
-            End Property
-        End Class
-
         Public Class BaseInfFailedException
             Inherits ApplicationException
 

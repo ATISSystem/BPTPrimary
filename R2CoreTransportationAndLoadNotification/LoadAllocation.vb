@@ -2284,6 +2284,8 @@ Namespace LoadAllocation
 
             Catch ex As DataBaseException
                 Throw ex
+            Catch ex As BaseInfFailedException
+                Throw ex
             Catch ex As LoadAllocationTimeNotReachedException
                 Throw ex
             Catch ex As LoadAllocationConditionsNotEstablishedException
@@ -2293,6 +2295,27 @@ Namespace LoadAllocation
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
+        End Sub
+
+        Public Sub LoadAllocationRegisteringforTransportCompany(YourTruckId As Int64, YourTruckDriverId As Int64, YourLoadId As Int64, YourSoftwareUser As R2CoreSoftwareUser, YourRequesterId As Int64)
+            Try
+                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(New R2DateTimeService)
+                Dim Turn As R2CoreTransportationAndLoadNotificationTurnExtended
+
+                Try
+                    Turn = InstanceTurns.GetLastActiveTurnfromTruckId(YourTruckId, False)
+                Catch ex As TurnNotFoundException
+
+                Catch ex As Exception
+
+                End Try
+
+
+
+            Catch ex As Exception
+
+            End Try
+
         End Sub
 
         Public Function GetTruckDriverLoadAllocationsForRepriority(YourSoftwareUser As R2CoreSoftwareUser) As String
@@ -2384,10 +2407,21 @@ Namespace LoadAllocation
             End Try
         End Function
 
-        Public Sub IncreasePriority(YourLAId As Int64)
+        Public Sub IncreasePriority(YourLAId As Int64, YourLoadId As Int64)
             Dim CmdSql As New SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
             Try
+                Dim InstanceTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
+                Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(New R2DateTimeService)
+
+                'اطلاعات بار
+                Dim Load = InstanceLoad.GetLoadForLoadAllocationProccess(YourLoadId)
+
+                'آیا زمان تخصیص بار برای زیرگروه سالن مورد نظر فرارسیده است
+                If InstanceTiming.GetTiming(Load.AnnouncementGroupId, Load.AnnouncementSubGroupId, _DateTimeService.DateTimeServ.GetCurrentTime) <> R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
+                    Throw New TimingNotReachedException
+                End If
+
                 Dim Param As SqlClient.SqlParameter
                 Param = New SqlParameter("@YourLAId", SqlDbType.BigInt) : Param.Value = YourLAId
                 CmdSql.Parameters.Add(Param)
@@ -2399,16 +2433,30 @@ Namespace LoadAllocation
             Catch ex As SqlException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                 Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As TimingNotReachedException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw ex
             Catch ex As Exception
                 If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Sub
 
-        Public Sub DecreasePriority(YourLAId As Int64)
+        Public Sub DecreasePriority(YourLAId As Int64, YourLoadId As Int64)
             Dim CmdSql As New SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
             Try
+                Dim InstanceTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
+                Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(New R2DateTimeService)
+
+                'اطلاعات بار
+                Dim Load = InstanceLoad.GetLoadForLoadAllocationProccess(YourLoadId)
+
+                'آیا زمان تخصیص بار برای زیرگروه سالن مورد نظر فرارسیده است
+                If InstanceTiming.GetTiming(Load.AnnouncementGroupId, Load.AnnouncementSubGroupId, _DateTimeService.DateTimeServ.GetCurrentTime) <> R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
+                    Throw New TimingNotReachedException
+                End If
+
                 Dim Param As SqlClient.SqlParameter
                 Param = New SqlParameter("@YourLAId", SqlDbType.BigInt) : Param.Value = YourLAId
                 CmdSql.Parameters.Add(Param)
@@ -2420,16 +2468,29 @@ Namespace LoadAllocation
             Catch ex As SqlException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                 Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As TimingNotReachedException
+                Throw ex
             Catch ex As Exception
                 If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Sub
 
-        Public Sub LoadAllocationCancelling(YourLAId As Int64, YourCancellStatusId As Int64, YourSoftwareUser As R2CoreSoftwareUser)
+        Public Sub LoadAllocationCancelling(YourLAId As Int64, YourLoadId As Int64, YourCancellStatusId As Int64, YourSoftwareUser As R2CoreSoftwareUser)
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
             Try
+                Dim InstanceTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
+                Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(New R2DateTimeService)
+
+                'اطلاعات بار
+                Dim Load = InstanceLoad.GetLoadForLoadAllocationProccess(YourLoadId)
+
+                'آیا زمان تخصیص بار برای زیرگروه سالن مورد نظر فرارسیده است
+                If InstanceTiming.GetTiming(Load.AnnouncementGroupId, Load.AnnouncementSubGroupId, _DateTimeService.DateTimeServ.GetCurrentTime) <> R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
+                    Throw New TimingNotReachedException
+                End If
+
                 Dim Param As SqlClient.SqlParameter
                 Param = New SqlParameter("@YourLAId", SqlDbType.BigInt) : Param.Value = YourLAId
                 CmdSql.Parameters.Add(Param)

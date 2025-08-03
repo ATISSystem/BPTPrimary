@@ -91,7 +91,6 @@ namespace APITransportation.LoadAllocation.Controllers
 
         }
 
-
         [HttpPost]
         [Route("api/LoadAllocationCancelling")]
         public HttpResponseMessage LoadAllocationCancelling([FromBody] APITransportationLoadAllocationSessionIdLAId  Content)

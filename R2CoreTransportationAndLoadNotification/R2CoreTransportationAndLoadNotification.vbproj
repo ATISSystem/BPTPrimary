@@ -182,6 +182,7 @@
     </Compile>
     <Compile Include="Requesters.vb" />
     <Compile Include="SoftwareUsers.vb" />
+    <Compile Include="TransportCompanies.vb" />
     <Compile Include="TruckDrivers.vb" />
     <Compile Include="Trucks.vb" />
     <Compile Include="TurnRegisteringRequests.vb" />
