@@ -122,7 +122,7 @@ namespace APITransportation.Models
         public class APITransportationSessionIdSequentialTurnId
         {
             public String SessionId;
-            public Int64  SequentialTurnId ;
+            public Int64 SequentialTurnId;
         }
 
         public class APITransportationSessionIdSequentialTurnIdLoaderTypeId
@@ -182,13 +182,13 @@ namespace APITransportation.Models
         {
             public string SessionId;
             public Int64 ProvinceId;
-            public bool  ProvinceActive;
+            public bool ProvinceActive;
         }
         public class APITransportationSessionIdCityIdCityActive
         {
             public string SessionId;
             public Int64 CityId;
-            public bool  CityActive;
+            public bool CityActive;
         }
     }
 
@@ -198,13 +198,13 @@ namespace APITransportation.Models
         {
             public string SessionId;
             public Int64 ProductTypeId;
-            public bool  ProductTypeActive;
+            public bool ProductTypeActive;
         }
         public class APITransportationSessionIdProductIdProductActive
         {
             public string SessionId;
             public Int64 ProductId;
-            public bool  ProductActive;
+            public bool ProductActive;
         }
     }
 
@@ -278,7 +278,7 @@ namespace APITransportation.Models
         {
             public String SessionId;
             public List<R2CoreTransportationAndLoadNotificationTransportTariff> Tariffs;
-            public Double  AddPercentage;
+            public Double AddPercentage;
         }
 
     }
@@ -294,7 +294,7 @@ namespace APITransportation.Models
         public class APITransportationSessionIdAnnouncementId
         {
             public String SessionId;
-            public Int64  AnnouncementId;
+            public Int64 AnnouncementId;
         }
 
         public class APITransportationSessionIdAnnouncementSubGroup
@@ -323,9 +323,23 @@ namespace APITransportation.Models
         public class APITransportationSessionIdTruckPelakTruckSerial
         {
             public String SessionId;
-            public string  TruckPelak;
-            public string  TruckSerial;
+            public string TruckPelak;
+            public string TruckSerial;
         }
 
     }
+
+    namespace LoadPermissions
+    {
+        public class APITransportationSessionIdLoadAllocationIdDescriptionTurnResusitutionLoadResusitution
+
+        {
+            public String SessionId;
+            public Int64 LoadAllocationId;
+            public string Description;
+            public bool TurnResusitution;
+            public bool LoadResusitution;
+        }
+    }
+
 }

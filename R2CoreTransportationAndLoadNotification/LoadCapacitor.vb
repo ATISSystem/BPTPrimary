@@ -97,6 +97,9 @@ Imports Newtonsoft.Json
 Imports R2Core.Caching
 Imports R2Core.SessionManagement
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad.Exceptions
+Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoadManipulation.Exceptions
+Imports R2CoreTransportationAndLoadNotification.LoaderTypes
+Imports System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel
 
 
 Namespace LoadCapacitor
@@ -317,6 +320,93 @@ Namespace LoadCapacitor
 
         End Class
 
+        'BPTChanged
+        Public MustInherit Class R2CoreTransportationAndLoadNotificationLoadAccountingTypes
+            Public Shared ReadOnly Property None As Int64 = 0
+            Public Shared ReadOnly Property Registering As Int64 = 1
+            Public Shared ReadOnly Property Editing As Int64 = 2
+            Public Shared ReadOnly Property Deleting As Int64 = 3
+            Public Shared ReadOnly Property Incrementing As Int64 = 4
+            Public Shared ReadOnly Property Decrementing As Int64 = 5
+            Public Shared ReadOnly Property Cancelling As Int64 = 6
+            Public Shared ReadOnly Property Releasing As Int64 = 7
+            Public Shared ReadOnly Property LoadPermissionCancelling As Int64 = 8
+            Public Shared ReadOnly Property Allocating As Int64 = 9
+            Public Shared ReadOnly Property AllocationCancelling As Int64 = 10
+            Public Shared ReadOnly Property FreeLining As Int64 = 11
+            Public Shared ReadOnly Property Sedimenting As Int64 = 12
+            Public Shared ReadOnly Property RegisteringforTommorow As Int64 = 13
+            Public Shared ReadOnly Property TransferringTommorowLoads As Int64 = 14
+            Public Shared ReadOnly Property ReRegisteringSedimentedLoad As Int64 = 15
+        End Class
+
+        'BPTChanged
+        Public Class R2CoreTransportationAndLoadNotificationLoadAccounting
+            Public Property LoadId As Int64
+            Public Property AccountTypeId As Int64
+            Public Property Amount As Int64
+        End Class
+
+        'BPTChanged
+        Public Class R2CoreTransportationAndLoadNotificationLoadAccountingManager
+
+            Private _DateTimeService As IR2DateTimeService
+            Public Sub New(YourDateTimeService As IR2DateTimeService)
+                _DateTimeService = YourDateTimeService
+            End Sub
+
+            Public Sub InsertAccounting(ByVal YourLoadAccounting As R2CoreTransportationAndLoadNotificationLoadAccounting, YourSoftwareUserId As Int64)
+                Dim CmdSql As New SqlClient.SqlCommand
+                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Try
+                    CmdSql.Connection.Open()
+                    CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorAccounting(nEstelamId,AccountType,Amount,DateTimeMilladi,DateShamsi,Time,UserId) values(" & YourLoadAccounting.LoadId & "," & YourLoadAccounting.AccountTypeId & "," & YourLoadAccounting.Amount & ",convert(varchar, getdate(), 20),R2Primary.DBO.BPTCOGregorianToPersian(GETDATE()),convert(varchar, getdate(), 8)," & YourSoftwareUserId & ")"
+                    CmdSql.ExecuteNonQuery()
+                    CmdSql.Connection.Close()
+                Catch ex As Exception
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Sub
+
+            Public Function GetLoadAccountingRecords(YourLoadId As Int64, YourImmediately As Boolean) As String
+                Try
+                    Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                    Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+
+                    Dim DS As New DataSet
+                    If YourImmediately Then
+                        Dim Da As New SqlDataAdapter
+                        Da.SelectCommand = New SqlCommand(
+                        "Select Accountings.nEstelamId as LoadId,AccountingTypes.Color as Color,AccountingTypes.ATitle as AccountingTitle,SoftwareUsers.UserName,Accountings.Amount,Accountings.DateShamsi as ShamsiDate,Accountings.Time 
+                         From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorAccounting as Accountings
+                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorAccountingType as AccountingTypes On Accountings.AccountType=AccountingTypes.AId 
+                            Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Accountings.UserId=SoftwareUsers.UserId 
+                         Where Accountings.nEstelamId=" & YourLoadId & "
+                         Order By Accountings.DateTimeMilladi Desc
+                         for JSON PATH")
+                        Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                        If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
+                    Else
+                        If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                        "Select Accountings.nEstelamId as LoadId,AccountingTypes.Color as Color,AccountingTypes.ATitle as AccountingTitle,SoftwareUsers.UserName,Accountings.Amount,Accountings.DateShamsi as ShamsiDate,Accountings.Time 
+                         From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorAccounting as Accountings
+                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorAccountingType as AccountingTypes On Accountings.AccountType=AccountingTypes.AId 
+                            Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Accountings.UserId=SoftwareUsers.UserId 
+                         Where Accountings.nEstelamId=" & YourLoadId & "
+                         Order By Accountings.DateTimeMilladi Desc
+                         for JSON PATH", 180, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                    End If
+                    Return InstancePublicProcedures.GetIntegratedJson(DS)
+                Catch ex As AnyNotFoundException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+        End Class
+
+
 
     End Namespace
 
@@ -347,17 +437,6 @@ Namespace LoadCapacitor
             TargetProvince = 13
             Tonaj = 14
         End Enum
-
-        Public MustInherit Class R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses
-            Public Shared ReadOnly Property None As Int64 = 0
-            Public Shared ReadOnly Property Registered As Int64 = 1
-            Public Shared ReadOnly Property FreeLined As Int64 = 2
-            Public Shared ReadOnly Property Deleted As Int64 = 3
-            Public Shared ReadOnly Property Cancelled As Int64 = 4
-            Public Shared ReadOnly Property Sedimented As Int64 = 5
-            Public Shared ReadOnly Property RegisteredforTommorow As Int64 = 6
-
-        End Class
 
         Public Class R2CoreTransportationAndLoadNotificationStandardNumberOfLoadsOfProvinceStructure
 
@@ -1119,8 +1198,8 @@ Namespace LoadCapacitor
                     Dim AllConfigforAHSGId = Split(Mid(AllConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ";")
                     Dim IsLoadTonajControlActive As Boolean = AllConfigforAHSGId(0)
                     Dim LoadTonajMaximum As Double = AllConfigforAHSGId(1)
-                    If IsLoadTonajControlActive And YourNSSLoadCapacitorLoad.nTonaj > LoadTonajMaximum Then Throw New LoadCapacitorLoadTonajExceededException
-                Catch ex As LoadCapacitorLoadTonajExceededException
+                    If IsLoadTonajControlActive And YourNSSLoadCapacitorLoad.nTonaj > LoadTonajMaximum Then Throw New LoadTonajInvalidException
+                Catch ex As LoadTonajInvalidException
                     Throw ex
                 Catch ex As Exception
                     Throw ex
@@ -1684,11 +1763,15 @@ Namespace LoadCapacitor
         End Class
 
         'BPTChanged
-        Public Class R2CoreTransportationAndLoadNotificationTPTParams
-            Public Property TPTPDId As Int64
-            Public Property TPTPTitle As String
-            Public Property Cost As Int64
-            Public Property Checked As Boolean
+        Public MustInherit Class R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses
+            Public Shared ReadOnly Property None As Int64 = 0
+            Public Shared ReadOnly Property Registered As Int64 = 1
+            Public Shared ReadOnly Property FreeLined As Int64 = 2
+            Public Shared ReadOnly Property Deleted As Int64 = 3
+            Public Shared ReadOnly Property Cancelled As Int64 = 4
+            Public Shared ReadOnly Property Sedimented As Int64 = 5
+            Public Shared ReadOnly Property RegisteredforTommorow As Int64 = 6
+
         End Class
 
         'BPTChanged
@@ -1721,7 +1804,8 @@ Namespace LoadCapacitor
             Public Property LoadStatusId As Int64
             Public Property LoadStatusTitle As String
             Public Property RegisteringUserName As String
-            Public Property TPTParams As List(Of R2CoreTransportationAndLoadNotificationTPTParams)
+            Public Property TPTParams As String
+            Public Property TPTParamsJoint As String
         End Class
 
         'BPTChanged 
@@ -1765,6 +1849,29 @@ Namespace LoadCapacitor
             Public Sub New(YourR2DateTimeService As IR2DateTimeService)
                 _DateTimeService = YourR2DateTimeService
             End Sub
+
+            Public Function GetLoadReminder(YourLoadId As Int64, YourImmediately As Boolean) As Int64
+                Try
+                    Dim DS As New DataSet
+                    Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                    If YourImmediately Then
+                        Dim Da As New SqlClient.SqlDataAdapter
+                        Da.SelectCommand = New SqlCommand("Select nCarNum as Reminder from DBTransport.dbo.tbElam as Loads Where Loads.nEstelamID = " & YourLoadId & "")
+                        Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+                        If Da.Fill(DS) <= 0 Then Throw New LoadNotFoundException
+                    Else
+                        If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                               "Select nCarNum as Reminder from DBTransport.dbo.tbElam as Loads Where Loads.nEstelamID = " & YourLoadId & "", 180, DS, New Boolean).GetRecordsCount = 0 Then
+                            Throw New LoadNotFoundException
+                        End If
+                    End If
+                    Return DS.Tables(0).Rows(0).Item("Reminder")
+                Catch ex As LoadNotFoundException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
 
             Public Function GetLoadStatusesForSoftwareUserType(YourSoftwareUser As R2CoreSoftwareUser) As String
                 Try
@@ -1812,7 +1919,7 @@ Namespace LoadCapacitor
                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as DischargingPlaces On Loads.DischargingPlaceId=DischargingPlaces.LADPlaceId 
                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.tblLoadsViewConditions as LoadsViewConditions On Loads.AHSGId=LoadsViewConditions.AHSGId
                               Inner join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadsforTurnCancellation as LoadsforTurnCancellation on Loads.nEstelamID=LoadsforTurnCancellation.nEstelamID
-                            Where Loads.dDateElam='" & _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull() & "' and Loads.LoadStatus=" & YourLoadStatusId & " and LoadsViewConditions.LoadStatusId=" & YourLoadStatusId & " and 
+                            Where Loads.dDateElam=R2Primary.dbo.BPTCOGregorianToPersian(GETDATE()) and Loads.LoadStatus=" & YourLoadStatusId & " and LoadsViewConditions.LoadStatusId=" & YourLoadStatusId & " and 
                                   LoadsViewConditions.RequesterId=" & YourRequesterId & " and Loads.nCarNum>0 and Loads.AHSGId=" & YourAnnouncementSGId & " and LoadsViewConditions.SeqTId=" & TurnInfo.SeqTId & " and LoadsViewConditions.NativenessTypeId=" & TurnInfo.NativenessTypeId & ") as myLoads
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces On MyLoads.ProvinceId=Provinces.ProvinceId  
 						 Order By ProvinceName,MyLoads.TargetCityTitle 
@@ -1839,23 +1946,25 @@ Namespace LoadCapacitor
                 End Try
             End Function
 
-            Public Function GetLoadsforTransportCompanies(YourSoftwareUser As R2CoreSoftwareUser, Optional YourAnnouncementGroupId As Int64 = Int64.MinValue, Optional YourAnnouncementSubGroupId As Int64 = Int64.MinValue, Optional YourInventory As Boolean = False, Optional YourShamsiDate As String = "", Optional YourLoadStatusId As Int64 = Int64.MinValue, Optional YourLoadSourceId As Int64 = Int64.MinValue, Optional YourLoadTargetId As Int64 = Int64.MinValue) As String
+            Public Function GetLoadsforTransportCompanies(YourSoftwareUser As R2CoreSoftwareUser, YourAnnouncementGroupId As Int64, YourAnnouncementSubGroupId As Int64, YourInventory As Boolean, YourShamsiDate As String, YourLoadStatusId As Int64, YourLoadSourceId As Int64, YourLoadTargetId As Int64) As String
                 Try
+                    If YourShamsiDate = String.Empty Then YourShamsiDate = _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull
+
                     Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                     Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
                     Dim DSLoads As DataSet = Nothing
                     'کامپوزیت ساب کووری
                     Dim SubQuery As String = String.Empty
-                    If YourAnnouncementGroupId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.AHSGId=" & YourAnnouncementGroupId & ""
-                    If YourInventory = Boolean.FalseString Then SubQuery += SubQuery + " and Loads.nCarNumKol>0"
+                    If YourAnnouncementGroupId <> Int64.MinValue Then SubQuery += " and Loads.AHSGId=" & YourAnnouncementGroupId & ""
+                    If YourInventory = Boolean.FalseString Then SubQuery += " and Loads.nCarNumKol>0"
                     If YourShamsiDate = String.Empty Then
-                        SubQuery += SubQuery + "and Loads.dDateElam='" & _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull & "'"
+                        SubQuery += " and Loads.dDateElam=R2Primary.dbo.BPTCOGregorianToPersian(GETDATE())"
                     Else
-                        SubQuery += SubQuery + "and Loads.dDateElam='" & YourShamsiDate & "'"
+                        SubQuery += " and Loads.dDateElam='" & YourShamsiDate & "'"
                     End If
-                    If YourLoadStatusId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.LoadStatus=" & YourLoadStatusId & ""
-                    If YourLoadSourceId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nBarSource=" & YourLoadSourceId & ""
-                    If YourLoadTargetId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nCityCode=" & YourLoadTargetId & ""
+                    If YourLoadStatusId <> Int64.MinValue Then SubQuery += " and Loads.LoadStatus=" & YourLoadStatusId & ""
+                    If YourLoadSourceId <> Int64.MinValue Then SubQuery += " and Loads.nBarSource=" & YourLoadSourceId & ""
+                    If YourLoadTargetId <> Int64.MinValue Then SubQuery += " and Loads.nCityCode=" & YourLoadTargetId & ""
 
                     'کووری اصلی
                     Dim SqlQuery =
@@ -1882,7 +1991,7 @@ Namespace LoadCapacitor
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as DischargingPlaces On Loads.DischargingPlaceId=DischargingPlaces.LADPlaceId 
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorLoadStatuses as LoadStatuses On Loads.LoadStatus=LoadStatuses.LoadStatusId
                                Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Loads.nUserId=SoftwareUsers.UserId
-                            Where Loads.nCompCode=@TCId + " & SubQuery & "+) as myLoads
+                            Where Loads.nCompCode=@TCId " & SubQuery & ") as myLoads
                          Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces On MyLoads.ProvinceId=Provinces.ProvinceId  
                          Order By ProvinceName,MyLoads.TargetCityTitle 
                          for JSON Auto"
@@ -1896,24 +2005,24 @@ Namespace LoadCapacitor
                 End Try
             End Function
 
-            Public Function GetLoadsforFactoriesAndProductionCenters(YourSoftwareUser As R2CoreSoftwareUser, Optional YourTransportCompanyId As Int64 = Int64.MinValue, Optional YourAnnouncementGroupId As Int64 = Int64.MinValue, Optional YourAnnouncementSubGroupId As Int64 = Int64.MinValue, Optional YourInventory As Boolean = False, Optional YourShamsiDate As String = "", Optional YourLoadStatusId As Int64 = Int64.MinValue, Optional YourLoadSourceId As Int64 = Int64.MinValue, Optional YourLoadTargetId As Int64 = Int64.MinValue) As String
+            Public Function GetLoadsforFactoriesAndProductionCenters(YourSoftwareUser As R2CoreSoftwareUser, YourTransportCompanyId As Int64, YourAnnouncementGroupId As Int64, YourAnnouncementSubGroupId As Int64, YourInventory As Boolean, YourShamsiDate As String, YourLoadStatusId As Int64, YourLoadSourceId As Int64, YourLoadTargetId As Int64) As String
                 Try
                     Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                     Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
                     Dim DSLoads As DataSet = Nothing
                     'کامپوزیت ساب کووری
                     Dim SubQuery As String = String.Empty
-                    If YourTransportCompanyId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nCompCode=" & YourTransportCompanyId & ""
-                    If YourAnnouncementGroupId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.AHSGId=" & YourAnnouncementGroupId & ""
-                    If YourInventory = Boolean.FalseString Then SubQuery += SubQuery + " and Loads.nCarNumKol>0"
+                    If YourTransportCompanyId <> Int64.MinValue Then SubQuery += " and Loads.nCompCode=" & YourTransportCompanyId & ""
+                    If YourAnnouncementGroupId <> Int64.MinValue Then SubQuery += " and Loads.AHSGId=" & YourAnnouncementGroupId & ""
+                    If YourInventory = Boolean.FalseString Then SubQuery += " and Loads.nCarNumKol>0"
                     If YourShamsiDate = String.Empty Then
-                        SubQuery += SubQuery + "and Loads.dDateElam='" & _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull & "'"
+                        SubQuery += " and Loads.dDateElam=R2Primary.dbo.BPTCOGregorianToPersian(GETDATE())"
                     Else
-                        SubQuery += SubQuery + "and Loads.dDateElam='" & YourShamsiDate & "'"
+                        SubQuery += " and Loads.dDateElam='" & YourShamsiDate & "'"
                     End If
-                    If YourLoadStatusId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.LoadStatus=" & YourLoadStatusId & ""
-                    If YourLoadSourceId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nBarSource=" & YourLoadSourceId & ""
-                    If YourLoadTargetId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nCityCode=" & YourLoadTargetId & ""
+                    If YourLoadStatusId <> Int64.MinValue Then SubQuery += " and Loads.LoadStatus=" & YourLoadStatusId & ""
+                    If YourLoadSourceId <> Int64.MinValue Then SubQuery += " and Loads.nBarSource=" & YourLoadSourceId & ""
+                    If YourLoadTargetId <> Int64.MinValue Then SubQuery += " and Loads.nCityCode=" & YourLoadTargetId & ""
 
                     'کووری اصلی
                     Dim SqlQuery =
@@ -1935,7 +2044,7 @@ Namespace LoadCapacitor
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as DischargingPlaces On Loads.DischargingPlaceId=DischargingPlaces.LADPlaceId 
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorLoadStatuses as LoadStatuses On Loads.LoadStatus=LoadStatuses.LoadStatusId
                                Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Loads.nUserId=SoftwareUsers.UserId
-                            Where Loads.nUserID=" & YourSoftwareUser.UserId & " + " & SubQuery & "+) as myLoads
+                            Where Loads.nUserID=" & YourSoftwareUser.UserId & "" & SubQuery & ") as myLoads
                          Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces On MyLoads.ProvinceId=Provinces.ProvinceId  
                          Order By ProvinceName,MyLoads.TargetCityTitle 
                          for JSON Auto"
@@ -1956,16 +2065,17 @@ Namespace LoadCapacitor
                     Dim DSLoads As DataSet = Nothing
                     'کامپوزیت ساب کووری
                     Dim SubQuery As String = String.Empty
-                    If YourTransportCompanyId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nCompCode=" & YourTransportCompanyId & ""
-                    If YourInventory = Boolean.FalseString Then SubQuery += SubQuery + " and Loads.nCarNumKol>0"
+                    If YourAnnouncementSubGroupId <> Int64.MinValue Then SubQuery += " and Loads.AHSGId=" & YourAnnouncementSubGroupId & ""
+                    If YourTransportCompanyId <> Int64.MinValue Then SubQuery += " and Loads.nCompCode=" & YourTransportCompanyId & ""
+                    If YourInventory = Boolean.FalseString Then SubQuery += " and Loads.nCarNumKol>0"
                     If YourShamsiDate = String.Empty Then
-                        SubQuery += SubQuery + "and Loads.dDateElam='" & _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull & "'"
+                        SubQuery += " and Loads.dDateElam=R2Primary.dbo.BPTCOGregorianToPersian(GETDATE())"
                     Else
-                        SubQuery += SubQuery + "and Loads.dDateElam='" & YourShamsiDate & "'"
+                        SubQuery += " and Loads.dDateElam='" & YourShamsiDate & "'"
                     End If
-                    If YourLoadStatusId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.LoadStatus=" & YourLoadStatusId & ""
-                    If YourLoadSourceId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nBarSource=" & YourLoadSourceId & ""
-                    If YourLoadTargetId <> Int64.MinValue Then SubQuery += SubQuery + " and Loads.nCityCode=" & YourLoadTargetId & ""
+                    If YourLoadStatusId <> Int64.MinValue Then SubQuery += " and Loads.LoadStatus=" & YourLoadStatusId & ""
+                    If YourLoadSourceId <> Int64.MinValue Then SubQuery += " and Loads.nBarSource=" & YourLoadSourceId & ""
+                    If YourLoadTargetId <> Int64.MinValue Then SubQuery += " and Loads.nCityCode=" & YourLoadTargetId & ""
 
                     'کووری اصلی
                     Dim SqlQuery =
@@ -1987,7 +2097,7 @@ Namespace LoadCapacitor
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as DischargingPlaces On Loads.DischargingPlaceId=DischargingPlaces.LADPlaceId 
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorLoadStatuses as LoadStatuses On Loads.LoadStatus=LoadStatuses.LoadStatusId
                                Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Loads.nUserId=SoftwareUsers.UserId
-                            Where Loads.AHSGId=" & YourAnnouncementSubGroupId & " + " & SubQuery & "+) as myLoads
+                            Where 3=3 " & SubQuery & ") as myLoads
                          Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces On MyLoads.ProvinceId=Provinces.ProvinceId  
                          Order By ProvinceName,MyLoads.TargetCityTitle 
                          for JSON Auto"
@@ -2062,23 +2172,23 @@ Namespace LoadCapacitor
             Public Function GetLoad(YournEstelamId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationLoad
                 Try
                     Dim DS As New DataSet
-                    Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
 
                     If YourImmediately Then
                         Dim Da As New SqlClient.SqlDataAdapter
                         Da.SelectCommand = New SqlCommand("
-                            Select Loads.nEstelamID as LoadId,Loads.dDateElam as AnnounceDate ,Loads.dTimeElam as AnnounceTime,TransportCompanies.TCId as TransportCompanyId,TransportCompanies.TCTitle as TransportCompanyTitle,
-                                   Goods.strGoodCode as GoodId,Goods.strGoodName as GoodTitle,Announcements.AHId as LoadAnnouncementGroupId,Announcements.AHTitle as LoadAnnouncementGroupTitle,
-                       	           AnnouncementsubGroups.AHSGId as LoadAnnouncementSubGroupId,AnnouncementsubGroups.AHSGTitle as LoadAnnouncementSubGroupTitle ,
+                            Select Loads.nEstelamID as LoadId,SoftwareUsers.UserName,Loads.dDateElam as AnnounceDate ,Loads.dTimeElam as AnnounceTime,TransportCompanies.TCId as TransportCompanyId,TransportCompanies.TCTitle as TransportCompanyTitle,
+                                   Goods.strGoodCode as GoodId,Goods.strGoodName as GoodTitle,Announcements.AnnouncementId as LoadAnnouncementGroupId,Announcements.AnnouncementTitle as LoadAnnouncementGroupTitle,
+                       	           AnnouncementsubGroups.AnnouncementSGId as LoadAnnouncementSubGroupId,AnnouncementsubGroups.AnnouncementSGTitle as LoadAnnouncementSubGroupTitle ,
 	                               SourceCities.nCityCode as SourceCityId,SourceCities.StrCityName as SourceCityTitle,TargetCities.nCityCode as TargetCityId,TargetCities.StrCityName as TargetCityTitle,
 	                               LoadingPlaces.LADPlaceId as LoadingPlaceId,LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceId as DischargingPlaceId,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,
 	                               Loads.nCarNumKol as TotalNumber,Loads.nTonaj as Tonaj,Loads.strPriceSug as Tarrif,Loads.strBarName as Recipient,Loads.strAddress as Address,Loads.strDescription as Description,
-                                   LoadStatuses.LoadStatusId as LoadStatusId,LoadStatuses.LoadStatusName as LoadStatusTitle,Loads.TPTParams as TPTParams
+                                   LoadStatuses.LoadStatusId as LoadStatusId,LoadStatuses.LoadStatusName as LoadStatusTitle,Loads.TPTParams as TPTParams,Loads.TPTParamsJoint
                             from DBTransport.dbo.tbElam as Loads
+  							       Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Loads.nUserID=SoftwareUsers.UserId  
                                    Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On Loads.nCompCode=TransportCompanies.TCId 
                                    Inner Join DBTransport.dbo.tbProducts as Goods On Loads.nBarcode=Goods.strGoodCode 
-                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On Loads.AHId=Announcements.AHId 
-                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Loads.AHSGId=AnnouncementsubGroups.AHSGId
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On Loads.AHId=Announcements.AnnouncementId 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Loads.AHSGId=AnnouncementsubGroups.AnnouncementSGId
                                    Inner Join DBTransport.dbo.tbCity as TargetCities On Loads.nCityCode=TargetCities.nCityCode 
                                    Inner Join DBTransport.dbo.tbCity as SourceCities On Loads.nBarSource=SourceCities.nCityCode 
                                    Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as LoadingPlaces On Loads.LoadingPlaceId=LoadingPlaces.LADPlaceId 
@@ -2086,29 +2196,30 @@ Namespace LoadCapacitor
                                    Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorLoadStatuses as LoadStatuses On Loads.LoadStatus=LoadStatuses.LoadStatusId 
                             Where Loads.nEstelamID=" & YournEstelamId & "")
                         Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
-                        If Da.Fill(DS) = 0 Then Throw New LoadCapacitorLoadNotFoundException
+                        If Da.Fill(DS) = 0 Then Throw New LoadNotFoundException
                     Else
                         Dim InstanseSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
                         If Not InstanseSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
-                            "Select Loads.nEstelamID as LoadId,Loads.dDateElam as AnnounceDate ,Loads.dTimeElam as AnnounceTime,TransportCompanies.TCId as TransportCompanyId,TransportCompanies.TCTitle as TransportCompanyTitle,
-                                   Goods.strGoodCode as GoodId,Goods.strGoodName as GoodTitle,Announcements.AHId as LoadAnnouncementGroupId,Announcements.AHTitle as LoadAnnouncementGroupTitle,
-                       	           AnnouncementsubGroups.AHSGId as LoadAnnouncementSubGroupId,AnnouncementsubGroups.AHSGTitle as LoadAnnouncementSubGroupTitle ,
+                            "Select Loads.nEstelamID as LoadId,SoftwareUsers.UserName,Loads.dDateElam as AnnounceDate ,Loads.dTimeElam as AnnounceTime,TransportCompanies.TCId as TransportCompanyId,TransportCompanies.TCTitle as TransportCompanyTitle,
+                                   Goods.strGoodCode as GoodId,Goods.strGoodName as GoodTitle,Announcements.AnnouncementId as LoadAnnouncementGroupId,Announcements.AnnouncementTitle as LoadAnnouncementGroupTitle,
+                       	           AnnouncementsubGroups.AnnouncementSGId as LoadAnnouncementSubGroupId,AnnouncementsubGroups.AnnouncementSGTitle as LoadAnnouncementSubGroupTitle ,
 	                               SourceCities.nCityCode as SourceCityId,SourceCities.StrCityName as SourceCityTitle,TargetCities.nCityCode as TargetCityId,TargetCities.StrCityName as TargetCityTitle,
 	                               LoadingPlaces.LADPlaceId as LoadingPlaceId,LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceId as DischargingPlaceId,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,
 	                               Loads.nCarNumKol as TotalNumber,Loads.nTonaj as Tonaj,Loads.strPriceSug as Tarrif,Loads.strBarName as Recipient,Loads.strAddress as Address,Loads.strDescription as Description,
-                                   LoadStatuses.LoadStatusId as LoadStatusId,LoadStatuses.LoadStatusName as LoadStatusTitle,Loads.TPTParams as TPTParams
+                                   LoadStatuses.LoadStatusId as LoadStatusId,LoadStatuses.LoadStatusName as LoadStatusTitle,Loads.TPTParams as TPTParams,Loads.TPTParamsJoint
                             from DBTransport.dbo.tbElam as Loads
+                           		   Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Loads.nUserID=SoftwareUsers.UserId  
                                    Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On Loads.nCompCode=TransportCompanies.TCId 
                                    Inner Join DBTransport.dbo.tbProducts as Goods On Loads.nBarcode=Goods.strGoodCode 
-                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On Loads.AHId=Announcements.AHId 
-                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Loads.AHSGId=AnnouncementsubGroups.AHSGId
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On Loads.AHId=Announcements.AnnouncementId 
+                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Loads.AHSGId=AnnouncementsubGroups.AnnouncementSGId
                                    Inner Join DBTransport.dbo.tbCity as TargetCities On Loads.nCityCode=TargetCities.nCityCode 
                                    Inner Join DBTransport.dbo.tbCity as SourceCities On Loads.nBarSource=SourceCities.nCityCode 
                                    Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as LoadingPlaces On Loads.LoadingPlaceId=LoadingPlaces.LADPlaceId 
                                    Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as DischargingPlaces On Loads.DischargingPlaceId=DischargingPlaces.LADPlaceId 
                                    Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorLoadStatuses as LoadStatuses On Loads.LoadStatus=LoadStatuses.LoadStatusId 
                             Where Loads.nEstelamID=" & YournEstelamId & "", 120, DS, New Boolean).GetRecordsCount <> 0 Then
-                            Throw New LoadCapacitorLoadNotFoundException
+                            Throw New LoadNotFoundException
                         End If
                     End If
                     Dim Load = New R2CoreTransportationAndLoadNotificationLoad With
@@ -2116,23 +2227,48 @@ Namespace LoadCapacitor
                      .GoodId = DS.Tables(0).Rows(0).Item("GoodId"), .GoodTitle = DS.Tables(0).Rows(0).Item("GoodTitle").trim, .AnnouncementGroupId = DS.Tables(0).Rows(0).Item("LoadAnnouncementGroupId"), .AnnouncementGroupTitle = DS.Tables(0).Rows(0).Item("LoadAnnouncementGroupTitle").trim, .AnnouncementSubGroupId = DS.Tables(0).Rows(0).Item("LoadAnnouncementSubGroupId"), .AnnouncementSubGroupTitle = DS.Tables(0).Rows(0).Item("LoadAnnouncementSubGroupTitle").trim,
                      .SourceCityId = DS.Tables(0).Rows(0).Item("SourceCityId"), .SourceCityTitle = DS.Tables(0).Rows(0).Item("SourceCityTitle").trim, .TargetCityId = DS.Tables(0).Rows(0).Item("TargetCityId"), .TargetCityTitle = DS.Tables(0).Rows(0).Item("TargetCityTitle").trim, .LoadingPlaceId = DS.Tables(0).Rows(0).Item("LoadingPlaceId"), .LoadingPlaceTitle = DS.Tables(0).Rows(0).Item("LoadingPlaceTitle").trim,
                      .DischargingPlaceId = DS.Tables(0).Rows(0).Item("DischargingPlaceId"), .DischargingPlaceTitle = DS.Tables(0).Rows(0).Item("DischargingPlaceTitle").trim, .TotalNumber = DS.Tables(0).Rows(0).Item("TotalNumber"), .Tonaj = DS.Tables(0).Rows(0).Item("Tonaj"), .Tarrif = DS.Tables(0).Rows(0).Item("Tarrif"), .Recipient = DS.Tables(0).Rows(0).Item("Recipient").trim, .Address = DS.Tables(0).Rows(0).Item("Address").trim, .Description = DS.Tables(0).Rows(0).Item("Description").trim,
-                     .LoadStatusId = DS.Tables(0).Rows(0).Item("LoadStatusId"), .LoadStatusTitle = DS.Tables(0).Rows(0).Item("LoadStatusTitle").trim, .TPTParams = Nothing}
-
-                    Dim LstTPTParams As List(Of R2CoreTransportationAndLoadNotificationStandardTransportTarrifsParametersDetailsStructure) = InstanceTransportTarrifsParameters.GetListofTransportTarrifsParams(DS.Tables(0).Rows(0).Item("TPTParams"))
-                    Dim TPTParams = New List(Of R2CoreTransportationAndLoadNotificationTPTParams)
-                    For Loopx As Int64 = 0 To LstTPTParams.Count - 1
-                        TPTParams.Add(New R2CoreTransportationAndLoadNotificationTPTParams With {.TPTPDId = LstTPTParams(Loopx).TPTPDId, .TPTPTitle = LstTPTParams(Loopx).TPTPTitle, .Cost = LstTPTParams(Loopx).Mblgh, .Checked = LstTPTParams(Loopx).Checked})
-                    Next
-                    Load.TPTParams = TPTParams
+                     .LoadStatusId = DS.Tables(0).Rows(0).Item("LoadStatusId"), .LoadStatusTitle = DS.Tables(0).Rows(0).Item("LoadStatusTitle").trim, .TPTParams = DS.Tables(0).Rows(0).Item("TPTParams").trim, .RegisteringUserName = DS.Tables(0).Rows(0).Item("UserName").trim, .TPTParamsJoint = DS.Tables(0).Rows(0).Item("TPTParamsJoint").trim}
                     Return Load
-                Catch ex As TransportPriceTarrifParameterDetailNotFoundException
-                    Throw ex
-                Catch ex As LoadCapacitorLoadNotFoundException
+                Catch ex As LoadNotFoundException
                     Throw ex
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
                 End Try
             End Function
+
+            Public Sub LoadTonajValidate(YourLoad As R2CoreTransportationAndLoadNotificationLoad)
+                Try
+                    'بررسی تناژ بار
+                    Dim ComposeSearchString As String = YourLoad.AnnouncementSubGroupId.ToString + "="
+                    Dim InstanceConfigurationsofAnnouncements = New R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager(_DateTimeService)
+                    Dim AllConfigforAnnouncementGroupId As String() = Split(InstanceConfigurationsofAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsLoadCapacitorControl, YourLoad.AnnouncementGroupId), "-")
+                    Dim AllConfigforAnnouncementSGId = Split(Mid(AllConfigforAnnouncementGroupId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllConfigforAnnouncementGroupId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ";")
+                    Dim IsActive As Boolean = AllConfigforAnnouncementSGId(0)
+                    Dim LoadTonajMaximum As Decimal = System.Convert.ToDecimal(AllConfigforAnnouncementSGId(1).Replace(",", "."))
+                    If IsActive And YourLoad.Tonaj > LoadTonajMaximum Then Throw New LoadTonajInvalidException
+                Catch ex As LoadTonajInvalidException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Sub
+
+            Public Sub LoadTotalValidate(YourLoad As R2CoreTransportationAndLoadNotificationLoad)
+                Try
+                    'بررسی تناژ بار
+                    Dim ComposeSearchString As String = YourLoad.AnnouncementSubGroupId.ToString + "="
+                    Dim InstanceConfigurationsofAnnouncements = New R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager(_DateTimeService)
+                    Dim AllConfigforAnnouncementGroupId As String() = Split(InstanceConfigurationsofAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsLoadCapacitorControl, YourLoad.AnnouncementGroupId), "-")
+                    Dim AllConfigforAnnouncementSGId = Split(Mid(AllConfigforAnnouncementGroupId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllConfigforAnnouncementGroupId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ";")
+                    Dim IsActive As Boolean = AllConfigforAnnouncementSGId(0)
+                    Dim LoadTotalMaximum As Double = AllConfigforAnnouncementSGId(2)
+                    If IsActive And YourLoad.TotalNumber > LoadTotalMaximum Then Throw New LoadTotalInvalidException
+                Catch ex As LoadTotalInvalidException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Sub
 
         End Class
 
@@ -2177,6 +2313,24 @@ Namespace LoadCapacitor
                 End Property
             End Class
 
+            Public Class LoadTonajInvalidException
+                Inherits ApplicationException
+
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "تناژ بار بیش از حد مجاز است"
+                    End Get
+                End Property
+            End Class
+
+            Public Class LoadTotalInvalidException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "مقدار یا تعداد بار مجاز نیست"
+                    End Get
+                End Property
+            End Class
 
         End Namespace
 
@@ -2186,498 +2340,498 @@ Namespace LoadCapacitor
         Public Class R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManipulationManager
             Private _DateTime As New R2DateTime
 
-            Public Function LoadCapacitorLoadRegistering(YourNSS As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadStructure) As Int64
-                Dim CmdSql As New SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
-                Try
-                    Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
-                    Dim InstanceLoadingAndDischargingPlaces = New R2CoreTransportationAndLoadNotification.LoadingAndDischargingPlaces.R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager
-                    Dim InstanceSpecializedPersianCalendar = New R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager
-                    Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager
-                    Dim InstanceConfigurationsofAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
-                    Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager
-                    Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager
-                    Dim InstanceTransportTarrifs = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager
-                    Dim InstanceLoadCapacitorAccounting = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorAccountingManager
-                    Dim InstanceLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
-                    Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
-                    Dim NSSAnnouncementHall = InstanceAnnouncements.GetAnnouncementHallfromLoadCapacitorLoad(YourNSS)
-                    Dim NSSAnnouncementsubGroup = InstanceAnnouncements.GetNSSAnnouncementsubGroupByLoaderTypeId(YourNSS.nTruckType)
-                    Dim NSSLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
-                    Dim InstancePermissions = New R2Core.PermissionManagement.R2CoreInstansePermissionsManager
-                    YourNSS.AHId = NSSAnnouncementHall.AHId
-                    YourNSS.AHSGId = NSSAnnouncementsubGroup.AHSGId
+            'Public Function LoadCapacitorLoadRegistering(YourNSS As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadStructure) As Int64
+            '    Dim CmdSql As New SqlCommand
+            '    CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            '    Try
+            '        Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
+            '        Dim InstanceLoadingAndDischargingPlaces = New R2CoreTransportationAndLoadNotification.LoadingAndDischargingPlaces.R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager
+            '        Dim InstanceSpecializedPersianCalendar = New R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager(_DateTime)
+            '        Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager
+            '        Dim InstanceConfigurationsofAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
+            '        Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager
+            '        Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager
+            '        Dim InstanceTransportTarrifs = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager
+            '        Dim InstanceLoadCapacitorAccounting = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorAccountingManager
+            '        Dim InstanceLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
+            '        Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
+            '        Dim NSSAnnouncementHall = InstanceAnnouncements.GetAnnouncementHallfromLoadCapacitorLoad(YourNSS)
+            '        Dim NSSAnnouncementsubGroup = InstanceAnnouncements.GetNSSAnnouncementsubGroupByLoaderTypeId(YourNSS.nTruckType)
+            '        Dim NSSLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
+            '        Dim InstancePermissions = New R2Core.PermissionManagement.R2CoreInstansePermissionsManager
+            '        YourNSS.AHId = NSSAnnouncementHall.AHId
+            '        YourNSS.AHSGId = NSSAnnouncementsubGroup.AHSGId
 
-                    'کنترل فعال بودن مبدا بارگیری و محل تخلیه
-                    If InstanceLoadingAndDischargingPlaces.IsActiveLoadingPlace(YourNSS.LoadingPlaceId) = False Then Throw New LoadingPlaceIsUnActiveException
-                    If InstanceLoadingAndDischargingPlaces.IsActiveDischargingPlace(YourNSS.DischargingPlaceId) = False Then Throw New DischargingPlaceIsUnActiveException
+            '        'کنترل فعال بودن مبدا بارگیری و محل تخلیه
+            '        If InstanceLoadingAndDischargingPlaces.IsActiveLoadingPlace(YourNSS.LoadingPlaceId) = False Then Throw New LoadingPlaceIsUnActiveException
+            '        If InstanceLoadingAndDischargingPlaces.IsActiveDischargingPlace(YourNSS.DischargingPlaceId) = False Then Throw New DischargingPlaceIsUnActiveException
 
-                    'کنترل فعال بودن مبدا و مقصد
-                    If (Not NSSLoadTargets.GetNSSLoadTarget(YourNSS.nCityCode).NSSCity.Active) Or (Not NSSLoadTargets.GetNSSLoadTarget(YourNSS.nBarSource).NSSCity.Active) Then Throw New LoadTargetorLoadSourceIsUnActiveException
+            '        'کنترل فعال بودن مبدا و مقصد
+            '        If (Not NSSLoadTargets.GetNSSLoadTarget(YourNSS.nCityCode).NSSCity.Active) Or (Not NSSLoadTargets.GetNSSLoadTarget(YourNSS.nBarSource).NSSCity.Active) Then Throw New LoadTargetIsUnActiveException
 
-                    'کنترل تناژ بار 
-                    If YourNSS.nTonaj > InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 7) Then If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanRegisterOrEditLoadsAnyTonaj, YourNSS.nUserId, 0) Then Throw New LoadCapacitorLoadTonajExceededException
+            '        'کنترل تناژ بار 
+            '        If YourNSS.nTonaj > InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 7) Then If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanRegisterOrEditLoadsAnyTonaj, YourNSS.nUserId, 0) Then Throw New LoadTonajInvalidException
 
-                    'Try
-                    '    Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
-                    '    InstanceLoadCapacitorLoad.LoadCapacitorLoadTonajValidate(YourNSS)
-                    'Catch ex As Exception
-                    '    Dim InstnaceLogging = New R2CoreInstanceLoggingManager
-                    '    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
-                    '    InstnaceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Warn, InstnaceLogging.GetNSSLogType(R2CoreLogType.Warn).LogTitle, ex.Message, String.Empty, String.Empty, String.Empty, String.Empty, InstanceSoftwareUsers.GetSystemUserId(), _DateTime.GetCurrentDateTimeMilladi(), Nothing))
-                    'End Try
-                    'بررسی تطابق استان انتخاب شده با زیرگروه اعلام بار
-                    If Not InstanceAnnouncements.HasRelationBetweenProvinceAndAnnouncementsubGroup(InstanceLoadTargets.GetNSSLoadTarget(YourNSS.nCityCode).NSSCity.nProvince, YourNSS.AHSGId) Then Throw New HasNotRelationBetweenProvinceAndAnnouncementsubGroup
-                    'بررسی اینکه آیا برای زیرگروه مربوطه امکان ثبت بار وجود دارد یا نه
-                    If Not ISActiveLoadCapacitorLoadRegistering(YourNSS) Then Throw New LoadCapacitorLoadRegisteringNotAllowedforThisAnnouncementsubGroupException
-                    'کنترل تعداد بار
-                    If YourNSS.nCarNumKol > InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.LoadCapacitorLoadManipulationSetting, 0) Then Throw New LoadCapacitorLoadNumberOverLimitException
-                    If YourNSS.nCarNumKol < 1 Then Throw New LoadCapacitorLoadnCarNumKolCanNotBeZeroException
-                    'کنترل اکتیو بودن شرکت حمل و نقل
-                    If InstanceTransportCompanies.ISTransportCompanyActive(New R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure(YourNSS.nCompCode, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing)) = False Then Throw New TransportCompanyISNotActiveException
-                    'بررسی بار فردا
-                    Dim ComposeSearchString As String = NSSAnnouncementsubGroup.AHSGId.ToString + "="
-                    Dim AllTommorowConfigforAHId As String() = Split(InstanceConfigurationsofAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.TommorowLoads, NSSAnnouncementHall.AHId), "-")
-                    Dim AllTommorowConfigforAHSGId = Split(Mid(AllTommorowConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllTommorowConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ";")
-                    Dim IsTommorowLoadRegisteringActive As Boolean = AllTommorowConfigforAHSGId(0)
-                    Dim TommorowLoadRegisteringFirstTime As String = AllTommorowConfigforAHSGId(1)
-                    Dim TommorowLoadRegisteringEndTime As String = AllTommorowConfigforAHSGId(2)
-                    Dim CurrentTimeforRegistering As String = _DateTime.GetCurrentTime()
-                    Dim TommorowLoadRegisteringFlag As Boolean = False
-                    If IsTommorowLoadRegisteringActive And (CurrentTimeforRegistering >= TommorowLoadRegisteringFirstTime And CurrentTimeforRegistering <= TommorowLoadRegisteringEndTime) Then
-                        TommorowLoadRegisteringFlag = True
-                        If InstanceSpecializedPersianCalendar.IsTomorrowIsHolidayforLoadAnnounce Then If Not IsActiveLoadCapacitorLoadRegisteringInHoliDay(YourNSS) Then Throw New LoadCapacitorLoadRegisteringInHolidayNotAllowedException(NSSAnnouncementsubGroup.AHSGTitle)
-                    Else
-                        If InstanceSpecializedPersianCalendar.IsTodayIsHolidayforLoadAnnounce Then If Not IsActiveLoadCapacitorLoadRegisteringInHoliDay(YourNSS) Then Throw New LoadCapacitorLoadRegisteringInHolidayNotAllowedException(NSSAnnouncementsubGroup.AHSGTitle)
-                        Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
-                        If InstanceAnnouncementTiming.IsTimingActive(YourNSS.AHId, YourNSS.AHSGId) Then
-                            Dim Timing = InstanceAnnouncementTiming.GetTiming(YourNSS.AHId, YourNSS.AHSGId, _DateTime.GetCurrentTime)
-                            If _DateTime.GetCurrentTime() > InstanceAnnouncements.GetAnnouncementHallLeastAnnounceTime(NSSAnnouncementHall.AHId, NSSAnnouncementsubGroup.AHSGId).Time Then
-                                Throw New LoadCapacitorLoadRegisterTimePassedException
-                            End If
-                            If Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadAllocationRegistering Or
-                               Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
-                                Throw New LoadCapacitorLoadRegisterTimePassedException
-                            End If
-                        Else
-                            'کنترل اتمام زمان ثبت بار
-                            If _DateTime.GetCurrentTime() > InstanceAnnouncements.GetAnnouncementHallLeastAnnounceTime(NSSAnnouncementHall.AHId, NSSAnnouncementsubGroup.AHSGId).Time Then
-                                Throw New LoadCapacitorLoadRegisterTimePassedException
-                            End If
-                        End If
-                    End If
-                    'استاندارد سازی نرخ حمل بر اساس تعرفه های سازمانی
-                    Dim Tarrif As Int64
-                    Try
-                        Tarrif = InstanceTransportTarrifs.GetNSSTransportTarrif(YourNSS).Tarrif
-                        Tarrif = InstanceTransportTarrifs.GetUltimateTransportTarrif(YourNSS.AHSGId, YourNSS.nTonaj, Tarrif)
-                        Tarrif = Tarrif + InstanceTransportTarrifsParameters.GetTotalofTransportTarrifsParameters(YourNSS)
-                    Catch exx As TransportPriceTarrifNotFoundException
-                    End Try
+            '        'Try
+            '        '    Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
+            '        '    InstanceLoadCapacitorLoad.LoadCapacitorLoadTonajValidate(YourNSS)
+            '        'Catch ex As Exception
+            '        '    Dim InstnaceLogging = New R2CoreInstanceLoggingManager
+            '        '    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+            '        '    InstnaceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Warn, InstnaceLogging.GetNSSLogType(R2CoreLogType.Warn).LogTitle, ex.Message, String.Empty, String.Empty, String.Empty, String.Empty, InstanceSoftwareUsers.GetSystemUserId(), _DateTime.GetCurrentDateTimeMilladi(), Nothing))
+            '        'End Try
+            '        'بررسی تطابق استان انتخاب شده با زیرگروه اعلام بار
+            '        'If Not InstanceAnnouncements.HasRelationBetweenProvinceAndAnnouncementsubGrou(InstanceLoadTargets.GetNSSLoadTarget(YourNSS.nCityCode).NSSCity.nProvince, YourNSS.AHSGId) Then Throw New HasNotRelationBetweenProvinceAndAnnouncementsubGroup
+            '        'بررسی اینکه آیا برای زیرگروه مربوطه امکان ثبت بار وجود دارد یا نه
+            '        If Not ISActiveLoadCapacitorLoadRegistering(YourNSS) Then Throw New LoadCapacitorLoadRegisteringNotAllowedforThisAnnouncementsubGroupException
+            '        'کنترل تعداد بار
+            '        If YourNSS.nCarNumKol > InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.LoadCapacitorLoadManipulationSetting, 0) Then Throw New LoadTotalInvalidException
+            '        If YourNSS.nCarNumKol < 1 Then Throw New LoadCapacitorLoadnCarNumKolCanNotBeZeroException
+            '        'کنترل اکتیو بودن شرکت حمل و نقل
+            '        If InstanceTransportCompanies.ISTransportCompanyActive(New R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure(YourNSS.nCompCode, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing)) = False Then Throw New TransportCompanyISNotActiveException
+            '        'بررسی بار فردا
+            '        Dim ComposeSearchString As String = NSSAnnouncementsubGroup.AHSGId.ToString + "="
+            '        Dim AllTommorowConfigforAHId As String() = Split(InstanceConfigurationsofAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.TommorowLoads, NSSAnnouncementHall.AHId), "-")
+            '        Dim AllTommorowConfigforAHSGId = Split(Mid(AllTommorowConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllTommorowConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ";")
+            '        Dim IsTommorowLoadRegisteringActive As Boolean = AllTommorowConfigforAHSGId(0)
+            '        Dim TommorowLoadRegisteringFirstTime As String = AllTommorowConfigforAHSGId(1)
+            '        Dim TommorowLoadRegisteringEndTime As String = AllTommorowConfigforAHSGId(2)
+            '        Dim CurrentTimeforRegistering As String = _DateTime.GetCurrentTime()
+            '        Dim TommorowLoadRegisteringFlag As Boolean = False
+            '        If IsTommorowLoadRegisteringActive And (CurrentTimeforRegistering >= TommorowLoadRegisteringFirstTime And CurrentTimeforRegistering <= TommorowLoadRegisteringEndTime) Then
+            '            TommorowLoadRegisteringFlag = True
+            '            'If InstanceSpecializedPersianCalendar.IsTomorrowIsHolidayforLoadAnnounce Then If Not IsActiveLoadCapacitorLoadRegisteringInHoliDay(YourNSS) Then Throw New LoadCapacitorLoadRegisteringInHolidayNotAllowedException(NSSAnnouncementsubGroup.AHSGTitle)
+            '        Else
+            '            If InstanceSpecializedPersianCalendar.IsTodayIsHolidayforLoadAnnounce Then If Not IsActiveLoadCapacitorLoadRegisteringInHoliDay(YourNSS) Then Throw New LoadCapacitorLoadRegisteringInHolidayNotAllowedException(NSSAnnouncementsubGroup.AHSGTitle)
+            '            Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
+            '            If InstanceAnnouncementTiming.IsTimingActive(YourNSS.AHId, YourNSS.AHSGId) Then
+            '                Dim Timing = InstanceAnnouncementTiming.GetTiming(YourNSS.AHId, YourNSS.AHSGId, _DateTime.GetCurrentTime)
+            '                If _DateTime.GetCurrentTime() > InstanceAnnouncements.GetAnnouncementHallLeastAnnounceTime(NSSAnnouncementHall.AHId, NSSAnnouncementsubGroup.AHSGId).Time Then
+            '                    Throw New LoadCapacitorLoadRegisterTimePassedException
+            '                End If
+            '                If Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadAllocationRegistering Or
+            '                   Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
+            '                    Throw New LoadCapacitorLoadRegisterTimePassedException
+            '                End If
+            '            Else
+            '                'کنترل اتمام زمان ثبت بار
+            '                If _DateTime.GetCurrentTime() > InstanceAnnouncements.GetAnnouncementHallLeastAnnounceTime(NSSAnnouncementHall.AHId, NSSAnnouncementsubGroup.AHSGId).Time Then
+            '                    Throw New LoadCapacitorLoadRegisterTimePassedException
+            '                End If
+            '            End If
+            '        End If
+            '        'استاندارد سازی نرخ حمل بر اساس تعرفه های سازمانی
+            '        Dim Tarrif As Int64
+            '        Try
+            '            Tarrif = InstanceTransportTarrifs.GetNSSTransportTarrif(YourNSS).Tarrif
+            '            Tarrif = InstanceTransportTarrifs.GetUltimateTransportTarrif(YourNSS.AHSGId, YourNSS.nTonaj, Tarrif)
+            '            Tarrif = Tarrif + InstanceTransportTarrifsParameters.GetTotalofTransportTarrifsParameters(YourNSS)
+            '        Catch exx As TransportPriceTarrifNotFoundException
+            '        End Try
 
-                    'ثبت بار
-                    CmdSql.Connection.Open()
-                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
-                    CmdSql.CommandText = "Select Top 1 nEstelamId From dbtransport.dbo.TbElam with (tablockx) Order By nEstelamId Desc"
-                    CmdSql.ExecuteNonQuery()
-                    CmdSql.CommandText = "Select IDENT_CURRENT('dbtransport.dbo.TbElam') "
-                    Dim nEstelamIdNew As Int64 = CmdSql.ExecuteScalar() + 1
-                    Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
-                    Dim P As SqlClient.SqlParameter
-                    P = New SqlClient.SqlParameter("@nEstelamKey", SqlDbType.NVarChar) : P.Value = Hasher.GenerateSHA256String(nEstelamIdNew)
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@StrBarName", SqlDbType.VarChar) : P.Value = YourNSS.StrBarName
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nCityCode", SqlDbType.Int) : P.Value = YourNSS.nCityCode
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nTonaj", SqlDbType.Float) : P.Value = YourNSS.nTonaj
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nBarCode", SqlDbType.Int) : P.Value = YourNSS.nBarCode
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@bFlag", SqlDbType.Bit) : P.Value = False
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nCompCode", SqlDbType.Int) : P.Value = YourNSS.nCompCode
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@bFlagbarType", SqlDbType.Bit) : P.Value = False
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nTruckType", SqlDbType.Int) : P.Value = YourNSS.nTruckType
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nCarNum", SqlDbType.Int) : P.Value = YourNSS.nCarNumKol
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@StrAddress", SqlDbType.VarChar) : P.Value = YourNSS.StrAddress
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nUserId", SqlDbType.Int) : P.Value = YourNSS.nUserId
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@dDateElam", SqlDbType.Char) : P.Value = _DateTime.GetCurrentDateShamsiFull()
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@dTimeElam", SqlDbType.Char) : P.Value = _DateTime.GetCurrentTime()
-                    CmdSql.Parameters.Add(P)
-                    CmdSql.Parameters.AddWithValue("@bflagCarNum", 0)
-                    CmdSql.Parameters.AddWithValue("@strIssueNo", 0)
-                    CmdSql.Parameters.AddWithValue("@strIssueOwner", 0)
-                    CmdSql.Parameters.AddWithValue("@nTonajKol", 0)
-                    P = New SqlClient.SqlParameter("@nCarNumKol", SqlDbType.Int) : P.Value = YourNSS.nCarNumKol
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tarrif
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@StrDescription", SqlDbType.VarChar) : P.Value = YourNSS.StrDescription
-                    CmdSql.Parameters.Add(P)
-                    CmdSql.Parameters.AddWithValue("@dDateExit", DBNull.Value)
-                    CmdSql.Parameters.AddWithValue("@dTimeExit", DBNull.Value)
-                    If TommorowLoadRegisteringFlag Then
-                        P = New SqlClient.SqlParameter("@LoadStatus", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.RegisteredforTommorow
-                    Else
-                        P = New SqlClient.SqlParameter("@LoadStatus", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered
-                    End If
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nBarSource", SqlDbType.Int) : P.Value = YourNSS.nBarSource
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@AHId", SqlDbType.BigInt) : P.Value = NSSAnnouncementHall.AHId
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@AHSGId", SqlDbType.BigInt) : P.Value = NSSAnnouncementsubGroup.AHSGId
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@TPTParams", SqlDbType.VarChar) : P.Value = YourNSS.TPTParams
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@LoadingPlaceId", SqlDbType.BigInt) : P.Value = YourNSS.LoadingPlaceId
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@DischargingPlaceId", SqlDbType.BigInt) : P.Value = YourNSS.DischargingPlaceId
-                    CmdSql.Parameters.Add(P)
-                    CmdSql.CommandText = "Insert Into dbtransport.dbo.TbElam Values(@nEstelamKey,@StrBarName,@nCityCode,@nTonaj,@nBarCode,@bFlag,@nCompCode,@bFlagbarType,@nTruckType,@nCarNum,@StrAddress,@nUserId,@dDateElam,@dTimeElam,@bflagCarNum,@strIssueNo,@strIssueOwner,@nTonajKol,@nCarNumKol,@nBarSource,@StrPriceSug,@StrDescription,@dDateExit,@dTimeExit,@LoadStatus,@AHId,@AHSGId,@TPTParams,@LoadingPlaceId,@DischargingPlaceId)"
-                    CmdSql.ExecuteNonQuery()
-                    'ثبت اکانت
-                    If TommorowLoadRegisteringFlag Then
-                        InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(nEstelamIdNew, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.RegisteringforTommorow, YourNSS.nCarNumKol, Nothing, Nothing, Nothing, YourNSS.nUserId))
-                    Else
-                        InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(nEstelamIdNew, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Registering, YourNSS.nCarNumKol, Nothing, Nothing, Nothing, YourNSS.nUserId))
-                    End If
-                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            '        'ثبت بار
+            '        CmdSql.Connection.Open()
+            '        CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
+            '        CmdSql.CommandText = "Select Top 1 nEstelamId From dbtransport.dbo.TbElam with (tablockx) Order By nEstelamId Desc"
+            '        CmdSql.ExecuteNonQuery()
+            '        CmdSql.CommandText = "Select IDENT_CURRENT('dbtransport.dbo.TbElam') "
+            '        Dim nEstelamIdNew As Int64 = CmdSql.ExecuteScalar() + 1
+            '        Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
+            '        Dim P As SqlClient.SqlParameter
+            '        P = New SqlClient.SqlParameter("@nEstelamKey", SqlDbType.NVarChar) : P.Value = Hasher.GenerateSHA256String(nEstelamIdNew)
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@StrBarName", SqlDbType.VarChar) : P.Value = YourNSS.StrBarName
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@nCityCode", SqlDbType.Int) : P.Value = YourNSS.nCityCode
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@nTonaj", SqlDbType.Float) : P.Value = YourNSS.nTonaj
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@nBarCode", SqlDbType.Int) : P.Value = YourNSS.nBarCode
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@bFlag", SqlDbType.Bit) : P.Value = False
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@nCompCode", SqlDbType.Int) : P.Value = YourNSS.nCompCode
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@bFlagbarType", SqlDbType.Bit) : P.Value = False
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@nTruckType", SqlDbType.Int) : P.Value = YourNSS.nTruckType
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@nCarNum", SqlDbType.Int) : P.Value = YourNSS.nCarNumKol
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@StrAddress", SqlDbType.VarChar) : P.Value = YourNSS.StrAddress
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@nUserId", SqlDbType.Int) : P.Value = YourNSS.nUserId
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@dDateElam", SqlDbType.Char) : P.Value = _DateTime.GetCurrentDateShamsiFull()
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@dTimeElam", SqlDbType.Char) : P.Value = _DateTime.GetCurrentTime()
+            '        CmdSql.Parameters.Add(P)
+            '        CmdSql.Parameters.AddWithValue("@bflagCarNum", 0)
+            '        CmdSql.Parameters.AddWithValue("@strIssueNo", 0)
+            '        CmdSql.Parameters.AddWithValue("@strIssueOwner", 0)
+            '        CmdSql.Parameters.AddWithValue("@nTonajKol", 0)
+            '        P = New SqlClient.SqlParameter("@nCarNumKol", SqlDbType.Int) : P.Value = YourNSS.nCarNumKol
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tarrif
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@StrDescription", SqlDbType.VarChar) : P.Value = YourNSS.StrDescription
+            '        CmdSql.Parameters.Add(P)
+            '        CmdSql.Parameters.AddWithValue("@dDateExit", DBNull.Value)
+            '        CmdSql.Parameters.AddWithValue("@dTimeExit", DBNull.Value)
+            '        If TommorowLoadRegisteringFlag Then
+            '            P = New SqlClient.SqlParameter("@LoadStatus", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.RegisteredforTommorow
+            '        Else
+            '            P = New SqlClient.SqlParameter("@LoadStatus", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered
+            '        End If
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@nBarSource", SqlDbType.Int) : P.Value = YourNSS.nBarSource
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@AHId", SqlDbType.BigInt) : P.Value = NSSAnnouncementHall.AHId
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@AHSGId", SqlDbType.BigInt) : P.Value = NSSAnnouncementsubGroup.AHSGId
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@TPTParams", SqlDbType.VarChar) : P.Value = YourNSS.TPTParams
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@LoadingPlaceId", SqlDbType.BigInt) : P.Value = YourNSS.LoadingPlaceId
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@DischargingPlaceId", SqlDbType.BigInt) : P.Value = YourNSS.DischargingPlaceId
+            '        CmdSql.Parameters.Add(P)
+            '        CmdSql.CommandText = "Insert Into dbtransport.dbo.TbElam Values(@nEstelamKey,@StrBarName,@nCityCode,@nTonaj,@nBarCode,@bFlag,@nCompCode,@bFlagbarType,@nTruckType,@nCarNum,@StrAddress,@nUserId,@dDateElam,@dTimeElam,@bflagCarNum,@strIssueNo,@strIssueOwner,@nTonajKol,@nCarNumKol,@nBarSource,@StrPriceSug,@StrDescription,@dDateExit,@dTimeExit,@LoadStatus,@AHId,@AHSGId,@TPTParams,@LoadingPlaceId,@DischargingPlaceId)"
+            '        CmdSql.ExecuteNonQuery()
+            '        'ثبت اکانت
+            '        If TommorowLoadRegisteringFlag Then
+            '            InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(nEstelamIdNew, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.RegisteringforTommorow, YourNSS.nCarNumKol, Nothing, Nothing, Nothing, YourNSS.nUserId))
+            '        Else
+            '            InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(nEstelamIdNew, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Registering, YourNSS.nCarNumKol, Nothing, Nothing, Nothing, YourNSS.nUserId))
+            '        End If
+            '        CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
-                    'ثبت بار اعتباری
-                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager
-                    If InstanceTurnCancellation.IsLoadforTurnCancellation(InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(nEstelamIdNew, True)) Then
-                        InstanceTurnCancellation.LoadforTurnCancellationRegistering(nEstelamIdNew, True)
-                    Else
-                        InstanceTurnCancellation.LoadforTurnCancellationRegistering(nEstelamIdNew, False)
-                    End If
+            '        'ثبت بار اعتباری
+            '        'Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTime)
+            '        'If InstanceTurnCancellation.IsLoadforTurnCancellation(InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(nEstelamIdNew, True)) Then
+            '        '    InstanceTurnCancellation.LoadforTurnCancellationRegistering(nEstelamIdNew, True)
+            '        'Else
+            '        '    InstanceTurnCancellation.LoadforTurnCancellationRegistering(nEstelamIdNew, False)
+            '        'End If
 
-                    'ارسال کد مخزن بار
-                    Return nEstelamIdNew
-                Catch ex As Exception When TypeOf ex Is LoadCapacitorLoadNumberOverLimitException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadnCarNumKolCanNotBeZeroException _
-                                    OrElse TypeOf ex Is TransportCompanyISNotActiveException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadRegisterTimePassedException _
-                                    OrElse TypeOf ex Is TimingNotReachedException _
-                                    OrElse TypeOf ex Is HasNotRelationBetweenProvinceAndAnnouncementsubGroup _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadRegisteringNotAllowedforThisAnnouncementsubGroupException _
-                                    OrElse TypeOf ex Is TransportPriceTarrifParameterDetailNotFoundException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadRegisteringInHolidayNotAllowedException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadTonajExceededException _
-                                    OrElse TypeOf ex Is LoadingPlaceIsUnActiveException _
-                                    OrElse TypeOf ex Is DischargingPlaceIsUnActiveException _
-                                    OrElse TypeOf ex Is LoadingAndDischargingPlaceNotFoundException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadTonajExceededException _
-                                    OrElse TypeOf ex Is LoadTargetorLoadSourceIsUnActiveException
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw ex
-                Catch ex As Exception
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            '        'ارسال کد مخزن بار
+            '        Return nEstelamIdNew
+            '    Catch ex As Exception When TypeOf ex Is LoadCapacitorLoadnCarNumKolCanNotBeZeroException _
+            '                        OrElse TypeOf ex Is LoadCapacitorLoadnCarNumKolCanNotBeZeroException _
+            '                        OrElse TypeOf ex Is TransportCompanyISNotActiveException _
+            '                        OrElse TypeOf ex Is LoadCapacitorLoadRegisterTimePassedException _
+            '                        OrElse TypeOf ex Is TimingNotReachedException _
+            '                        OrElse TypeOf ex Is HasNotRelationBetweenProvinceAndAnnouncementsubGroup _
+            '                        OrElse TypeOf ex Is LoadCapacitorLoadRegisteringNotAllowedforThisAnnouncementsubGroupException _
+            '                        OrElse TypeOf ex Is TransportPriceTarrifParameterDetailNotFoundException _
+            '                        OrElse TypeOf ex Is LoadCapacitorLoadRegisteringInHolidayNotAllowedException _
+            '                        OrElse TypeOf ex Is LoadTonajInvalidException _
+            '                        OrElse TypeOf ex Is LoadingPlaceIsUnActiveException _
+            '                        OrElse TypeOf ex Is DischargingPlaceIsUnActiveException _
+            '                        OrElse TypeOf ex Is LoadingAndDischargingPlaceNotFoundException _
+            '                        OrElse TypeOf ex Is LoadTonajInvalidException _
+            '                        OrElse TypeOf ex Is LoadSourceIsUnActiveException
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+            '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            '        End If
+            '        Throw ex
+            '    Catch ex As Exception
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+            '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            '        End If
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
-            Public Sub LoadCapacitorLoadReRegistering(YournEstelamId As Int64, YourSoftwareUserNSS As R2CoreStandardSoftwareUserStructure)
-                Dim CmdSql As New SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
-                Try
-                    Dim myCurrentTime = _DateTime.GetCurrentTime()
-                    Dim InstanceLoadCapacitorAccounting = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorAccountingManager
-                    Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager
-                    Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
-                    Dim NSSCurrentLoadCapacitorLoad = InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(YournEstelamId, True)
-                    'کنترل وضعیت بار
-                    If NSSCurrentLoadCapacitorLoad.LoadStatus <> R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented Then Throw New LoadCapacitorLoadHandlingNotAllowedBecuaseLoadStatusException
-                    'کنترل تاریخ اعلام بار
-                    If NSSCurrentLoadCapacitorLoad.dDateElam <> _DateTime.GetCurrentDateShamsiFull Then Throw New LoadCapacitorLoadReRegisteringNotAllowedException
-                    'کنترل تعداد بار
-                    If NSSCurrentLoadCapacitorLoad.nCarNum < 1 Then Throw New LoadCapacitorLoadReRegisteringNotAllowedBecuasenCarNumException
-                    'کنترل تایم اعلام بار
-                    Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
-                    If InstanceAnnouncementTiming.IsTimingActive(NSSCurrentLoadCapacitorLoad.AHId, NSSCurrentLoadCapacitorLoad.AHSGId) Then
-                        Dim Timing = InstanceAnnouncementTiming.GetTiming(NSSCurrentLoadCapacitorLoad.AHId, NSSCurrentLoadCapacitorLoad.AHSGId, myCurrentTime)
-                        If myCurrentTime > InstanceAnnouncements.GetAnnouncementHallLeastAnnounceTime(NSSCurrentLoadCapacitorLoad.AHId, NSSCurrentLoadCapacitorLoad.AHSGId).Time Then
-                            Throw New LoadCapacitorLoadReRegisteringTimePassedException
-                        End If
-                        If Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadAllocationRegistering Or
-                               Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
-                            Throw New LoadCapacitorLoadReRegisteringTimePassedException
-                        End If
-                    Else
-                        'کنترل اتمام زمان ثبت بار
-                        If myCurrentTime > InstanceAnnouncements.GetAnnouncementHallLeastAnnounceTime(NSSCurrentLoadCapacitorLoad.AHId, NSSCurrentLoadCapacitorLoad.AHSGId).Time Then
-                            Throw New LoadCapacitorLoadRegisterTimePassedException
-                        End If
-                    End If
+            'Public Sub LoadCapacitorLoadReRegistering(YournEstelamId As Int64, YourSoftwareUserNSS As R2CoreStandardSoftwareUserStructure)
+            '    Dim CmdSql As New SqlCommand
+            '    CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            '    Try
+            '        Dim myCurrentTime = _DateTime.GetCurrentTime()
+            '        Dim InstanceLoadCapacitorAccounting = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorAccountingManager
+            '        Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager
+            '        Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
+            '        Dim NSSCurrentLoadCapacitorLoad = InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(YournEstelamId, True)
+            '        'کنترل وضعیت بار
+            '        If NSSCurrentLoadCapacitorLoad.LoadStatus <> R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented Then Throw New LoadCapacitorLoadHandlingNotAllowedBecuaseLoadStatusException
+            '        'کنترل تاریخ اعلام بار
+            '        If NSSCurrentLoadCapacitorLoad.dDateElam <> _DateTime.GetCurrentDateShamsiFull Then Throw New LoadCapacitorLoadReRegisteringNotAllowedException
+            '        'کنترل تعداد بار
+            '        If NSSCurrentLoadCapacitorLoad.nCarNum < 1 Then Throw New LoadCapacitorLoadReRegisteringNotAllowedBecuasenCarNumException
+            '        'کنترل تایم اعلام بار
+            '        Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
+            '        If InstanceAnnouncementTiming.IsTimingActive(NSSCurrentLoadCapacitorLoad.AHId, NSSCurrentLoadCapacitorLoad.AHSGId) Then
+            '            Dim Timing = InstanceAnnouncementTiming.GetTiming(NSSCurrentLoadCapacitorLoad.AHId, NSSCurrentLoadCapacitorLoad.AHSGId, myCurrentTime)
+            '            If myCurrentTime > InstanceAnnouncements.GetAnnouncementHallLeastAnnounceTime(NSSCurrentLoadCapacitorLoad.AHId, NSSCurrentLoadCapacitorLoad.AHSGId).Time Then
+            '                Throw New LoadCapacitorLoadReRegisteringTimePassedException
+            '            End If
+            '            If Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadAllocationRegistering Or
+            '                   Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
+            '                Throw New LoadCapacitorLoadReRegisteringTimePassedException
+            '            End If
+            '        Else
+            '            'کنترل اتمام زمان ثبت بار
+            '            If myCurrentTime > InstanceAnnouncements.GetAnnouncementHallLeastAnnounceTime(NSSCurrentLoadCapacitorLoad.AHId, NSSCurrentLoadCapacitorLoad.AHSGId).Time Then
+            '                Throw New LoadCapacitorLoadRegisterTimePassedException
+            '            End If
+            '        End If
 
-                    'تراکنش اعلام مجدد بار
-                    CmdSql.Connection.Open()
-                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
-                    Dim P As SqlClient.SqlParameter
-                    P = New SqlClient.SqlParameter("@dTimeElam", SqlDbType.Char) : P.Value = myCurrentTime
-                    CmdSql.Parameters.Add(P)
-                    CmdSql.CommandText = "Update dbtransport.dbo.TbElam Set bFlag=0,bflagCarNum=1,dTimeElam=@dTimeElam,LoadStatus=1 Where nEstelamId=" & NSSCurrentLoadCapacitorLoad.nEstelamId & ""
-                    CmdSql.ExecuteNonQuery()
-                    InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(NSSCurrentLoadCapacitorLoad.nEstelamId, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.ReRegisteringSedimentedLoad, NSSCurrentLoadCapacitorLoad.nCarNum, Nothing, Nothing, Nothing, YourSoftwareUserNSS.UserId))
-                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            '        'تراکنش اعلام مجدد بار
+            '        CmdSql.Connection.Open()
+            '        CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
+            '        Dim P As SqlClient.SqlParameter
+            '        P = New SqlClient.SqlParameter("@dTimeElam", SqlDbType.Char) : P.Value = myCurrentTime
+            '        CmdSql.Parameters.Add(P)
+            '        CmdSql.CommandText = "Update dbtransport.dbo.TbElam Set bFlag=0,bflagCarNum=1,dTimeElam=@dTimeElam,LoadStatus=1 Where nEstelamId=" & NSSCurrentLoadCapacitorLoad.nEstelamId & ""
+            '        CmdSql.ExecuteNonQuery()
+            '        InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(NSSCurrentLoadCapacitorLoad.nEstelamId, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.ReRegisteringSedimentedLoad, NSSCurrentLoadCapacitorLoad.nCarNum, Nothing, Nothing, Nothing, YourSoftwareUserNSS.UserId))
+            '        CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
-                Catch ex As LoadCapacitorLoadRegisterTimePassedException
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw ex
-                Catch ex As LoadCapacitorLoadReRegisteringTimePassedException
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw ex
-                Catch ex As LoadCapacitorLoadReRegisteringNotAllowedBecuasenCarNumException
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw ex
-                Catch ex As LoadCapacitorLoadReRegisteringNotAllowedException
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw ex
-                Catch ex As LoadCapacitorLoadHandlingNotAllowedBecuaseLoadStatusException
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw ex
-                Catch ex As LoadCapacitorLoadNotFoundException
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw ex
-                Catch ex As Exception
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Sub
+            '    Catch ex As LoadCapacitorLoadRegisterTimePassedException
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+            '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            '        End If
+            '        Throw ex
+            '    Catch ex As LoadCapacitorLoadReRegisteringTimePassedException
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+            '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            '        End If
+            '        Throw ex
+            '    Catch ex As LoadCapacitorLoadReRegisteringNotAllowedBecuasenCarNumException
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+            '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            '        End If
+            '        Throw ex
+            '    Catch ex As LoadCapacitorLoadReRegisteringNotAllowedException
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+            '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            '        End If
+            '        Throw ex
+            '    Catch ex As LoadCapacitorLoadHandlingNotAllowedBecuaseLoadStatusException
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+            '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            '        End If
+            '        Throw ex
+            '    Catch ex As LoadCapacitorLoadNotFoundException
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+            '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            '        End If
+            '        Throw ex
+            '    Catch ex As Exception
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+            '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            '        End If
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Sub
 
-            Public Sub LoadCapacitorLoadEditing(YourNSS As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadStructure, YourUserNSS As R2CoreStandardSoftwareUserStructure)
-                Dim CmdSql As New SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
-                Try
-                    Dim InstanceLoadingAndDischargingPlaces = New R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager
-                    Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager
-                    Dim InstanceConfigurationsofAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
-                    Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager
-                    Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager
-                    Dim InstanceTransportTarrifs = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager
-                    Dim InstanceLoadCapacitorAccounting = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorAccountingManager
-                    Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
-                    Dim InstancePermissions = New R2CoreInstansePermissionsManager
-                    Dim InstanceLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
-                    Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
-                    Dim NSSCurrentLoadCapacitorLoad = InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(YourNSS.nEstelamId, True)
-                    Dim NSSAnnouncementHall = InstanceAnnouncements.GetAnnouncementHallfromLoadCapacitorLoad(YourNSS)
-                    Dim NSSAnnouncementsubGroup = InstanceAnnouncements.GetNSSAnnouncementsubGroupByLoaderTypeId(YourNSS.nTruckType)
-                    Dim NSSLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
+            'Public Sub LoadCapacitorLoadEditing(YourNSS As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadStructure, YourUserNSS As R2CoreStandardSoftwareUserStructure)
+            '    Dim CmdSql As New SqlCommand
+            '    CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            '    Try
+            '        Dim InstanceLoadingAndDischargingPlaces = New R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager
+            '        Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager
+            '        Dim InstanceConfigurationsofAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
+            '        Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager
+            '        Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager
+            '        Dim InstanceTransportTarrifs = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager
+            '        Dim InstanceLoadCapacitorAccounting = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorAccountingManager
+            '        Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
+            '        Dim InstancePermissions = New R2CoreInstansePermissionsManager
+            '        Dim InstanceLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
+            '        Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
+            '        Dim NSSCurrentLoadCapacitorLoad = InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(YourNSS.nEstelamId, True)
+            '        Dim NSSAnnouncementHall = InstanceAnnouncements.GetAnnouncementHallfromLoadCapacitorLoad(YourNSS)
+            '        Dim NSSAnnouncementsubGroup = InstanceAnnouncements.GetNSSAnnouncementsubGroupByLoaderTypeId(YourNSS.nTruckType)
+            '        Dim NSSLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
 
-                    YourNSS.AHId = NSSAnnouncementHall.AHId
-                    YourNSS.AHSGId = NSSAnnouncementsubGroup.AHSGId
-                    YourNSS.LoadStatus = NSSCurrentLoadCapacitorLoad.LoadStatus
+            '        YourNSS.AHId = NSSAnnouncementHall.AHId
+            '        YourNSS.AHSGId = NSSAnnouncementsubGroup.AHSGId
+            '        YourNSS.LoadStatus = NSSCurrentLoadCapacitorLoad.LoadStatus
 
-                    'کنترل فعال بودن مبدا بارگیری و محل تخلیه
-                    If InstanceLoadingAndDischargingPlaces.IsActiveLoadingPlace(YourNSS.LoadingPlaceId) = False Then Throw New LoadingPlaceIsUnActiveException
-                    If InstanceLoadingAndDischargingPlaces.IsActiveDischargingPlace(YourNSS.DischargingPlaceId) = False Then Throw New DischargingPlaceIsUnActiveException
+            '        'کنترل فعال بودن مبدا بارگیری و محل تخلیه
+            '        If InstanceLoadingAndDischargingPlaces.IsActiveLoadingPlace(YourNSS.LoadingPlaceId) = False Then Throw New LoadingPlaceIsUnActiveException
+            '        If InstanceLoadingAndDischargingPlaces.IsActiveDischargingPlace(YourNSS.DischargingPlaceId) = False Then Throw New DischargingPlaceIsUnActiveException
 
-                    'کنترل فعال بودن مبدا و مقصد
-                    If (Not NSSLoadTargets.GetNSSLoadTarget(YourNSS.nCityCode).NSSCity.Active) Or (Not NSSLoadTargets.GetNSSLoadTarget(YourNSS.nBarSource).NSSCity.Active) Then Throw New LoadTargetorLoadSourceIsUnActiveException
+            '        'کنترل فعال بودن مبدا و مقصد
+            '        If (Not NSSLoadTargets.GetNSSLoadTarget(YourNSS.nCityCode).NSSCity.Active) Or (Not NSSLoadTargets.GetNSSLoadTarget(YourNSS.nBarSource).NSSCity.Active) Then Throw New LoadTargetIdNotFoundException
 
-                    'کنترل تناژ بار
-                    If YourNSS.nTonaj > InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 7) Then If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanRegisterOrEditLoadsAnyTonaj, R2CoreGUIMClassGUIManagement.FrmMainMenu.UcUserImage.UCCurrentNSS.UserId, 0) Then Throw New LoadCapacitorLoadTonajExceededException
+            '        'کنترل تناژ بار
+            '        If YourNSS.nTonaj > InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 7) Then If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanRegisterOrEditLoadsAnyTonaj, R2CoreGUIMClassGUIManagement.FrmMainMenu.UcUserImage.UCCurrentNSS.UserId, 0) Then Throw New LoadTonajInvalidException
 
-                    'Try
-                    '    'If YourNSS.nTonaj > 27.5 Then Throw New LoadCapacitorLoadTonajExceededException
-                    '    InstanceLoadCapacitorLoad.LoadCapacitorLoadTonajValidate(YourNSS)
-                    'Catch ex As Exception
-                    '    Dim InstnaceLogging = New R2CoreInstanceLoggingManager
-                    '    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
-                    '    InstnaceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Warn, InstnaceLogging.GetNSSLogType(R2CoreLogType.Warn).LogTitle, ex.Message, String.Empty, String.Empty, String.Empty, String.Empty, InstanceSoftwareUsers.GetSystemUserId(), _DateTime.GetCurrentDateTimeMilladi(), Nothing))
-                    'End Try
+            '        'Try
+            '        '    'If YourNSS.nTonaj > 27.5 Then Throw New LoadCapacitorLoadTonajExceededException
+            '        '    InstanceLoadCapacitorLoad.LoadCapacitorLoadTonajValidate(YourNSS)
+            '        'Catch ex As Exception
+            '        '    Dim InstnaceLogging = New R2CoreInstanceLoggingManager
+            '        '    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
+            '        '    InstnaceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Warn, InstnaceLogging.GetNSSLogType(R2CoreLogType.Warn).LogTitle, ex.Message, String.Empty, String.Empty, String.Empty, String.Empty, InstanceSoftwareUsers.GetSystemUserId(), _DateTime.GetCurrentDateTimeMilladi(), Nothing))
+            '        'End Try
 
-                    'بررسی تطابق استان انتخاب شده با زیرگروه اعلام بار
-                    If Not InstanceAnnouncements.HasRelationBetweenProvinceAndAnnouncementsubGroup(InstanceLoadTargets.GetNSSLoadTarget(YourNSS.nCityCode).NSSCity.nProvince, YourNSS.AHSGId) Then Throw New HasNotRelationBetweenProvinceAndAnnouncementsubGroup
+            '        'بررسی تطابق استان انتخاب شده با زیرگروه اعلام بار
+            '        'If Not InstanceAnnouncements.HasRelationBetweenProvinceAndAnnouncementsubGroup(InstanceLoadTargets.GetNSSLoadTarget(YourNSS.nCityCode).NSSCity.nProvince, YourNSS.AHSGId) Then Throw New HasNotRelationBetweenProvinceAndAnnouncementsubGroup
 
-                    'ویرایش گروه اصلی اعلام بار امکان پذیر نیست در صورتی که کاربر اشتباه کرده باشد باید بار را کامل حذف کند یک بار دیگر ثبت نماید
-                    'If NSSCurrentLoadCapacitorLoad.AHId <> YourNSS.AHId Then Throw New LoadCapacitorLoadEditingChangeAHIdNotAllowedException
+            '        'ویرایش گروه اصلی اعلام بار امکان پذیر نیست در صورتی که کاربر اشتباه کرده باشد باید بار را کامل حذف کند یک بار دیگر ثبت نماید
+            '        'If NSSCurrentLoadCapacitorLoad.AHId <> YourNSS.AHId Then Throw New LoadCapacitorLoadEditingChangeAHIdNotAllowedException
 
-                    'بررسی اینکه آیا برای زیرگروه مربوطه امکان ثبت بار وجود دارد یا نه
-                    If Not ISActiveLoadCapacitorLoadRegistering(YourNSS) Then Throw New LoadCapacitorLoadRegisteringNotAllowedforThisAnnouncementsubGroupException
+            '        'بررسی اینکه آیا برای زیرگروه مربوطه امکان ثبت بار وجود دارد یا نه
+            '        If Not ISActiveLoadCapacitorLoadRegistering(YourNSS) Then Throw New LoadCapacitorLoadRegisteringNotAllowedforThisAnnouncementsubGroupException
 
-                    'باری که مجددا اعلام بار شده است قابل ویرایش نیست
-                    'If NSSCurrentLoadCapacitorLoad.ReRegistered Then Throw New EditOrDeleteReRegisteredLoadNotAllowedException
+            '        'باری که مجددا اعلام بار شده است قابل ویرایش نیست
+            '        'If NSSCurrentLoadCapacitorLoad.ReRegistered Then Throw New EditOrDeleteReRegisteredLoadNotAllowedException
 
-                    'بررسی بار فردا
-                    Dim ComposeSearchString As String = NSSAnnouncementsubGroup.AHSGId.ToString + "="
-                    Dim AllTommorowConfigforAHId As String() = Split(InstanceConfigurationsofAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.TommorowLoads, NSSAnnouncementHall.AHId), "-")
-                    Dim AllTommorowConfigforAHSGId = Split(Mid(AllTommorowConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllTommorowConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ";")
-                    Dim IsTommorowLoadRegisteringActive As Boolean = AllTommorowConfigforAHSGId(0)
-                    Dim TommorowLoadRegisteringFirstTime As String = AllTommorowConfigforAHSGId(1)
-                    Dim TommorowLoadRegisteringEndTime As String = AllTommorowConfigforAHSGId(2)
-                    Dim CurrentTimeforRegistering As String = _DateTime.GetCurrentTime()
-                    'کنترل اتمام زمان ویرایش بار
-                    If IsTommorowLoadRegisteringActive And (CurrentTimeforRegistering >= TommorowLoadRegisteringFirstTime And CurrentTimeforRegistering <= TommorowLoadRegisteringEndTime) And YourNSS.LoadStatus = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.RegisteredforTommorow Then
-                    Else
-                        Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
-                        If InstanceAnnouncementTiming.IsTimingActive(YourNSS.AHId, YourNSS.AHSGId) Then
-                            Dim Timing = InstanceAnnouncementTiming.GetTiming(YourNSS.AHId, YourNSS.AHSGId, _DateTime.GetCurrentTime)
-                            If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanEditLoadCapacitorLoadAfterLoadAnnounce, YourUserNSS.UserId, 0) Then
-                                'امکان ویرایش بار هنگام تخصیص بار فقط توسط کاربر خاص که مجوز دارد
-                            Else
-                                If InstanceAnnouncements.IsAnnouncemenetHallAnnounceTimePassed(NSSAnnouncementHall.AHId, NSSAnnouncementsubGroup.AHSGId, New R2StandardDateAndTimeStructure(Nothing, Nothing, NSSCurrentLoadCapacitorLoad.dTimeElam)) Then
-                                    Throw New LoadCapacitorLoadEditTimePassedException
-                                End If
-                            End If
-                        End If
-                    End If
+            '        'بررسی بار فردا
+            '        Dim ComposeSearchString As String = NSSAnnouncementsubGroup.AHSGId.ToString + "="
+            '        Dim AllTommorowConfigforAHId As String() = Split(InstanceConfigurationsofAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.TommorowLoads, NSSAnnouncementHall.AHId), "-")
+            '        Dim AllTommorowConfigforAHSGId = Split(Mid(AllTommorowConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllTommorowConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ";")
+            '        Dim IsTommorowLoadRegisteringActive As Boolean = AllTommorowConfigforAHSGId(0)
+            '        Dim TommorowLoadRegisteringFirstTime As String = AllTommorowConfigforAHSGId(1)
+            '        Dim TommorowLoadRegisteringEndTime As String = AllTommorowConfigforAHSGId(2)
+            '        Dim CurrentTimeforRegistering As String = _DateTime.GetCurrentTime()
+            '        'کنترل اتمام زمان ویرایش بار
+            '        If IsTommorowLoadRegisteringActive And (CurrentTimeforRegistering >= TommorowLoadRegisteringFirstTime And CurrentTimeforRegistering <= TommorowLoadRegisteringEndTime) And YourNSS.LoadStatus = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.RegisteredforTommorow Then
+            '        Else
+            '            Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
+            '            If InstanceAnnouncementTiming.IsTimingActive(YourNSS.AHId, YourNSS.AHSGId) Then
+            '                Dim Timing = InstanceAnnouncementTiming.GetTiming(YourNSS.AHId, YourNSS.AHSGId, _DateTime.GetCurrentTime)
+            '                If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanEditLoadCapacitorLoadAfterLoadAnnounce, YourUserNSS.UserId, 0) Then
+            '                    'امکان ویرایش بار هنگام تخصیص بار فقط توسط کاربر خاص که مجوز دارد
+            '                Else
+            '                    If InstanceAnnouncements.IsAnnouncemenetHallAnnounceTimePassed(NSSAnnouncementHall.AHId, NSSAnnouncementsubGroup.AHSGId, New R2StandardDateAndTimeStructure(Nothing, Nothing, NSSCurrentLoadCapacitorLoad.dTimeElam)) Then
+            '                        Throw New LoadCapacitorLoadEditTimePassedException
+            '                    End If
+            '                End If
+            '            End If
+            '        End If
 
-                    'استاندارد سازی نرخ حمل بر اساس تعرفه های سازمانی
-                    Dim Tarrif As Int64
-                    Try
-                        Tarrif = InstanceTransportTarrifs.GetNSSTransportTarrif(YourNSS).Tarrif
-                        Tarrif = InstanceTransportTarrifs.GetUltimateTransportTarrif(YourNSS.AHSGId, YourNSS.nTonaj, Tarrif)
-                        Tarrif = Tarrif + InstanceTransportTarrifsParameters.GetTotalofTransportTarrifsParameters(YourNSS)
-                    Catch exx As TransportPriceTarrifNotFoundException
-                    End Try
+            '        'استاندارد سازی نرخ حمل بر اساس تعرفه های سازمانی
+            '        Dim Tarrif As Int64
+            '        Try
+            '            Tarrif = InstanceTransportTarrifs.GetNSSTransportTarrif(YourNSS).Tarrif
+            '            Tarrif = InstanceTransportTarrifs.GetUltimateTransportTarrif(YourNSS.AHSGId, YourNSS.nTonaj, Tarrif)
+            '            Tarrif = Tarrif + InstanceTransportTarrifsParameters.GetTotalofTransportTarrifsParameters(YourNSS)
+            '        Catch exx As TransportPriceTarrifNotFoundException
+            '        End Try
 
-                    'کنترل وضعیت بار
-                    If YourNSS.LoadStatus = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Cancelled Or YourNSS.LoadStatus = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Deleted Then Throw New LoadCapacitorLoadHandlingNotAllowedBecuaseLoadStatusException
+            '        'کنترل وضعیت بار
+            '        If YourNSS.LoadStatus = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Cancelled Or YourNSS.LoadStatus = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Deleted Then Throw New LoadCapacitorLoadHandlingNotAllowedBecuaseLoadStatusException
 
-                    'تنظیم مقدار باقیمانده بار
-                    Dim ReminderTotal As Int64 = 0
-                    Dim LastNSS = InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(YourNSS.nEstelamId, True)
-                    If LastNSS.nCarNumKol = YourNSS.nCarNumKol Then
-                        ReminderTotal = LastNSS.nCarNum
-                    Else
-                        ReminderTotal = YourNSS.nCarNumKol
-                    End If
+            '        'تنظیم مقدار باقیمانده بار
+            '        Dim ReminderTotal As Int64 = 0
+            '        Dim LastNSS = InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(YourNSS.nEstelamId, True)
+            '        If LastNSS.nCarNumKol = YourNSS.nCarNumKol Then
+            '            ReminderTotal = LastNSS.nCarNum
+            '        Else
+            '            ReminderTotal = YourNSS.nCarNumKol
+            '        End If
 
-                    'کنترل محل تخلیه بار 
-                    If YourNSS.DischargingPlaceId = LoadingAndDischargingPlaces.LoadingAndDischargingPlaces.None Then Throw New DataEntryException
+            '        'کنترل محل تخلیه بار 
+            '        If YourNSS.DischargingPlaceId = LoadingAndDischargingPlaces.LoadingAndDischargingPlaces.None Then Throw New DataEntryException
 
-                    'SqlInjection
-                    Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
-                    InstanceSQLInjectionPrevention.GeneralAuthorization(YourNSS.StrAddress)
-                    InstanceSQLInjectionPrevention.GeneralAuthorization(YourNSS.StrBarName)
-                    InstanceSQLInjectionPrevention.GeneralAuthorization(YourNSS.StrDescription)
+            '        'SqlInjection
+            '        Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+            '        InstanceSQLInjectionPrevention.GeneralAuthorization(YourNSS.StrAddress)
+            '        InstanceSQLInjectionPrevention.GeneralAuthorization(YourNSS.StrBarName)
+            '        InstanceSQLInjectionPrevention.GeneralAuthorization(YourNSS.StrDescription)
 
-                    'ویرایش بار
-                    CmdSql.Connection.Open()
-                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
-                    Dim P As SqlClient.SqlParameter
-                    P = New SqlClient.SqlParameter("@nCompCode", SqlDbType.Int) : P.Value = YourNSS.nCompCode
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nBarSource", SqlDbType.Int) : P.Value = YourNSS.nBarSource
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@AHId", SqlDbType.BigInt) : P.Value = NSSAnnouncementHall.AHId
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@AHSGId", SqlDbType.BigInt) : P.Value = NSSAnnouncementsubGroup.AHSGId
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@StrBarName", SqlDbType.VarChar) : P.Value = YourNSS.StrBarName
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nCityCode", SqlDbType.Int) : P.Value = YourNSS.nCityCode
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nTonaj", SqlDbType.Float) : P.Value = YourNSS.nTonaj
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nBarCode", SqlDbType.Int) : P.Value = YourNSS.nBarCode
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nTruckType", SqlDbType.Int) : P.Value = YourNSS.nTruckType
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nCarNum", SqlDbType.Int) : P.Value = ReminderTotal
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@StrAddress", SqlDbType.VarChar) : P.Value = YourNSS.StrAddress
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nCarNumKol", SqlDbType.Int) : P.Value = YourNSS.nCarNumKol
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tarrif
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@StrDescription", SqlDbType.VarChar) : P.Value = YourNSS.StrDescription
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@TPTParams", SqlDbType.VarChar) : P.Value = YourNSS.TPTParams
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@LoadingPlaceId", SqlDbType.BigInt) : P.Value = YourNSS.LoadingPlaceId
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@DischargingPlaceId", SqlDbType.BigInt) : P.Value = YourNSS.DischargingPlaceId
-                    CmdSql.Parameters.Add(P)
+            '        'ویرایش بار
+            '        CmdSql.Connection.Open()
+            '        CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
+            '        Dim P As SqlClient.SqlParameter
+            '        P = New SqlClient.SqlParameter("@nCompCode", SqlDbType.Int) : P.Value = YourNSS.nCompCode
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@nBarSource", SqlDbType.Int) : P.Value = YourNSS.nBarSource
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@AHId", SqlDbType.BigInt) : P.Value = NSSAnnouncementHall.AHId
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@AHSGId", SqlDbType.BigInt) : P.Value = NSSAnnouncementsubGroup.AHSGId
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@StrBarName", SqlDbType.VarChar) : P.Value = YourNSS.StrBarName
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@nCityCode", SqlDbType.Int) : P.Value = YourNSS.nCityCode
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@nTonaj", SqlDbType.Float) : P.Value = YourNSS.nTonaj
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@nBarCode", SqlDbType.Int) : P.Value = YourNSS.nBarCode
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@nTruckType", SqlDbType.Int) : P.Value = YourNSS.nTruckType
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@nCarNum", SqlDbType.Int) : P.Value = ReminderTotal
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@StrAddress", SqlDbType.VarChar) : P.Value = YourNSS.StrAddress
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@nCarNumKol", SqlDbType.Int) : P.Value = YourNSS.nCarNumKol
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tarrif
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@StrDescription", SqlDbType.VarChar) : P.Value = YourNSS.StrDescription
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@TPTParams", SqlDbType.VarChar) : P.Value = YourNSS.TPTParams
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@LoadingPlaceId", SqlDbType.BigInt) : P.Value = YourNSS.LoadingPlaceId
+            '        CmdSql.Parameters.Add(P)
+            '        P = New SqlClient.SqlParameter("@DischargingPlaceId", SqlDbType.BigInt) : P.Value = YourNSS.DischargingPlaceId
+            '        CmdSql.Parameters.Add(P)
 
-                    If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.SoftwareUserCanEditAnyofLoadCapacitorLoad, YourUserNSS.UserId, 0) Then
-                        CmdSql.CommandText = "Update dbtransport.dbo.TbElam Set nCompCode=@nCompCode,nBarSource=@nBarSource,AHId=@AHId,AHSGId=@AHSGId,StrBarName=@StrBarName,nCityCode=@nCityCode,nTonaj=@nTonaj,nBarCode=@nBarCode,nTruckType=@nTruckType,nCarNum=@nCarNum,StrAddress=@StrAddress,nCarNumKol=@nCarNumKol,StrPriceSug=@StrPriceSug,StrDescription=@StrDescription,TPTParams=@TPTParams,LoadingPlaceId=@LoadingPlaceId,DischargingPlaceId=@DischargingPlaceId Where nEstelamId=" & YourNSS.nEstelamId & ""
-                    Else
-                        If YourUserNSS.UserId = NSSCurrentLoadCapacitorLoad.nUserId Then
-                            CmdSql.CommandText = "Update dbtransport.dbo.TbElam Set nCompCode=@nCompCode,nBarSource=@nBarSource,AHId=@AHId,AHSGId=@AHSGId,StrBarName=@StrBarName,nCityCode=@nCityCode,nTonaj=@nTonaj,nBarCode=@nBarCode,nTruckType=@nTruckType,nCarNum=@nCarNum,StrAddress=@StrAddress,nCarNumKol=@nCarNumKol,StrPriceSug=@StrPriceSug,StrDescription=@StrDescription,TPTParams=@TPTParams,LoadingPlaceId=@LoadingPlaceId,DischargingPlaceId=@DischargingPlaceId Where nEstelamId=" & YourNSS.nEstelamId & ""
-                        Else
-                            CmdSql.CommandText = "Update dbtransport.dbo.TbElam Set AHId=@AHId,AHSGId=@AHSGId,nCityCode=@nCityCode,nTruckType=@nTruckType,StrPriceSug=@StrPriceSug,StrAddress=@StrAddress,LoadingPlaceId=@LoadingPlaceId,DischargingPlaceId=@DischargingPlaceId Where nEstelamId=" & YourNSS.nEstelamId & ""
-                        End If
-                    End If
-                    CmdSql.ExecuteNonQuery()
-                    InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(YourNSS.nEstelamId, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Editing, YourNSS.nCarNumKol, Nothing, Nothing, Nothing, YourUserNSS.UserId))
-                    If NSSCurrentLoadCapacitorLoad.nCarNumKol > YourNSS.nCarNumKol Then
-                        InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(YourNSS.nEstelamId, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Decrementing, NSSCurrentLoadCapacitorLoad.nCarNumKol - YourNSS.nCarNumKol, Nothing, Nothing, Nothing, YourUserNSS.UserId))
-                    ElseIf NSSCurrentLoadCapacitorLoad.nCarNumKol < YourNSS.nCarNumKol Then
-                        InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(YourNSS.nEstelamId, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Incrementing, YourNSS.nCarNumKol - NSSCurrentLoadCapacitorLoad.nCarNumKol, Nothing, Nothing, Nothing, YourUserNSS.UserId))
-                    End If
-                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            '        If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.SoftwareUserCanEditAnyofLoadCapacitorLoad, YourUserNSS.UserId, 0) Then
+            '            CmdSql.CommandText = "Update dbtransport.dbo.TbElam Set nCompCode=@nCompCode,nBarSource=@nBarSource,AHId=@AHId,AHSGId=@AHSGId,StrBarName=@StrBarName,nCityCode=@nCityCode,nTonaj=@nTonaj,nBarCode=@nBarCode,nTruckType=@nTruckType,nCarNum=@nCarNum,StrAddress=@StrAddress,nCarNumKol=@nCarNumKol,StrPriceSug=@StrPriceSug,StrDescription=@StrDescription,TPTParams=@TPTParams,LoadingPlaceId=@LoadingPlaceId,DischargingPlaceId=@DischargingPlaceId Where nEstelamId=" & YourNSS.nEstelamId & ""
+            '        Else
+            '            If YourUserNSS.UserId = NSSCurrentLoadCapacitorLoad.nUserId Then
+            '                CmdSql.CommandText = "Update dbtransport.dbo.TbElam Set nCompCode=@nCompCode,nBarSource=@nBarSource,AHId=@AHId,AHSGId=@AHSGId,StrBarName=@StrBarName,nCityCode=@nCityCode,nTonaj=@nTonaj,nBarCode=@nBarCode,nTruckType=@nTruckType,nCarNum=@nCarNum,StrAddress=@StrAddress,nCarNumKol=@nCarNumKol,StrPriceSug=@StrPriceSug,StrDescription=@StrDescription,TPTParams=@TPTParams,LoadingPlaceId=@LoadingPlaceId,DischargingPlaceId=@DischargingPlaceId Where nEstelamId=" & YourNSS.nEstelamId & ""
+            '            Else
+            '                CmdSql.CommandText = "Update dbtransport.dbo.TbElam Set AHId=@AHId,AHSGId=@AHSGId,nCityCode=@nCityCode,nTruckType=@nTruckType,StrPriceSug=@StrPriceSug,StrAddress=@StrAddress,LoadingPlaceId=@LoadingPlaceId,DischargingPlaceId=@DischargingPlaceId Where nEstelamId=" & YourNSS.nEstelamId & ""
+            '            End If
+            '        End If
+            '        CmdSql.ExecuteNonQuery()
+            '        InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(YourNSS.nEstelamId, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Editing, YourNSS.nCarNumKol, Nothing, Nothing, Nothing, YourUserNSS.UserId))
+            '        If NSSCurrentLoadCapacitorLoad.nCarNumKol > YourNSS.nCarNumKol Then
+            '            InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(YourNSS.nEstelamId, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Decrementing, NSSCurrentLoadCapacitorLoad.nCarNumKol - YourNSS.nCarNumKol, Nothing, Nothing, Nothing, YourUserNSS.UserId))
+            '        ElseIf NSSCurrentLoadCapacitorLoad.nCarNumKol < YourNSS.nCarNumKol Then
+            '            InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(YourNSS.nEstelamId, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Incrementing, YourNSS.nCarNumKol - NSSCurrentLoadCapacitorLoad.nCarNumKol, Nothing, Nothing, Nothing, YourUserNSS.UserId))
+            '        End If
+            '        CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
-                    'ثبت باراعتباری
-                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager
-                    If InstanceTurnCancellation.IsLoadforTurnCancellation(InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(YourNSS.nEstelamId, True)) Then
-                        InstanceTurnCancellation.LoadforTurnCancellationActiving(YourNSS.nEstelamId)
-                    Else
-                        InstanceTurnCancellation.LoadforTurnCancellationUnActiving(YourNSS.nEstelamId)
-                    End If
+            '        'ثبت باراعتباری
+            '        Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTime)
+            '        If InstanceTurnCancellation.IsLoadforTurnCancellation(InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(YourNSS.nEstelamId, True)) Then
+            '            InstanceTurnCancellation.LoadforTurnCancellationActiving(YourNSS.nEstelamId)
+            '        Else
+            '            InstanceTurnCancellation.LoadforTurnCancellationUnActiving(YourNSS.nEstelamId)
+            '        End If
 
 
-                Catch ex As Exception When TypeOf ex Is LoadCapacitorLoadEditTimePassedException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadNumberOverLimitException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadnCarNumKolCanNotBeZeroException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadHandlingNotAllowedBecuaseLoadStatusException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadNotFoundException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadRegisteringNotAllowedforThisAnnouncementsubGroupException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadEditingChangeAHIdNotAllowedException _
-                                    OrElse TypeOf ex Is LoaderTypeRelationAnnouncementHallNotFoundException _
-                                    OrElse TypeOf ex Is LoaderTypeRelationAnnouncementsubGroupNotFoundException _
-                                    OrElse TypeOf ex Is TransportCompanyISNotActiveException _
-                                    OrElse TypeOf ex Is HasNotRelationBetweenProvinceAndAnnouncementsubGroup _
-                                    OrElse TypeOf ex Is SqlInjectionException _
-                                    OrElse TypeOf ex Is TransportPriceTarrifParameterDetailNotFoundException _
-                                    OrElse TypeOf ex Is EditOrDeleteReRegisteredLoadNotAllowedException _
-                                    OrElse TypeOf ex Is DataEntryException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadTonajExceededException _
-                                    OrElse TypeOf ex Is LoadingPlaceIsUnActiveException _
-                                    OrElse TypeOf ex Is DischargingPlaceIsUnActiveException _
-                                    OrElse TypeOf ex Is LoadingAndDischargingPlaceNotFoundException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadTonajExceededException _
-                                    OrElse TypeOf ex Is LoadTargetorLoadSourceIsUnActiveException
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw ex
-                Catch ex As Exception
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Sub
+            '    Catch ex As Exception When TypeOf ex Is LoadCapacitorLoadEditTimePassedException _
+            '                        OrElse TypeOf ex Is LoadCapacitorLoadnCarNumKolCanNotBeZeroException _
+            '                        OrElse TypeOf ex Is LoadCapacitorLoadnCarNumKolCanNotBeZeroException _
+            '                        OrElse TypeOf ex Is LoadCapacitorLoadHandlingNotAllowedBecuaseLoadStatusException _
+            '                        OrElse TypeOf ex Is LoadCapacitorLoadNotFoundException _
+            '                        OrElse TypeOf ex Is LoadCapacitorLoadRegisteringNotAllowedforThisAnnouncementsubGroupException _
+            '                        OrElse TypeOf ex Is LoadCapacitorLoadEditingChangeAHIdNotAllowedException _
+            '                        OrElse TypeOf ex Is LoaderTypeRelationAnnouncementHallNotFoundException _
+            '                        OrElse TypeOf ex Is LoaderTypeRelationAnnouncementsubGroupNotFoundException _
+            '                        OrElse TypeOf ex Is TransportCompanyISNotActiveException _
+            '                        OrElse TypeOf ex Is HasNotRelationBetweenProvinceAndAnnouncementsubGroup _
+            '                        OrElse TypeOf ex Is SqlInjectionException _
+            '                        OrElse TypeOf ex Is TransportPriceTarrifParameterDetailNotFoundException _
+            '                        OrElse TypeOf ex Is EditOrDeleteReRegisteredLoadNotAllowedException _
+            '                        OrElse TypeOf ex Is DataEntryException _
+            '                        OrElse TypeOf ex Is LoadCapacitorLoadTonajExceededException _
+            '                        OrElse TypeOf ex Is LoadingPlaceIsUnActiveException _
+            '                        OrElse TypeOf ex Is DischargingPlaceIsUnActiveException _
+            '                        OrElse TypeOf ex Is LoadingAndDischargingPlaceNotFoundException _
+            '                        OrElse TypeOf ex Is LoadCapacitorLoadTonajExceededException _
+            '                        OrElse TypeOf ex Is LoadTargetorLoadSourceIsUnActiveException
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+            '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            '        End If
+            '        Throw ex
+            '    Catch ex As Exception
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+            '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            '        End If
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Sub
 
             Public Function ISActiveLoadCapacitorLoadRegistering(YourNSSLoadCapacitorLoad As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadStructure) As Boolean
                 Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
@@ -2731,7 +2885,7 @@ Namespace LoadCapacitor
                     CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
                     'ثبت باراعتباری
-                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager
+                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTime)
                     InstanceTurnCancellation.LoadforTurnCancellationUnActiving(YourNSS.nEstelamId)
 
 
@@ -2806,7 +2960,7 @@ Namespace LoadCapacitor
                     CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
                     'ثبت باراعتباری
-                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager
+                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTime)
                     InstanceTurnCancellation.LoadforTurnCancellationUnActiving(YourNSS.nEstelamId)
 
                 Catch ex As EditOrDeleteReRegisteredLoadNotAllowedException
@@ -2914,8 +3068,8 @@ Namespace LoadCapacitor
                     Dim NSSLoadCurrent = InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(nEstelamId, True)
 
                     'ثبت باراعتباری
-                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager
-                    If InstanceTurnCancellation.IsLoadforTurnCancellation(NSSLoadCurrent) Then
+                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTime)
+                    If InstanceTurnCancellation.IsLoadforTurnCancellation(NSSLoadCurrent.nCityCode, NSSLoadCurrent.nTonaj) Then
                         InstanceTurnCancellation.LoadforTurnCancellationActiving(NSSLoadCurrent.nEstelamId)
                     Else
                         InstanceTurnCancellation.LoadforTurnCancellationUnActiving(NSSLoadCurrent.nEstelamId)
@@ -2958,8 +3112,8 @@ Namespace LoadCapacitor
                     Dim NSSLoadCurrent = InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(nEstelamId, True)
 
                     'ثبت باراعتباری
-                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager
-                    If InstanceTurnCancellation.IsLoadforTurnCancellation(NSSLoadCurrent) Then
+                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTime)
+                    If InstanceTurnCancellation.IsLoadforTurnCancellation(NSSLoadCurrent.nCityCode, NSSLoadCurrent.nTonaj) Then
                         InstanceTurnCancellation.LoadforTurnCancellationActiving(NSSLoadCurrent.nEstelamId)
                     Else
                         InstanceTurnCancellation.LoadforTurnCancellationUnActiving(NSSLoadCurrent.nEstelamId)
@@ -2979,211 +3133,6 @@ Namespace LoadCapacitor
                     SendSMS("بروز خطا", "")
                 End Try
             End Sub
-
-            'BPTChanged
-            Public Function LoadRegistering(YourNSS As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadStructure) As Int64
-                'باید کار شود رویش
-                Dim CmdSql As New SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
-                Try
-                    Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
-                    Dim InstanceLoadingAndDischargingPlaces = New R2CoreTransportationAndLoadNotification.LoadingAndDischargingPlaces.R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager
-                    Dim InstanceSpecializedPersianCalendar = New R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager
-                    Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager
-                    Dim InstanceConfigurationsofAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
-                    Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager
-                    Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager
-                    Dim InstanceTransportTarrifs = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager
-                    Dim InstanceLoadCapacitorAccounting = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorAccountingManager
-                    Dim InstanceLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
-                    Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
-                    Dim NSSAnnouncementHall = InstanceAnnouncements.GetAnnouncementHallfromLoadCapacitorLoad(YourNSS)
-                    Dim NSSAnnouncementsubGroup = InstanceAnnouncements.GetNSSAnnouncementsubGroupByLoaderTypeId(YourNSS.nTruckType)
-                    Dim NSSLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
-                    Dim InstancePermissions = New R2Core.PermissionManagement.R2CoreInstansePermissionsManager
-                    YourNSS.AHId = NSSAnnouncementHall.AHId
-                    YourNSS.AHSGId = NSSAnnouncementsubGroup.AHSGId
-
-                    'کنترل فعال بودن مبدا بارگیری و محل تخلیه
-                    If InstanceLoadingAndDischargingPlaces.IsActiveLoadingPlace(YourNSS.LoadingPlaceId) = False Then Throw New LoadingPlaceIsUnActiveException
-                    If InstanceLoadingAndDischargingPlaces.IsActiveDischargingPlace(YourNSS.DischargingPlaceId) = False Then Throw New DischargingPlaceIsUnActiveException
-
-                    'کنترل فعال بودن مبدا و مقصد
-                    If (Not NSSLoadTargets.GetNSSLoadTarget(YourNSS.nCityCode).NSSCity.Active) Or (Not NSSLoadTargets.GetNSSLoadTarget(YourNSS.nBarSource).NSSCity.Active) Then Throw New LoadTargetorLoadSourceIsUnActiveException
-
-                    'کنترل تناژ بار 
-                    If YourNSS.nTonaj > InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 7) Then If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanRegisterOrEditLoadsAnyTonaj, YourNSS.nUserId, 0) Then Throw New LoadCapacitorLoadTonajExceededException
-
-                    'Try
-                    '    Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
-                    '    InstanceLoadCapacitorLoad.LoadCapacitorLoadTonajValidate(YourNSS)
-                    'Catch ex As Exception
-                    '    Dim InstnaceLogging = New R2CoreInstanceLoggingManager
-                    '    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager
-                    '    InstnaceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Warn, InstnaceLogging.GetNSSLogType(R2CoreLogType.Warn).LogTitle, ex.Message, String.Empty, String.Empty, String.Empty, String.Empty, InstanceSoftwareUsers.GetSystemUserId(), _DateTime.GetCurrentDateTimeMilladi(), Nothing))
-                    'End Try
-                    'بررسی تطابق استان انتخاب شده با زیرگروه اعلام بار
-                    If Not InstanceAnnouncements.HasRelationBetweenProvinceAndAnnouncementsubGroup(InstanceLoadTargets.GetNSSLoadTarget(YourNSS.nCityCode).NSSCity.nProvince, YourNSS.AHSGId) Then Throw New HasNotRelationBetweenProvinceAndAnnouncementsubGroup
-                    'بررسی اینکه آیا برای زیرگروه مربوطه امکان ثبت بار وجود دارد یا نه
-                    If Not ISActiveLoadCapacitorLoadRegistering(YourNSS) Then Throw New LoadCapacitorLoadRegisteringNotAllowedforThisAnnouncementsubGroupException
-                    'کنترل تعداد بار
-                    If YourNSS.nCarNumKol > InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.LoadCapacitorLoadManipulationSetting, 0) Then Throw New LoadCapacitorLoadNumberOverLimitException
-                    If YourNSS.nCarNumKol < 1 Then Throw New LoadCapacitorLoadnCarNumKolCanNotBeZeroException
-                    'کنترل اکتیو بودن شرکت حمل و نقل
-                    If InstanceTransportCompanies.ISTransportCompanyActive(New R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure(YourNSS.nCompCode, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing)) = False Then Throw New TransportCompanyISNotActiveException
-                    'بررسی بار فردا
-                    Dim ComposeSearchString As String = NSSAnnouncementsubGroup.AHSGId.ToString + "="
-                    Dim AllTommorowConfigforAHId As String() = Split(InstanceConfigurationsofAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.TommorowLoads, NSSAnnouncementHall.AHId), "-")
-                    Dim AllTommorowConfigforAHSGId = Split(Mid(AllTommorowConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllTommorowConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ";")
-                    Dim IsTommorowLoadRegisteringActive As Boolean = AllTommorowConfigforAHSGId(0)
-                    Dim TommorowLoadRegisteringFirstTime As String = AllTommorowConfigforAHSGId(1)
-                    Dim TommorowLoadRegisteringEndTime As String = AllTommorowConfigforAHSGId(2)
-                    Dim CurrentTimeforRegistering As String = _DateTime.GetCurrentTime()
-                    Dim TommorowLoadRegisteringFlag As Boolean = False
-                    If IsTommorowLoadRegisteringActive And (CurrentTimeforRegistering >= TommorowLoadRegisteringFirstTime And CurrentTimeforRegistering <= TommorowLoadRegisteringEndTime) Then
-                        TommorowLoadRegisteringFlag = True
-                        If InstanceSpecializedPersianCalendar.IsTomorrowIsHolidayforLoadAnnounce Then If Not IsActiveLoadCapacitorLoadRegisteringInHoliDay(YourNSS) Then Throw New LoadCapacitorLoadRegisteringInHolidayNotAllowedException(NSSAnnouncementsubGroup.AHSGTitle)
-                    Else
-                        If InstanceSpecializedPersianCalendar.IsTodayIsHolidayforLoadAnnounce Then If Not IsActiveLoadCapacitorLoadRegisteringInHoliDay(YourNSS) Then Throw New LoadCapacitorLoadRegisteringInHolidayNotAllowedException(NSSAnnouncementsubGroup.AHSGTitle)
-                        Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
-                        If InstanceAnnouncementTiming.IsTimingActive(YourNSS.AHId, YourNSS.AHSGId) Then
-                            Dim Timing = InstanceAnnouncementTiming.GetTiming(YourNSS.AHId, YourNSS.AHSGId, _DateTime.GetCurrentTime)
-                            If _DateTime.GetCurrentTime() > InstanceAnnouncements.GetAnnouncementHallLeastAnnounceTime(NSSAnnouncementHall.AHId, NSSAnnouncementsubGroup.AHSGId).Time Then
-                                Throw New LoadCapacitorLoadRegisterTimePassedException
-                            End If
-                            If Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadAllocationRegistering Or
-                               Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
-                                Throw New LoadCapacitorLoadRegisterTimePassedException
-                            End If
-                        Else
-                            'کنترل اتمام زمان ثبت بار
-                            If _DateTime.GetCurrentTime() > InstanceAnnouncements.GetAnnouncementHallLeastAnnounceTime(NSSAnnouncementHall.AHId, NSSAnnouncementsubGroup.AHSGId).Time Then
-                                Throw New LoadCapacitorLoadRegisterTimePassedException
-                            End If
-                        End If
-                    End If
-                    'استاندارد سازی نرخ حمل بر اساس تعرفه های سازمانی
-                    Dim Tarrif As Int64
-                    Try
-                        Tarrif = InstanceTransportTarrifs.GetNSSTransportTarrif(YourNSS).Tarrif
-                        Tarrif = InstanceTransportTarrifs.GetUltimateTransportTarrif(YourNSS.AHSGId, YourNSS.nTonaj, Tarrif)
-                        Tarrif = Tarrif + InstanceTransportTarrifsParameters.GetTotalofTransportTarrifsParameters(YourNSS)
-                    Catch exx As TransportPriceTarrifNotFoundException
-                    End Try
-
-                    'ثبت بار
-                    CmdSql.Connection.Open()
-                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
-                    CmdSql.CommandText = "Select Top 1 nEstelamId From dbtransport.dbo.TbElam with (tablockx) Order By nEstelamId Desc"
-                    CmdSql.ExecuteNonQuery()
-                    CmdSql.CommandText = "Select IDENT_CURRENT('dbtransport.dbo.TbElam') "
-                    Dim nEstelamIdNew As Int64 = CmdSql.ExecuteScalar() + 1
-                    Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
-                    Dim P As SqlClient.SqlParameter
-                    P = New SqlClient.SqlParameter("@nEstelamKey", SqlDbType.NVarChar) : P.Value = Hasher.GenerateSHA256String(nEstelamIdNew)
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@StrBarName", SqlDbType.VarChar) : P.Value = YourNSS.StrBarName
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nCityCode", SqlDbType.Int) : P.Value = YourNSS.nCityCode
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nTonaj", SqlDbType.Float) : P.Value = YourNSS.nTonaj
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nBarCode", SqlDbType.Int) : P.Value = YourNSS.nBarCode
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@bFlag", SqlDbType.Bit) : P.Value = False
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nCompCode", SqlDbType.Int) : P.Value = YourNSS.nCompCode
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@bFlagbarType", SqlDbType.Bit) : P.Value = False
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nTruckType", SqlDbType.Int) : P.Value = YourNSS.nTruckType
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nCarNum", SqlDbType.Int) : P.Value = YourNSS.nCarNumKol
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@StrAddress", SqlDbType.VarChar) : P.Value = YourNSS.StrAddress
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nUserId", SqlDbType.Int) : P.Value = YourNSS.nUserId
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@dDateElam", SqlDbType.Char) : P.Value = _DateTime.GetCurrentDateShamsiFull()
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@dTimeElam", SqlDbType.Char) : P.Value = _DateTime.GetCurrentTime()
-                    CmdSql.Parameters.Add(P)
-                    CmdSql.Parameters.AddWithValue("@bflagCarNum", 0)
-                    CmdSql.Parameters.AddWithValue("@strIssueNo", 0)
-                    CmdSql.Parameters.AddWithValue("@strIssueOwner", 0)
-                    CmdSql.Parameters.AddWithValue("@nTonajKol", 0)
-                    P = New SqlClient.SqlParameter("@nCarNumKol", SqlDbType.Int) : P.Value = YourNSS.nCarNumKol
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tarrif
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@StrDescription", SqlDbType.VarChar) : P.Value = YourNSS.StrDescription
-                    CmdSql.Parameters.Add(P)
-                    CmdSql.Parameters.AddWithValue("@dDateExit", DBNull.Value)
-                    CmdSql.Parameters.AddWithValue("@dTimeExit", DBNull.Value)
-                    If TommorowLoadRegisteringFlag Then
-                        P = New SqlClient.SqlParameter("@LoadStatus", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.RegisteredforTommorow
-                    Else
-                        P = New SqlClient.SqlParameter("@LoadStatus", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered
-                    End If
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@nBarSource", SqlDbType.Int) : P.Value = YourNSS.nBarSource
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@AHId", SqlDbType.BigInt) : P.Value = NSSAnnouncementHall.AHId
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@AHSGId", SqlDbType.BigInt) : P.Value = NSSAnnouncementsubGroup.AHSGId
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@TPTParams", SqlDbType.VarChar) : P.Value = YourNSS.TPTParams
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@LoadingPlaceId", SqlDbType.BigInt) : P.Value = YourNSS.LoadingPlaceId
-                    CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@DischargingPlaceId", SqlDbType.BigInt) : P.Value = YourNSS.DischargingPlaceId
-                    CmdSql.Parameters.Add(P)
-                    CmdSql.CommandText = "Insert Into dbtransport.dbo.TbElam Values(@nEstelamKey,@StrBarName,@nCityCode,@nTonaj,@nBarCode,@bFlag,@nCompCode,@bFlagbarType,@nTruckType,@nCarNum,@StrAddress,@nUserId,@dDateElam,@dTimeElam,@bflagCarNum,@strIssueNo,@strIssueOwner,@nTonajKol,@nCarNumKol,@nBarSource,@StrPriceSug,@StrDescription,@dDateExit,@dTimeExit,@LoadStatus,@AHId,@AHSGId,@TPTParams,@LoadingPlaceId,@DischargingPlaceId)"
-                    CmdSql.ExecuteNonQuery()
-                    'ثبت اکانت
-                    If TommorowLoadRegisteringFlag Then
-                        InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(nEstelamIdNew, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.RegisteringforTommorow, YourNSS.nCarNumKol, Nothing, Nothing, Nothing, YourNSS.nUserId))
-                    Else
-                        InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(nEstelamIdNew, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Registering, YourNSS.nCarNumKol, Nothing, Nothing, Nothing, YourNSS.nUserId))
-                    End If
-                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-
-                    'ثبت بار اعتباری
-                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager
-                    If InstanceTurnCancellation.IsLoadforTurnCancellation(InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(nEstelamIdNew, True)) Then
-                        InstanceTurnCancellation.LoadforTurnCancellationRegistering(nEstelamIdNew, True)
-                    Else
-                        InstanceTurnCancellation.LoadforTurnCancellationRegistering(nEstelamIdNew, False)
-                    End If
-
-                    'ارسال کد مخزن بار
-                    Return nEstelamIdNew
-                Catch ex As Exception When TypeOf ex Is LoadCapacitorLoadNumberOverLimitException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadnCarNumKolCanNotBeZeroException _
-                                    OrElse TypeOf ex Is TransportCompanyISNotActiveException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadRegisterTimePassedException _
-                                    OrElse TypeOf ex Is TimingNotReachedException _
-                                    OrElse TypeOf ex Is HasNotRelationBetweenProvinceAndAnnouncementsubGroup _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadRegisteringNotAllowedforThisAnnouncementsubGroupException _
-                                    OrElse TypeOf ex Is TransportPriceTarrifParameterDetailNotFoundException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadRegisteringInHolidayNotAllowedException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadTonajExceededException _
-                                    OrElse TypeOf ex Is LoadingPlaceIsUnActiveException _
-                                    OrElse TypeOf ex Is DischargingPlaceIsUnActiveException _
-                                    OrElse TypeOf ex Is LoadingAndDischargingPlaceNotFoundException _
-                                    OrElse TypeOf ex Is LoadCapacitorLoadTonajExceededException _
-                                    OrElse TypeOf ex Is LoadTargetorLoadSourceIsUnActiveException
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw ex
-                Catch ex As Exception
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
 
         End Class
 
@@ -3466,6 +3415,988 @@ Namespace LoadCapacitor
 
         End Class
 
+        'BPTChanged
+        Public Class R2CoreTransportationAndLoadNotificationLoadManipulationManager
+
+            Private _DateTimeService As IR2DateTimeService
+            Public Sub New(YourDateTimeService As IR2DateTimeService)
+                _DateTimeService = YourDateTimeService
+            End Sub
+
+            Public Function IsActiveLoadRegisteringForAnnouncementSubGroup(YourLoad As R2CoreTransportationAndLoadNotificationLoad) As Boolean
+                Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager(_DateTimeService)
+                Try
+                    Dim ComposeSearchString As String = YourLoad.AnnouncementSubGroupId.ToString + "="
+                    Dim ALLAnnouncementSGsLoadManipulationSetting As String() = Split(InstanceConfigurationOfAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.LoadCapacitorLoadManipulationSetting, YourLoad.AnnouncementGroupId), ";")
+                    Dim AnnouncementSGLoadRegisteringActiveStatus As Boolean = Split(Mid(ALLAnnouncementSGsLoadManipulationSetting.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, ALLAnnouncementSGsLoadManipulationSetting.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), "-")(0)
+                    Return AnnouncementSGLoadRegisteringActiveStatus
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+
+            Public Function IsActiveLoadRegisterinInHoliday(YourLoad As R2CoreTransportationAndLoadNotificationLoad) As Boolean
+                Try
+                    Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager(_DateTimeService)
+                    Dim ComposeSearchString As String = YourLoad.AnnouncementSubGroupId.ToString + "="
+                    Dim AllAnnouncementSGsLoadManipulationSetting As String() = Split(InstanceConfigurationOfAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.LoadCapacitorLoadManipulationSetting, YourLoad.AnnouncementGroupId), ";")
+                    Dim AnnouncementSGLoadRegisteringActiveStatus As Boolean = Split(Mid(AllAnnouncementSGsLoadManipulationSetting.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllAnnouncementSGsLoadManipulationSetting.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), "-")(2)
+                    Return AnnouncementSGLoadRegisteringActiveStatus
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+
+            Public Function LoadRegistering(YourLoad As R2CoreTransportationAndLoadNotificationLoad, YourSoftwareUser As R2CoreSoftwareUser) As Int64
+                Dim CmdSql As New SqlCommand
+                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Try
+                    Dim InstanceLoadingAndDischargingPlaces = New R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager
+                    Dim InstanceLoadTargets = New R2CoreTransportationAndLoadNotificationLoadTargetsManager(_DateTimeService)
+                    Dim InstanceLoadSources = New R2CoreTransportationAndLoadNotificationLoadSourcesManager(_DateTimeService)
+                    Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService)
+                    Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
+                    Dim InstanceProvincesAndCities = New R2CoreParkingSystemProvincesAndCitiesManager(_DateTimeService)
+                    Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationTransportCompaniesManager(_DateTimeService)
+                    Dim InstancePermissions = New R2Core.PermissionManagement.R2CoreInstansePermissionsManager
+                    Dim InstanceConfigurationsofAnnouncements = New R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager(_DateTimeService)
+                    Dim InstanceSpecializedPersianCalendar = New R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager(_DateTimeService)
+                    Dim InstanceTransportTarrifs = New R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService)
+                    Dim InstanceLoaderTypes = New R2CoreTransportationAndLoadNotificationLoaderTypesManager(_DateTimeService)
+                    Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationTransportTarrifsParametersManager(_DateTimeService)
+                    Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
+                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTimeService)
+
+                    'کنترل فعال بودن مبدا بارگیری و محل تخلیه
+                    If InstanceLoadingAndDischargingPlaces.IsActiveLoadingPlace(YourLoad.LoadingPlaceId) = False Then Throw New LoadingPlaceIsUnActiveException
+                    If InstanceLoadingAndDischargingPlaces.IsActiveDischargingPlace(YourLoad.DischargingPlaceId) = False Then Throw New DischargingPlaceIsUnActiveException
+
+                    'کنترل فعال بودن شهر مبدا
+                    If Not InstanceLoadSources.IsActiveLoadSource(YourLoad.SourceCityId) Then
+                        Throw New LoadSourceIsUnActiveException
+                    End If
+
+                    'کنترل فعال بودن شهر مقصد
+                    If Not InstanceLoadTargets.IsActiveLoadTarget(YourLoad.TargetCityId) Then
+                        Throw New LoadTargetIsUnActiveException
+                    End If
+
+                    'کنترل تناژ بار 
+                    'کاربر ادمین مجوز تناژ بدون محدودیت دارد
+                    If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanRegisterOrEditLoadsAnyTonaj, YourSoftwareUser.UserId, 0) Then
+                    Else
+                        InstanceLoad.LoadTonajValidate(YourLoad)
+                    End If
+
+                    'کنترل تعداد بار 
+                    InstanceLoad.LoadTotalValidate(YourLoad)
+
+                    'بررسی تطابق استان انتخاب شده با زیرگروه اعلام بار
+                    InstanceAnnouncements.RelationBetweenProvinceAndAnnouncementsubGroupValidate(InstanceProvincesAndCities.GetProvinceIdOfCity(YourLoad.TargetCityId), YourLoad.AnnouncementSubGroupId)
+
+                    'بررسی اینکه آیا برای زیرگروه مربوطه امکان ثبت بار وجود دارد یا نه
+                    If Not IsActiveLoadRegisteringForAnnouncementSubGroup(YourLoad) Then Throw New LoadRegisteringNotAllowedforThisAnnouncementsubGroupException
+
+                    'کنترل اکتیو بودن شرکت حمل و نقل
+                    If InstanceTransportCompanies.ISTransportCompanyActive(YourLoad.TransportCompanyId) = False Then Throw New TransportCompanyISNotActiveException
+
+                    'بررسی بار فردا
+                    Dim ComposeSearchString As String = YourLoad.AnnouncementSubGroupId.ToString + "="
+                    Dim AllTommorowConfigforAnnouncementId As String() = Split(InstanceConfigurationsofAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.TommorowLoads, YourLoad.AnnouncementGroupId), "-")
+                    Dim AllTommorowConfigforAnnouncementSGId = Split(Mid(AllTommorowConfigforAnnouncementId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllTommorowConfigforAnnouncementId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ";")
+                    Dim IsTommorowLoadRegisteringActive As Boolean = AllTommorowConfigforAnnouncementSGId(0)
+                    Dim TommorowLoadRegisteringFirstTime As String = AllTommorowConfigforAnnouncementSGId(1)
+                    Dim TommorowLoadRegisteringEndTime As String = AllTommorowConfigforAnnouncementSGId(2)
+                    Dim currentTime As String = _DateTimeService.DateTimeServ.GetCurrentTime()
+                    Dim TommorowLoadRegisteringFlag As Boolean = False
+                    If currentTime >= TommorowLoadRegisteringFirstTime And currentTime <= TommorowLoadRegisteringEndTime Then
+                        If IsTommorowLoadRegisteringActive Then
+                            TommorowLoadRegisteringFlag = True
+                        Else
+                            Throw New TommarowLoadRegisteringNotAllowedforThisAnnouncementsubGroupException
+                        End If
+                    End If
+                    If TommorowLoadRegisteringFlag Then
+                        'اعلام بار فردا برای زیر گروه مورد نظر امکان پذیر است ولی آیا در تاریخ فردا اعلام بار برای زیر گروه مورد نظر تعطیل نیست
+                        If InstanceSpecializedPersianCalendar.IsActiveTomorrowLoadAnnounce Then Throw New LoadRegisteringforShamsiDateNotAllowedException(_DateTimeService.DateTimeServ.GetNextDateShamsiWithoutSlashes)
+                    Else
+                        'اعلام بار برای امروز و برای زیرگروه مورد نظر فعال است ولی آیا در تاریخ امروز  و برای زیرگروه مورد نظراعلام بار تعطیل نیست
+                        If InstanceSpecializedPersianCalendar.IsActiveTodayLoadAnnounce Then Throw New LoadRegisteringforShamsiDateNotAllowedException(_DateTimeService.DateTimeServ.GetCurrentDateShamsiFull)
+
+                        Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationAnnouncementTimingManager(_DateTimeService)
+                        Dim Timing = InstanceAnnouncementTiming.GetTiming(YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId, _DateTimeService.DateTimeServ.GetCurrentTime)
+                        If _DateTimeService.DateTimeServ.GetCurrentTime() > InstanceAnnouncements.GetAnnouncementLeastAnnounceTime(YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId).Time Then
+                            Throw New LoadRegisterTimePassedException
+                        End If
+                        If Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadAllocationRegistering Or
+                           Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
+                            Throw New LoadRegisterTimePassedException
+                        End If
+                    End If
+
+                    'استاندارد سازی نرخ حمل بر اساس تعرفه های سازمانی
+                    Dim Tarrif As Int64 = 0
+                    Try
+                        Dim loaderTypeId = InstanceLoaderTypes.GetLoaderTypeIdfromAnnouncementSGId(YourLoad.AnnouncementSubGroupId)
+                        Tarrif = InstanceTransportTarrifs.GetTransportTarrif(YourLoad.SourceCityId, YourLoad.TargetCityId, loaderTypeId, YourLoad.GoodId)
+                        Tarrif = InstanceTransportTarrifs.GetUltimateTransportTarrif(YourLoad.AnnouncementSubGroupId, YourLoad.Tonaj, Tarrif)
+                        Tarrif = Tarrif + InstanceTransportTarrifsParameters.GetTotalofTransportTarrifsParameters(YourLoad)
+                    Catch exx As TransportPriceTarrifNotFoundException
+                    End Try
+
+                    'ثبت بار
+                    CmdSql.Connection.Open()
+                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
+                    CmdSql.CommandText = "Select Top 1 nEstelamId From dbtransport.dbo.TbElam with (tablockx) Order By nEstelamId Desc"
+                    CmdSql.ExecuteNonQuery()
+                    CmdSql.CommandText = "Select IDENT_CURRENT('dbtransport.dbo.TbElam') "
+                    Dim nEstelamIdNew As Int64 = CmdSql.ExecuteScalar() + 1
+                    Dim P As SqlClient.SqlParameter
+                    P = New SqlClient.SqlParameter("@nEstelamId", SqlDbType.BigInt) : P.Value = nEstelamIdNew
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nEstelamKey", SqlDbType.NVarChar) : P.Value = Hasher.GenerateSHA256String(nEstelamIdNew)
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@StrBarName", SqlDbType.NVarChar) : P.Value = YourLoad.Recipient
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nCityCode", SqlDbType.BigInt) : P.Value = YourLoad.TargetCityId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nTonaj", SqlDbType.Float) : P.Value = YourLoad.Tonaj
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nBarCode", SqlDbType.BigInt) : P.Value = YourLoad.GoodId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nCompCode", SqlDbType.BigInt) : P.Value = YourLoad.TransportCompanyId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@StrAddress", SqlDbType.NVarChar) : P.Value = YourLoad.Address
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nUserId", SqlDbType.BigInt) : P.Value = YourSoftwareUser.UserId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nCarNumKol", SqlDbType.Int) : P.Value = YourLoad.TotalNumber
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tarrif
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@StrDescription", SqlDbType.NVarChar) : P.Value = YourLoad.Description
+                    CmdSql.Parameters.Add(P)
+                    If TommorowLoadRegisteringFlag Then
+                        P = New SqlClient.SqlParameter("@LoadStatus", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.RegisteredforTommorow
+                    Else
+                        P = New SqlClient.SqlParameter("@LoadStatus", SqlDbType.TinyInt) : P.Value = YourLoad.LoadStatusId
+                    End If
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nBarSource", SqlDbType.BigInt) : P.Value = YourLoad.SourceCityId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@AHId", SqlDbType.BigInt) : P.Value = YourLoad.AnnouncementGroupId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@AHSGId", SqlDbType.BigInt) : P.Value = YourLoad.AnnouncementSubGroupId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@TPTParams", SqlDbType.VarChar) : P.Value = YourLoad.TPTParams
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@LoadingPlaceId", SqlDbType.BigInt) : P.Value = YourLoad.LoadingPlaceId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@DischargingPlaceId", SqlDbType.BigInt) : P.Value = YourLoad.DischargingPlaceId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@TPTParamsJoint", SqlDbType.NVarChar) : P.Value = InstanceTransportTarrifsParameters.GetTransportTarrifsComposit(YourLoad.TPTParams)
+                    CmdSql.Parameters.Add(P)
+                    If TommorowLoadRegisteringFlag Then
+                        P = New SqlClient.SqlParameter("@AccountType", SqlDbType.NVarChar) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.RegisteringforTommorow
+                        CmdSql.Parameters.Add(P)
+                    Else
+                        P = New SqlClient.SqlParameter("@AccountType", SqlDbType.NVarChar) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Registering
+                        CmdSql.Parameters.Add(P)
+                    End If
+                    P = New SqlClient.SqlParameter("@Amount", SqlDbType.NVarChar) : P.Value = YourLoad.TotalNumber
+                    CmdSql.Parameters.Add(P)
+                    CmdSql.CommandType = CommandType.StoredProcedure
+                    CmdSql.CommandText = "R2PrimaryTransportationAndLoadNotification.dbo.LoadRegistering"
+                    CmdSql.ExecuteNonQuery()
+                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+
+                    'ثبت بار اعتباری
+                    If InstanceTurnCancellation.IsLoadforTurnCancellation(YourLoad.TargetCityId, YourLoad.Tonaj) Then
+                        InstanceTurnCancellation.LoadforTurnCancellationRegistering(nEstelamIdNew, True)
+                    Else
+                        InstanceTurnCancellation.LoadforTurnCancellationRegistering(nEstelamIdNew, False)
+                    End If
+
+                    'ارسال کد مخزن بار
+                    Return nEstelamIdNew
+                Catch ex As SqlException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+                Catch ex As LoadingPlaceIsUnActiveException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As DischargingPlaceIsUnActiveException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadingAndDischargingPlaceNotFoundException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadSourceIsUnActiveException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadTargetIsUnActiveException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadTonajInvalidException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As TommarowLoadRegisteringNotAllowedforThisAnnouncementsubGroupException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadTotalInvalidException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As HasNotRelationBetweenProvinceAndAnnouncementsubGroup
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadRegisteringNotAllowedforThisAnnouncementsubGroupException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadRegisteringforShamsiDateNotAllowedException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As TransportCompanyISNotActiveException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadRegisterTimePassedException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As Exception
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+
+            Public Sub LoadEditing(YourLoad As R2CoreTransportationAndLoadNotificationLoad, YourSoftwareUser As R2CoreSoftwareUser)
+                Dim CmdSql As New SqlCommand
+                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Try
+                    'SqlInjection
+                    Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                    InstanceSQLInjectionPrevention.GeneralAuthorization(YourLoad.Address)
+                    InstanceSQLInjectionPrevention.GeneralAuthorization(YourLoad.Recipient)
+                    InstanceSQLInjectionPrevention.GeneralAuthorization(YourLoad.Description)
+
+                    Dim InstanceLoadingAndDischargingPlaces = New R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager
+                    Dim InstanceLoadTargets = New R2CoreTransportationAndLoadNotificationLoadTargetsManager(_DateTimeService)
+                    Dim InstanceLoadSources = New R2CoreTransportationAndLoadNotificationLoadSourcesManager(_DateTimeService)
+                    Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService)
+                    Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
+                    Dim InstanceProvincesAndCities = New R2CoreParkingSystemProvincesAndCitiesManager(_DateTimeService)
+                    Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationTransportCompaniesManager(_DateTimeService)
+                    Dim InstancePermissions = New R2Core.PermissionManagement.R2CoreInstansePermissionsManager
+                    Dim InstanceConfigurationsofAnnouncements = New R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager(_DateTimeService)
+                    Dim InstanceSpecializedPersianCalendar = New R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager(_DateTimeService)
+                    Dim InstanceTransportTarrifs = New R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService)
+                    Dim InstanceLoaderTypes = New R2CoreTransportationAndLoadNotificationLoaderTypesManager(_DateTimeService)
+                    Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationTransportTarrifsParametersManager(_DateTimeService)
+                    Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
+                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTimeService)
+
+                    Dim LastLoad = InstanceLoad.GetLoadSimpleModel(YourLoad.LoadId, True)
+
+                    'کنترل فعال بودن مبدا بارگیری و محل تخلیه
+                    If InstanceLoadingAndDischargingPlaces.IsActiveLoadingPlace(YourLoad.LoadingPlaceId) = False Then Throw New LoadingPlaceIsUnActiveException
+                    If InstanceLoadingAndDischargingPlaces.IsActiveDischargingPlace(YourLoad.DischargingPlaceId) = False Then Throw New DischargingPlaceIsUnActiveException
+
+                    'کنترل فعال بودن شهر مبدا
+                    If Not InstanceLoadSources.IsActiveLoadSource(YourLoad.SourceCityId) Then
+                        Throw New LoadSourceIsUnActiveException
+                    End If
+
+                    'کنترل فعال بودن شهر مقصد
+                    If Not InstanceLoadTargets.IsActiveLoadTarget(YourLoad.TargetCityId) Then
+                        Throw New LoadTargetIsUnActiveException
+                    End If
+
+                    'کنترل تناژ بار 
+                    'کاربر ادمین مجوز تناژ بدون محدودیت دارد
+                    If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanRegisterOrEditLoadsAnyTonaj, YourSoftwareUser.UserId, 0) Then
+                    Else
+                        InstanceLoad.LoadTonajValidate(YourLoad)
+                    End If
+
+
+                    'کنترل تعداد بار 
+                    InstanceLoad.LoadTotalValidate(YourLoad)
+
+                    'بررسی تطابق استان انتخاب شده با زیرگروه اعلام بار
+                    InstanceAnnouncements.RelationBetweenProvinceAndAnnouncementsubGroupValidate(InstanceProvincesAndCities.GetProvinceIdOfCity(YourLoad.TargetCityId), YourLoad.AnnouncementSubGroupId)
+
+                    'ویرایش گروه اصلی اعلام بار و زیرگروه امکان پذیر نیست در صورتی که کاربر اشتباه کرده باشد باید بار را کامل حذف کند یک بار دیگر ثبت نماید
+                    If YourLoad.AnnouncementGroupId <> LastLoad.AnnouncementGroupId Then Throw New ChangeAnnouncementGroupOrAnnouncementSubGroupInEditingNotAllowedException
+                    If YourLoad.AnnouncementSubGroupId <> LastLoad.AnnouncementSubGroupId Then Throw New ChangeAnnouncementGroupOrAnnouncementSubGroupInEditingNotAllowedException
+
+                    'بررسی اینکه آیا برای زیرگروه مربوطه امکان ثبت بار وجود دارد یا نه
+                    If Not IsActiveLoadRegisteringForAnnouncementSubGroup(YourLoad) Then Throw New LoadRegisteringNotAllowedforThisAnnouncementsubGroupException
+
+                    'کنترل اکتیو بودن شرکت حمل و نقل
+                    If InstanceTransportCompanies.ISTransportCompanyActive(YourLoad.TransportCompanyId) = False Then Throw New TransportCompanyISNotActiveException
+
+                    'بررسی بار فردا
+                    Dim ComposeSearchString As String = YourLoad.AnnouncementSubGroupId.ToString + "="
+                    Dim AllTommorowConfigforAnnouncementId As String() = Split(InstanceConfigurationsofAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.TommorowLoads, YourLoad.AnnouncementGroupId), "-")
+                    Dim AllTommorowConfigforAnnouncementSGId = Split(Mid(AllTommorowConfigforAnnouncementId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllTommorowConfigforAnnouncementId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ";")
+                    Dim IsTommorowLoadRegisteringActive As Boolean = AllTommorowConfigforAnnouncementSGId(0)
+                    Dim TommorowLoadRegisteringFirstTime As String = AllTommorowConfigforAnnouncementSGId(1)
+                    Dim TommorowLoadRegisteringEndTime As String = AllTommorowConfigforAnnouncementSGId(2)
+                    Dim currentTime As String = _DateTimeService.DateTimeServ.GetCurrentTime()
+                    Dim TommorowLoadRegisteringFlag As Boolean = False
+                    If currentTime >= TommorowLoadRegisteringFirstTime And currentTime <= TommorowLoadRegisteringEndTime Then
+                        If IsTommorowLoadRegisteringActive Then
+                            TommorowLoadRegisteringFlag = True
+                        Else
+                            Throw New TommarowLoadRegisteringNotAllowedforThisAnnouncementsubGroupException
+                        End If
+                    End If
+                    If TommorowLoadRegisteringFlag Then
+                        'اعلام بار فردا برای زیر گروه مورد نظر امکان پذیر است ولی آیا در تاریخ فردا اعلام بار برای زیر گروه مورد نظر تعطیل نیست
+                        If InstanceSpecializedPersianCalendar.IsActiveTomorrowLoadAnnounce Then Throw New LoadRegisteringforShamsiDateNotAllowedException(_DateTimeService.DateTimeServ.GetNextDateShamsiWithoutSlashes)
+                    Else
+                        'اعلام بار برای امروز و برای زیرگروه مورد نظر فعال است ولی آیا در تاریخ امروز  و برای زیرگروه مورد نظراعلام بار تعطیل نیست
+                        If InstanceSpecializedPersianCalendar.IsActiveTodayLoadAnnounce Then Throw New LoadRegisteringforShamsiDateNotAllowedException(_DateTimeService.DateTimeServ.GetCurrentDateShamsiFull)
+
+                        Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationAnnouncementTimingManager(_DateTimeService)
+                        Dim Timing = InstanceAnnouncementTiming.GetTiming(YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId, _DateTimeService.DateTimeServ.GetCurrentTime)
+                        If _DateTimeService.DateTimeServ.GetCurrentTime() > InstanceAnnouncements.GetAnnouncementLeastAnnounceTime(YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId).Time Then
+                            Throw New LoadRegisterTimePassedException
+                        End If
+                        If Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadAllocationRegistering Or
+                           Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
+                            Throw New LoadRegisterTimePassedException
+                        End If
+                    End If
+
+                    'استاندارد سازی نرخ حمل بر اساس تعرفه های سازمانی
+                    Dim Tarrif As Int64 = 0
+                    Try
+                        Dim loaderTypeId = InstanceLoaderTypes.GetLoaderTypeIdfromAnnouncementSGId(YourLoad.AnnouncementSubGroupId)
+                        Tarrif = InstanceTransportTarrifs.GetTransportTarrif(YourLoad.SourceCityId, YourLoad.TargetCityId, loaderTypeId, YourLoad.GoodId)
+                        Tarrif = InstanceTransportTarrifs.GetUltimateTransportTarrif(YourLoad.AnnouncementSubGroupId, YourLoad.Tonaj, Tarrif)
+                        Tarrif = Tarrif + InstanceTransportTarrifsParameters.GetTotalofTransportTarrifsParameters(YourLoad)
+                    Catch exx As TransportPriceTarrifNotFoundException
+                    End Try
+
+                    'کنترل وضعیت بار
+                    If LastLoad.LoadStatusId = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Cancelled Or LastLoad.LoadStatusId = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Deleted Or LastLoad.LoadStatusId = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented Then Throw New LoadHandlingNotAllowedBecuaseLoadStatusException
+
+                    'کنترل تاریخ بار
+                    If LastLoad.AnnounceDate <> _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull Then Throw New LoadRegisterTimePassedException
+
+                    'ثبت بار
+                    Dim P As SqlClient.SqlParameter
+                    P = New SqlClient.SqlParameter("@nEstelamId", SqlDbType.VarChar) : P.Value = YourLoad.LoadId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@StrBarName", SqlDbType.VarChar) : P.Value = YourLoad.Recipient
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nCityCode", SqlDbType.Int) : P.Value = YourLoad.TargetCityId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nTonaj", SqlDbType.Float) : P.Value = YourLoad.Tonaj
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nBarCode", SqlDbType.Int) : P.Value = YourLoad.GoodId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@StrAddress", SqlDbType.VarChar) : P.Value = YourLoad.Address
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nUserId", SqlDbType.BigInt) : P.Value = YourSoftwareUser.UserId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nCarNumKol", SqlDbType.Int) : P.Value = YourLoad.TotalNumber
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tarrif
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@StrDescription", SqlDbType.VarChar) : P.Value = YourLoad.Description
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nBarSource", SqlDbType.Int) : P.Value = YourLoad.SourceCityId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@TPTParams", SqlDbType.VarChar) : P.Value = YourLoad.TPTParams
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@LoadingPlaceId", SqlDbType.BigInt) : P.Value = YourLoad.LoadingPlaceId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@DischargingPlaceId", SqlDbType.BigInt) : P.Value = YourLoad.DischargingPlaceId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@TPTParamsJoint", SqlDbType.NVarChar) : P.Value = InstanceTransportTarrifsParameters.GetTransportTarrifsComposit(YourLoad.TPTParams)
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@AccountType", SqlDbType.NVarChar) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Editing
+                    CmdSql.Parameters.Add(P)
+                    If LastLoad.TotalNumber > YourLoad.TotalNumber Then
+                        P = New SqlClient.SqlParameter("@AccountTypeSecond", SqlDbType.NVarChar) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Decrementing
+                        CmdSql.Parameters.Add(P)
+                    ElseIf LastLoad.TotalNumber < YourLoad.TotalNumber Then
+                        P = New SqlClient.SqlParameter("@AccountTypeSecond", SqlDbType.NVarChar) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Incrementing
+                        CmdSql.Parameters.Add(P)
+                    Else
+                        P = New SqlClient.SqlParameter("@AccountTypeSecond", SqlDbType.NVarChar) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.None
+                        CmdSql.Parameters.Add(P)
+                    End If
+                    CmdSql.Connection.Open()
+                    CmdSql.CommandType = CommandType.StoredProcedure
+                    CmdSql.CommandText = "R2PrimaryTransportationAndLoadNotification.dbo.LoadEditing"
+                    CmdSql.ExecuteNonQuery()
+                    CmdSql.Connection.Close()
+
+                    'ثبت بار اعتباری
+                    If InstanceTurnCancellation.IsLoadforTurnCancellation(YourLoad.TargetCityId, YourLoad.Tonaj) Then
+                        InstanceTurnCancellation.LoadforTurnCancellationActiving(YourLoad.LoadId)
+                    Else
+                        InstanceTurnCancellation.LoadforTurnCancellationUnActiving(YourLoad.LoadId)
+                    End If
+
+                Catch ex As SqlException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+                Catch ex As LoadNotFoundException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw ex
+                Catch ex As LoadingPlaceIsUnActiveException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw ex
+                Catch ex As DischargingPlaceIsUnActiveException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw ex
+                Catch ex As LoadingAndDischargingPlaceNotFoundException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw ex
+                Catch ex As LoadSourceIsUnActiveException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw ex
+                Catch ex As LoadTargetIsUnActiveException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw ex
+                Catch ex As LoadTonajInvalidException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw ex
+                Catch ex As TommarowLoadRegisteringNotAllowedforThisAnnouncementsubGroupException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw ex
+                Catch ex As LoadTotalInvalidException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw ex
+                Catch ex As HasNotRelationBetweenProvinceAndAnnouncementsubGroup
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw ex
+                Catch ex As LoadRegisteringNotAllowedforThisAnnouncementsubGroupException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw ex
+                Catch ex As LoadRegisteringforShamsiDateNotAllowedException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw ex
+                Catch ex As TransportCompanyISNotActiveException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw ex
+                Catch ex As LoadRegisterTimePassedException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw ex
+                Catch ex As Exception
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Sub
+
+            Public Sub LoadDeleting(YourLoadId As Int64, YourSoftwareUser As R2CoreSoftwareUser)
+                Dim CmdSql As New SqlCommand
+                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Try
+                    Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService)
+                    Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
+                    Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
+                    Dim InstancePermissions = New R2CoreInstansePermissionsManager
+                    Dim InstanceLoadAccounting = New R2CoreTransportationAndLoadNotificationLoadAccountingManager(_DateTimeService)
+                    Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
+                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTimeService)
+
+                    Dim LastLoad = InstanceLoad.GetLoadSimpleModel(YourLoadId, True)
+
+                    'کنترل مجوز حذف بار کاربر
+                    If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.SoftwareUserCanDeleteAnyofLoadCapacitorLoad, YourSoftwareUser.UserId, 0) Then
+                    Else
+                        If LastLoad.UserId <> YourSoftwareUser.UserId Then Throw New SoftwareUserCanNotDeleteLoadException
+                    End If
+
+                    'کنترل اتمام زمان حذف بار
+                    If InstanceAnnouncements.IsAnnouncemenetAnnounceTimePassed(LastLoad.AnnouncementGroupId, LastLoad.AnnouncementSubGroupId, New R2StandardDateAndTimeStructure(Nothing, Nothing, LastLoad.AnnounceTime)) Then Throw New LoadDeleteTimePassedException
+
+                    'کنترل تاریخ بار
+                    If LastLoad.AnnounceDate <> _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull Then Throw New LoadDeleteTimePassedException
+
+                    'کنترل وضعیت بار
+                    If Not (LastLoad.LoadStatusId = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered Or LastLoad.LoadStatusId = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.FreeLined Or LastLoad.LoadStatusId = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.RegisteredforTommorow) Then Throw New LoadHandlingNotAllowedBecuaseLoadStatusException
+
+                    'بررسی بار فردا
+                    Dim ComposeSearchString As String = LastLoad.AnnouncementSubGroupId.ToString + "="
+                    Dim AllTommorowConfigforAHId As String() = Split(InstanceConfigurationOfAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.TommorowLoads, LastLoad.AnnouncementGroupId), "-")
+                    Dim AllTommorowConfigforAHSGId = Split(Mid(AllTommorowConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllTommorowConfigforAHId.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ";")
+                    Dim IsTommorowLoadRegisteringActive As Boolean = AllTommorowConfigforAHSGId(0)
+                    Dim TommorowLoadRegisteringFirstTime As String = AllTommorowConfigforAHSGId(1)
+                    Dim TommorowLoadRegisteringEndTime As String = AllTommorowConfigforAHSGId(2)
+                    Dim CurrentTime As String = _DateTimeService.DateTimeServ.GetCurrentTime
+                    If IsTommorowLoadRegisteringActive And (CurrentTime >= TommorowLoadRegisteringFirstTime And CurrentTime <= TommorowLoadRegisteringEndTime) And LastLoad.LoadStatusId = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.RegisteredforTommorow Then
+                    Else
+                        Dim Timing = InstanceAnnouncementTiming.GetTiming(LastLoad.AnnouncementGroupId, LastLoad.AnnouncementSubGroupId, _DateTimeService.DateTimeServ.GetCurrentTime)
+                        If InstanceAnnouncements.IsAnnouncemenetAnnounceTimePassed(LastLoad.AnnouncementGroupId, LastLoad.AnnouncementSubGroupId, New R2StandardDateAndTimeStructure(Nothing, Nothing, LastLoad.AnnounceTime)) Then
+                            Throw New LoadDeleteTimePassedException
+                        End If
+                    End If
+
+                    'حذف بار
+                    Dim P As SqlClient.SqlParameter
+                    P = New SqlClient.SqlParameter("@YourLoadId", SqlDbType.BigInt) : P.Value = YourLoadId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourLoadStatusId", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Deleted
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourLoadAccountingTypeId", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Deleting
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourAmount", SqlDbType.BigInt) : P.Value = LastLoad.TotalNumber
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourUserId", SqlDbType.BigInt) : P.Value = YourSoftwareUser.UserId
+                    CmdSql.Parameters.Add(P)
+                    CmdSql.Connection.Open()
+                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
+                    CmdSql.CommandType = CommandType.StoredProcedure
+                    CmdSql.CommandText = "R2PrimaryTransportationAndLoadNotification.dbo.LoadDeleting"
+                    CmdSql.ExecuteNonQuery()
+                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+
+                    'ثبت باراعتباری
+                    InstanceTurnCancellation.LoadforTurnCancellationUnActiving(YourLoadId)
+
+                Catch ex As SqlException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+                Catch ex As LoadNotFoundException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As SoftwareUserCanNotDeleteLoadException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadDeleteTimePassedException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadHandlingNotAllowedBecuaseLoadStatusException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As Exception
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Sub
+
+            Public Sub LoadCancelling(YourLoadId As Int64, YourSoftwareUser As R2CoreSoftwareUser)
+                Dim CmdSql As New SqlCommand
+                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Try
+
+                    Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService)
+                    Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
+                    Dim InstancePermisions = New R2CorePermissionsManager
+                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTimeService)
+
+                    Dim LastLoad = InstanceLoad.GetLoadSimpleModel(YourLoadId, True)
+
+                    'کنترل تاریخ بار
+                    If LastLoad.AnnounceDate <> _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull Then Throw New LoadCancellingTimePassedException
+
+                    'کنترل وضعیت بار
+                    If LastLoad.LoadStatusId = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Deleted Or LastLoad.LoadStatusId = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Cancelled Or LastLoad.LoadStatusId = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.RegisteredforTommorow Then Throw New LoadHandlingNotAllowedBecuaseLoadStatusException
+
+                    'کنترل زمان کنسلی بار
+                    If Not InstanceAnnouncements.IsAnnouncemenetAnnounceTimePassed(LastLoad.AnnouncementGroupId, LastLoad.AnnouncementSubGroupId, New R2StandardDateAndTimeStructure(Nothing, Nothing, LastLoad.AnnounceTime)) Then Throw New LoadCancellingTimeNotReachedException
+
+                    'کنترل مجوز دسترسی کاربر
+                    If Not InstancePermisions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.SoftwareUserCanCancellingLoadsViaLoadStatus, YourSoftwareUser.UserId, LastLoad.LoadStatusId) Then Throw New SoftwareUserCanNotCancellingLoadException
+
+                    'کنسلی بار
+                    Dim P As SqlClient.SqlParameter
+                    P = New SqlClient.SqlParameter("@YourLoadId", SqlDbType.BigInt) : P.Value = YourLoadId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourLoadStatusId", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Cancelled
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourLoadAccountingTypeId", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Cancelling
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourAmount", SqlDbType.BigInt) : P.Value = LastLoad.TotalNumber
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourUserId", SqlDbType.BigInt) : P.Value = YourSoftwareUser.UserId
+                    CmdSql.Parameters.Add(P)
+                    CmdSql.Connection.Open()
+                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
+                    CmdSql.CommandType = CommandType.StoredProcedure
+                    CmdSql.CommandText = "R2PrimaryTransportationAndLoadNotification.dbo.LoadCancelling"
+                    CmdSql.ExecuteNonQuery()
+                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+
+                    'ثبت باراعتباری
+                    InstanceTurnCancellation.LoadforTurnCancellationUnActiving(YourLoadId)
+
+                Catch ex As SqlException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+                Catch ex As LoadNotFoundException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadCancellingTimePassedException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadHandlingNotAllowedBecuaseLoadStatusException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadCancellingTimeNotReachedException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As SoftwareUserCanNotCancellingLoadException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As Exception
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Sub
+
+            Public Sub LoadFreeLining(YourLoadId As Int64, YourSoftwareUser As R2CoreSoftwareUser)
+                Dim CmdSql As New SqlCommand
+                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Try
+                    Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService)
+                    Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
+                    Dim InstancePermisions = New R2CorePermissionsManager
+                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTimeService)
+
+                    Dim LastLoad = InstanceLoad.GetLoadSimpleModel(YourLoadId, True)
+
+                    'کنترل زمان خط آزاد نمودن بار
+                    If InstanceAnnouncements.IsAnnouncemenetAnnounceTimePassed(LastLoad.AnnouncementGroupId, LastLoad.AnnouncementSubGroupId, New R2StandardDateAndTimeStructure(Nothing, Nothing, LastLoad.AnnounceTime)) Then Throw New LoadFreeLiningTimePassedException
+
+                    'کنترل تاریخ بار
+                    If LastLoad.AnnounceDate <> _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull Then Throw New LoadFreeLiningTimePassedException
+
+                    'کنترل وضعیت بار
+                    If LastLoad.LoadStatusId <> R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered Then Throw New LoadHandlingNotAllowedBecuaseLoadStatusException
+
+                    'کنترل مجوز دسترسی کاربر
+                    If Not InstancePermisions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.SoftwareUserCanFreeLiningLoadsViaLoadStatus, YourSoftwareUser.UserId, LastLoad.LoadStatusId) Then Throw New SoftwareUserCanNotFreeLiningLoadException
+
+                    'خط آزاد نمودن بار
+                    Dim P As SqlClient.SqlParameter
+                    P = New SqlClient.SqlParameter("@YourLoadId", SqlDbType.BigInt) : P.Value = YourLoadId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourLoadStatusId", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.FreeLined
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourLoadAccountingTypeId", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.FreeLining
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourAmount", SqlDbType.BigInt) : P.Value = LastLoad.TotalNumber
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourUserId", SqlDbType.BigInt) : P.Value = YourSoftwareUser.UserId
+                    CmdSql.Parameters.Add(P)
+                    CmdSql.Connection.Open()
+                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
+                    CmdSql.CommandType = CommandType.StoredProcedure
+                    CmdSql.CommandText = "R2PrimaryTransportationAndLoadNotification.dbo.LoadFreeLining"
+                    CmdSql.ExecuteNonQuery()
+                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+
+                Catch ex As SqlException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+                Catch ex As LoadNotFoundException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadFreeLiningTimePassedException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadHandlingNotAllowedBecuaseLoadStatusException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As SoftwareUserCanNotFreeLiningLoadException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As Exception
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Sub
+
+            Public Sub LoadSedimenting(YourLoadId As Int64, YourSoftwareUser As R2CoreSoftwareUser)
+                Dim CmdSql As New SqlClient.SqlCommand
+                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Try
+                    Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService)
+                    Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
+                    Dim InstancePermisions = New R2CorePermissionsManager
+                    Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTimeService)
+
+                    Dim LastLoad = InstanceLoad.GetLoadSimpleModel(YourLoadId, True)
+
+                    'کنترل تعداد باقیمانده بار
+                    If InstanceLoad.GetLoadReminder(YourLoadId, False) = 0 Then Throw New CanNotSedimentLoadBecuaseReminderException
+
+                    'کنترل وضعیت بار
+                    If LastLoad.LoadStatusId <> R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered Then Throw New LoadHandlingNotAllowedBecuaseLoadStatusException
+
+                    'کنترل مجوز دسترسی کاربر
+                    If Not InstancePermisions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.SoftwareUserCanSedimentingLoad, YourSoftwareUser.UserId, LastLoad.LoadStatusId) Then Throw New SoftwareUserCanNotSedimentingLoadException
+
+                    'خط آزاد نمودن بار
+                    Dim P As SqlClient.SqlParameter
+                    P = New SqlClient.SqlParameter("@YourLoadId", SqlDbType.BigInt) : P.Value = YourLoadId
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourLoadStatusId", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourLoadAccountingTypeId", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadAccountingTypes.Sedimenting
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourAmount", SqlDbType.BigInt) : P.Value = LastLoad.TotalNumber
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@YourUserId", SqlDbType.BigInt) : P.Value = YourSoftwareUser.UserId
+                    CmdSql.Parameters.Add(P)
+                    CmdSql.Connection.Open()
+                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
+                    CmdSql.CommandType = CommandType.StoredProcedure
+                    CmdSql.CommandText = "R2PrimaryTransportationAndLoadNotification.dbo.LoadSedimenting"
+                    CmdSql.ExecuteNonQuery()
+                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+
+                Catch ex As SqlException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+                Catch ex As LoadNotFoundException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As LoadHandlingNotAllowedBecuaseLoadStatusException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As SoftwareUserCanNotSedimentingLoadException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw ex
+                Catch ex As Exception
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then
+                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                    End If
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Sub
+
+        End Class
+
+        'BPTChanged
+        Namespace Exceptions
+
+            Public Class LoadRegisterTimePassedException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "زمان ثبت بار برای زیرگروه اعلام بار مورد نظر به پایان رسیده است"
+                    End Get
+                End Property
+            End Class
+
+            Public Class LoadRegisteringNotAllowedforThisAnnouncementsubGroupException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "امکان ثبت بار برای این زیر گروه اعلام بار مجاز نیست "
+                    End Get
+                End Property
+            End Class
+
+            Public Class TommarowLoadRegisteringNotAllowedforThisAnnouncementsubGroupException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "امکان ثبت بار فردا برای این زیر گروه اعلام بار مجاز نیست "
+                    End Get
+                End Property
+            End Class
+
+            Public Class LoadRegisteringforShamsiDateNotAllowedException
+                Inherits ApplicationException
+
+                Private _Message As String = String.Empty
+                Public Sub New(YourMessage As String)
+                    _Message = YourMessage
+                End Sub
+
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "اعلام بار برای  " + _Message + " امکان پذیر نیست"
+                    End Get
+                End Property
+            End Class
+
+            Public Class ChangeAnnouncementGroupOrAnnouncementSubGroupInEditingNotAllowedException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "تغییر گروه و یا زیرگروه اعلام بار امکان پذیر نیست"
+                    End Get
+                End Property
+            End Class
+
+            Public Class LoadHandlingNotAllowedBecuaseLoadStatusException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "وضعیت فعلی بار مانع از اجرای این فرآیند شد"
+                    End Get
+                End Property
+            End Class
+
+            Public Class SoftwareUserCanNotDeleteLoadException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "شما مجوز حذف بار را ندارید"
+                    End Get
+                End Property
+            End Class
+
+            Public Class LoadDeleteTimePassedException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "زمان حذف بار به پایان رسیده است"
+                    End Get
+                End Property
+            End Class
+
+            Public Class LoadCancellingTimePassedException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "زمان کنسلی بار به پایان رسیده است"
+                    End Get
+                End Property
+            End Class
+
+            Public Class LoadCancellingTimeNotReachedException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "امکان کنسلی بار فقط پس از اعلام بار امکان پذیر است"
+                    End Get
+                End Property
+            End Class
+
+            Public Class SoftwareUserCanNotCancellingLoadException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "شما مجوز کنسلی بار را ندارید"
+                    End Get
+                End Property
+            End Class
+
+            Public Class SoftwareUserCanNotFreeLiningLoadException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "شما مجوز خط آزاد کردن بار را ندارید"
+                    End Get
+                End Property
+            End Class
+
+            Public Class SoftwareUserCanNotSedimentingLoadException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "شما مجوز رسوب بار را ندارید"
+                    End Get
+                End Property
+            End Class
+
+            Public Class LoadFreeLiningTimePassedException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "زمان خط آزاد کردن بار به پایان رسیده است"
+                    End Get
+                End Property
+            End Class
+
+            Public Class CanNotSedimentLoadBecuaseReminderException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "با توجه به تعداد بار ، فرآیند رسوب بار امکان پذیر نیست"
+                    End Get
+                End Property
+            End Class
+
+
+        End Namespace
+
+
     End Namespace
 
     Namespace LoadCapacitorLoadOtherThanManipulation
@@ -3734,15 +4665,6 @@ Namespace LoadCapacitor
             End Property
         End Class
 
-        Public Class LoadCapacitorLoadNumberOverLimitException
-            Inherits ApplicationException
-            Public Overrides ReadOnly Property Message As String
-                Get
-                    Return "تعداد بار بیش از حد مجاز است"
-                End Get
-            End Property
-        End Class
-
         Public Class LoadCapacitorLoadnCarNumKolCanNotBeZeroException
             Inherits ApplicationException
             Public Overrides ReadOnly Property Message As String
@@ -3910,16 +4832,6 @@ Namespace LoadCapacitor
             Public Overrides ReadOnly Property Message As String
                 Get
                     Return "امکان حذف یا ویرایش باری که مجددا اعلام بار شده است وجود ندارد"
-                End Get
-            End Property
-        End Class
-
-        Public Class LoadCapacitorLoadTonajExceededException
-            Inherits ApplicationException
-
-            Public Overrides ReadOnly Property Message As String
-                Get
-                    Return "تناژ بار بیش از حد مجاز است"
                 End Get
             End Property
         End Class

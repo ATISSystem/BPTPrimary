@@ -20,5 +20,22 @@ namespace APITransportation.LoadAllocation.Models
 
         }
 
+        public class APITransportationLoadAllocationSessionIdLAIdLoadId
+        {
+            public string SessionId;
+            public Int64 LAId;
+            public Int64 LoadId;
+
+        }
+
+        public class APITransportationLoadAllocationSessionIdTruckIdTruckDriverIdLoadId
+        {
+            public string SessionId;
+            public Int64 TruckId;
+            public Int64 TruckDriverId;
+            public Int64 LoadId;
+
+        }
+
     }
 }

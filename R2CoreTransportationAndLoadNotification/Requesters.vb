@@ -15,6 +15,8 @@ Namespace RequesterManagement
         Public Shared ReadOnly LoadCapacitorController_GetLoadsforTruckDriver As Int64 = 5
         Public Shared ReadOnly LoadAllocationController_LoadAllocationRegisteringforTruckDriver As Int64 = 6
         Public Shared ReadOnly LoadAllocationController_LoadAllocationRegisteringforTransportCompany As Int64 = 7
+        Public Shared ReadOnly LoadAllocationController_LoadAllocationRegisteringforAdministrator As Int64 = 8
+        Public Shared ReadOnly LoadAllocationController_LoadAllocateToOther As Int64 = 9
 
     End Class
 

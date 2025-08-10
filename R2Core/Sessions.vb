@@ -87,7 +87,9 @@ Namespace SessionManagement
             Try
                 Dim InstanceCache = New Caching.R2CoreCacheManager
                 Dim CachKey = InstanceCache.GetCacheType(Caching.R2CoreCacheTypes.Session).CacheTypeName + YourSessionId
-                Dim Content = JsonConvert.DeserializeObject(Of R2CoreSessionIdSoftwareUser)(InstanceCache.GetCache(CachKey, R2CoreCatchDataBases.SoftwareUserSessions).ToString)
+                Dim Value = InstanceCache.GetCache(CachKey, R2CoreCatchDataBases.SoftwareUserSessions).ToString
+                If Value Is Nothing Then Throw New SessionOverException
+                Dim Content = JsonConvert.DeserializeObject(Of R2CoreSessionIdSoftwareUser)(Value)
                 If Content.SoftWareUser Is Nothing Then Throw New SessionOverException
                 Return Content.SoftWareUser
             Catch ex As SessionOverException

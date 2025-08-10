@@ -4,6 +4,7 @@ using APITransportation.Models.LoaderTypes;
 using APITransportation.Models.ProvincesAndCities;
 using Newtonsoft.Json;
 using R2Core.DatabaseManagement;
+using R2Core.DateAndTimeManagement;
 using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
@@ -25,6 +26,7 @@ namespace APITransportation.Controllers
     public class LoaderTypeController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
+        private IR2DateTimeService _DateTimeService = new R2DateTimeService();
 
         [HttpPost]
         [Route("api/GetLoaderTypes")]
@@ -38,7 +40,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoaderTypes = new R2CoreTransportationAndLoadNotificationLoaderTypesManager();
+                var InstanceLoaderTypes = new R2CoreTransportationAndLoadNotificationLoaderTypesManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceLoaderTypes.GetLoaderTypes_SearchIntroCharacters(SearchString, true), Encoding.UTF8, "application/json");
@@ -67,7 +69,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoaderTypes = new R2CoreTransportationAndLoadNotificationLoaderTypesManager();
+                var InstanceLoaderTypes = new R2CoreTransportationAndLoadNotificationLoaderTypesManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject (InstanceLoaderTypes.GetLoaderTypeBySoftwareUser(User.UserId)), Encoding.UTF8, "application/json");
@@ -100,7 +102,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoaderTypes = new R2CoreTransportationAndLoadNotificationLoaderTypesManager(); 
+                var InstanceLoaderTypes = new R2CoreTransportationAndLoadNotificationLoaderTypesManager(_DateTimeService); 
                 InstanceLoaderTypes.LoaderTypeChangeActivate(LoaderTypeId); 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;

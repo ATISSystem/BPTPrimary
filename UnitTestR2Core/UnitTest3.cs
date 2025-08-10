@@ -12,7 +12,7 @@ namespace UnitTestR2Core
         [TestMethod]
         public void Tariffs()
         {
-            var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
+            var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationTransportTariffsManager(new R2DateTimeService());
             R2CoreTransportationAndLoadNotificationTransportTariff f1 = new R2CoreTransportationAndLoadNotificationTransportTariff() { SourceCityId = 21310000, TargetCityId = 11320000, LoaderTypeId = 503, GoodId = 1861401, Tariff = 50000000, BaseTonnag = 19, CalculationReference = "CalculationReference", Active = true };
             R2CoreTransportationAndLoadNotificationTransportTariff f2 = new R2CoreTransportationAndLoadNotificationTransportTariff() { SourceCityId = 21310000, TargetCityId = 11320000, LoaderTypeId = 503, GoodId = 1861401, Tariff = 50000000, BaseTonnag = 19, CalculationReference = "CalculationReference", Active = true };
             R2CoreTransportationAndLoadNotificationTransportTariff f3 = new R2CoreTransportationAndLoadNotificationTransportTariff() { SourceCityId = 21310000, TargetCityId = 11320000, LoaderTypeId = 502, GoodId = 1861401, Tariff = 50000000, BaseTonnag = 19, CalculationReference = "CalculationReference", Active = true };

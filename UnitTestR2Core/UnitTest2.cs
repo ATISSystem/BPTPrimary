@@ -134,10 +134,10 @@ namespace UnitTestR2Core
         {
             try
             {               
-                var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager();
+                var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationTransportCompaniesManager(new R2DateTimeService());
 
                 var InstanseSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                InstanceTransportCompanies.TransportCompanyChangeActiveStatus(21306);
+                //InstanceTransportCompanies.TransportCompanyChangeActiveStatus(21306);
 
                 var InstanceSMSOwners = new R2CoreParkingSystemSMSOwnersManager(new SoftwareUserService(21), new R2DateTimeService());
                 InstanceSMSOwners.ActivateSMSOwner(InstanceTransportCompanies.GetSoftwareUserIdfromTransportCompanyId(21306, true));

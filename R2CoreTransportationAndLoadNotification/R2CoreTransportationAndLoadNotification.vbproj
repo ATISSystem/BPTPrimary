@@ -161,8 +161,18 @@
   <ItemGroup>
     <Compile Include="Announcements.vb" />
     <Compile Include="Caching.vb" />
+    <Compile Include="Calendars.vb" />
+    <Compile Include="Configurations.vb" />
+    <Compile Include="FactoriesAndProductionCenters.vb" />
     <Compile Include="LoadAllocation.vb" />
+    <Compile Include="LoadAnnouncementPlaces.vb" />
     <Compile Include="LoadCapacitor.vb" />
+    <Compile Include="LoaderTypes.vb" />
+    <Compile Include="LoadingAndDischargingPlaces.vb" />
+    <Compile Include="LoadPermissions.vb" />
+    <Compile Include="LoadSedimentation.vb" />
+    <Compile Include="LoadSources.vb" />
+    <Compile Include="LoadTargets.vb" />
     <Compile Include="R2CoreTransportationAndLoadNotification-Partial.vb" />
     <Compile Include="R2CoreTransportationAndLoadNotification.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
@@ -183,8 +193,12 @@
     <Compile Include="Requesters.vb" />
     <Compile Include="SoftwareUsers.vb" />
     <Compile Include="TransportCompanies.vb" />
+    <Compile Include="TransportTariffs.vb" />
+    <Compile Include="TransportTarrifsParameters.vb" />
     <Compile Include="TruckDrivers.vb" />
     <Compile Include="Trucks.vb" />
+    <Compile Include="TrucksNativeness.vb" />
+    <Compile Include="TurnCancellation.vb" />
     <Compile Include="TurnRegisteringRequests.vb" />
     <Compile Include="Turns.vb" />
     <Compile Include="Web References\RmtoWS\Reference.vb">

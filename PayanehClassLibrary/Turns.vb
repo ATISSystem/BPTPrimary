@@ -338,7 +338,7 @@ Namespace CarTruckNobatManagement
                 Dim InstancePermissions = New R2CoreInstansePermissionsManager
                 If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.SoftwareUserCanExcecuteTurnCancellation, YourNSSSoftwareUser.UserId, 0) Then Throw New PermissionException
 
-                Dim InstanceSpecializedPersianCalendar = New R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager
+                Dim InstanceSpecializedPersianCalendar = New R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager(_DateTime)
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
                 Dim InstanceSequentialTurns = New R2CoreTransportationAndLoadNotificationInstanceSequentialTurnsManager
                 Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager
@@ -1903,68 +1903,72 @@ Namespace Turns
 
     Public Class PayanehClassLibraryTurnManager
 
-        Private _R2DateTimeService As IR2DateTimeService
+        Private _DateTimeService As IR2DateTimeService
         Public Sub New(YourR2DateTimeService As IR2DateTimeService)
-            _R2DateTimeService = YourR2DateTimeService
+            _DateTimeService = YourR2DateTimeService
         End Sub
 
-        'Public Function GetTurnofKiosk(YourSeqTId As Int64, YourTruckId As Int64, YourTruckDriverId As Int64, YourLoadId As Int64, YourSoftwareUser As R2CoreSoftwareUser, YourTWSForce As Boolean) As Int64
-        '    Dim CmdSql As SqlCommand = New SqlCommand
-        '    CmdSql.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
-        '    Try
-        '        Dim InstanceTerraficCards = New R2CoreTransportationAndLoadNotificationInstanceTerraficCardsManager
-        '        Dim NSSMoneyWallet = InstanceTerraficCards.GetNSSTerafficCard(YourNSSTransportCompany)
-        '        Dim CurrentDateTimeMilladiFormated = _DateTime.GetCurrentDateTimeMilladiFormated
-        '        Dim CurrentDateShamsiFull = _DateTime.GetCurrentDateShamsiFull
-        '        'تراکنش ثبت روابط موقت ناوگان و راننده باری و کیف پول و زیرگروه اعلام بار
-        '        'کلیه روابط به صورت موقت ایجاد می گردند و از طریق فیلد تایم استمپ در کل سیستم ایزوله می شوند و شناسایی می گردند
-        '        CmdSql.Connection.Open()
-        '        CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-        '        CmdSql.CommandText = "Insert into dbtransport.dbo.TbCarAndPerson(nIDCar,nIDPerson,snRelation,dDate,strDesc,RelationTimeStamp)
-        '          				      Values(" & YourTruckId & "," & YourTruckDriverId & ",2,'" & CurrentDateShamsiFull & "','TempRelation','" & CurrentDateTimeMilladiFormated & "')"
-        '        CmdSql.ExecuteNonQuery()
-        '        CmdSql.CommandText = "Insert Into R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars(CardId, nCarId, RelationActive, RelationTimeStamp) 
-        '          				      Values(" & NSSMoneyWallet.CardId & "," & YourNSSTruck.NSSCar.nIdCar & ",1,'" & CurrentDateTimeMilladiFormated & "')"
-        '        CmdSql.ExecuteNonQuery()
-        '        CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroupsRelationCars(CarId,AHSGId,Priority,RelationActive,RelationTimeStamp)
-        '  				          Values(" & YourNSSTruck.NSSCar.nIdCar & "," & YourNSSLoadCapacitorLoad.AHSGId & ",1,1,'" & CurrentDateTimeMilladiFormated & "')"
-        '        CmdSql.ExecuteNonQuery()
-        '        CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-        '        Dim TurnId = Int64.MinValue
-        '        Dim InstanceTurnRegisterRequest = New PayanehClassLibraryMClassTurnRegisterRequestManager
-        '        Dim TurnRegisterRequestId = InstanceTurnRegisterRequest.RealTimeTurnRegisterRequest(YourNSSSeqT, YourNSSTruck, True, True, TurnId, PayanehClassLibraryRequesters.GetTurnofKiosk, TurnType.Temporary, YourUserNSS, YourTWSForce)
-        '        Return TurnId
-        '    Catch ex As Exception When TypeOf ex Is RequesterNotAllowTurnIssueBySeqTException _
-        '                        OrElse TypeOf ex Is RequesterNotAllowTurnIssueByLastLoadPermissionedException _
-        '                        OrElse TypeOf ex Is TruckRelatedSequentialTurnNotFoundException _
-        '                        OrElse TypeOf ex Is CarIsNotPresentInParkingException _
-        '                        OrElse TypeOf ex Is GetNobatExceptionCarTruckIsTankTreiler _
-        '                        OrElse TypeOf ex Is CarTruckTravelLengthNotOverYetException _
-        '                        OrElse TypeOf ex Is GetNobatExceptionCarTruckHasNobat _
-        '                        OrElse TypeOf ex Is GetNobatException _
-        '                        OrElse TypeOf ex Is SequentialTurnIsNotActiveException _
-        '                        OrElse TypeOf ex Is TruckNotFoundException _
-        '                        OrElse TypeOf ex Is SequentialTurnNotFoundException _
-        '                        OrElse TypeOf ex Is TruckDriverNotFoundException _
-        '                        OrElse TypeOf ex Is TurnRegisterRequestNotFoundException _
-        '                        OrElse TypeOf ex Is GetNSSException _
-        '                        OrElse TypeOf ex Is GetDataException _
-        '                        OrElse TypeOf ex Is MoneyWalletCurrentChargeNotEnoughException _
-        '                        OrElse TypeOf ex Is TurnRegisterRequestTypeNotFoundException _
-        '                        OrElse TypeOf ex Is TurnPrintingInfNotFoundException _
-        '                        OrElse TypeOf ex Is SoftwareUserMoneyWalletNotFoundException _
-        '                        OrElse TypeOf ex Is LoadCapacitorLoadNotFoundException
-        '        If CmdSql.Connection.State <> ConnectionState.Closed Then
-        '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-        '        End If
-        '        Throw ex
-        '    Catch ex As Exception
-        '        If CmdSql.Connection.State <> ConnectionState.Closed Then
-        '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-        '        End If
-        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-        '    End Try
-        'End Function
+        Public Function GetTurnofKiosk(YourSeqTId As Int64, YourTruckId As Int64, YourTruckDriverId As Int64, YourRequesterId As Int64, YourSoftwareUser As R2CoreSoftwareUser) As Int64
+            Dim CmdSql As SqlCommand = New SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            Try
+                Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(_DateTimeService)
+                Dim MoneyWallet = InstanceMoneyWallet.GetMoneyWallet(YourSoftwareUser)
+                'تراکنش ثبت روابط موقت ناوگان و راننده باری و کیف پول و زیرگروه اعلام بار
+                'کلیه روابط به صورت موقت ایجاد می گردند و از طریق فیلد تایم استمپ در کل سیستم ایزوله می شوند و شناسایی می گردند
+                CmdSql.Connection.Open()
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                CmdSql.CommandText = "Insert into dbtransport.dbo.TbCarAndPerson(nIDCar,nIDPerson,snRelation,dDate,strDesc,RelationTimeStamp)
+                  				      Values(" & YourTruckId & "," & YourTruckDriverId & ",2,R2Primary.dbo.BPTCOGregorianToPersian(GETDATE()),'TempRelation',convert(varchar, getdate(), 20))"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.CommandText = "Insert Into R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars(CardId, nCarId, RelationActive, RelationTimeStamp) 
+                  				      Values(" & MoneyWallet.MoneyWalletId & "," & YourTruckId & ",1,convert(varchar, getdate(), 20))"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+                Dim TurnId = Int64.MinValue
+                Dim InstanceTurnRegisterRequest = New PayanehClassLibraryTurnRegisterRequestManager(_DateTimeService)
+                Dim TurnRegisterRequestId = InstanceTurnRegisterRequest.RealTimeTurnRegisterRequest(YourSeqTId, YourTruckId, TurnId, YourRequesterId, TurnType.Temporary, YourSoftwareUser.UserId)
+                Return TurnId
+            Catch ex As SoftwareUserMoneyWalletNotFoundException
+                Throw ex
+            Catch ex As DataBaseException
+                Throw ex
+            Catch ex As MoneyWalletNotExistException
+                Throw ex
+            Catch ex As TurnCostNotFoundException
+                Throw ex
+            Catch ex As Exception When TypeOf ex Is RequesterNotAllowTurnIssueBySeqTException _
+                                OrElse TypeOf ex Is RequesterNotAllowTurnIssueByLastLoadPermissionedException _
+                                OrElse TypeOf ex Is TruckRelatedSequentialTurnNotFoundException _
+                                OrElse TypeOf ex Is CarIsNotPresentInParkingException _
+                                OrElse TypeOf ex Is GetNobatExceptionCarTruckIsTankTreiler _
+                                OrElse TypeOf ex Is CarTruckTravelLengthNotOverYetException _
+                                OrElse TypeOf ex Is GetNobatExceptionCarTruckHasNobat _
+                                OrElse TypeOf ex Is GetNobatException _
+                                OrElse TypeOf ex Is SequentialTurnIsNotActiveException _
+                                OrElse TypeOf ex Is TruckNotFoundException _
+                                OrElse TypeOf ex Is SequentialTurnNotFoundException _
+                                OrElse TypeOf ex Is TruckDriverNotFoundException _
+                                OrElse TypeOf ex Is TurnRegisterRequestNotFoundException _
+                                OrElse TypeOf ex Is GetNSSException _
+                                OrElse TypeOf ex Is GetDataException _
+                                OrElse TypeOf ex Is MoneyWalletCurrentChargeNotEnoughException _
+                                OrElse TypeOf ex Is TurnRegisterRequestTypeNotFoundException _
+                                OrElse TypeOf ex Is TurnPrintingInfNotFoundException _
+                                OrElse TypeOf ex Is DriverTruckInformationNotExistException _
+                                OrElse TypeOf ex Is RelatedTerraficCardNotFoundException _
+                                OrElse TypeOf ex Is LoadCapacitorLoadNotFoundException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
 
 
     End Class
@@ -2005,7 +2009,7 @@ Namespace Turns
                 _R2DateTimeService = YourR2DateTimeService
                 TurnType = YourTurnType
 
-                Dim InstanceLoadPermission = New R2CoreTransportationAndLoadNotificationLoadPermissionManager
+                Dim InstanceLoadPermission = New R2CoreTransportationAndLoadNotificationLoadPermissionManager(_R2DateTimeService)
                 Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationTrucksManager(_R2DateTimeService)
                 Dim InstanceTruckDrivers = New R2CoreTransportationAndLoadNotificationTruckDriversManager
                 Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(_R2DateTimeService)
@@ -2103,7 +2107,7 @@ Namespace Turns
 
         Public Sub DoStrategyComplementaryWorks()
             Try
-                Dim InstanceLoadPermission = New R2CoreTransportationAndLoadNotificationLoadPermissionManager
+                Dim InstanceLoadPermission = New R2CoreTransportationAndLoadNotificationLoadPermissionManager(_R2DateTimeService)
                 Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationTrucksManager(_R2DateTimeService)
                 Dim InstanceTruckDrivers = New R2CoreTransportationAndLoadNotificationTruckDriversManager
                 Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(_R2DateTimeService)

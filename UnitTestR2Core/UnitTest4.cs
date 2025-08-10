@@ -21,7 +21,7 @@ namespace UnitTestR2Core
         [TestMethod]
         public void Announcements()
         {
-            var x = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
+            var x = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(new R2DateTimeService());
             x.AnnouncementRelationAnnouncementSubGroupDeleting(2, 7);
             x.AnnouncementEditing(new R2CoreTransportationAndLoadNotificationAnnouncement { AnnouncementId = 1, AnnouncementTitle = "عمومی", Active = true });
         }

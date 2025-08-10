@@ -25,6 +25,7 @@ namespace APITransportation.Controllers
     public class TariffsController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
+        private IR2DateTimeService _DateTimeService = new R2DateTimeService();
 
         [HttpPost]
         [Route("api/GetTariffs")]
@@ -42,7 +43,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
+                var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceTransportTariffs.GetTariffs(LoaderTypeId, GoodId, SourceCityId, TargetCityId, true), Encoding.UTF8, "application/json");
@@ -74,7 +75,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
+                var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService);
                 InstanceTransportTariffs.TariffsRegistering(Tariffs);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -107,7 +108,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
+                var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService);
                 InstanceTransportTariffs.TariffsRegistering(Tariffs, AddPercentage);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -139,7 +140,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
+                var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService);
                 InstanceTransportTariffs.TariffsDeactivate(Tariffs);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -165,13 +166,13 @@ namespace APITransportation.Controllers
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var Tariffs = Content.Tariffs;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
+                var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService);
                 InstanceTransportTariffs.TariffsDeleting(Tariffs);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -197,13 +198,13 @@ namespace APITransportation.Controllers
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var Tariffs = Content.Tariffs;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager();
+                var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService);
                 InstanceTransportTariffs.TariffsEditing(Tariffs);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");

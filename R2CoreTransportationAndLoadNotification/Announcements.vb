@@ -12,6 +12,7 @@ Imports R2CoreTransportationAndLoadNotification.Announcements
 Imports R2CoreTransportationAndLoadNotification.Announcements.Exceptions
 Imports R2CoreTransportationAndLoadNotification.ConfigurationsManagement
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad
+Imports R2CoreGUI
 
 
 Namespace Announcements
@@ -157,12 +158,6 @@ Namespace Announcements
 
     End Class
 
-    'BPTChanged
-    Public Class R2CoreTransportationAndLoadNotificationAnnouncement
-        Public Property AnnouncementId As Int64
-        Public Property AnnouncementTitle As String
-        Public Property Active As Boolean
-    End Class
 
     Public Class R2CoreTransportationAndLoadNotificationAnnouncementSubGroup
         Public Property AnnouncementSGId As Int64
@@ -402,304 +397,9 @@ Namespace Announcements
             End Try
         End Function
 
-        Public Function HasRelationBetweenProvinceAndAnnouncementsubGroup(YourProvinceId As Int64, YourAHSGId As Int64) As Boolean
-            Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-            Try
-                Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "
-                      Select RelationActive from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroupsRelationProvinces 
-                      Where RelationActive=1 and ProvinceId=" & YourProvinceId & " and AHSGId=" & YourAHSGId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New HasNotRelationBetweenProvinceAndAnnouncementsubGroup
-                Return DS.Tables(0).Rows(0).Item("RelationActive")
-            Catch ex As HasNotRelationBetweenProvinceAndAnnouncementsubGroup
-                Throw ex
-            Catch exx As LoaderTypeRelationAnnouncementHallNotFoundException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        'BPTChanged
-        Public Function GetAnnouncements(YourSearchString As String, YourImmediately As Boolean) As String
-            Try
-                Dim InstanceSqlDataBox = New R2CoreInstanseSqlDataBOXManager
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
-                Dim DS As New DataSet
-                If YourImmediately Then
-                    Dim Da As New SqlClient.SqlDataAdapter
-                    Da.SelectCommand = New SqlCommand("
-                      Select Announcements.AnnouncementId,Announcements.AnnouncementTitle,Announcements.Active 
-                      from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements As Announcements  
-                      Where Announcements.AnnouncementTitle Like N'%" & YourSearchString & "%' and Announcements.Deleted=0 
-                      for JSON path")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
-                    If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
-                Else
-                    If InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
-                     "Select Announcements.AnnouncementId,Announcements.AnnouncementTitle,Announcements.Active 
-                      from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements As Announcements  
-                      Where Announcements.AnnouncementTitle Like N'%" & YourSearchString & "%' and Announcements.Deleted=0 
-                      for JSON path", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
-                End If
-                Return InstancePublicProcedures.GetIntegratedJson(DS)
-            Catch ex As AnyNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Sub AnnouncementRegistering(YourRawAnnouncement As R2CoreTransportationAndLoadNotificationAnnouncement)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Select Top 1 AnnouncementId From R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements with (tablockx) Order By AnnouncementId Desc"
-                Dim AnnouncementIdNew As Int64 = CmdSql.ExecuteScalar() + 1
-                CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements(AnnouncementId,AnnouncementTitle,ViewFlag,Active,Deleted)
-                                          Values(" & AnnouncementIdNew & ",'" & YourRawAnnouncement.AnnouncementTitle & "',1,1,0)"
-                CmdSql.ExecuteNonQuery()
-                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-            Catch ex As SqlException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
-                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-        Public Sub AnnouncementEditing(YourRawAnnouncement As R2CoreTransportationAndLoadNotificationAnnouncement)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements Set AnnouncementTitle='" & YourRawAnnouncement.AnnouncementTitle & "',Active=" & IIf(YourRawAnnouncement.Active, 1, 0) & "
-                                      Where AnnouncementId=" & YourRawAnnouncement.AnnouncementId & ""
-
-                CmdSql.ExecuteNonQuery() : CmdSql.Connection.Close()
-            Catch ex As SqlException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-        Public Sub AnnouncementDeleting(YourAnnouncementId As Int64)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements Set Deleted=1,Active=0
-                                      Where AnnouncementId=" & YourAnnouncementId & ""
-                CmdSql.ExecuteNonQuery() : CmdSql.Connection.Close()
-            Catch ex As SqlException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-        Public Function GetAnnouncementSGs(YourSearchString As String, YourImmediately As Boolean) As String
-            Try
-                Dim InstanceSqlDataBox = New R2CoreInstanseSqlDataBOXManager
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
-                Dim DS As New DataSet
-                If YourImmediately Then
-                    Dim Da As New SqlClient.SqlDataAdapter
-                    Da.SelectCommand = New SqlCommand("
-                      Select AnnouncementSGs.AnnouncementSGId ,AnnouncementSGs.AnnouncementSGTitle ,AnnouncementSGs.Active 
-                      from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSGs 
-                      Where AnnouncementSGs.AnnouncementSGTitle Like N'%" & YourSearchString & "%' and AnnouncementSGs.Deleted=0 
-                      for JSON path")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
-                    If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
-                Else
-                    If InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
-                     "Select AnnouncementSGs.AnnouncementSGId ,AnnouncementSGs.AnnouncementSGTitle ,AnnouncementSGs.Active 
-                      from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSGs 
-                      Where AnnouncementSGs.AnnouncementSGTitle Like N'%" & YourSearchString & "%' and AnnouncementSGs.Deleted=0 
-                      for JSON path", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
-                End If
-                Return InstancePublicProcedures.GetIntegratedJson(DS)
-            Catch ex As AnyNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Function GetAnnouncementSGsByAnnouncementId(YourAnnouncementId As Int64, YourImmediately As Boolean) As String
-            Try
-                Dim InstanceSqlDataBox = New R2CoreInstanseSqlDataBOXManager
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
-                Dim DS As New DataSet
-                If YourImmediately Then
-                    Dim Da As New SqlClient.SqlDataAdapter
-                    Da.SelectCommand = New SqlCommand("
-                      Select AnnouncementSGs.AnnouncementSGId ,AnnouncementSGs.AnnouncementSGTitle ,AnnouncementSGs.Active 
-                      from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSGs 
-                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as AnnouncementsRelationAnnouncementSubGroups On AnnouncementSGs.AnnouncementSGId=AnnouncementsRelationAnnouncementSubGroups.AnnouncementSGId 
-                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On AnnouncementsRelationAnnouncementSubGroups.AnnouncementId=Announcements.AnnouncementId 
-                      Where Announcements.AnnouncementId=" & YourAnnouncementId & " and AnnouncementSGs.Deleted=0 
-                      for JSON path")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
-                    If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
-                Else
-                    If InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
-                     "Select AnnouncementSGs.AnnouncementSGId ,AnnouncementSGs.AnnouncementSGTitle ,AnnouncementSGs.Active 
-                      from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSGs 
-                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as AnnouncementsRelationAnnouncementSubGroups On AnnouncementSGs.AnnouncementSGId=AnnouncementsRelationAnnouncementSubGroups.AnnouncementSGId 
-                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On AnnouncementsRelationAnnouncementSubGroups.AnnouncementId=Announcements.AnnouncementId 
-                      Where Announcements.AnnouncementId=" & YourAnnouncementId & " and AnnouncementSGs.Deleted=0 
-                      for JSON path", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
-                End If
-                Return InstancePublicProcedures.GetIntegratedJson(DS)
-            Catch ex As AnyNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Sub AnnouncementSGRegistering(YourRawAnnouncementSG As R2CoreTransportationAndLoadNotificationAnnouncementSubGroup)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Select Top 1 AnnouncementSGId From R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups with (tablockx) Order By AnnouncementSGId Desc"
-                Dim AnnouncementSGIdNew As Int64 = CmdSql.ExecuteScalar() + 1
-                CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups(AnnouncementSGId,AnnouncementSGTitle,ViewFlag,Active,Deleted)
-                                          Values(" & AnnouncementSGIdNew & ",'" & YourRawAnnouncementSG.AnnouncementSGTitle & "',1,1,0)"
-                CmdSql.ExecuteNonQuery()
-                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-            Catch ex As SqlException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
-                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-        Public Sub AnnouncementSGEditing(YourRawAnnouncementSG As R2CoreTransportationAndLoadNotificationAnnouncementSubGroup)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups Set AnnouncementSGTitle='" & YourRawAnnouncementSG.AnnouncementSGTitle & "',Active=" & IIf(YourRawAnnouncementSG.Active, 1, 0) & "
-                                      Where AnnouncementSGId=" & YourRawAnnouncementSG.AnnouncementSGId & ""
-
-                CmdSql.ExecuteNonQuery() : CmdSql.Connection.Close()
-            Catch ex As SqlException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-        Public Sub AnnouncementSGDeleting(YourAnnouncementSGId As Int64)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups Set Deleted=1,Active=0
-                                      Where AnnouncementSGId=" & YourAnnouncementSGId & ""
-
-                CmdSql.ExecuteNonQuery() : CmdSql.Connection.Close()
-            Catch ex As SqlException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-        Public Function GetAnnouncementRelationAnnouncementSubGroups(YourAnnouncementId As Int64, YourImmediately As Boolean) As String
-            Try
-                Dim InstanceSqlDataBox = New R2CoreInstanseSqlDataBOXManager
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
-                Dim DS As New DataSet
-                If YourImmediately Then
-                    Dim Da As New SqlClient.SqlDataAdapter
-                    Da.SelectCommand = New SqlCommand("
-                         Select Announcements.AnnouncementId,Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGId,AnnouncementSubGroups.AnnouncementSGTitle
-                            from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements
-                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as ARASG On Announcements.AnnouncementId=ARASG.AnnouncementId 
-                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On ARASG.AnnouncementSGId=AnnouncementSubGroups.AnnouncementSGId 
-                         Where Announcements.AnnouncementId=" & YourAnnouncementId & "
-                         for JSON Auto")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
-                    If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
-                Else
-                    If InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
-                     "Select Announcements.AnnouncementId,Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGId,AnnouncementSubGroups.AnnouncementSGTitle
-                            from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements
-                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as ARASG On Announcements.AnnouncementId=ARASG.AnnouncementId 
-                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On ARASG.AnnouncementSGId=AnnouncementSubGroups.AnnouncementSGId 
-                      Where Announcements.AnnouncementId=" & YourAnnouncementId & "
-                      for JSON Auto", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
-                End If
-                Return InstancePublicProcedures.GetIntegratedJson(DS)
-            Catch ex As AnyNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Sub AnnouncementRelationAnnouncementSubGroupDeleting(YourAnnouncementId As Int64, YourAnnouncementSGId As Int64)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups
-                                      Where AnnouncementId=" & YourAnnouncementId & " and AnnouncementSGId=" & YourAnnouncementSGId & ""
-                CmdSql.ExecuteNonQuery() : CmdSql.Connection.Close()
-            Catch ex As SqlException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-        Public Sub AnnouncementRelationAnnouncementSubGroupRegistering(YourAnnouncementId As Int64, YourAnnouncementSGId As Int64)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups(AnnouncementId,AnnouncementSGId)
-                                      Values(" & YourAnnouncementId & "," & YourAnnouncementSGId & ")"
-                CmdSql.ExecuteNonQuery() : CmdSql.Connection.Close()
-            Catch ex As SqlException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
 
     End Class
+
 
     Public MustInherit Class R2CoreTransportationAndLoadNotificationMClassAnnouncementsManagement
         Private Shared _DateTime As New R2DateTime
@@ -1036,7 +736,386 @@ Namespace Announcements
 
     End Namespace
 
+    'BPTChanged
+    Public Class R2CoreTransportationAndLoadNotificationAnnouncement
+        Public Property AnnouncementId As Int64
+        Public Property AnnouncementTitle As String
+        Public Property Active As Boolean
+    End Class
 
+    'BPTChanged
+    Public Class R2CoreTransportationAndLoadNotificationAnnouncementsManager
+
+        Private _DateTimeService As IR2DateTimeService
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+        End Sub
+
+        'BPTChanged
+        Public Function GetAnnouncements(YourSearchString As String, YourImmediately As Boolean) As String
+            Try
+                Dim InstanceSqlDataBox = New R2CoreInstanseSqlDataBOXManager
+                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim DS As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand("
+                      Select Announcements.AnnouncementId,Announcements.AnnouncementTitle,Announcements.Active 
+                      from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements As Announcements  
+                      Where Announcements.AnnouncementTitle Like N'%" & YourSearchString & "%' and Announcements.Deleted=0 
+                      for JSON path")
+                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                     "Select Announcements.AnnouncementId,Announcements.AnnouncementTitle,Announcements.Active 
+                      from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements As Announcements  
+                      Where Announcements.AnnouncementTitle Like N'%" & YourSearchString & "%' and Announcements.Deleted=0 
+                      for JSON path", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(DS)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Sub AnnouncementRegistering(YourRawAnnouncement As R2CoreTransportationAndLoadNotificationAnnouncement)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                CmdSql.CommandText = "Select Top 1 AnnouncementId From R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements with (tablockx) Order By AnnouncementId Desc"
+                Dim AnnouncementIdNew As Int64 = CmdSql.ExecuteScalar() + 1
+                CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements(AnnouncementId,AnnouncementTitle,ViewFlag,Active,Deleted)
+                                          Values(" & AnnouncementIdNew & ",'" & YourRawAnnouncement.AnnouncementTitle & "',1,1,0)"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub AnnouncementEditing(YourRawAnnouncement As R2CoreTransportationAndLoadNotificationAnnouncement)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements Set AnnouncementTitle='" & YourRawAnnouncement.AnnouncementTitle & "',Active=" & IIf(YourRawAnnouncement.Active, 1, 0) & "
+                                      Where AnnouncementId=" & YourRawAnnouncement.AnnouncementId & ""
+
+                CmdSql.ExecuteNonQuery() : CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub AnnouncementDeleting(YourAnnouncementId As Int64)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements Set Deleted=1,Active=0
+                                      Where AnnouncementId=" & YourAnnouncementId & ""
+                CmdSql.ExecuteNonQuery() : CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Function GetAnnouncementSGs(YourSearchString As String, YourImmediately As Boolean) As String
+            Try
+                Dim InstanceSqlDataBox = New R2CoreInstanseSqlDataBOXManager
+                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim DS As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand("
+                      Select AnnouncementSGs.AnnouncementSGId ,AnnouncementSGs.AnnouncementSGTitle ,AnnouncementSGs.Active 
+                      from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSGs 
+                      Where AnnouncementSGs.AnnouncementSGTitle Like N'%" & YourSearchString & "%' and AnnouncementSGs.Deleted=0 
+                      for JSON path")
+                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                     "Select AnnouncementSGs.AnnouncementSGId ,AnnouncementSGs.AnnouncementSGTitle ,AnnouncementSGs.Active 
+                      from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSGs 
+                      Where AnnouncementSGs.AnnouncementSGTitle Like N'%" & YourSearchString & "%' and AnnouncementSGs.Deleted=0 
+                      for JSON path", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(DS)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetAnnouncementSGsByAnnouncementId(YourAnnouncementId As Int64, YourImmediately As Boolean) As String
+            Try
+                Dim InstanceSqlDataBox = New R2CoreInstanseSqlDataBOXManager
+                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim DS As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand("
+                      Select AnnouncementSGs.AnnouncementSGId ,AnnouncementSGs.AnnouncementSGTitle ,AnnouncementSGs.Active 
+                      from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSGs 
+                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as AnnouncementsRelationAnnouncementSubGroups On AnnouncementSGs.AnnouncementSGId=AnnouncementsRelationAnnouncementSubGroups.AnnouncementSGId 
+                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On AnnouncementsRelationAnnouncementSubGroups.AnnouncementId=Announcements.AnnouncementId 
+                      Where Announcements.AnnouncementId=" & YourAnnouncementId & " and AnnouncementSGs.Deleted=0 
+                      for JSON path")
+                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                     "Select AnnouncementSGs.AnnouncementSGId ,AnnouncementSGs.AnnouncementSGTitle ,AnnouncementSGs.Active 
+                      from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSGs 
+                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as AnnouncementsRelationAnnouncementSubGroups On AnnouncementSGs.AnnouncementSGId=AnnouncementsRelationAnnouncementSubGroups.AnnouncementSGId 
+                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On AnnouncementsRelationAnnouncementSubGroups.AnnouncementId=Announcements.AnnouncementId 
+                      Where Announcements.AnnouncementId=" & YourAnnouncementId & " and AnnouncementSGs.Deleted=0 
+                      for JSON path", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(DS)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function IsThisAnnounceTimeLeastAnnounceTime(YourAnnouncementGroupId As String, YourAnnouncementSGId As String, YourTime As String) As Boolean
+            Try
+                Dim LastATime = GetAnnouncementLeastAnnounceTime(YourAnnouncementGroupId, YourAnnouncementSGId).Time
+                If LastATime = YourTime Then Return True
+                Return False
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + "." + ex.Message)
+            End Try
+        End Function
+
+        Public Sub AnnouncementSGRegistering(YourRawAnnouncementSG As R2CoreTransportationAndLoadNotificationAnnouncementSubGroup)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                CmdSql.CommandText = "Select Top 1 AnnouncementSGId From R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups with (tablockx) Order By AnnouncementSGId Desc"
+                Dim AnnouncementSGIdNew As Int64 = CmdSql.ExecuteScalar() + 1
+                CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups(AnnouncementSGId,AnnouncementSGTitle,ViewFlag,Active,Deleted)
+                                          Values(" & AnnouncementSGIdNew & ",'" & YourRawAnnouncementSG.AnnouncementSGTitle & "',1,1,0)"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub AnnouncementSGEditing(YourRawAnnouncementSG As R2CoreTransportationAndLoadNotificationAnnouncementSubGroup)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups Set AnnouncementSGTitle='" & YourRawAnnouncementSG.AnnouncementSGTitle & "',Active=" & IIf(YourRawAnnouncementSG.Active, 1, 0) & "
+                                      Where AnnouncementSGId=" & YourRawAnnouncementSG.AnnouncementSGId & ""
+
+                CmdSql.ExecuteNonQuery() : CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub AnnouncementSGDeleting(YourAnnouncementSGId As Int64)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups Set Deleted=1,Active=0
+                                      Where AnnouncementSGId=" & YourAnnouncementSGId & ""
+
+                CmdSql.ExecuteNonQuery() : CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Function GetAnnouncementRelationAnnouncementSubGroups(YourAnnouncementId As Int64, YourImmediately As Boolean) As String
+            Try
+                Dim InstanceSqlDataBox = New R2CoreInstanseSqlDataBOXManager
+                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim DS As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand("
+                         Select Announcements.AnnouncementId,Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGId,AnnouncementSubGroups.AnnouncementSGTitle
+                            from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements
+                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as ARASG On Announcements.AnnouncementId=ARASG.AnnouncementId 
+                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On ARASG.AnnouncementSGId=AnnouncementSubGroups.AnnouncementSGId 
+                         Where Announcements.AnnouncementId=" & YourAnnouncementId & "
+                         for JSON Auto")
+                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                     "Select Announcements.AnnouncementId,Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGId,AnnouncementSubGroups.AnnouncementSGTitle
+                            from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements
+                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as ARASG On Announcements.AnnouncementId=ARASG.AnnouncementId 
+                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On ARASG.AnnouncementSGId=AnnouncementSubGroups.AnnouncementSGId 
+                      Where Announcements.AnnouncementId=" & YourAnnouncementId & "
+                      for JSON Auto", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(DS)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Sub AnnouncementRelationAnnouncementSubGroupDeleting(YourAnnouncementId As Int64, YourAnnouncementSGId As Int64)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups
+                                      Where AnnouncementId=" & YourAnnouncementId & " and AnnouncementSGId=" & YourAnnouncementSGId & ""
+                CmdSql.ExecuteNonQuery() : CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub AnnouncementRelationAnnouncementSubGroupRegistering(YourAnnouncementId As Int64, YourAnnouncementSGId As Int64)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups(AnnouncementId,AnnouncementSGId)
+                                      Values(" & YourAnnouncementId & "," & YourAnnouncementSGId & ")"
+                CmdSql.ExecuteNonQuery() : CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub RelationBetweenProvinceAndAnnouncementsubGroupValidate(YourProvinceId As Int64, YourAnnouncementSGId As Int64)
+            Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+            Try
+                Dim DS As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "
+                      Select ProvinceId from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroupsRelationProvinces 
+                      Where ProvinceId=" & YourProvinceId & " and AnnouncementSGId=" & YourAnnouncementSGId & "", 32767, DS, New Boolean).GetRecordsCount() = 0 Then Throw New HasNotRelationBetweenProvinceAndAnnouncementsubGroup
+            Catch ex As HasNotRelationBetweenProvinceAndAnnouncementsubGroup
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Function GetAnnouncementHallAnnounceTimes(YourAnnouncementId As Int64, YourAnnouncementSGId As Int64) As List(Of String)
+            Try
+                Dim ComposeSearchString As String = YourAnnouncementSGId.ToString + "="
+                Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager(_DateTimeService)
+                Dim AllAnnounceTimesofAnnouncementHall As String() = Split(InstanceConfigurationOfAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementHallAnnounceTime, YourAnnouncementId), ";")
+                Dim AllAnnounceTimesofAnnouncementsubGroup = Split(Mid(AllAnnounceTimesofAnnouncementHall.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllAnnounceTimesofAnnouncementHall.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), "-")
+                Return AllAnnounceTimesofAnnouncementsubGroup.ToList
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetAnnouncemenetHallLastAnnounceTime(YourAnnouncementId As Int64, YourAnnouncementSGId As Int64) As R2StandardDateAndTimeStructure
+            Try
+                Dim CurrentTime As String = _DateTimeService.DateTimeServ.GetCurrentTime()
+                Dim AnnounceTimes As List(Of String) = GetAnnouncementHallAnnounceTimes(YourAnnouncementId, YourAnnouncementSGId)
+                If CurrentTime < AnnounceTimes(0) Then Return New R2StandardDateAndTimeStructure(Nothing, Nothing, "00:00:00")
+                If CurrentTime >= AnnounceTimes(AnnounceTimes.Count - 1) Then Return New R2StandardDateAndTimeStructure(Nothing, Nothing, AnnounceTimes(AnnounceTimes.Count - 1))
+                For Loopx As Int64 = 0 To AnnounceTimes.Count - 1
+                    If Loopx < AnnounceTimes.Count - 1 Then
+                        If CurrentTime >= AnnounceTimes(Loopx) And CurrentTime < AnnounceTimes(Loopx + 1) Then Return New R2StandardDateAndTimeStructure(Nothing, Nothing, AnnounceTimes(Loopx))
+                    Else
+                        Throw New Exception("تنظیمات زمان اعلام بار را در پیکربندی سیستم کنترل نمایید")
+                    End If
+                Next
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetAnnouncementLeastAnnounceTime(YourAnnouncementId As Int64, YourAnnouncementSGId As Int64) As R2StandardDateAndTimeStructure
+            Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager(_DateTimeService)
+            Try
+                Dim ComposeSearchString As String = YourAnnouncementSGId.ToString + "="
+                Dim AllAnnounceTimesofAnnouncementHall As String() = Split(InstanceConfigurationOfAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementHallAnnounceTime, YourAnnouncementId), ";")
+                Dim AllAnnounceTimesofAnnouncementsubGroup = Split(Mid(AllAnnounceTimesofAnnouncementHall.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllAnnounceTimesofAnnouncementHall.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), "-")
+                Return New R2StandardDateAndTimeStructure(Nothing, Nothing, AllAnnounceTimesofAnnouncementsubGroup(AllAnnounceTimesofAnnouncementsubGroup.Count - 1))
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function IsAnnouncemenetAnnounceTimePassed(YourAnnouncementGroupId As Int64, YourAnnouncementSGId As Int64, YourDateTime As R2StandardDateAndTimeStructure) As Boolean
+            Try
+                Dim CurrentTime As String = _DateTimeService.DateTimeServ.GetCurrentTime()
+                Dim AnnounceTimes As List(Of String) = GetAnnouncementHallAnnounceTimes(YourAnnouncementGroupId, YourAnnouncementSGId)
+                If YourDateTime.Time < AnnounceTimes(0) Then If CurrentTime < AnnounceTimes(0) Then Return False Else Return True
+                For Loopx As Int64 = 0 To AnnounceTimes.Count - 1
+                    If Loopx < AnnounceTimes.Count - 1 Then
+                        If YourDateTime.Time >= AnnounceTimes(Loopx) And YourDateTime.Time < AnnounceTimes(Loopx + 1) Then
+                            If CurrentTime < AnnounceTimes(Loopx + 1) Then Return False Else Return True
+                        End If
+                    End If
+                Next
+                Return True
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+    End Class
 
 
 End Namespace
@@ -1113,6 +1192,61 @@ Namespace AnnouncementTiming
                 If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 + SliceAutomaticTurnRegisteringTiming + 5 And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 + SliceAutomaticTurnRegisteringTiming + 5 + SliceSedimentingTiming Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InSedimenting
                 'پایان همه فرآیندها
                 If InstanceAnnouncements.IsThisAnnounceTimeLeastAnnounceTime(YourAHId, YourAHSGId, AnnouncemenetHallLastAnnounceTime) Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InEndOfAllProcesses
+                'در وسط دو اعلام بار قرار داریم البته بعد از تخصیص و صدور مجوز و صدور خودکار نوبت ها
+                Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InMiddleOfProcesses
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+    End Class
+
+    'BPTChanged
+    Public Class R2CoreTransportationAndLoadNotificationAnnouncementTimingManager
+        Private _DateTimeService As IR2DateTimeService
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+        End Sub
+
+        Public Function GetTiming(YourAnnouncementId As Int64, YourAnnouncementSGId As Int64, YourTime As String) As R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming
+            Try
+                Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager(_DateTimeService)
+                Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
+
+                Dim ComposeSearchString As String = YourAnnouncementSGId.ToString + "="
+                Dim AllAnnouncementsAutomaticProcessesTiming As String() = Split(InstanceConfigurationOfAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsAutomaticProcessesTiming, YourAnnouncementId), ";")
+                Dim AllAnnouncementsAutomaticProcessesTimingSubGroup As String = AllAnnouncementsAutomaticProcessesTiming.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0)
+                Dim TruckDriverLoadAllocationTiming As Int64 = Split(AllAnnouncementsAutomaticProcessesTimingSubGroup, "=")(1).Split("-")(1).Split(",")(0)
+                Dim LoadPermissionsAutomaticJobTiming As Int64 = Split(AllAnnouncementsAutomaticProcessesTimingSubGroup, "=")(1).Split("-")(1).Split(",")(1)
+                Dim AutomaticTurnRegisteringTiming As Int64 = Split(AllAnnouncementsAutomaticProcessesTimingSubGroup, "=")(1).Split("-")(1).Split(",")(2)
+                Dim SedimentingTiming As Int64 = Split(AllAnnouncementsAutomaticProcessesTimingSubGroup, "=")(1).Split("-")(1).Split(",")(3)
+                Dim AnnouncemenetHallLastAnnounceTime As String = InstanceAnnouncements.GetAnnouncemenetHallLastAnnounceTime(YourAnnouncementId, YourAnnouncementSGId).Time
+                Dim O1 As TimeSpan = TimeSpan.Parse(YourTime)
+                Dim O2 As TimeSpan = TimeSpan.Parse(AnnouncemenetHallLastAnnounceTime)
+                Dim SliceLoadPermissionTiming As Int64 = LoadPermissionsAutomaticJobTiming * 60
+                Dim SliceTruckDriverLoadAllocationTiming As Int64 = TruckDriverLoadAllocationTiming * 60
+                Dim SliceSedimentingTiming As Int64 = SedimentingTiming * 60
+                Dim SliceAutomaticTurnRegisteringTiming As Int64 = AutomaticTurnRegisteringTiming * 60
+                'قبل از شروع اعلام بار
+                If AnnouncemenetHallLastAnnounceTime = "00:00:00" Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InBeforAllProcesses
+                'در 5 ثانیه اول شروع تخصیص بار
+                If O1.TotalSeconds >= O2.TotalSeconds And O1.TotalSeconds < O2.TotalSeconds + 5 Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadAllocationRegistering
+                'در اسلایس تخصیص بار
+                If O1.TotalSeconds >= O2.TotalSeconds + 5 And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering
+                'در 5 ثانیه اول شروع صدور مجوز 
+                If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadPermissionRegistering
+                'در اسلایس صدور مجوز
+                If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadPermissionRegistering
+                'در 5 ثانیه اول شروع صدور نوبت خودکار
+                If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartAutomaticTurnRegistering
+                'در اسلایس صدور نوبت خودکار
+                If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 + SliceAutomaticTurnRegisteringTiming Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InAutomaticTurnRegistering
+                'در 5 ثانیه اول شروع رسوب بار
+                If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 + SliceAutomaticTurnRegisteringTiming And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 + SliceAutomaticTurnRegisteringTiming + 5 Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartSedimenting
+                'در اسلایس رسوب بار
+                If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 + SliceAutomaticTurnRegisteringTiming + 5 And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 + SliceAutomaticTurnRegisteringTiming + 5 + SliceSedimentingTiming Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InSedimenting
+                'پایان همه فرآیندها
+                If InstanceAnnouncements.IsThisAnnounceTimeLeastAnnounceTime(YourAnnouncementId, YourAnnouncementSGId, AnnouncemenetHallLastAnnounceTime) Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InEndOfAllProcesses
                 'در وسط دو اعلام بار قرار داریم البته بعد از تخصیص و صدور مجوز و صدور خودکار نوبت ها
                 Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InMiddleOfProcesses
             Catch ex As Exception

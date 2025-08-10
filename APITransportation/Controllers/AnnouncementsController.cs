@@ -2,6 +2,7 @@
 using APITransportation.Models.Announcements;
 using Newtonsoft.Json;
 using R2Core.DatabaseManagement;
+using R2Core.DateAndTimeManagement;
 using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
@@ -25,6 +26,7 @@ namespace APITransportation.Controllers
     public class AnnouncementsController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
+        private IR2DateTimeService _DateTimeService = new R2DateTimeService();
 
         [HttpPost]
         [Route("api/GetAnnouncements")]
@@ -38,7 +40,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceAnnouncements.GetAnnouncements(SearchString, true), Encoding.UTF8, "application/json");
@@ -69,7 +71,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementRegistering(RawAnnouncement);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -100,7 +102,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementEditing(RawAnnouncement);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -131,7 +133,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementDeleting(AnnouncementId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -162,7 +164,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceAnnouncements.GetAnnouncementSGs(SearchString, true), Encoding.UTF8, "application/json");
@@ -192,7 +194,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceAnnouncements.GetAnnouncementSGsByAnnouncementId(AnnouncementId, false), Encoding.UTF8, "application/json");
@@ -223,7 +225,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementSGRegistering(RawAnnouncementSubGroup);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -254,7 +256,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementSGEditing(RawAnnouncementSubGroup);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -285,7 +287,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementSGDeleting(AnnouncementSGId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -315,7 +317,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceAnnouncements.GetAnnouncementRelationAnnouncementSubGroups(AnnouncementId, true), Encoding.UTF8, "application/json");
@@ -347,7 +349,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementRelationAnnouncementSubGroupDeleting(AnnouncementId,AnnouncementSGId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -379,7 +381,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager();
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementRelationAnnouncementSubGroupRegistering (AnnouncementId, AnnouncementSGId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);

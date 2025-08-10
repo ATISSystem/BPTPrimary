@@ -98,6 +98,8 @@ Imports R2CoreTransportationAndLoadNotification.Turns.TurnAccounting
 Imports Newtonsoft.Json
 Imports R2CoreTransportationAndLoadNotification.Caching
 Imports System.CodeDom
+Imports R2Core.MoneyWallet.Exceptions
+Imports R2CoreParkingSystem.EnterExitManagement
 
 
 
@@ -2215,7 +2217,7 @@ Namespace LoadAllocation
             End Try
         End Sub
 
-        Private Sub LoadAllocationRegistering(YourLoadId As Int64, YourTurnId As Int64, YourSeqTId As Int64, YourNativenessTypeId As Int64, YourTurnStatusId As Int64, YourRequesterId As Int64, YourSoftwareUser As R2CoreSoftwareUser)
+        Public Sub LoadAllocationRegistering(YourLoadId As Int64, YourTurnId As Int64, YourSeqTId As Int64, YourNativenessTypeId As Int64, YourTurnStatusId As Int64, YourRequesterId As Int64, YourSoftwareUser As R2CoreSoftwareUser)
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
             Try
@@ -2297,25 +2299,33 @@ Namespace LoadAllocation
             End Try
         End Sub
 
-        Public Sub LoadAllocationRegisteringforTransportCompany(YourTruckId As Int64, YourTruckDriverId As Int64, YourLoadId As Int64, YourSoftwareUser As R2CoreSoftwareUser, YourRequesterId As Int64)
+        Public Sub LoadAllocationRegisteringforAdministrator(YourTruckId As Int64, YourTruckDriverId As Int64, YourLoadId As Int64, YourSoftwareUser As R2CoreSoftwareUser, YourRequesterId As Int64)
             Try
-                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(New R2DateTimeService)
-                Dim Turn As R2CoreTransportationAndLoadNotificationTurnExtended
+                Dim InstanceLoadAllocation = New R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService)
+                Dim InstanceSequentialTurns = New R2CoreTransportationAndLoadNotificationSequentialTurnsManager()
+                Dim InstanceTruckNativeness = New R2CoreTransportationAndLoadNotificationsTruckNativenessManager
+                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService)
 
-                Try
-                    Turn = InstanceTurns.GetLastActiveTurnfromTruckId(YourTruckId, False)
-                Catch ex As TurnNotFoundException
+                Dim Turn = InstanceTurns.GetLastActiveTurnfromTruckId(YourTruckId, False)
+                Dim SeqTId = InstanceSequentialTurns.GetSequentialTurnIdfromTurn(Turn)
 
-                Catch ex As Exception
+                InstanceLoadAllocation.LoadAllocationRegistering(YourLoadId, Turn.TurnId, SeqTId, InstanceTruckNativeness.GetTruckNativeness(YourTruckId, True).TruckNativenessTypeId, TurnStatuses.Registered, YourRequesterId, YourSoftwareUser)
 
-                End Try
-
-
-
+            Catch ex As DataBaseException
+                Throw ex
+            Catch ex As TurnNotFoundException
+                Throw ex
+            Catch ex As SequentialTurnNotFoundException
+                Throw ex
+            Catch ex As LoadAllocationTimeNotReachedException
+                Throw ex
+            Catch ex As LoadAllocationConditionsNotEstablishedException
+                Throw ex
+            Catch ex As LoadForLoadAllocationProcessNotFoundException
+                Throw ex
             Catch ex As Exception
-
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
-
         End Sub
 
         Public Function GetTruckDriverLoadAllocationsForRepriority(YourSoftwareUser As R2CoreSoftwareUser) As String
@@ -2337,9 +2347,10 @@ Namespace LoadAllocation
                          ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000')) 
                    Order By CarAndPersons.nIDCarAndPerson Desc,Turns.nEnterExitId Desc
 
-                   Select LoadAllocations.LAId as LAId,LoadAllocations.Priority as Priority,LoadAllocations.nEstelamId as LoadId,Products.strGoodName as GoodTitle,SourceCities.StrCityName SourceCityTitle,TargetCities.StrCityName as TargetCityTitle,Loads.nTonaj as Tonaj,
+                   Select LoadAllocations.LAId as LAId,LoadAllocations.Priority as Priority,LoadAllocationStatuses.LoadAllocationStatusColor,LoadAllocations.nEstelamId as LoadId,Products.strGoodName as GoodTitle,SourceCities.StrCityName SourceCityTitle,TargetCities.StrCityName as TargetCityTitle,Loads.nTonaj as Tonaj,
                           Companies.strCompName as TransportCompanyTitle,LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,Loads.strDescription as Description,Loads.strAddress as Address,Loads.strBarName as Recipient,Loads.TPTParamsJoint     
                    from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
+                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocationStatuses as LoadAllocationStatuses On LoadAllocations.LAStatusId=LoadAllocationStatuses.LoadAllocationStatusId 
                      Inner Join DBTransport.dbo.tbElam as Loads On LoadAllocations.nEstelamId=Loads.nEstelamID 
                      Inner Join DBTransport.dbo.tbProducts as Products On Loads.nBarcode=Products.strGoodCode 
                      Inner Join DBTransport.dbo.tbCity as SourceCities On Loads.nBarSource=SourceCities.nCityCode 
@@ -2349,6 +2360,46 @@ Namespace LoadAllocation
                      Inner Join DBTransport.dbo.tbCompany as Companies On Loads.nCompCode=Companies.nCompCode 
                    Where LoadAllocations.TurnId=@LastTurnId and LoadAllocations.DateShamsi=R2Primary.dbo.BPTCOGregorianToPersian(GETDATE()) and LoadAllocations.LAStatusId=" & LoadAllocation.R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & "
                    Order By LoadAllocations.Priority Asc for JSON PATH", 0, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                Return InstancePublicProcedures.GetIntegratedJson(DS)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetTruckDriverLoadAllocationsRecords(YourSoftwareUser As R2CoreSoftwareUser) As String
+            Try
+                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim DS As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                  "Declare @LastTurnId int
+                   Select Top 1 @LastTurnId=Turns.nEnterExitId 
+                   from  R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                     Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
+                     Inner Join dbtransport.dbo.TbDriver as Drivers On EntityRelations.E2=Drivers.nIDDriver 
+                     Inner Join dbtransport.dbo.TbCarAndPerson as CarAndPersons On Drivers.nIDDriver=CarAndPersons.nIDPerson
+                     Inner Join dbtransport.dbo.TbCar as Cars On CarAndPersons.nIDCar=Cars.nIDCar 
+                     Inner Join dbtransport.dbo.tbEnterExit as Turns On Cars.nIDCar=Turns.strCardno 
+                   Where SoftwareUsers.UserId=" & YourSoftwareUser.UserId & " and EntityRelations.ERTypeId=" & R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & " and EntityRelations.RelationActive=1 and CarAndPersons.snRelation=2 and
+                         (Turns.TurnStatus=" & TurnStatuses.Registered & " or Turns.TurnStatus=" & TurnStatuses.UsedLoadPermissionRegistered & " or Turns.TurnStatus=" & TurnStatuses.UsedLoadAllocationRegistered & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationLoadAllocationCancelled & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationLoadPermissionCancelled & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationUser & ") and
+                         ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000')) 
+                   Order By CarAndPersons.nIDCarAndPerson Desc,Turns.nEnterExitId Desc
+
+                   Select LoadAllocations.LAId as LAId,LoadAllocations.Priority as Priority,LoadAllocationStatuses.LoadAllocationStatusColor,LoadAllocations.nEstelamId as LoadId,Products.strGoodName as GoodTitle,SourceCities.StrCityName SourceCityTitle,TargetCities.StrCityName as TargetCityTitle,Loads.nTonaj as Tonaj,
+                          Companies.strCompName as TransportCompanyTitle,LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,Loads.strDescription as Description,Loads.strAddress as Address,Loads.strBarName as Recipient,Loads.TPTParamsJoint     
+                   from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
+           			 Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocationStatuses as LoadAllocationStatuses On LoadAllocations.LAStatusId=LoadAllocationStatuses.LoadAllocationStatusId 
+                     Inner Join DBTransport.dbo.tbElam as Loads On LoadAllocations.nEstelamId=Loads.nEstelamID 
+                     Inner Join DBTransport.dbo.tbProducts as Products On Loads.nBarcode=Products.strGoodCode 
+                     Inner Join DBTransport.dbo.tbCity as SourceCities On Loads.nBarSource=SourceCities.nCityCode 
+                     Inner Join DBTransport.dbo.tbCity as TargetCities On Loads.nCityCode=TargetCities.nCityCode 
+                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as LoadingPlaces On Loads.LoadingPlaceId=LoadingPlaces.LADPlaceId
+                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as DischargingPlaces On Loads.DischargingPlaceId=DischargingPlaces.LADPlaceId
+                     Inner Join DBTransport.dbo.tbCompany as Companies On Loads.nCompCode=Companies.nCompCode 
+                   Where LoadAllocations.TurnId=@LastTurnId and LoadAllocations.DateShamsi=R2Primary.dbo.BPTCOGregorianToPersian(GETDATE())
+                   Order By LoadAllocations.LAStatusId Asc for JSON PATH", 60, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
                 Return InstancePublicProcedures.GetIntegratedJson(DS)
             Catch ex As AnyNotFoundException
                 Throw ex
@@ -2516,6 +2567,91 @@ Namespace LoadAllocation
             End Try
         End Sub
 
+        Public Function GetLoadIdfromLoadAllocationId(YourLoadAllocationId As Int64) As Int64
+            Try
+                Dim DS As DataSet
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                   "Select nEstelamId as LoadId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations Where LAId=" & YourLoadAllocationId & "", 3600, DS, New Boolean).GetRecordsCount = 0 Then
+                    Throw New LoadAllocationsNotFoundException
+                End If
+                Return DS.Tables(0).Rows(0).Item("LoadId")
+            Catch ex As LoadAllocationsNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetTurnIdfromLoadAllocationId(YourLoadAllocationId As Int64) As Int64
+            Try
+                Dim DS As DataSet
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                   "Select TurnId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations Where LAId=" & YourLoadAllocationId & "", 3600, DS, New Boolean).GetRecordsCount = 0 Then
+                    Throw New LoadAllocationsNotFoundException
+                End If
+                Return DS.Tables(0).Rows(0).Item("TurnId")
+            Catch ex As LoadAllocationsNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetPrimaryTurn(YourLoadId As Int64, YourExcludedTurnId As Int64) As R2CoreTransportationAndLoadNotificationTurn
+            Try
+                Dim DS As DataSet = Nothing
+                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                      "Select Top 1 LoadAllocations.TurnId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
+                          Inner Join dbtransport.dbo.tbEnterExit as Turns On LoadAllocations.TurnId=Turns.nEnterExitId 
+                          Inner Join dbtransport.dbo.tbElam as Loads On LoadAllocations.nEstelamId=Loads.nEstelamID 
+                       Where LoadAllocations.DateShamsi='" & _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull() & "' and (LoadAllocations.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & " or LoadAllocations.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionFailed & ") and LoadAllocations.nEstelamId =" & YourLoadId & " and  LoadAllocations.LAStatusId<>" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionCancelled & " and 
+                             (Turns.TurnStatus=" & TurnStatuses.UsedLoadAllocationRegistered & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationLoadPermissionCancelled & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationLoadAllocationCancelled & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationUser & ") and (Turns.LoadPermissionStatus=" & R2CoreTransportationAndLoadNotificationLoadPermissionStatuses.None & " or Turns.LoadPermissionStatus=" & R2CoreTransportationAndLoadNotificationLoadPermissionStatuses.Cancelled & ") and Turns.nEnterExitId > " & YourExcludedTurnId & " and
+                             (Loads.LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered & " or Loads.LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.FreeLined & " or Loads.LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & ") and Loads.nCarNum>=1 and
+                        	 Turns.nEnterExitId not in (Select TurnId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocationsX where LoadAllocationsX.nEstelamId =" & YourLoadId & "  and LoadAllocationsX.LAStatusId=5)
+                       Order By LoadAllocations.TurnId Asc", 0, DS, New Boolean).GetRecordsCount = 0 Then Throw New PrimaryTurnNotFoundException
+                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService)
+                Return InstanceTurns.GetTurn(Convert.ToInt64(DS.Tables(0).Rows(0).Item("TurnId")), True)
+            Catch ex As PrimaryTurnNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function LoadAllocateToOther(YourLoadAllocationId As Int64, YourRequesterId As Int64, YourSoftwareUser As R2CoreSoftwareUser) As R2CoreTransportationAndLoadNotificationTurn
+            Try
+                Dim InstanceLoadAllocation = New R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService)
+                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService)
+                'تخصیص به راننده دیگر
+                Dim LoadId = InstanceLoadAllocation.GetLoadIdfromLoadAllocationId(YourLoadAllocationId)
+                Dim TurnId = InstanceLoadAllocation.GetTurnIdfromLoadAllocationId(YourLoadAllocationId)
+                Dim PrimaryTurn As R2CoreTransportationAndLoadNotificationTurn
+                PrimaryTurn = GetPrimaryTurn(LoadId, TurnId)
+                Dim TurnInfo = InstanceTurns.GetTurnInfo(PrimaryTurn.TurnId)
+                InstanceLoadAllocation.LoadAllocationRegistering(LoadId, PrimaryTurn.TurnId, TurnInfo.SeqTId, TurnInfo.NativenessTypeId, TurnInfo.TurnStatusId, YourRequesterId, YourSoftwareUser)
+                Return PrimaryTurn
+
+            Catch ex As LoadAllocationsNotFoundException
+                Throw ex
+            Catch ex As PrimaryTurnNotFoundException
+                Throw ex
+            Catch ex As TurnInfoNotFoundException
+                Throw ex
+            Catch ex As DataBaseException
+                Throw ex
+            Catch ex As LoadAllocationTimeNotReachedException
+                Throw ex
+            Catch ex As LoadAllocationConditionsNotEstablishedException
+                Throw ex
+            Catch ex As LoadForLoadAllocationProcessNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+
+        End Function
 
     End Class
 

@@ -28,6 +28,7 @@ namespace APITransportation.Controllers
     public class ProvincesAndCitiesController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
+        private IR2DateTimeService _DateTimeService = new R2DateTimeService();
 
         [HttpPost]
         [Route("api/GetCities")]
@@ -42,7 +43,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager();
+                var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceProvincesAndCities.GetListOfCitys_SearchIntroCharacters(SearchString, true), Encoding.UTF8, "application/json");
@@ -75,7 +76,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager();
+                var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager(_DateTimeService);
                 InstanceProvincesAndCities.ChangeActiveStatusOfProvince(ProvinceId, ProvineActive);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
@@ -105,7 +106,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager();
+                var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager(_DateTimeService);
                 InstanceProvincesAndCities.ChangeActiveStatusOfCity(CityId, CityActive);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;

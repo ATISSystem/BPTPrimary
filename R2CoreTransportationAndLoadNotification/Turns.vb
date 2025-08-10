@@ -104,6 +104,8 @@ Imports System.CodeDom
 Imports R2CoreParkingSystem.DataBaseManagement
 Imports R2CoreTransportationAndLoadNotification.Turns.TurnAccounting
 Imports R2CoreParkingSystem.AccountingManagement
+Imports R2Core.Caching
+Imports R2CoreTransportationAndLoadNotification.Caching
 
 
 Namespace Turns
@@ -1523,7 +1525,7 @@ Namespace Turns
 
         Public Function GetPossibleTruckTravelTime(YourTruckId As Int64) As Int64
             Try
-                Dim InstanceLoadPermission = New R2CoreTransportationAndLoadNotificationLoadPermissionManager
+                Dim InstanceLoadPermission = New R2CoreTransportationAndLoadNotificationLoadPermissionManager(_R2DateTimeService)
                 Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationTrucksManager(_R2DateTimeService)
                 Dim InstanceTravelTime = New R2CoreTransportationAndLoadNotificationTravelTimeManager
                 Dim Load = InstanceLoadPermission.GetTruckLastLoadWhichPermissioned(YourTruckId, True)
@@ -1712,6 +1714,26 @@ Namespace Turns
                     CmdSql.Transaction.Rollback()
                     CmdSql.Connection.Close()
                 End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetTurnInfo(YourTurnId As Int64) As R2CoreTransportationAndLoadNotificationTruckDriverTurnInfo
+            Try
+                Dim DS As DataSet
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                          "Select Turns.nEnterExitId as TurnId,Turns.TurnStatus as TurnStatusId,Cars.CarNativenessTypeId,SequentialTurns.SeqTId 
+                           From DBTransport.dbo.tbEnterExit as Turns
+                               Inner Join dbtransport.dbo.TbCar as Cars On Turns.strCardno=Cars.nIDCar 
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SequentialTurns On Substring(Turns.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS=SequentialTurns.SeqTKeyWord  Collate Arabic_CI_AI_WS 
+                           Where Turns.nEnterExitId=" & YourTurnId & " and Cars.ViewFlag=1", 300, DS, New Boolean).GetRecordsCount = 0 Then
+                    Throw New TurnInfoNotFoundException
+                End If
+                Return New R2CoreTransportationAndLoadNotificationTruckDriverTurnInfo With {.TurnId = DS.Tables(0).Rows(0).Item("TurnId"), .TurnStatusId = DS.Tables(0).Rows(0).Item("TurnStatusId"), .SeqTId = DS.Tables(0).Rows(0).Item("SeqTId"), .NativenessTypeId = DS.Tables(0).Rows(0).Item("CarNativenessTypeId")}
+            Catch ex As TurnInfoNotFoundException
+                Throw ex
+            Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Function
@@ -2260,6 +2282,17 @@ Namespace Turns
                 End Property
             End Class
 
+            'BPTChanged
+            Public Class SequentialTurnByAnnouncementSGIdNotFoundException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "تسلسل نوبت بر مبنای زیرگروه اعلام بار یافت نشد"
+                    End Get
+                End Property
+            End Class
+
+
         End Namespace
 
         'BPTChanged
@@ -2552,6 +2585,35 @@ Namespace Turns
                 End Try
             End Sub
 
+            Public Function GetSequentialTurnIdByAnnouncementSGId(YourAnnouncementSGId As Int64) As Int64
+                Try
+                    Dim DS As DataSet
+                    Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                               "Select Top 1 SeqTId from R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurnsRelationAnnouncementSubGroups as SequentialTurnsRelationAnnouncementSubGroups
+                                Where AnnouncementSGId=" & YourAnnouncementSGId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New SequentialTurnByAnnouncementSGIdNotFoundException
+                    Return Convert.ToInt64(DS.Tables(0).Rows(0).Item("SeqTId"))
+                Catch ex As SequentialTurnByAnnouncementSGIdNotFoundException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+
+            Public Function GetSequentialTurnIdfromTurn(YourTurn As R2CoreTransportationAndLoadNotificationTurnExtended) As Int64
+                Try
+                    Dim SeqTurnKeyWord = Mid(YourTurn.OtaghdarTurnNumber, 1, 1)
+                    Dim DS As DataSet
+                    Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 SeqTId from R2PrimaryTransportationAndLoadNotification.DBO.TblSequentialTurns Where SeqTKeyWord='" & SeqTurnKeyWord & "'", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New SequentialTurnNotFoundException
+                    Return Convert.ToInt64(DS.Tables(0).Rows(0).Item("SeqTId"))
+                Catch ex As SequentialTurnNotFoundException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+
         End Class
 
     End Namespace
@@ -2825,6 +2887,15 @@ Namespace Turns
             End Property
         End Class
 
+        Public Class TurnInfoNotFoundException
+            Inherits ApplicationException
+
+            Public Overrides ReadOnly Property Message As String
+                Get
+                    Return "اطلاعات نوبت یافت نشد"
+                End Get
+            End Property
+        End Class
 
 
 

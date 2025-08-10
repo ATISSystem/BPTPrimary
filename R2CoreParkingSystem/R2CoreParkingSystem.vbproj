@@ -120,6 +120,7 @@
     <Compile Include="Cars.vb" />
     <Compile Include="EntityRelations.vb" />
     <Compile Include="MoneyWallet.vb" />
+    <Compile Include="ProvincesAndCities.vb" />
     <Compile Include="R2CoreParkingSystem.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">

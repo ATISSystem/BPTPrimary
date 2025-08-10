@@ -4825,19 +4825,6 @@ Namespace RequesterManagement
 
 End Namespace
 
-Namespace TransportTarrifsParameters
-    Public MustInherit Class PayanehClassLibraryTransportTarrifsParameters
-        Inherits R2CoreTransportationAndLoadNotificationTransportTarrifsParameters
-        Public Shared Shadows ReadOnly Property Kalaf As Int64 = 8
-        Public Shared ReadOnly Property ZobAndAnbar As Int64 = 10
-        Public Shared ReadOnly Property OtoobanZob As Int64 = 11
-        Public Shared ReadOnly Property NormalTir As Int64 = 12
-        Public Shared ReadOnly Property NormalGerd As Int64 = 13
-    End Class
-
-
-End Namespace
-
 Namespace SoftwareUsers
 
     Public MustInherit Class PayanehClassLibrarySoftwareUserTypes

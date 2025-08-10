@@ -42,7 +42,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
+                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager();
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceLoadingAndDischargingPlaces.GetLoadingAndDischargingPlaces_SearchIntroCharacters(SearchString,true ), Encoding.UTF8, "application/json");
@@ -74,7 +74,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
+                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager();
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceLoadingAndDischargingPlaces.GetLoadingAndDischargingPlace(LADPlaceId, true)), Encoding.UTF8, "application/json");
@@ -106,7 +106,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
+                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager();
                 var LADPlaceId = InstanceLoadingAndDischargingPlaces.LoadingAndDischargingPlaceRegister(RawLADPlaceInf);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -138,7 +138,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
+                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager();
                 InstanceLoadingAndDischargingPlaces.LoadingAndDischargingPlaceUpdating(RawLADPlaceInf);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -169,7 +169,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
+                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager();
                 InstanceLoadingAndDischargingPlaces.LoadingAndDischargingPlaceDelete(LADPlaceId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -200,7 +200,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
+                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager();
                 InstanceLoadingAndDischargingPlaces.LoadingPlaceChangeActiveStatus(LADPlaceId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -231,7 +231,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationMClassLoadingAndDischargingPlacesManager();
+                var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager();
                 InstanceLoadingAndDischargingPlaces.DischargingPlaceChangeActiveStatus(LADPlaceId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);

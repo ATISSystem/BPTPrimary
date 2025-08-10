@@ -191,6 +191,7 @@
     <Compile Include="Controllers\LoadAnnouncementPlacesController.cs" />
     <Compile Include="Controllers\LoaderTypeController.cs" />
     <Compile Include="Controllers\LoadingAndDischargingPlacesController.cs" />
+    <Compile Include="Controllers\LoadPermissionsController.cs" />
     <Compile Include="Controllers\ProductsController.cs" />
     <Compile Include="Controllers\ProvincesAndCitiesController.cs" />
     <Compile Include="Controllers\SequentialTurnsController.cs" />
