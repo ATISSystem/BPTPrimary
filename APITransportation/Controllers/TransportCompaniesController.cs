@@ -213,7 +213,7 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/TransportCompanyChangeActiveStatus")]
-        public HttpResponseMessage TransportCompanyChangeActiveStatus([FromBody] APITransportationSessionIdTransportCompanyId Content)
+        public HttpResponseMessage TransportCompanyChangeActiveStatus([FromBody] APITransportationSessionIdTransportCompanyIdActive Content)
         {
             try
             {
@@ -222,12 +222,13 @@ namespace APITransportation.Controllers
 
                 var SessionId = Content.SessionId;
                 var TransportCompanyId = Content.TransportCompanyId;
+                var Active = Content.Active;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationTransportCompaniesManager(_DateTimeService);
                 var InstanseSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
-                InstanceTransportCompanies.TransportCompanyChangeActiveStatus(TransportCompanyId);
+                InstanceTransportCompanies.TransportCompanyChangeActiveStatus(TransportCompanyId, Active);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;

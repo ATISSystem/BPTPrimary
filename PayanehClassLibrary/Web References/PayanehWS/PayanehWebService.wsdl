@@ -259,7 +259,7 @@
       <s:element name="WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportResponse">
         <s:complexType />
       </s:element>
-      <s:element name="WebMethodReportingInformationProviderTransportPriceTarrifsReport">
+      <s:element name="WebMethodReportingInformationProviderTransportPriceTariffsReport">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="1" maxOccurs="1" name="YourAnnouncementHallId" type="s:long" />
@@ -269,7 +269,7 @@
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="WebMethodReportingInformationProviderTransportPriceTarrifsReportResponse">
+      <s:element name="WebMethodReportingInformationProviderTransportPriceTariffsReportResponse">
         <s:complexType />
       </s:element>
       <s:element name="WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReport">
@@ -514,11 +514,11 @@
   <wsdl:message name="WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportSoapOut">
     <wsdl:part name="parameters" element="tns:WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportResponse" />
   </wsdl:message>
-  <wsdl:message name="WebMethodReportingInformationProviderTransportPriceTarrifsReportSoapIn">
-    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationProviderTransportPriceTarrifsReport" />
+  <wsdl:message name="WebMethodReportingInformationProviderTransportPriceTariffsReportSoapIn">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationProviderTransportPriceTariffsReport" />
   </wsdl:message>
-  <wsdl:message name="WebMethodReportingInformationProviderTransportPriceTarrifsReportSoapOut">
-    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationProviderTransportPriceTarrifsReportResponse" />
+  <wsdl:message name="WebMethodReportingInformationProviderTransportPriceTariffsReportSoapOut">
+    <wsdl:part name="parameters" element="tns:WebMethodReportingInformationProviderTransportPriceTariffsReportResponse" />
   </wsdl:message>
   <wsdl:message name="WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReportSoapIn">
     <wsdl:part name="parameters" element="tns:WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReport" />
@@ -633,9 +633,9 @@
       <wsdl:input message="tns:WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportSoapIn" />
       <wsdl:output message="tns:WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportSoapOut" />
     </wsdl:operation>
-    <wsdl:operation name="WebMethodReportingInformationProviderTransportPriceTarrifsReport">
-      <wsdl:input message="tns:WebMethodReportingInformationProviderTransportPriceTarrifsReportSoapIn" />
-      <wsdl:output message="tns:WebMethodReportingInformationProviderTransportPriceTarrifsReportSoapOut" />
+    <wsdl:operation name="WebMethodReportingInformationProviderTransportPriceTariffsReport">
+      <wsdl:input message="tns:WebMethodReportingInformationProviderTransportPriceTariffsReportSoapIn" />
+      <wsdl:output message="tns:WebMethodReportingInformationProviderTransportPriceTariffsReportSoapOut" />
     </wsdl:operation>
     <wsdl:operation name="WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReport">
       <wsdl:input message="tns:WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReportSoapIn" />
@@ -816,8 +816,8 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="WebMethodReportingInformationProviderTransportPriceTarrifsReport">
-      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationProviderTransportPriceTarrifsReport" style="document" />
+    <wsdl:operation name="WebMethodReportingInformationProviderTransportPriceTariffsReport">
+      <soap:operation soapAction="http://tempuri.org/WebMethodReportingInformationProviderTransportPriceTariffsReport" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -1044,8 +1044,8 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="WebMethodReportingInformationProviderTransportPriceTarrifsReport">
-      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationProviderTransportPriceTarrifsReport" style="document" />
+    <wsdl:operation name="WebMethodReportingInformationProviderTransportPriceTariffsReport">
+      <soap12:operation soapAction="http://tempuri.org/WebMethodReportingInformationProviderTransportPriceTariffsReport" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

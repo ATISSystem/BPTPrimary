@@ -72,6 +72,8 @@ Imports R2Core.SMS.SMSHandling.Exceptions
 Imports R2CoreParkingSystem.CarsNativeness.Exceptions
 Imports R2CoreParkingSystem.CarsNativeness
 Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
+Imports R2Core.RawGroups
+Imports System.Runtime.Serialization.Formatters.Binary
 
 
 
@@ -238,7 +240,7 @@ Namespace Cars
     Public Class R2CoreParkingSystemMClassCars
 
         Private Shared _DateTime As New R2DateTime
-        Private Shared _R2PrimaryFSWS As R2PrimaryFileSharingWS.R2PrimaryFileSharingWebService = New R2PrimaryFileSharingWebService()
+        Private Shared _R2PrimaryFSWS = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
 
         Public Shared Function IsExistCar(YourNSS As R2StandardCarStructure) As Boolean
             Try
@@ -490,7 +492,10 @@ Namespace Cars
         Private Shared Function GetCarImage(YourFileInf As R2CoreFile, YourNSSUser As R2CoreStandardSoftwareUserStructure) As R2CoreImage
             Try
                 If _R2PrimaryFSWS.WebMethodIOFileExist(R2CoreParkingSystemRawGroups.CarImages, YourFileInf.FileName, _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword)) = True Then
-                    Return New R2CoreImage(_R2PrimaryFSWS.WebMethodGetFile(R2CoreParkingSystemRawGroups.CarImages, YourFileInf.FileName, _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword)))
+                    Dim bf As BinaryFormatter = New BinaryFormatter()
+                    Dim MS As MemoryStream = New MemoryStream()
+                    bf.Serialize(MS, _R2PrimaryFSWS.WebMethodGetFile(R2CoreParkingSystemRawGroups.CarImages, YourFileInf.FileName, _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword)))
+                    Return New R2CoreImage(MS.ToArray())
                 Else
                     Throw New R2CoreParkingSystemCarImageNotExistException
                 End If

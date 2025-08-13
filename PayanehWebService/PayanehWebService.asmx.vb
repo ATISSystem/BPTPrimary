@@ -10,7 +10,6 @@ Imports R2Core.ComputerMessagesManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.SoftwareUserManagement
 Imports R2CoreParkingSystem.Cars
-Imports R2CoreParkingSystem.City
 Imports PayanehClassLibrary.ReportsManagement
 Imports PayanehClassLibrary.TransportCompanies
 Imports PayanehClassLibrary.CarTruckNobatManagement
@@ -269,10 +268,10 @@ Public Class PayanehWebService
     End Sub
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationProviderTransportPriceTarrifsReport(YourAnnouncementHallId As Int64, YourAnnouncementsubGroupId As Int64, YourOActiveStatus As Boolean, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationProviderTransportPriceTariffsReport(YourAnnouncementHallId As Int64, YourAnnouncementsubGroupId As Int64, YourOActiveStatus As Boolean, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            PayanehClassLibraryMClassReportsManagement.ReportingInformationProviderTransportPriceTarrifsReport(YourAnnouncementHallId, YourAnnouncementsubGroupId, YourOActiveStatus)
+            PayanehClassLibraryMClassReportsManagement.ReportingInformationProviderTransportPriceTariffsReport(YourAnnouncementHallId, YourAnnouncementsubGroupId, YourOActiveStatus)
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException

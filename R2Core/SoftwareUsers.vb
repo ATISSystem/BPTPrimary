@@ -10,7 +10,6 @@ Imports R2Core.EntityRelationManagement
 Imports R2Core.ExceptionManagement
 Imports R2Core.MoneyWallet.MoneyWallet
 Imports R2Core.PermissionManagement
-Imports R2Core.R2PrimaryFileSharingWS
 Imports R2Core.SecurityAlgorithmsManagement.PasswordStrength
 Imports R2Core.SecurityAlgorithmsManagement.AESAlgorithms
 Imports R2Core.SecurityAlgorithmsManagement.Captcha
@@ -30,6 +29,10 @@ Imports System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel
 Imports Microsoft.VisualBasic.ApplicationServices
 Imports R2Core.PermissionManagement.Exceptions
 Imports R2Core.Caching
+Imports R2Core.RawGroups
+Imports System.IO
+Imports System.Runtime.Serialization.Formatters.Binary
+Imports System.Web
 
 Namespace SoftwareUserManagement
 
@@ -655,7 +658,7 @@ Namespace SoftwareUserManagement
     Public Class R2CoreMClassSoftwareUsersManagement
 
         Private Shared _DateTime As New R2DateTime
-        Private Shared R2PrimaryFSWS As R2PrimaryFileSharingWebService = New R2PrimaryFileSharingWebService()
+        Private Shared R2PrimaryFSWS = New R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
 
         Public Shared Property GetNoneUserId As Int64 = 0
 
@@ -850,7 +853,11 @@ Namespace SoftwareUserManagement
 
         Public Shared Function GetUserImage(YourNSSUserRequest As R2CoreStandardSoftwareUserStructure, YourNSSUser As R2CoreStandardSoftwareUserStructure) As R2CoreImage
             Try
-                Return New R2CoreImage(R2PrimaryFSWS.WebMethodGetFile(R2Core.FileShareRawGroupsManagement.R2CoreRawGroups.UserImages, YourNSSUserRequest.UserId.ToString() + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 0), R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword)))
+
+                Dim bf As BinaryFormatter = New BinaryFormatter()
+                Dim MS As MemoryStream = New MemoryStream()
+                bf.Serialize(MS, R2PrimaryFSWS.WebMethodGetFile(R2CoreRawGroups.UserImages, YourNSSUserRequest.UserId.ToString() + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 0), R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword)))
+                Return New R2CoreImage(MS.ToArray())
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try

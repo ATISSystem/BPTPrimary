@@ -75,8 +75,8 @@ Imports R2CoreTransportationAndLoadNotification.TransportCompanies
 Imports R2CoreTransportationAndLoadNotification.TransportCompanies.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TransportTariffs
 Imports R2CoreTransportationAndLoadNotification.TransportTariffs.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TransportTarrifsParameters
-Imports R2CoreTransportationAndLoadNotification.TransportTarrifsParameters.Exceptions
+Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters
+Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TruckDrivers
 Imports R2CoreTransportationAndLoadNotification.TruckDrivers.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TruckLoaderTypes.Exceptions
@@ -266,7 +266,7 @@ Namespace DriverSelfDeclaration
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceDriverSelfDeclarationManager
-        Private _R2PrimaryFSWS As R2PrimaryFileSharingWebService = New R2PrimaryFileSharingWebService()
+        Private _R2PrimaryFSWS = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
         Private _DateTime As New R2DateTime
 
         Private Function GetDSDIdFull(YourDSDId As Int64) As String

@@ -76,8 +76,8 @@ Imports R2CoreTransportationAndLoadNotification.TransportCompanies
 Imports R2CoreTransportationAndLoadNotification.TransportCompanies.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TransportTariffs
 Imports R2CoreTransportationAndLoadNotification.TransportTariffs.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TransportTarrifsParameters
-Imports R2CoreTransportationAndLoadNotification.TransportTarrifsParameters.Exceptions
+Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters
+Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TruckDrivers
 Imports R2CoreTransportationAndLoadNotification.TruckDrivers.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TruckLoaderTypes.Exceptions
@@ -1035,7 +1035,7 @@ Namespace TransportCompanies
             End Try
         End Function
 
-        Public Sub TransportCompanyChangeActiveStatus(YourTransportCompanyId As Int64)
+        Public Sub TransportCompanyChangeActiveStatus(YourTransportCompanyId As Int64, YourActive As Boolean)
             Dim CmdSql As SqlCommand = New SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
             Try
@@ -1046,20 +1046,20 @@ Namespace TransportCompanies
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies 
-                                      Set Active=" & IIf(TransportCompany.Active, 0, 1) & "
+                                      Set Active=" & IIf(YourActive, 1, 0) & "
                                       Where TCId=" & YourTransportCompanyId & ""
                 CmdSql.ExecuteNonQuery()
                 CmdSql.CommandText = "Update dbtransport.dbo.tbCompany 
-                                      Set Active=" & IIf(TransportCompany.Active, 0, 1) & "
+                                      Set Active=" & IIf(YourActive, 1, 0) & "
                                       Where nCompCode =" & YourTransportCompanyId & ""
                 CmdSql.ExecuteNonQuery()
-                CmdSql.CommandText = "Update R2Primary.dbo.TblSoftwareUsers Set UserActive=" & IIf(TransportCompany.Active, 0, 1) & " Where Userid=" & SoftwareUserId & ""
+                CmdSql.CommandText = "Update R2Primary.dbo.TblSoftwareUsers Set UserActive=" & IIf(YourActive, 1, 0) & " Where Userid=" & SoftwareUserId & ""
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
                 'ارسال اس ام اس
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
-                SendTransportCompanyChangeActiveStatusSMS(TransportCompany.TCTitle, InstancePublicProcedures.GetBooleanVariablePersianEquivalent(Not TransportCompany.Active))
+                SendTransportCompanyChangeActiveStatusSMS(TransportCompany.TCTitle, InstancePublicProcedures.GetBooleanVariablePersianEquivalent(YourActive))
 
             Catch ex As TransportCompanyNotFoundException
                 Throw ex

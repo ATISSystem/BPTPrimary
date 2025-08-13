@@ -144,12 +144,21 @@ namespace APITransportation.Models
     namespace TransportCompanies
     {
 
+        public class APITransportationSessionIdTransportCompanyIdActive
+
+        {
+            public String SessionId;
+            public Int64 TransportCompanyId;
+            public bool Active;
+        }
+
         public class APITransportationSessionIdTransportCompanyId
 
         {
             public String SessionId;
             public Int64 TransportCompanyId;
         }
+
 
         public class APITransportationSessionIdRawTransportCompany
 
@@ -257,7 +266,7 @@ namespace APITransportation.Models
 
     }
 
-    namespace Tarrif
+    namespace Tariff
     {
         public class APITransportationSessionIdLoaderTypeIdSourceCityIdTargetCityIdGoodId
         {

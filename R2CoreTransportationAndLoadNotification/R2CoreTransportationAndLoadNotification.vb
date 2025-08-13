@@ -82,7 +82,7 @@ Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2CoreTransportationAndLoadNotification.SoftwareUserManagement.Exceptions
 Imports R2Core.MoneyWallet.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TransportTarrifsParameters.Exceptions
+Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters.Exceptions
 Imports R2CoreParkingSystem.SoftwareUsersManagement
 Imports R2CoreTransportationAndLoadNotification.SoftwareUserManagement
 Imports R2CoreParkingSystem.SMS.SMSTypes
@@ -407,7 +407,7 @@ End Namespace
 Namespace FileShareRawGroupsManagement
 
     Public MustInherit Class R2CoreTransportationAndLoadNotificationRawGroups
-        Inherits R2Core.FileShareRawGroupsManagement.R2CoreRawGroups
+        Inherits R2Core.RawGroups.R2CoreRawGroups
 
         Public Shared ReadOnly TurnRegisterRequestAttachements As Int64 = 5
 

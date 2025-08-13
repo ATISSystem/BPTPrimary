@@ -11,7 +11,7 @@ using R2CoreTransportationAndLoadNotification.LoadAllocation;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.Exceptions;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad;
 using R2CoreTransportationAndLoadNotification.RequesterManagement;
-using R2CoreTransportationAndLoadNotification.TransportTarrifsParameters.Exceptions;
+using R2CoreTransportationAndLoadNotification.TransportTariffsParameters.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -171,8 +171,8 @@ namespace APITransportation.LoadAllocation.Controllers
         }
 
         [HttpPost]
-        [Route("api/GetTruckDriverLoadAllocationsForRepriority")]
-        public HttpResponseMessage GetTruckDriverLoadAllocationsForRepriority([FromBody] APICommonSessionId  Content)
+        [Route("api/GetTruckDriverLoadAllocations")]
+        public HttpResponseMessage GetTruckDriverLoadAllocations([FromBody] APICommonSessionId  Content)
         {
             try
             {
@@ -356,7 +356,7 @@ namespace APITransportation.LoadAllocation.Controllers
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTarrifParameterDetailNotFoundException ex)
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (LoadCapacitorLoadNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }

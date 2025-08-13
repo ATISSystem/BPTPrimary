@@ -6,7 +6,7 @@ using R2Core.ExceptionManagement;
 using R2Core.SessionManagement;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.Exceptions;
 using R2CoreTransportationAndLoadNotification.LoadPermission;
-using R2CoreTransportationAndLoadNotification.TransportTarrifsParameters.Exceptions;
+using R2CoreTransportationAndLoadNotification.TransportTariffsParameters.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

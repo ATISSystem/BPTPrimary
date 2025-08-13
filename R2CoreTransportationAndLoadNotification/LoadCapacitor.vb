@@ -76,8 +76,8 @@ Imports R2CoreTransportationAndLoadNotification.TransportCompanies
 Imports R2CoreTransportationAndLoadNotification.TransportCompanies.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TransportTariffs
 Imports R2CoreTransportationAndLoadNotification.TransportTariffs.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TransportTarrifsParameters
-Imports R2CoreTransportationAndLoadNotification.TransportTarrifsParameters.Exceptions
+Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters
+Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TruckDrivers
 Imports R2CoreTransportationAndLoadNotification.TruckDrivers.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TruckLoaderTypes.Exceptions
@@ -1797,7 +1797,7 @@ Namespace LoadCapacitor
             Public Property DischargingPlaceTitle As String
             Public Property TotalNumber As Int64
             Public Property Tonaj As Double
-            Public Property Tarrif As Int64
+            Public Property Tariff As String
             Public Property Recipient As String
             Public Property Address As String
             Public Property Description As String
@@ -1823,7 +1823,7 @@ Namespace LoadCapacitor
             Public Property DischargingPlaceId As Int64
             Public Property TotalNumber As Int64
             Public Property Tonaj As Double
-            Public Property Tarrif As Int64
+            Public Property Tariff As Int64
             Public Property Recipient As String
             Public Property Address As String
             Public Property Description As String
@@ -1907,7 +1907,7 @@ Namespace LoadCapacitor
                            (Select Loads.nEstelamId LoadId,TransportCompanies.TCTitle as TCTitle,TransportCompanies.TCTel as TCTel,Products.strGoodName as GoodTitle,
                                    Loads.nTonaj as Tonaj,LoadSources.strCityName as SoureCityTitle,LoadTargets.strCityName as TargetCityTitle,LoadTargets.nProvince as ProvinceId,
                                    LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,
-                                   Loads.nCarNumKol as Total,Loads.StrPriceSug as Tarrif,
+                                   Loads.nCarNumKol as Total,Loads.StrPriceSug as Tariff,
 	                               Loads.StrBarName as Recipient,Loads.StrAddress as Address,Loads.strDescription as Description,
                                    Loads.TPTParamsJoint as TPTParamsJoint,LoadsforTurnCancellation.Description as LoadColor
                             from DBTransport.dbo.TbElam as Loads
@@ -1977,7 +1977,7 @@ Namespace LoadCapacitor
                            (Select Loads.nEstelamId LoadId,TransportCompanies.TCTitle as TCTitle,Products.strGoodName as GoodTitle,Loads.nTonaj as Tonaj,
                                    LoadSources.strCityName as SoureCityTitle,LoadTargets.strCityName as TargetCityTitle,LoadTargets.nProvince as ProvinceId,
                                    LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,
-                                   Loads.nCarNumKol as Total,Loads.nCarNum as Reminder,Loads.StrPriceSug as Tarrif,LoadStatuses.LoadStatusName,Loads.dDateElam as LoadIssueDate,Loads.dTimeElam as LoadIssueTime, 
+                                   Loads.nCarNumKol as Total,Loads.nCarNum as Reminder,Loads.StrPriceSug as Tariff,LoadStatuses.LoadStatusName,Loads.dDateElam as AnnounceDate,Loads.dTimeElam as AnnounceTime, 
                                    Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGTitle,Loads.StrBarName as Recipient,Loads.StrAddress as Address,Loads.strDescription as Description,
                                    SoftwareUsers.UserName,Loads.TPTParamsJoint as TPTParamsJoint
                             from DBTransport.dbo.TbElam as Loads
@@ -2030,7 +2030,7 @@ Namespace LoadCapacitor
                            (Select Loads.nEstelamId LoadId,TransportCompanies.TCTitle as TCTitle,Products.strGoodName as GoodTitle,Loads.nTonaj as Tonaj,
                                    LoadSources.strCityName as SoureCityTitle,LoadTargets.strCityName as TargetCityTitle,LoadTargets.nProvince as ProvinceId,
                                    LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,
-                                   Loads.nCarNumKol as Total,Loads.nCarNum as Reminder,Loads.StrPriceSug as Tarrif,LoadStatuses.LoadStatusName,Loads.dDateElam as LoadIssueDate,Loads.dTimeElam as LoadIssueTime, 
+                                   Loads.nCarNumKol as Total,Loads.nCarNum as Reminder,Loads.StrPriceSug as Tariff,LoadStatuses.LoadStatusName,Loads.dDateElam as LoadIssueDate,Loads.dTimeElam as LoadIssueTime, 
                                    Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGTitle,Loads.StrBarName as Recipient,Loads.StrAddress as Address,Loads.strDescription as Description,
                                    SoftwareUsers.UserName,Loads.TPTParamsJoint as TPTParamsJoint
                             from DBTransport.dbo.TbElam as Loads
@@ -2083,7 +2083,7 @@ Namespace LoadCapacitor
                            (Select Loads.nEstelamId LoadId,TransportCompanies.TCTitle as TCTitle,Products.strGoodName as GoodTitle,Loads.nTonaj as Tonaj,
                                    LoadSources.strCityName as SoureCityTitle,LoadTargets.strCityName as TargetCityTitle,LoadTargets.nProvince as ProvinceId,
                                    LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,
-                                   Loads.nCarNumKol as Total,Loads.nCarNum as Reminder,Loads.StrPriceSug as Tarrif,LoadStatuses.LoadStatusName,Loads.dDateElam as LoadIssueDate,Loads.dTimeElam as LoadIssueTime, 
+                                   Loads.nCarNumKol as Total,Loads.nCarNum as Reminder,Loads.StrPriceSug as Tariff,LoadStatuses.LoadStatusName,Loads.dDateElam as LoadIssueDate,Loads.dTimeElam as LoadIssueTime, 
                                    Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGTitle,Loads.StrBarName as Recipient,Loads.StrAddress as Address,Loads.strDescription as Description,
                                    SoftwareUsers.UserName,Loads.TPTParamsJoint as TPTParamsJoint
                             from DBTransport.dbo.TbElam as Loads
@@ -2130,14 +2130,14 @@ Namespace LoadCapacitor
             Public Function GetLoadSimpleModel(YourLoadId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationLoadSimpleModel
                 Try
                     Dim DS As New DataSet
-                    Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
+                    Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsParametersManager
 
                     If YourImmediately Then
                         Dim Da As New SqlClient.SqlDataAdapter
                         Da.SelectCommand = New SqlCommand("
                             Select Loads.nEstelamID as LoadId,Loads.dDateElam as AnnounceDate ,Loads.dTimeElam as AnnounceTime,Loads.nCompCode as TransportCompanyId,
                                    loads.nBarcode as GoodId,Loads.AHId as AnnouncementGroupId,Loads.AHSGId as AnnouncementSubGroupId,loads.nBarSource as SourceCityId,loads.nCityCode as TargetCityId,
-                                   Loads.LoadingPlaceId as LoadingPlaceId,Loads.DischargingPlaceId as DischargingPlaceId,Loads.nCarNumKol as TotalNumber,Loads.nTonaj as Tonaj,Loads.strPriceSug as Tarrif,
+                                   Loads.LoadingPlaceId as LoadingPlaceId,Loads.DischargingPlaceId as DischargingPlaceId,Loads.nCarNumKol as TotalNumber,Loads.nTonaj as Tonaj,Loads.strPriceSug as Tariff,
                                    Loads.strBarName as Recipient,Loads.strAddress as Address,Loads.strDescription as Description,Loads.LoadStatus as LoadStatusId,Loads.TPTParams as TPTParams,Loads.TPTParamsJoint as TPTParamsJoint,Loads.nUserID as UserId
                             From DBTransport.dbo.tbElam as Loads
                             Where Loads.nEstelamID=" & YourLoadId & "")
@@ -2148,7 +2148,7 @@ Namespace LoadCapacitor
                         If InstanseSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
                            "Select Loads.nEstelamID as LoadId,Loads.dDateElam as AnnounceDate ,Loads.dTimeElam as AnnounceTime,Loads.nCompCode as TransportCompanyId,
                                    loads.nBarcode as GoodId,Loads.AHId as AnnouncementGroupId,Loads.AHSGId as AnnouncementSubGroupId,loads.nBarSource as SourceCityId,loads.nCityCode as TargetCityId,
-                                   Loads.LoadingPlaceId as LoadingPlaceId,Loads.DischargingPlaceId as DischargingPlaceId,Loads.nCarNumKol as TotalNumber,Loads.nTonaj as Tonaj,Loads.strPriceSug as Tarrif,
+                                   Loads.LoadingPlaceId as LoadingPlaceId,Loads.DischargingPlaceId as DischargingPlaceId,Loads.nCarNumKol as TotalNumber,Loads.nTonaj as Tonaj,Loads.strPriceSug as Tariff,
                                    Loads.strBarName as Recipient,Loads.strAddress as Address,Loads.strDescription as Description,Loads.LoadStatus as LoadStatusId,Loads.TPTParams as TPTParams,Loads.TPTParamsJoint as TPTParamsJoint,Loads.nUserID as UserId
                             From DBTransport.dbo.tbElam as Loads
                             Where Loads.nEstelamID=" & YourLoadId & "", 180, DS, New Boolean).GetRecordsCount = 0 Then
@@ -2159,7 +2159,7 @@ Namespace LoadCapacitor
                     {.LoadId = DS.Tables(0).Rows(0).Item("LoadId"), .AnnounceDate = DS.Tables(0).Rows(0).Item("AnnounceDate").trim, .AnnounceTime = DS.Tables(0).Rows(0).Item("AnnounceTime").trim, .TransportCompanyId = DS.Tables(0).Rows(0).Item("TransportCompanyId"),
                      .GoodId = DS.Tables(0).Rows(0).Item("GoodId"), .AnnouncementGroupId = DS.Tables(0).Rows(0).Item("AnnouncementGroupId"), .AnnouncementSubGroupId = DS.Tables(0).Rows(0).Item("AnnouncementSubGroupId"),
                      .SourceCityId = DS.Tables(0).Rows(0).Item("SourceCityId"), .TargetCityId = DS.Tables(0).Rows(0).Item("TargetCityId"), .LoadingPlaceId = DS.Tables(0).Rows(0).Item("LoadingPlaceId"),
-                     .DischargingPlaceId = DS.Tables(0).Rows(0).Item("DischargingPlaceId"), .TotalNumber = DS.Tables(0).Rows(0).Item("TotalNumber"), .Tonaj = DS.Tables(0).Rows(0).Item("Tonaj"), .Tarrif = DS.Tables(0).Rows(0).Item("Tarrif"), .Recipient = DS.Tables(0).Rows(0).Item("Recipient").trim, .Address = DS.Tables(0).Rows(0).Item("Address").trim, .Description = DS.Tables(0).Rows(0).Item("Description").trim,
+                     .DischargingPlaceId = DS.Tables(0).Rows(0).Item("DischargingPlaceId"), .TotalNumber = DS.Tables(0).Rows(0).Item("TotalNumber"), .Tonaj = DS.Tables(0).Rows(0).Item("Tonaj"), .Tariff = DS.Tables(0).Rows(0).Item("Tariff"), .Recipient = DS.Tables(0).Rows(0).Item("Recipient").trim, .Address = DS.Tables(0).Rows(0).Item("Address").trim, .Description = DS.Tables(0).Rows(0).Item("Description").trim,
                      .LoadStatusId = DS.Tables(0).Rows(0).Item("LoadStatusId"), .TPTParams = DS.Tables(0).Rows(0).Item("TPTParams").trim, .TPTParamsJoint = DS.Tables(0).Rows(0).Item("TPTParamsJoint").trim, .UserId = DS.Tables(0).Rows(0).Item("UserId")}
                     Return Load
                 Catch ex As LoadNotFoundException
@@ -2181,7 +2181,7 @@ Namespace LoadCapacitor
                        	           AnnouncementsubGroups.AnnouncementSGId as LoadAnnouncementSubGroupId,AnnouncementsubGroups.AnnouncementSGTitle as LoadAnnouncementSubGroupTitle ,
 	                               SourceCities.nCityCode as SourceCityId,SourceCities.StrCityName as SourceCityTitle,TargetCities.nCityCode as TargetCityId,TargetCities.StrCityName as TargetCityTitle,
 	                               LoadingPlaces.LADPlaceId as LoadingPlaceId,LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceId as DischargingPlaceId,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,
-	                               Loads.nCarNumKol as TotalNumber,Loads.nTonaj as Tonaj,Loads.strPriceSug as Tarrif,Loads.strBarName as Recipient,Loads.strAddress as Address,Loads.strDescription as Description,
+	                               Loads.nCarNumKol as TotalNumber,Loads.nTonaj as Tonaj,Loads.strPriceSug as Tariff,Loads.strBarName as Recipient,Loads.strAddress as Address,Loads.strDescription as Description,
                                    LoadStatuses.LoadStatusId as LoadStatusId,LoadStatuses.LoadStatusName as LoadStatusTitle,Loads.TPTParams as TPTParams,Loads.TPTParamsJoint
                             from DBTransport.dbo.tbElam as Loads
   							       Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Loads.nUserID=SoftwareUsers.UserId  
@@ -2205,7 +2205,7 @@ Namespace LoadCapacitor
                        	           AnnouncementsubGroups.AnnouncementSGId as LoadAnnouncementSubGroupId,AnnouncementsubGroups.AnnouncementSGTitle as LoadAnnouncementSubGroupTitle ,
 	                               SourceCities.nCityCode as SourceCityId,SourceCities.StrCityName as SourceCityTitle,TargetCities.nCityCode as TargetCityId,TargetCities.StrCityName as TargetCityTitle,
 	                               LoadingPlaces.LADPlaceId as LoadingPlaceId,LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceId as DischargingPlaceId,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,
-	                               Loads.nCarNumKol as TotalNumber,Loads.nTonaj as Tonaj,Loads.strPriceSug as Tarrif,Loads.strBarName as Recipient,Loads.strAddress as Address,Loads.strDescription as Description,
+	                               Loads.nCarNumKol as TotalNumber,Loads.nTonaj as Tonaj,Loads.strPriceSug as Tariff,Loads.strBarName as Recipient,Loads.strAddress as Address,Loads.strDescription as Description,
                                    LoadStatuses.LoadStatusId as LoadStatusId,LoadStatuses.LoadStatusName as LoadStatusTitle,Loads.TPTParams as TPTParams,Loads.TPTParamsJoint
                             from DBTransport.dbo.tbElam as Loads
                            		   Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Loads.nUserID=SoftwareUsers.UserId  
@@ -2226,7 +2226,7 @@ Namespace LoadCapacitor
                     {.LoadId = DS.Tables(0).Rows(0).Item("LoadId"), .AnnounceDate = DS.Tables(0).Rows(0).Item("AnnounceDate").trim, .AnnounceTime = DS.Tables(0).Rows(0).Item("AnnounceTime").trim, .TransportCompanyId = DS.Tables(0).Rows(0).Item("TransportCompanyId"), .TransportCompanyTitle = DS.Tables(0).Rows(0).Item("TransportCompanyTitle").trim,
                      .GoodId = DS.Tables(0).Rows(0).Item("GoodId"), .GoodTitle = DS.Tables(0).Rows(0).Item("GoodTitle").trim, .AnnouncementGroupId = DS.Tables(0).Rows(0).Item("LoadAnnouncementGroupId"), .AnnouncementGroupTitle = DS.Tables(0).Rows(0).Item("LoadAnnouncementGroupTitle").trim, .AnnouncementSubGroupId = DS.Tables(0).Rows(0).Item("LoadAnnouncementSubGroupId"), .AnnouncementSubGroupTitle = DS.Tables(0).Rows(0).Item("LoadAnnouncementSubGroupTitle").trim,
                      .SourceCityId = DS.Tables(0).Rows(0).Item("SourceCityId"), .SourceCityTitle = DS.Tables(0).Rows(0).Item("SourceCityTitle").trim, .TargetCityId = DS.Tables(0).Rows(0).Item("TargetCityId"), .TargetCityTitle = DS.Tables(0).Rows(0).Item("TargetCityTitle").trim, .LoadingPlaceId = DS.Tables(0).Rows(0).Item("LoadingPlaceId"), .LoadingPlaceTitle = DS.Tables(0).Rows(0).Item("LoadingPlaceTitle").trim,
-                     .DischargingPlaceId = DS.Tables(0).Rows(0).Item("DischargingPlaceId"), .DischargingPlaceTitle = DS.Tables(0).Rows(0).Item("DischargingPlaceTitle").trim, .TotalNumber = DS.Tables(0).Rows(0).Item("TotalNumber"), .Tonaj = DS.Tables(0).Rows(0).Item("Tonaj"), .Tarrif = DS.Tables(0).Rows(0).Item("Tarrif"), .Recipient = DS.Tables(0).Rows(0).Item("Recipient").trim, .Address = DS.Tables(0).Rows(0).Item("Address").trim, .Description = DS.Tables(0).Rows(0).Item("Description").trim,
+                     .DischargingPlaceId = DS.Tables(0).Rows(0).Item("DischargingPlaceId"), .DischargingPlaceTitle = DS.Tables(0).Rows(0).Item("DischargingPlaceTitle").trim, .TotalNumber = DS.Tables(0).Rows(0).Item("TotalNumber"), .Tonaj = DS.Tables(0).Rows(0).Item("Tonaj"), .Tariff = DS.Tables(0).Rows(0).Item("Tariff"), .Recipient = DS.Tables(0).Rows(0).Item("Recipient").trim, .Address = DS.Tables(0).Rows(0).Item("Address").trim, .Description = DS.Tables(0).Rows(0).Item("Description").trim,
                      .LoadStatusId = DS.Tables(0).Rows(0).Item("LoadStatusId"), .LoadStatusTitle = DS.Tables(0).Rows(0).Item("LoadStatusTitle").trim, .TPTParams = DS.Tables(0).Rows(0).Item("TPTParams").trim, .RegisteringUserName = DS.Tables(0).Rows(0).Item("UserName").trim, .TPTParamsJoint = DS.Tables(0).Rows(0).Item("TPTParamsJoint").trim}
                     Return Load
                 Catch ex As LoadNotFoundException
@@ -2351,10 +2351,10 @@ Namespace LoadCapacitor
             '        Dim InstanceConfigurationsofAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
             '        Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager
             '        Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager
-            '        Dim InstanceTransportTarrifs = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager
+            '        Dim InstanceTransportTariffs = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager
             '        Dim InstanceLoadCapacitorAccounting = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorAccountingManager
             '        Dim InstanceLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
-            '        Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
+            '        Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsParametersManager
             '        Dim NSSAnnouncementHall = InstanceAnnouncements.GetAnnouncementHallfromLoadCapacitorLoad(YourNSS)
             '        Dim NSSAnnouncementsubGroup = InstanceAnnouncements.GetNSSAnnouncementsubGroupByLoaderTypeId(YourNSS.nTruckType)
             '        Dim NSSLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
@@ -2421,12 +2421,12 @@ Namespace LoadCapacitor
             '            End If
             '        End If
             '        'استاندارد سازی نرخ حمل بر اساس تعرفه های سازمانی
-            '        Dim Tarrif As Int64
+            '        Dim Tariff As Int64
             '        Try
-            '            Tarrif = InstanceTransportTarrifs.GetNSSTransportTarrif(YourNSS).Tarrif
-            '            Tarrif = InstanceTransportTarrifs.GetUltimateTransportTarrif(YourNSS.AHSGId, YourNSS.nTonaj, Tarrif)
-            '            Tarrif = Tarrif + InstanceTransportTarrifsParameters.GetTotalofTransportTarrifsParameters(YourNSS)
-            '        Catch exx As TransportPriceTarrifNotFoundException
+            '            Tariff = InstanceTransportTariffs.GetNSSTransportTariff(YourNSS).Tariff
+            '            Tariff = InstanceTransportTariffs.GetUltimateTransportTariff(YourNSS.AHSGId, YourNSS.nTonaj, Tariff)
+            '            Tariff = Tariff + InstanceTransportTariffsParameters.GetTotalofTransportTariffsParameters(YourNSS)
+            '        Catch exx As TransportPriceTariffNotFoundException
             '        End Try
 
             '        'ثبت بار
@@ -2472,7 +2472,7 @@ Namespace LoadCapacitor
             '        CmdSql.Parameters.AddWithValue("@nTonajKol", 0)
             '        P = New SqlClient.SqlParameter("@nCarNumKol", SqlDbType.Int) : P.Value = YourNSS.nCarNumKol
             '        CmdSql.Parameters.Add(P)
-            '        P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tarrif
+            '        P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tariff
             '        CmdSql.Parameters.Add(P)
             '        P = New SqlClient.SqlParameter("@StrDescription", SqlDbType.VarChar) : P.Value = YourNSS.StrDescription
             '        CmdSql.Parameters.Add(P)
@@ -2523,7 +2523,7 @@ Namespace LoadCapacitor
             '                        OrElse TypeOf ex Is TimingNotReachedException _
             '                        OrElse TypeOf ex Is HasNotRelationBetweenProvinceAndAnnouncementsubGroup _
             '                        OrElse TypeOf ex Is LoadCapacitorLoadRegisteringNotAllowedforThisAnnouncementsubGroupException _
-            '                        OrElse TypeOf ex Is TransportPriceTarrifParameterDetailNotFoundException _
+            '                        OrElse TypeOf ex Is TransportPriceTariffParameterDetailNotFoundException _
             '                        OrElse TypeOf ex Is LoadCapacitorLoadRegisteringInHolidayNotAllowedException _
             '                        OrElse TypeOf ex Is LoadTonajInvalidException _
             '                        OrElse TypeOf ex Is LoadingPlaceIsUnActiveException _
@@ -2634,12 +2634,12 @@ Namespace LoadCapacitor
             '        Dim InstanceConfigurationsofAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
             '        Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager
             '        Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager
-            '        Dim InstanceTransportTarrifs = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager
+            '        Dim InstanceTransportTariffs = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager
             '        Dim InstanceLoadCapacitorAccounting = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorAccountingManager
             '        Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
             '        Dim InstancePermissions = New R2CoreInstansePermissionsManager
             '        Dim InstanceLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
-            '        Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
+            '        Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsParametersManager
             '        Dim NSSCurrentLoadCapacitorLoad = InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(YourNSS.nEstelamId, True)
             '        Dim NSSAnnouncementHall = InstanceAnnouncements.GetAnnouncementHallfromLoadCapacitorLoad(YourNSS)
             '        Dim NSSAnnouncementsubGroup = InstanceAnnouncements.GetNSSAnnouncementsubGroupByLoaderTypeId(YourNSS.nTruckType)
@@ -2705,12 +2705,12 @@ Namespace LoadCapacitor
             '        End If
 
             '        'استاندارد سازی نرخ حمل بر اساس تعرفه های سازمانی
-            '        Dim Tarrif As Int64
+            '        Dim Tariff As Int64
             '        Try
-            '            Tarrif = InstanceTransportTarrifs.GetNSSTransportTarrif(YourNSS).Tarrif
-            '            Tarrif = InstanceTransportTarrifs.GetUltimateTransportTarrif(YourNSS.AHSGId, YourNSS.nTonaj, Tarrif)
-            '            Tarrif = Tarrif + InstanceTransportTarrifsParameters.GetTotalofTransportTarrifsParameters(YourNSS)
-            '        Catch exx As TransportPriceTarrifNotFoundException
+            '            Tariff = InstanceTransportTariffs.GetNSSTransportTariff(YourNSS).Tariff
+            '            Tariff = InstanceTransportTariffs.GetUltimateTransportTariff(YourNSS.AHSGId, YourNSS.nTonaj, Tariff)
+            '            Tariff = Tariff + InstanceTransportTariffsParameters.GetTotalofTransportTariffsParameters(YourNSS)
+            '        Catch exx As TransportPriceTariffNotFoundException
             '        End Try
 
             '        'کنترل وضعیت بار
@@ -2762,7 +2762,7 @@ Namespace LoadCapacitor
             '        CmdSql.Parameters.Add(P)
             '        P = New SqlClient.SqlParameter("@nCarNumKol", SqlDbType.Int) : P.Value = YourNSS.nCarNumKol
             '        CmdSql.Parameters.Add(P)
-            '        P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tarrif
+            '        P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tariff
             '        CmdSql.Parameters.Add(P)
             '        P = New SqlClient.SqlParameter("@StrDescription", SqlDbType.VarChar) : P.Value = YourNSS.StrDescription
             '        CmdSql.Parameters.Add(P)
@@ -2812,7 +2812,7 @@ Namespace LoadCapacitor
             '                        OrElse TypeOf ex Is TransportCompanyISNotActiveException _
             '                        OrElse TypeOf ex Is HasNotRelationBetweenProvinceAndAnnouncementsubGroup _
             '                        OrElse TypeOf ex Is SqlInjectionException _
-            '                        OrElse TypeOf ex Is TransportPriceTarrifParameterDetailNotFoundException _
+            '                        OrElse TypeOf ex Is TransportPriceTariffParameterDetailNotFoundException _
             '                        OrElse TypeOf ex Is EditOrDeleteReRegisteredLoadNotAllowedException _
             '                        OrElse TypeOf ex Is DataEntryException _
             '                        OrElse TypeOf ex Is LoadCapacitorLoadTonajExceededException _
@@ -3184,11 +3184,11 @@ Namespace LoadCapacitor
             '            End If
             '        End If
             '        'استاندارد سازی نرخ حمل بر اساس تعرفه های سازمانی
-            '        Dim Tarrif As Int64 = YourNSS.StrPriceSug
+            '        Dim Tariff As Int64 = YourNSS.StrPriceSug
             '        Try
-            '            Dim TarrifTemp = R2CoreTransportationAndLoadNotificationMClassTransportTarrifsManagement.GetNSSTransportTarrif(YourNSS).Tarrif
-            '            If Tarrif < TarrifTemp Then Tarrif = TarrifTemp
-            '        Catch exx As TransportPriceTarrifNotFoundException
+            '            Dim TariffTemp = R2CoreTransportationAndLoadNotificationMClassTransportTariffsManagement.GetNSSTransportTariff(YourNSS).Tariff
+            '            If Tariff < TariffTemp Then Tariff = TariffTemp
+            '        Catch exx As TransportPriceTariffNotFoundException
             '        End Try
 
             '        'ثبت بار
@@ -3200,9 +3200,9 @@ Namespace LoadCapacitor
             '        Dim nEstelamIdNew As Int64 = CmdSql.ExecuteScalar() + 1
             '        Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.MD5Hasher
             '        If TommorowLoadRegisteringFlag Then
-            '            CmdSql.CommandText = "Insert Into dbtransport.dbo.TbElam(nEstelamKey,StrBarName,nCityCode,nBarCode,bFlag,nCompCode,nTruckType,nCarNum,StrAddress,nUserId,dDateElam,dTimeElam,nCarNumKol,StrPriceSug,StrDescription,LoadStatus,nBarSource,AHId,AHSGId) Values('" & Hasher.GenerateMD5String(nEstelamIdNew) & "','" & YourNSS.StrBarName & "'," & YourNSS.nCityCode & "," & YourNSS.nBarCode & ",0," & YourNSS.nCompCode & "," & YourNSS.nTruckType & "," & YourNSS.nCarNumKol & ",'" & YourNSS.StrAddress & "'," & YourNSS.nUserId & ",'" & _DateTime.GetCurrentDateShamsiFull() & "','" & _DateTime.GetCurrentTime() & "'," & YourNSS.nCarNumKol & "," & Tarrif & ",'" & YourNSS.StrDescription & "'," & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.RegisteredforTommorow & ",21310000," & NSSAnnouncementHall.AHId & "," & NSSAnnouncementsubGroup.AHSGId & ")"
+            '            CmdSql.CommandText = "Insert Into dbtransport.dbo.TbElam(nEstelamKey,StrBarName,nCityCode,nBarCode,bFlag,nCompCode,nTruckType,nCarNum,StrAddress,nUserId,dDateElam,dTimeElam,nCarNumKol,StrPriceSug,StrDescription,LoadStatus,nBarSource,AHId,AHSGId) Values('" & Hasher.GenerateMD5String(nEstelamIdNew) & "','" & YourNSS.StrBarName & "'," & YourNSS.nCityCode & "," & YourNSS.nBarCode & ",0," & YourNSS.nCompCode & "," & YourNSS.nTruckType & "," & YourNSS.nCarNumKol & ",'" & YourNSS.StrAddress & "'," & YourNSS.nUserId & ",'" & _DateTime.GetCurrentDateShamsiFull() & "','" & _DateTime.GetCurrentTime() & "'," & YourNSS.nCarNumKol & "," & Tariff & ",'" & YourNSS.StrDescription & "'," & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.RegisteredforTommorow & ",21310000," & NSSAnnouncementHall.AHId & "," & NSSAnnouncementsubGroup.AHSGId & ")"
             '        Else
-            '            CmdSql.CommandText = "Insert Into dbtransport.dbo.TbElam(nEstelamKey,StrBarName,nCityCode,nBarCode,bFlag,nCompCode,nTruckType,nCarNum,StrAddress,nUserId,dDateElam,dTimeElam,nCarNumKol,StrPriceSug,StrDescription,LoadStatus,nBarSource,AHId,AHSGId) Values('" & Hasher.GenerateMD5String(nEstelamIdNew) & "','" & YourNSS.StrBarName & "'," & YourNSS.nCityCode & "," & YourNSS.nBarCode & ",0," & YourNSS.nCompCode & "," & YourNSS.nTruckType & "," & YourNSS.nCarNumKol & ",'" & YourNSS.StrAddress & "'," & YourNSS.nUserId & ",'" & _DateTime.GetCurrentDateShamsiFull() & "','" & _DateTime.GetCurrentTime() & "'," & YourNSS.nCarNumKol & "," & Tarrif & ",'" & YourNSS.StrDescription & "'," & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered & ",21310000," & NSSAnnouncementHall.AHId & "," & NSSAnnouncementsubGroup.AHSGId & ")"
+            '            CmdSql.CommandText = "Insert Into dbtransport.dbo.TbElam(nEstelamKey,StrBarName,nCityCode,nBarCode,bFlag,nCompCode,nTruckType,nCarNum,StrAddress,nUserId,dDateElam,dTimeElam,nCarNumKol,StrPriceSug,StrDescription,LoadStatus,nBarSource,AHId,AHSGId) Values('" & Hasher.GenerateMD5String(nEstelamIdNew) & "','" & YourNSS.StrBarName & "'," & YourNSS.nCityCode & "," & YourNSS.nBarCode & ",0," & YourNSS.nCompCode & "," & YourNSS.nTruckType & "," & YourNSS.nCarNumKol & ",'" & YourNSS.StrAddress & "'," & YourNSS.nUserId & ",'" & _DateTime.GetCurrentDateShamsiFull() & "','" & _DateTime.GetCurrentTime() & "'," & YourNSS.nCarNumKol & "," & Tariff & ",'" & YourNSS.StrDescription & "'," & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered & ",21310000," & NSSAnnouncementHall.AHId & "," & NSSAnnouncementsubGroup.AHSGId & ")"
             '        End If
             '        CmdSql.ExecuteNonQuery()
             '        'ثبت اکانت
@@ -3260,11 +3260,11 @@ Namespace LoadCapacitor
             '        If R2CoreTransportationAndLoadNotificationMClassTransportCompaniesManagement.ISTransportCompanyActive(New R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure(YourNSS.nCompCode, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing)) = False Then Throw New TransportCompanyISNotActiveException
 
             '        'استاندارد سازی نرخ حمل بر اساس تعرفه های سازمانی
-            '        Dim Tarrif As String = YourNSS.StrPriceSug
+            '        Dim Tariff As String = YourNSS.StrPriceSug
             '        Try
-            '            Dim TarrifTemp = R2CoreTransportationAndLoadNotificationMClassTransportTarrifsManagement.GetNSSTransportTarrif(YourNSS).Tarrif
-            '            If Tarrif < TarrifTemp Then Tarrif = TarrifTemp
-            '        Catch exx As TransportPriceTarrifNotFoundException
+            '            Dim TariffTemp = R2CoreTransportationAndLoadNotificationMClassTransportTariffsManagement.GetNSSTransportTariff(YourNSS).Tariff
+            '            If Tariff < TariffTemp Then Tariff = TariffTemp
+            '        Catch exx As TransportPriceTariffNotFoundException
             '        End Try
 
             '        'ویرایش بار
@@ -3274,7 +3274,7 @@ Namespace LoadCapacitor
             '        'کنترل وضعیت بار
             '        If CurrentNSSLoadCapacitorLoad.LoadStatus = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented Or CurrentNSSLoadCapacitorLoad.LoadStatus = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Cancelled Or CurrentNSSLoadCapacitorLoad.LoadStatus = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Deleted Then Throw New LoadCapacitorLoadHandlingNotAllowedBecuaseLoadStatusException
 
-            '        CmdSql.CommandText = "Update dbtransport.dbo.TbElam Set nCompCode=" & YourNSS.nCompCode & ",nBarSource=" & 21310000 & ",AHId=" & NSSAnnouncementHall.AHId & ",AHSGId=" & NSSAnnouncementsubGroup.AHSGId & ",StrBarName='" & YourNSS.StrBarName & "',nCityCode=" & YourNSS.nCityCode & ",nBarCode=" & YourNSS.nBarCode & ",nTruckType=" & YourNSS.nTruckType & ",nCarNum=" & YourNSS.nCarNumKol & ",StrAddress='" & YourNSS.StrAddress & "',nCarNumKol=" & YourNSS.nCarNumKol & ",StrPriceSug='" & Tarrif & "',StrDescription='" & YourNSS.StrDescription & "' Where nEstelamId=" & YourNSS.nEstelamId & ""
+            '        CmdSql.CommandText = "Update dbtransport.dbo.TbElam Set nCompCode=" & YourNSS.nCompCode & ",nBarSource=" & 21310000 & ",AHId=" & NSSAnnouncementHall.AHId & ",AHSGId=" & NSSAnnouncementsubGroup.AHSGId & ",StrBarName='" & YourNSS.StrBarName & "',nCityCode=" & YourNSS.nCityCode & ",nBarCode=" & YourNSS.nBarCode & ",nTruckType=" & YourNSS.nTruckType & ",nCarNum=" & YourNSS.nCarNumKol & ",StrAddress='" & YourNSS.StrAddress & "',nCarNumKol=" & YourNSS.nCarNumKol & ",StrPriceSug='" & Tariff & "',StrDescription='" & YourNSS.StrDescription & "' Where nEstelamId=" & YourNSS.nEstelamId & ""
             '        CmdSql.ExecuteNonQuery()
             '        R2CoreTransportationAndLoadNotificationMClassLoadCapacitorAccountingManagement.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(YourNSS.nEstelamId, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Editing, YourNSS.nCarNumKol, Nothing, Nothing, Nothing, YourUserNSS.UserId))
             '        If CurrentnCarNumKol > YourNSS.nCarNumKol Then
@@ -3461,9 +3461,9 @@ Namespace LoadCapacitor
                     Dim InstancePermissions = New R2Core.PermissionManagement.R2CoreInstansePermissionsManager
                     Dim InstanceConfigurationsofAnnouncements = New R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager(_DateTimeService)
                     Dim InstanceSpecializedPersianCalendar = New R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager(_DateTimeService)
-                    Dim InstanceTransportTarrifs = New R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService)
+                    Dim InstanceTransportTariffs = New R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService)
                     Dim InstanceLoaderTypes = New R2CoreTransportationAndLoadNotificationLoaderTypesManager(_DateTimeService)
-                    Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationTransportTarrifsParametersManager(_DateTimeService)
+                    Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService)
                     Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
                     Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTimeService)
 
@@ -3535,13 +3535,13 @@ Namespace LoadCapacitor
                     End If
 
                     'استاندارد سازی نرخ حمل بر اساس تعرفه های سازمانی
-                    Dim Tarrif As Int64 = 0
+                    Dim Tariff As Int64 = 0
                     Try
                         Dim loaderTypeId = InstanceLoaderTypes.GetLoaderTypeIdfromAnnouncementSGId(YourLoad.AnnouncementSubGroupId)
-                        Tarrif = InstanceTransportTarrifs.GetTransportTarrif(YourLoad.SourceCityId, YourLoad.TargetCityId, loaderTypeId, YourLoad.GoodId)
-                        Tarrif = InstanceTransportTarrifs.GetUltimateTransportTarrif(YourLoad.AnnouncementSubGroupId, YourLoad.Tonaj, Tarrif)
-                        Tarrif = Tarrif + InstanceTransportTarrifsParameters.GetTotalofTransportTarrifsParameters(YourLoad)
-                    Catch exx As TransportPriceTarrifNotFoundException
+                        Tariff = InstanceTransportTariffs.GetTransportTariff(YourLoad.SourceCityId, YourLoad.TargetCityId, loaderTypeId, YourLoad.GoodId)
+                        Tariff = InstanceTransportTariffs.GetUltimateTransportTariff(YourLoad.AnnouncementSubGroupId, YourLoad.Tonaj, Tariff)
+                        Tariff = Tariff + InstanceTransportTariffsParameters.GetTotalofTransportTariffsParameters(YourLoad)
+                    Catch exx As TransportPriceTariffNotFoundException
                     End Try
 
                     'ثبت بار
@@ -3572,7 +3572,7 @@ Namespace LoadCapacitor
                     CmdSql.Parameters.Add(P)
                     P = New SqlClient.SqlParameter("@nCarNumKol", SqlDbType.Int) : P.Value = YourLoad.TotalNumber
                     CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tarrif
+                    P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tariff
                     CmdSql.Parameters.Add(P)
                     P = New SqlClient.SqlParameter("@StrDescription", SqlDbType.NVarChar) : P.Value = YourLoad.Description
                     CmdSql.Parameters.Add(P)
@@ -3594,7 +3594,7 @@ Namespace LoadCapacitor
                     CmdSql.Parameters.Add(P)
                     P = New SqlClient.SqlParameter("@DischargingPlaceId", SqlDbType.BigInt) : P.Value = YourLoad.DischargingPlaceId
                     CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@TPTParamsJoint", SqlDbType.NVarChar) : P.Value = InstanceTransportTarrifsParameters.GetTransportTarrifsComposit(YourLoad.TPTParams)
+                    P = New SqlClient.SqlParameter("@TPTParamsJoint", SqlDbType.NVarChar) : P.Value = InstanceTransportTariffsParameters.GetTransportTariffsComposit(YourLoad.TPTParams)
                     CmdSql.Parameters.Add(P)
                     If TommorowLoadRegisteringFlag Then
                         P = New SqlClient.SqlParameter("@AccountType", SqlDbType.NVarChar) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.RegisteringforTommorow
@@ -3717,9 +3717,9 @@ Namespace LoadCapacitor
                     Dim InstancePermissions = New R2Core.PermissionManagement.R2CoreInstansePermissionsManager
                     Dim InstanceConfigurationsofAnnouncements = New R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager(_DateTimeService)
                     Dim InstanceSpecializedPersianCalendar = New R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager(_DateTimeService)
-                    Dim InstanceTransportTarrifs = New R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService)
+                    Dim InstanceTransportTariffs = New R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService)
                     Dim InstanceLoaderTypes = New R2CoreTransportationAndLoadNotificationLoaderTypesManager(_DateTimeService)
-                    Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationTransportTarrifsParametersManager(_DateTimeService)
+                    Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService)
                     Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
                     Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTimeService)
 
@@ -3798,13 +3798,13 @@ Namespace LoadCapacitor
                     End If
 
                     'استاندارد سازی نرخ حمل بر اساس تعرفه های سازمانی
-                    Dim Tarrif As Int64 = 0
+                    Dim Tariff As Int64 = 0
                     Try
                         Dim loaderTypeId = InstanceLoaderTypes.GetLoaderTypeIdfromAnnouncementSGId(YourLoad.AnnouncementSubGroupId)
-                        Tarrif = InstanceTransportTarrifs.GetTransportTarrif(YourLoad.SourceCityId, YourLoad.TargetCityId, loaderTypeId, YourLoad.GoodId)
-                        Tarrif = InstanceTransportTarrifs.GetUltimateTransportTarrif(YourLoad.AnnouncementSubGroupId, YourLoad.Tonaj, Tarrif)
-                        Tarrif = Tarrif + InstanceTransportTarrifsParameters.GetTotalofTransportTarrifsParameters(YourLoad)
-                    Catch exx As TransportPriceTarrifNotFoundException
+                        Tariff = InstanceTransportTariffs.GetTransportTariff(YourLoad.SourceCityId, YourLoad.TargetCityId, loaderTypeId, YourLoad.GoodId)
+                        Tariff = InstanceTransportTariffs.GetUltimateTransportTariff(YourLoad.AnnouncementSubGroupId, YourLoad.Tonaj, Tariff)
+                        Tariff = Tariff + InstanceTransportTariffsParameters.GetTotalofTransportTariffsParameters(YourLoad)
+                    Catch exx As TransportPriceTariffNotFoundException
                     End Try
 
                     'کنترل وضعیت بار
@@ -3831,7 +3831,7 @@ Namespace LoadCapacitor
                     CmdSql.Parameters.Add(P)
                     P = New SqlClient.SqlParameter("@nCarNumKol", SqlDbType.Int) : P.Value = YourLoad.TotalNumber
                     CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tarrif
+                    P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tariff
                     CmdSql.Parameters.Add(P)
                     P = New SqlClient.SqlParameter("@StrDescription", SqlDbType.VarChar) : P.Value = YourLoad.Description
                     CmdSql.Parameters.Add(P)
@@ -3843,7 +3843,7 @@ Namespace LoadCapacitor
                     CmdSql.Parameters.Add(P)
                     P = New SqlClient.SqlParameter("@DischargingPlaceId", SqlDbType.BigInt) : P.Value = YourLoad.DischargingPlaceId
                     CmdSql.Parameters.Add(P)
-                    P = New SqlClient.SqlParameter("@TPTParamsJoint", SqlDbType.NVarChar) : P.Value = InstanceTransportTarrifsParameters.GetTransportTarrifsComposit(YourLoad.TPTParams)
+                    P = New SqlClient.SqlParameter("@TPTParamsJoint", SqlDbType.NVarChar) : P.Value = InstanceTransportTariffsParameters.GetTransportTariffsComposit(YourLoad.TPTParams)
                     CmdSql.Parameters.Add(P)
                     P = New SqlClient.SqlParameter("@AccountType", SqlDbType.NVarChar) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Editing
                     CmdSql.Parameters.Add(P)

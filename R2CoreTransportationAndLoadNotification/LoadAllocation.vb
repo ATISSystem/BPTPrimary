@@ -76,8 +76,8 @@ Imports R2CoreTransportationAndLoadNotification.TransportCompanies
 Imports R2CoreTransportationAndLoadNotification.TransportCompanies.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TransportTariffs
 Imports R2CoreTransportationAndLoadNotification.TransportTariffs.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TransportTarrifsParameters
-Imports R2CoreTransportationAndLoadNotification.TransportTarrifsParameters.Exceptions
+Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters
+Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TruckDrivers
 Imports R2CoreTransportationAndLoadNotification.TruckDrivers.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TruckLoaderTypes.Exceptions
@@ -355,7 +355,7 @@ Namespace LoadAllocation
 
         Public Function GetLoadAllocationsforTruckDriver(Optional YourSoftwareUserId As Int64 = Int64.MinValue, Optional YourTurnId As Int64 = Int64.MinValue) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationExtendedforTruckDriverStructure)
             Try
-                Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
+                Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsParametersManager
                 Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
                 Dim DS As DataSet
                 InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
@@ -435,7 +435,7 @@ Namespace LoadAllocation
                     NSS.LoadCapacitorLoadStatusTitle = IIf(Object.Equals(DS.Tables(0).Rows(Loopx).Item("LoadCapacitorLoadStatusTitle"), DBNull.Value), String.Empty, DS.Tables(0).Rows(Loopx).Item("LoadCapacitorLoadStatusTitle"))
                     NSS.LoadCapacitorLoadAHTitle = IIf(Object.Equals(DS.Tables(0).Rows(Loopx).Item("LoadCapacitorLoadAHTitle"), DBNull.Value), String.Empty, DS.Tables(0).Rows(Loopx).Item("LoadCapacitorLoadAHTitle"))
                     NSS.LoadCapacitorLoadAHSGTitle = IIf(Object.Equals(DS.Tables(0).Rows(Loopx).Item("LoadCapacitorLoadAHSGTitle"), DBNull.Value), String.Empty, DS.Tables(0).Rows(Loopx).Item("LoadCapacitorLoadAHSGTitle"))
-                    NSS.TPTParams = InstanceTransportTarrifsParameters.GetTransportTarrifsComposit(DS.Tables(0).Rows(Loopx).Item("TPTParams"))
+                    NSS.TPTParams = InstanceTransportTariffsParameters.GetTransportTariffsComposit(DS.Tables(0).Rows(Loopx).Item("TPTParams"))
                     NSS.LoadingPlace = IIf(Object.Equals(DS.Tables(0).Rows(Loopx).Item("LoadingPlace"), DBNull.Value), String.Empty, DS.Tables(0).Rows(Loopx).Item("LoadingPlace"))
                     NSS.DischargingPlace = IIf(Object.Equals(DS.Tables(0).Rows(Loopx).Item("DischargingPlace"), DBNull.Value), String.Empty, DS.Tables(0).Rows(Loopx).Item("DischargingPlace"))
                     NSS.TransportCompanyTitle = IIf(Object.Equals(DS.Tables(0).Rows(Loopx).Item("TransportCompanyTitle"), DBNull.Value), String.Empty, DS.Tables(0).Rows(Loopx).Item("TransportCompanyTitle"))

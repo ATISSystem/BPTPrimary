@@ -64,7 +64,7 @@ Namespace PayanehWS
         
         Private WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportOperationCompleted As System.Threading.SendOrPostCallback
         
-        Private WebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted As System.Threading.SendOrPostCallback
+        Private WebMethodReportingInformationProviderTransportPriceTariffsReportOperationCompleted As System.Threading.SendOrPostCallback
         
         Private WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReportOperationCompleted As System.Threading.SendOrPostCallback
         
@@ -169,7 +169,7 @@ Namespace PayanehWS
         Public Event WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportCompleted As WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportCompletedEventHandler
         
         '''<remarks/>
-        Public Event WebMethodReportingInformationProviderTransportPriceTarrifsReportCompleted As WebMethodReportingInformationProviderTransportPriceTarrifsReportCompletedEventHandler
+        Public Event WebMethodReportingInformationProviderTransportPriceTariffsReportCompleted As WebMethodReportingInformationProviderTransportPriceTariffsReportCompletedEventHandler
         
         '''<remarks/>
         Public Event WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReportCompleted As WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReportCompletedEventHandler
@@ -634,29 +634,29 @@ Namespace PayanehWS
         End Sub
         
         '''<remarks/>
-        <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationProviderTransportPriceTarrifsRepo"& _ 
+        <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationProviderTransportPriceTariffsRepo"& _ 
             "rt", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
-        Public Sub WebMethodReportingInformationProviderTransportPriceTarrifsReport(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementsubGroupId As Long, ByVal YourOActiveStatus As Boolean, ByVal YourExchangeKey As Long)
-            Me.Invoke("WebMethodReportingInformationProviderTransportPriceTarrifsReport", New Object() {YourAnnouncementHallId, YourAnnouncementsubGroupId, YourOActiveStatus, YourExchangeKey})
+        Public Sub WebMethodReportingInformationProviderTransportPriceTariffsReport(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementsubGroupId As Long, ByVal YourOActiveStatus As Boolean, ByVal YourExchangeKey As Long)
+            Me.Invoke("WebMethodReportingInformationProviderTransportPriceTariffsReport", New Object() {YourAnnouncementHallId, YourAnnouncementsubGroupId, YourOActiveStatus, YourExchangeKey})
         End Sub
         
         '''<remarks/>
-        Public Overloads Sub WebMethodReportingInformationProviderTransportPriceTarrifsReportAsync(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementsubGroupId As Long, ByVal YourOActiveStatus As Boolean, ByVal YourExchangeKey As Long)
-            Me.WebMethodReportingInformationProviderTransportPriceTarrifsReportAsync(YourAnnouncementHallId, YourAnnouncementsubGroupId, YourOActiveStatus, YourExchangeKey, Nothing)
+        Public Overloads Sub WebMethodReportingInformationProviderTransportPriceTariffsReportAsync(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementsubGroupId As Long, ByVal YourOActiveStatus As Boolean, ByVal YourExchangeKey As Long)
+            Me.WebMethodReportingInformationProviderTransportPriceTariffsReportAsync(YourAnnouncementHallId, YourAnnouncementsubGroupId, YourOActiveStatus, YourExchangeKey, Nothing)
         End Sub
         
         '''<remarks/>
-        Public Overloads Sub WebMethodReportingInformationProviderTransportPriceTarrifsReportAsync(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementsubGroupId As Long, ByVal YourOActiveStatus As Boolean, ByVal YourExchangeKey As Long, ByVal userState As Object)
-            If (Me.WebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted Is Nothing) Then
-                Me.WebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted = AddressOf Me.OnWebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted
+        Public Overloads Sub WebMethodReportingInformationProviderTransportPriceTariffsReportAsync(ByVal YourAnnouncementHallId As Long, ByVal YourAnnouncementsubGroupId As Long, ByVal YourOActiveStatus As Boolean, ByVal YourExchangeKey As Long, ByVal userState As Object)
+            If (Me.WebMethodReportingInformationProviderTransportPriceTariffsReportOperationCompleted Is Nothing) Then
+                Me.WebMethodReportingInformationProviderTransportPriceTariffsReportOperationCompleted = AddressOf Me.OnWebMethodReportingInformationProviderTransportPriceTariffsReportOperationCompleted
             End If
-            Me.InvokeAsync("WebMethodReportingInformationProviderTransportPriceTarrifsReport", New Object() {YourAnnouncementHallId, YourAnnouncementsubGroupId, YourOActiveStatus, YourExchangeKey}, Me.WebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted, userState)
+            Me.InvokeAsync("WebMethodReportingInformationProviderTransportPriceTariffsReport", New Object() {YourAnnouncementHallId, YourAnnouncementsubGroupId, YourOActiveStatus, YourExchangeKey}, Me.WebMethodReportingInformationProviderTransportPriceTariffsReportOperationCompleted, userState)
         End Sub
         
-        Private Sub OnWebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted(ByVal arg As Object)
-            If (Not (Me.WebMethodReportingInformationProviderTransportPriceTarrifsReportCompletedEvent) Is Nothing) Then
+        Private Sub OnWebMethodReportingInformationProviderTransportPriceTariffsReportOperationCompleted(ByVal arg As Object)
+            If (Not (Me.WebMethodReportingInformationProviderTransportPriceTariffsReportCompletedEvent) Is Nothing) Then
                 Dim invokeArgs As System.Web.Services.Protocols.InvokeCompletedEventArgs = CType(arg,System.Web.Services.Protocols.InvokeCompletedEventArgs)
-                RaiseEvent WebMethodReportingInformationProviderTransportPriceTarrifsReportCompleted(Me, New System.ComponentModel.AsyncCompletedEventArgs(invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState))
+                RaiseEvent WebMethodReportingInformationProviderTransportPriceTariffsReportCompleted(Me, New System.ComponentModel.AsyncCompletedEventArgs(invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState))
             End If
         End Sub
         
@@ -1181,7 +1181,7 @@ Namespace PayanehWS
     
     '''<remarks/>
     <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")>  _
-    Public Delegate Sub WebMethodReportingInformationProviderTransportPriceTarrifsReportCompletedEventHandler(ByVal sender As Object, ByVal e As System.ComponentModel.AsyncCompletedEventArgs)
+    Public Delegate Sub WebMethodReportingInformationProviderTransportPriceTariffsReportCompletedEventHandler(ByVal sender As Object, ByVal e As System.ComponentModel.AsyncCompletedEventArgs)
     
     '''<remarks/>
     <System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")>  _

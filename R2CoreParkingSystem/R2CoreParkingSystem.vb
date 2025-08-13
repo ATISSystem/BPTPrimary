@@ -72,6 +72,7 @@ Imports R2Core.SMS.SMSHandling.Exceptions
 Imports R2CoreParkingSystem.CarsNativeness.Exceptions
 Imports R2CoreParkingSystem.CarsNativeness
 Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
+Imports System.Runtime.Serialization.Formatters.Binary
 
 Namespace Logging
 
@@ -731,17 +732,17 @@ Namespace EnterExitManagement
                 'مبلغ پایه و تاخیر بر اساس نوع کارت تردد
                 Dim myMblghPayeh, myMblgDelay As Int64
                 If YourTrafficCard.CardType = TerafficCardType.Savari Then
-                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 0)
-                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghDelay, 0)
+                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 0)
+                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghDelay, 0)
                 ElseIf YourTrafficCard.CardType = TerafficCardType.SixCharkh Then
-                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 2)
-                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghDelay, 2)
+                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 2)
+                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghDelay, 2)
                 ElseIf YourTrafficCard.CardType = TerafficCardType.TenCharkh Then
-                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 1)
-                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghDelay, 1)
+                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 1)
+                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghDelay, 1)
                 ElseIf YourTrafficCard.CardType = TerafficCardType.Tereili Then
-                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 3)
-                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghDelay, 3)
+                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 3)
+                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghDelay, 3)
                 End If
 
                 'کارتهای با تردد آزاد
@@ -778,36 +779,36 @@ Namespace EnterExitManagement
                 'محاسبه هزینه نهایی
                 If EnterExitRequestType = R2EnterExitRequestType.EnterRequest Then
                     If YourTrafficCard.CardType = TerafficCardType.Savari Then
-                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 4) Then Return myMblghPayeh
+                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 4) Then Return myMblghPayeh
                     ElseIf YourTrafficCard.CardType = TerafficCardType.Tereili Then
-                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 1) Then Return myMblghPayeh
+                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 1) Then Return myMblghPayeh
                     ElseIf YourTrafficCard.CardType = TerafficCardType.SixCharkh Then
-                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 5) Then Return myMblghPayeh
+                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 5) Then Return myMblghPayeh
                     ElseIf YourTrafficCard.CardType = TerafficCardType.TenCharkh Then
-                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 6) Then Return myMblghPayeh
+                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 6) Then Return myMblghPayeh
                     End If
                 ElseIf EnterExitRequestType = R2EnterExitRequestType.ExitRequest Then
                     If YourTrafficCard.CardType = TerafficCardType.Savari Then
-                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 4) Then
-                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 4)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 3)) + 1) * myMblgDelay
+                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 4) Then
+                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 4)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 3)) + 1) * myMblgDelay
                         Else
                             Return 0
                         End If
                     ElseIf YourTrafficCard.CardType = TerafficCardType.SixCharkh Then
-                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 5) Then
-                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 5)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 3)) + 1) * myMblgDelay
+                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 5) Then
+                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 5)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 3)) + 1) * myMblgDelay
                         Else
                             Return 0
                         End If
                     ElseIf YourTrafficCard.CardType = TerafficCardType.TenCharkh Then
-                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 6) Then
-                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 6)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 3)) + 1) * myMblgDelay
+                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 6) Then
+                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 6)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 3)) + 1) * myMblgDelay
                         Else
                             Return 0
                         End If
                     ElseIf YourTrafficCard.CardType = TerafficCardType.Tereili Then
-                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 1) Then
-                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 1)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 3)) + 1) * myMblgDelay
+                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 1) Then
+                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 1)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 3)) + 1) * myMblgDelay
                         Else
                             Return 0
                         End If
@@ -825,17 +826,17 @@ Namespace EnterExitManagement
                 'مبلغ پایه و تاخیر بر اساس نوع کارت تردد
                 Dim myMblghPayeh, myMblgDelay As Int64
                 If YourTrafficCard.CardType = TerafficCardType.Savari Then
-                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 4)
-                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghDelay, 4)
+                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 4)
+                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghDelay, 4)
                 ElseIf YourTrafficCard.CardType = TerafficCardType.SixCharkh Then
-                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 6)
-                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghDelay, 6)
+                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 6)
+                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghDelay, 6)
                 ElseIf YourTrafficCard.CardType = TerafficCardType.TenCharkh Then
-                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 5)
-                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghDelay, 5)
+                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 5)
+                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghDelay, 5)
                 ElseIf YourTrafficCard.CardType = TerafficCardType.Tereili Then
-                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 7)
-                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghDelay, 7)
+                    myMblghPayeh = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 7)
+                    myMblgDelay = R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghDelay, 7)
                 End If
 
                 If EnterExitRequestType = R2EnterExitRequestType.EnterRequest Then
@@ -846,26 +847,26 @@ Namespace EnterExitManagement
                     Tavaghof = DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTime.GetCurrentDateTimeMilladi())
 
                     If YourTrafficCard.CardType = TerafficCardType.Savari Then
-                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 4) Then
-                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 4)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 3)) + 1) * myMblgDelay
+                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 4) Then
+                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 4)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 3)) + 1) * myMblgDelay
                         Else
                             Return 0
                         End If
                     ElseIf YourTrafficCard.CardType = TerafficCardType.SixCharkh Then
-                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 5) Then
-                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 5)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 3)) + 1) * myMblgDelay
+                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 5) Then
+                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 5)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 3)) + 1) * myMblgDelay
                         Else
                             Return 0
                         End If
                     ElseIf YourTrafficCard.CardType = TerafficCardType.Tereili Then
-                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 1) Then
-                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 1)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 3)) + 1) * myMblgDelay
+                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 1) Then
+                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 1)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 3)) + 1) * myMblgDelay
                         Else
                             Return 0
                         End If
                     ElseIf YourTrafficCard.CardType = TerafficCardType.TenCharkh Then
-                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 6) Then
-                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 6)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 3)) + 1) * myMblgDelay
+                        If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 6) Then
+                            Return (((Tavaghof - R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 6)) \ R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 3)) + 1) * myMblgDelay
                         Else
                             Return 0
                         End If
@@ -1002,7 +1003,7 @@ Namespace EnterExitManagement
         Private Shared RegisteringHandyBillsFixedTime As String = "08:00:00"
         Public Shared Sub RegisteringHandyBills(YourTeadad As Int64, YourShamsiDate As R2StandardDateAndTimeStructure, YourTerafficCardType As TerafficCardType, YourUserNSS As R2CoreStandardSoftwareUserStructure)
             Try
-                Dim myMblgh As Int64 = Microsoft.VisualBasic.Switch(YourTerafficCardType = TerafficCardType.Savari, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 0), YourTerafficCardType = TerafficCardType.SixCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 2), YourTerafficCardType = TerafficCardType.TenCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 1), YourTerafficCardType = TerafficCardType.Tereili, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 3))
+                Dim myMblgh As Int64 = Microsoft.VisualBasic.Switch(YourTerafficCardType = TerafficCardType.Savari, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 0), YourTerafficCardType = TerafficCardType.SixCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 2), YourTerafficCardType = TerafficCardType.TenCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 1), YourTerafficCardType = TerafficCardType.Tereili, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 3))
                 For Loopx As Int64 = 0 To YourTeadad - 1
                     R2CoreParkingSystemMClassAccountingManagement.InsertAccounting(New R2StandardEnterExitAccountingStructure(R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(RegisteringHandyBillsFixedCardNo), R2CoreParkingSystemAccountings.RegisteringHandyBills, YourShamsiDate.DateShamsiFull, RegisteringHandyBillsFixedTime, _DateTime.GetMilladiDateTimeFromDateShamsiFull(YourShamsiDate.DateShamsiFull, RegisteringHandyBillsFixedTime), Nothing, R2CoreMClassConfigurationManagement.GetComputerCode(), myMblgh, YourUserNSS.UserId, 0, 0))
                 Next
@@ -1015,7 +1016,7 @@ Namespace EnterExitManagement
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
             Try
-                Dim myMblgh As Int64 = Microsoft.VisualBasic.Switch(YourTerafficCardType = TerafficCardType.Savari, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 0), YourTerafficCardType = TerafficCardType.SixCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 2), YourTerafficCardType = TerafficCardType.TenCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 1), YourTerafficCardType = TerafficCardType.Tereili, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 3))
+                Dim myMblgh As Int64 = Microsoft.VisualBasic.Switch(YourTerafficCardType = TerafficCardType.Savari, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 0), YourTerafficCardType = TerafficCardType.SixCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 2), YourTerafficCardType = TerafficCardType.TenCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 1), YourTerafficCardType = TerafficCardType.Tereili, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 3))
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Delete R2Primary.dbo.TblAccounting Where CardId=" & R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(RegisteringHandyBillsFixedCardNo).CardId & " and TimeA='" & RegisteringHandyBillsFixedTime & "' and DateShamsiA='" & YourShamsiDate.DateShamsiFull & "' and MblghA=" & myMblgh & ""
                 CmdSql.ExecuteNonQuery()
@@ -1028,7 +1029,7 @@ Namespace EnterExitManagement
 
         Public Shared Function GetTotalRegisteredHandyBills(YourShamsiDate As R2StandardDateAndTimeStructure, YourTerafficCardType As TerafficCardType) As Int64
             Try
-                Dim myMblgh As Int64 = Microsoft.VisualBasic.Switch(YourTerafficCardType = TerafficCardType.Savari, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 0), YourTerafficCardType = TerafficCardType.SixCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 2), YourTerafficCardType = TerafficCardType.TenCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 1), YourTerafficCardType = TerafficCardType.Tereili, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMblghPaye, 3))
+                Dim myMblgh As Int64 = Microsoft.VisualBasic.Switch(YourTerafficCardType = TerafficCardType.Savari, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 0), YourTerafficCardType = TerafficCardType.SixCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 2), YourTerafficCardType = TerafficCardType.TenCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 1), YourTerafficCardType = TerafficCardType.Tereili, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 3))
                 Dim Ds As DataSet
                 If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Count(*) as CountX from R2Primary.dbo.TblAccounting Where CardId=" & R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(RegisteringHandyBillsFixedCardNo).CardId & " and TimeA='" & RegisteringHandyBillsFixedTime & "' and DateShamsiA='" & YourShamsiDate.DateShamsiFull & "' and MblghA=" & myMblgh & "", 1, Ds, New Boolean).GetRecordsCount() <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item("CountX")
@@ -1647,7 +1648,7 @@ Namespace TrafficCardsManagement
                 UpdateTrafficCardType(YourNSSTerafficCard)
                 'کسر هزینه کارت تردد در صورتی که دائمی باشد و نه موقت
                 If YourNSSTerafficCard.TempCardType = TerafficTempCardType.NoTemp Then
-                    R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(YourNSSTerafficCard, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TarrifsMeselanius, 2), R2CoreParkingSystemAccountings.HazinehKart, YourUserNSS)
+                    R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(YourNSSTerafficCard, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 2), R2CoreParkingSystemAccountings.HazinehKart, YourUserNSS)
                 End If
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -1892,12 +1893,12 @@ Namespace ConfigurationManagement
         Public Shared ReadOnly Property TerafficCardsTypeSupport As Int64 = 19
         Public Shared ReadOnly Property SaveCarPicture As Int64 = 20
         Public Shared ReadOnly Property TrafficCardEERequestStatusWithMaabarMatch As Int64 = 23
-        Public Shared ReadOnly Property TarrifsMblghPaye As Int64 = 28
-        Public Shared ReadOnly Property TarrifsMblghDelay As Int64 = 29
-        Public Shared ReadOnly Property TarrifsMblghApproved As Int64 = 30
+        Public Shared ReadOnly Property TariffsMblghPaye As Int64 = 28
+        Public Shared ReadOnly Property TariffsMblghDelay As Int64 = 29
+        Public Shared ReadOnly Property TariffsMblghApproved As Int64 = 30
         Public Shared ReadOnly Property ChargeActiveOnThisLocation As Int64 = 39
         Public Shared ReadOnly Property LPRIsActive As Int64 = 40
-        Public Shared ReadOnly Property TarrifsMeselanius As Int64 = 41
+        Public Shared ReadOnly Property TariffsMeselanius As Int64 = 41
         Public Shared ReadOnly Property FrmcEnterExitSetting As Int64 = 48
         Public Shared ReadOnly Property IndigenousCars As Int64 = 89
         Public Shared ReadOnly Property EntryExitAllownSMS As Int64 = 90
@@ -2536,7 +2537,7 @@ Namespace Drivers
 
     Public Class R2CoreParkingSystemMClassDrivers
 
-        Private Shared _R2PrimaryFSWS As R2PrimaryFileSharingWS.R2PrimaryFileSharingWebService = New R2PrimaryFileSharingWebService()
+        Private Shared _R2PrimaryFSWS = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
 
         Public Shared Function IsExistDriver(YourNSS As R2StandardDriverStructure) As Boolean
             Try
@@ -2734,7 +2735,10 @@ Namespace Drivers
                 If _R2PrimaryFSWS.WebMethodIOFileExist(R2CoreParkingSystemRawGroups.DriverImages, YourNSSDriver.nIdPerson.ToString() + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 1), _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword)) = False Then
                     Throw New DriverImageNotExistException
                 End If
-                Return New R2CoreImage(_R2PrimaryFSWS.WebMethodGetFile(R2CoreParkingSystemRawGroups.DriverImages, YourNSSDriver.nIdPerson.ToString() + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 1), _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword)))
+                Dim bf As BinaryFormatter = New BinaryFormatter()
+                Dim MS As MemoryStream = New MemoryStream()
+                bf.Serialize(MS, _R2PrimaryFSWS.WebMethodGetFile(R2CoreParkingSystemRawGroups.DriverImages, YourNSSDriver.nIdPerson.ToString() + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 1), _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword)))
+                Return New R2CoreImage(MS.ToArray())
             Catch exx As DriverImageNotExistException
                 Throw exx
             Catch ex As Exception
@@ -3013,7 +3017,7 @@ End Namespace
 Namespace FileShareRawGroupsManagement
 
     Public MustInherit Class R2CoreParkingSystemRawGroups
-        Inherits R2Core.FileShareRawGroupsManagement.R2CoreRawGroups
+        Inherits R2Core.RawGroups.R2CoreRawGroups
 
         Public Shared ReadOnly DriverImages As Int64 = 2
         Public Shared ReadOnly CarImages As Int64 = 3

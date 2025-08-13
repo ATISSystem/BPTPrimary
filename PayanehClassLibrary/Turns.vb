@@ -517,8 +517,8 @@ Namespace CarTruckNobatManagement
         Public Function GetHazinehSodoorNobat(YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure) As Int64
             Try
                 Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                If YourNSSTerafficCard.CardType = TerafficCardType.Tereili Then Return GetSherkatHazinehNobatMblgh(YourNSSTerafficCard) + InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 1) + InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 4)
-                'If YourNSSTerafficCard.CardType = TerafficCardType.SixCharkh Or YourNSSTerafficCard.CardType = TerafficCardType.TenCharkh Then Return GetSherkatHazinehNobatMblgh(YourNSSTerafficCard) + InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 4)
+                If YourNSSTerafficCard.CardType = TerafficCardType.Tereili Then Return GetSherkatHazinehNobatMblgh(YourNSSTerafficCard) + InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 1) + InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 4)
+                'If YourNSSTerafficCard.CardType = TerafficCardType.SixCharkh Or YourNSSTerafficCard.CardType = TerafficCardType.TenCharkh Then Return GetSherkatHazinehNobatMblgh(YourNSSTerafficCard) + InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 4)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -533,9 +533,9 @@ Namespace CarTruckNobatManagement
                 Dim CurrentDateTimeMilladi = _DateTime.GetCurrentDateTimeMilladi
                 Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
                 Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                If YourTrafficCard.CardType = TerafficCardType.Tereili Then mySherkatHazinehNobat = InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 0)
-                If YourTrafficCard.CardType = TerafficCardType.SixCharkh Then mySherkatHazinehNobat = InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 5)
-                If YourTrafficCard.CardType = TerafficCardType.TenCharkh Then mySherkatHazinehNobat = InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 6)
+                If YourTrafficCard.CardType = TerafficCardType.Tereili Then mySherkatHazinehNobat = InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 0)
+                If YourTrafficCard.CardType = TerafficCardType.SixCharkh Then mySherkatHazinehNobat = InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 5)
+                If YourTrafficCard.CardType = TerafficCardType.TenCharkh Then mySherkatHazinehNobat = InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 6)
                 'احراز معیار محاسبه
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (CardId=" & YourTrafficCard.CardId & ") and (MblghA<>0) and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & " or EEAccountingProcessType=" & R2CoreParkingSystemAccountings.SherkatHazinehNobat & " ) order by DateMilladiA desc")
@@ -544,7 +544,7 @@ Namespace CarTruckNobatManagement
                 If Da.Fill(Ds) = 0 Then Return mySherkatHazinehNobat
                 Dim Tavaghof As Int64 = DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateMilladiA"), CurrentDateTimeMilladi)
                 If YourTrafficCard.CardType = TerafficCardType.Tereili Then
-                    If Tavaghof >= InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 2) Then
+                    If Tavaghof >= InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 2) Then
                         Return mySherkatHazinehNobat
                     Else
                         If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (CardId=" & YourTrafficCard.CardId & ") and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanHazinehNobat & ") order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount <> 0 Then
@@ -559,7 +559,7 @@ Namespace CarTruckNobatManagement
                         End If
                     End If
                 ElseIf YourTrafficCard.CardType = TerafficCardType.SixCharkh Then
-                    If Tavaghof >= InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 11) Then
+                    If Tavaghof >= InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 11) Then
                         Return mySherkatHazinehNobat
                     Else
                         If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (CardId=" & YourTrafficCard.CardId & ") and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanHazinehNobat & ") order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount <> 0 Then
@@ -574,7 +574,7 @@ Namespace CarTruckNobatManagement
                         End If
                     End If
                 ElseIf YourTrafficCard.CardType = TerafficCardType.TenCharkh Then
-                    If Tavaghof >= InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 12) Then
+                    If Tavaghof >= InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 12) Then
                         Return mySherkatHazinehNobat
                     Else
                         If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (CardId=" & YourTrafficCard.CardId & ") and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanHazinehNobat & ") order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount <> 0 Then
@@ -774,8 +774,8 @@ Namespace CarTruckNobatManagement
                 'هزینه نوبت انجمن و شرکت
                 Dim CostOfTurnRegistering As Int64 = PayanehClassLibraryMClassCarTruckNobatManagement.GetSherkatHazinehNobatMblgh(NSSTrafficCard)
                 If CostOfTurnRegistering > 0 Then R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.MinusMoney, CostOfTurnRegistering, R2CoreParkingSystemAccountings.SherkatHazinehNobat, R2CoreMClassSoftwareUsersManagement.GetNSSUser(YourUserId))
-                If NSSTrafficCard.CardType = TerafficCardType.Tereili Then R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 1), R2CoreParkingSystemAccountings.AnjomanHazinehNobat, R2Core.SoftwareUserManagement.R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser)
-                If NSSTrafficCard.CardType = TerafficCardType.SixCharkh Or NSSTrafficCard.CardType = TerafficCardType.TenCharkh Then R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 4), R2CoreParkingSystemAccountings.AnjomanHazinehNobat, R2Core.SoftwareUserManagement.R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser)
+                If NSSTrafficCard.CardType = TerafficCardType.Tereili Then R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 1), R2CoreParkingSystemAccountings.AnjomanHazinehNobat, R2Core.SoftwareUserManagement.R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser)
+                If NSSTrafficCard.CardType = TerafficCardType.SixCharkh Or NSSTrafficCard.CardType = TerafficCardType.TenCharkh Then R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 4), R2CoreParkingSystemAccountings.AnjomanHazinehNobat, R2Core.SoftwareUserManagement.R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser)
 
                 'احیاء نوبت
                 PayanehClassLibraryMClassCarTruckNobatManagement.SetbFlagDriverToFalse(YourNSSTurn.nEnterExitId, True)
@@ -886,8 +886,8 @@ Namespace CarTruckNobatManagement
             Try
                 'هزینه چاپ قبض نوبت  - المثنی
                 Dim ReplicaTurnPrintCost As Int64
-                If YourNSSTerafficCard.CardType = TerafficCardType.Tereili Then ReplicaTurnPrintCost = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 3)
-                If YourNSSTerafficCard.CardType = TerafficCardType.SixCharkh Or YourNSSTerafficCard.CardType = TerafficCardType.TenCharkh Then ReplicaTurnPrintCost = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 4)
+                If YourNSSTerafficCard.CardType = TerafficCardType.Tereili Then ReplicaTurnPrintCost = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 3)
+                If YourNSSTerafficCard.CardType = TerafficCardType.SixCharkh Or YourNSSTerafficCard.CardType = TerafficCardType.TenCharkh Then ReplicaTurnPrintCost = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 4)
                 Return ReplicaTurnPrintCost
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -1054,8 +1054,8 @@ Namespace CarTruckNobatManagement
 
         Public Shared Function GetHazinehSodoorNobat(YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure) As Int64
             Try
-                If YourNSSTerafficCard.CardType = TerafficCardType.Tereili Then Return GetSherkatHazinehNobatMblgh(YourNSSTerafficCard) + R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 1)
-                If YourNSSTerafficCard.CardType = TerafficCardType.SixCharkh Or YourNSSTerafficCard.CardType = TerafficCardType.TenCharkh Then Return GetSherkatHazinehNobatMblgh(YourNSSTerafficCard) + R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 4)
+                If YourNSSTerafficCard.CardType = TerafficCardType.Tereili Then Return GetSherkatHazinehNobatMblgh(YourNSSTerafficCard) + R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 1)
+                If YourNSSTerafficCard.CardType = TerafficCardType.SixCharkh Or YourNSSTerafficCard.CardType = TerafficCardType.TenCharkh Then Return GetSherkatHazinehNobatMblgh(YourNSSTerafficCard) + R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 4)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -1067,9 +1067,9 @@ Namespace CarTruckNobatManagement
                 'در صورتی که ناوگان در محدوده 72 ساعت از صدور نوبت باشد(نه تردد) و مجددا نوبت بخواهد هزینه دارد - مثلا بار تهران می برد و قبل 72 برمیگردد نوبت بزند
                 'مبلغ پایه هزینه صدور نوبت برای شرکت از کانفیگ
                 Dim mySherkatHazinehNobat As Int64
-                If YourTrafficCard.CardType = TerafficCardType.Tereili Then mySherkatHazinehNobat = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 0)
-                If YourTrafficCard.CardType = TerafficCardType.SixCharkh Then mySherkatHazinehNobat = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 5)
-                If YourTrafficCard.CardType = TerafficCardType.TenCharkh Then mySherkatHazinehNobat = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 6)
+                If YourTrafficCard.CardType = TerafficCardType.Tereili Then mySherkatHazinehNobat = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 0)
+                If YourTrafficCard.CardType = TerafficCardType.SixCharkh Then mySherkatHazinehNobat = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 5)
+                If YourTrafficCard.CardType = TerafficCardType.TenCharkh Then mySherkatHazinehNobat = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 6)
                 'احراز معیار محاسبه
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (CardId=" & YourTrafficCard.CardId & ") and (MblghA<>0) and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & " or EEAccountingProcessType=" & R2CoreParkingSystemAccountings.SherkatHazinehNobat & " ) order by DateMilladiA desc")
@@ -1078,7 +1078,7 @@ Namespace CarTruckNobatManagement
                 If Da.Fill(Ds) = 0 Then Return mySherkatHazinehNobat
                 Dim Tavaghof As Int64 = DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTime.GetCurrentDateTimeMilladi())
                 If YourTrafficCard.CardType = TerafficCardType.Tereili Then
-                    If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 2) Then
+                    If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 2) Then
                         Return mySherkatHazinehNobat
                     Else
                         If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (CardId=" & YourTrafficCard.CardId & ") and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanHazinehNobat & ") order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount <> 0 Then
@@ -1093,7 +1093,7 @@ Namespace CarTruckNobatManagement
                         End If
                     End If
                 ElseIf YourTrafficCard.CardType = TerafficCardType.SixCharkh Then
-                    If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 11) Then
+                    If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 11) Then
                         Return mySherkatHazinehNobat
                     Else
                         If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (CardId=" & YourTrafficCard.CardId & ") and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanHazinehNobat & ") order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount <> 0 Then
@@ -1108,7 +1108,7 @@ Namespace CarTruckNobatManagement
                         End If
                     End If
                 ElseIf YourTrafficCard.CardType = TerafficCardType.TenCharkh Then
-                    If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 12) Then
+                    If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 12) Then
                         Return mySherkatHazinehNobat
                     Else
                         If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (CardId=" & YourTrafficCard.CardId & ") and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanHazinehNobat & ") order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount <> 0 Then
@@ -1582,8 +1582,8 @@ Namespace CarTruckNobatManagement
     '            'هزینه نوبت انجمن و شرکت
     '            CostOfTurnRegistering = PayanehClassLibraryMClassCarTruckNobatManagement.GetSherkatHazinehNobatMblgh(NSSTrafficCard)
     '            If CostOfTurnRegistering > 0 Then R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.MinusMoney, CostOfTurnRegistering, R2CoreParkingSystemAccountings.SherkatHazinehNobat, NSSSoftwareUser)
-    '            If NSSTrafficCard.CardType = TerafficCardType.Tereili Then R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 1), R2CoreParkingSystemAccountings.AnjomanHazinehNobat, NSSSoftwareUser)
-    '            If NSSTrafficCard.CardType = TerafficCardType.SixCharkh Or NSSTrafficCard.CardType = TerafficCardType.TenCharkh Then R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 4), R2CoreParkingSystemAccountings.AnjomanHazinehNobat, NSSSoftwareUser)
+    '            If NSSTrafficCard.CardType = TerafficCardType.Tereili Then R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 1), R2CoreParkingSystemAccountings.AnjomanHazinehNobat, NSSSoftwareUser)
+    '            If NSSTrafficCard.CardType = TerafficCardType.SixCharkh Or NSSTrafficCard.CardType = TerafficCardType.TenCharkh Then R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 4), R2CoreParkingSystemAccountings.AnjomanHazinehNobat, NSSSoftwareUser)
 
     '            'ارسال نوبت ناوگان برای سیستم آنلاین
     '            If NSSTrafficCard.CardType = TerafficCardType.Tereili And R2CoreMClassConfigurationManagement.GetConfigBoolean(PayanehClassLibraryConfigurations.TWS, 0) Then

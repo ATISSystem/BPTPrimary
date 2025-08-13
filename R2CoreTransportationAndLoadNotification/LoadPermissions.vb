@@ -57,7 +57,7 @@ Imports R2CoreGUI
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad.Exceptions
 Imports R2CoreTransportationAndLoadNotification.DriverSelfDeclaration.Exceptions
 Imports R2CoreTransportationAndLoadNotification.RequesterManagement
-Imports R2CoreTransportationAndLoadNotification.TransportTarrifsParameters
+Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters
 Imports R2CoreTransportationAndLoadNotification.SMS.SMSTypes
 
 
@@ -227,7 +227,7 @@ Namespace LoadPermission
 
         Public Function ReportingInformationProviderLoadPermissionsIssuedOrderByPriorityReport(YourAHSGId As Int64) As List(Of KeyValuePair(Of String, String))
             'گزارش مجوزهای صادر شده برای نوبت ها به ترتیب زمان صدور مجوز و اولویت انتخابی
-            Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationTransportTarrifsParametersManager(_DateTime)
+            Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTime)
             Dim InstanceSqlDataBox As New R2CoreInstanseSqlDataBOXManager
             Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager
             Dim InstanceSequentialTurns = New R2CoreTransportationAndLoadNotificationInstanceSequentialTurnsManager
@@ -287,7 +287,7 @@ Namespace LoadPermission
                     StringB.Append("تناژ بار: " + IIf(Object.Equals(Ds.Tables(0).Rows(Loopx).Item("nTonaj"), DBNull.Value), String.Empty, Ds.Tables(0).Rows(Loopx).Item("nTonaj").ToString().Trim()) + vbCrLf)
                     'StringB.Append("محل بارگیری: " + IIf(Object.Equals(Ds.Tables(0).Rows(Loopx).Item("LoadingPlace"), DBNull.Value), String.Empty, Ds.Tables(0).Rows(Loopx).Item("LoadingPlace").ToString().Trim()) + vbCrLf)
                     'StringB.Append("محل تخلیه: " + IIf(Object.Equals(Ds.Tables(0).Rows(Loopx).Item("DischargingPlace"), DBNull.Value), String.Empty, Ds.Tables(0).Rows(Loopx).Item("DischargingPlace").ToString().Trim()) + vbCrLf)
-                    'Dim TPTParamsTemp = InstanceTransportTarrifsParameters.GetTransportTarrifsComposit(Ds.Tables(0).Rows(Loopx).Item("TPTParams").ToString().Trim())
+                    'Dim TPTParamsTemp = InstanceTransportTariffsParameters.GetTransportTariffsComposit(Ds.Tables(0).Rows(Loopx).Item("TPTParams").ToString().Trim())
                     'If TPTParamsTemp <> String.Empty Then StringB.Append("پارامترهای موثر: " + TPTParamsTemp)
                     Lst.Add(New KeyValuePair(Of String, String)(ValueHeader, StringB.ToString()))
                 Next
@@ -900,7 +900,7 @@ Namespace LoadPermission
                 Try
                     Dim InstanceSqlDataBox = New R2CoreInstanseSqlDataBOXManager
                     Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                    Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
+                    Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsParametersManager
                     Dim DS As DataSet
                     InstanceSqlDataBox.GetDataBOX(New R2PrimarySqlConnection,
                           "Select LoadAllocation.LAId,LoadAllocation.nEstelamId,Substring(EnterExit.OtaghdarTurnNumber,7,20) as TurnId,EnterExit.strExitDate,EnterExit.strExitTime
@@ -944,7 +944,7 @@ Namespace LoadPermission
                     LoadPermissionPrintingInf.SourceCity = DS.Tables(0).Rows(0).Item("SourceCity").trim
                     LoadPermissionPrintingInf.TransportPrice = DS.Tables(0).Rows(0).Item("strPriceSug").trim
                     LoadPermissionPrintingInf.LoadCapacitorLoadDescription = DS.Tables(0).Rows(0).Item("strDescription").trim & " " & DS.Tables(0).Rows(0).Item("StrAddress").trim & " " & DS.Tables(0).Rows(0).Item("StrBarName").trim
-                    Dim TPTParamsTemp = InstanceTransportTarrifsParameters.GetTransportTarrifsComposit(DS.Tables(0).Rows(0).Item("TPTParams").trim)
+                    Dim TPTParamsTemp = InstanceTransportTariffsParameters.GetTransportTariffsComposit(DS.Tables(0).Rows(0).Item("TPTParams").trim)
                     If TPTParamsTemp <> String.Empty Then LoadPermissionPrintingInf.LoadCapacitorLoadDescription += "" & vbCrLf & " پارامترهای موثر در حمل بار : " + TPTParamsTemp
                     LoadPermissionPrintingInf.UserName = YourNSSUser.UserName.Trim
                     LoadPermissionPrintingInf.OtherNote = Convert.ToString(DS.Tables(0).Rows(0).Item("TravelLength")) + "مدت سفر:"
@@ -1405,7 +1405,7 @@ Namespace LoadPermission
                 Dim DS As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
                   "Select Loads.nEstelamID as LoadId,Products.strGoodName as GoodTitle,LoadSourceCities.StrCityName as LoadSourceCity,LoadTargetCities.StrCityName as LoadTargetCity,
-                          Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGTitle,Companies.strCompName as TransportCompany,Loads.strBarName as Recipent,
+                          Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGTitle,Companies.strCompName as TransportCompany,Loads.strBarName as Recipient,
 	                      Loads.strAddress as Address,Loads.strDescription as Description,LoadRegisteringSoftwareUsers.UserName as LoadRegisteringUser,LoadAllocationSoftwareUsers.UserName as LoadAllocationUser,
                           LoadAllocations.LAId as LoadAllocationId,Cars.strCarNo+' - '+Cars.strCarSerialNo as LicensePlate,Cars.strBodyNo as SmartCardNo,Drivers.strPersonFullName as TruckDriver,Drivers.strNationalCode as NationalCode,
 	                      Drivers.strIDNO as MobileNumber,LoadAllocations.DateShamsi as ShamsiDate,LoadAllocations.Time as Time,Turns.OtaghdarTurnNumber as SequentialTurn,LoadAllocations.LANote as Note,

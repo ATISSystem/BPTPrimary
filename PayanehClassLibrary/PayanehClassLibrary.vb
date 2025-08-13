@@ -92,7 +92,7 @@ Imports R2CoreParkingSystem.Logging
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.Exceptions
 Imports PayanehClassLibrary.CarTrucksManagement.Exceptions
 Imports R2Core.MoneyWallet.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TransportTarrifsParameters
+Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters
 Imports R2CoreTransportationAndLoadNotification.SoftwareUserManagement
 Imports R2CoreParkingSystem.SMS.SMSTypes
 Imports R2CoreTransportationAndLoadNotification.SMS.SMSTypes
@@ -111,7 +111,7 @@ Imports R2CoreTransportationAndLoadNotification.TrucksNativeness
 Imports R2CoreTransportationAndLoadNotification.TrucksNativeness.Exceptions
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoadManipulation
 Imports R2CoreTransportationAndLoadNotification.Announcements.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TransportTarrifsParameters.Exceptions
+Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters.Exceptions
 Imports R2CoreTransportationAndLoadNotification.LoadingAndDischargingPlaces.Exceptions
 Imports System.Net
 Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
@@ -163,9 +163,9 @@ Namespace ConfigurationManagement
 
         Public Shared ReadOnly Property Clock4 As Int64 = 22
         Public Shared ReadOnly Property SalonFingerPrint As Int64 = 26
-        Public Shared ReadOnly Property TarrifsPayaneh As Int64 = 31
+        Public Shared ReadOnly Property TariffsPayaneh As Int64 = 31
         Public Shared ReadOnly Property ElamBarMonitoringInterval As Int64 = 33
-        Public Shared ReadOnly Property TarrifsPayanehKiosk As Int64 = 53
+        Public Shared ReadOnly Property TariffsPayanehKiosk As Int64 = 53
         Public Shared ReadOnly Property PayanehAmirKabirAutomatedJobsSetting As Int64 = 64
         Public Shared ReadOnly Property TruckersAssociationControllingMoneyWallet As Int64 = 75
 
@@ -336,8 +336,8 @@ Namespace DriverTrucksManagement
 
                 If YourTruckDriverNationalCode = String.Empty Then Throw New DataEntryException
 
-                Dim SherkatHazinehChangeDriverTruck As Int64 = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 7)
-                Dim AnjomanHazinehChangeDriverTruck As Int64 = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 9)
+                Dim SherkatHazinehChangeDriverTruck As Int64 = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 7)
+                Dim AnjomanHazinehChangeDriverTruck As Int64 = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 9)
 
                 'کنترل موجودی کیف پول و کسر هزینه
                 Dim InstanceCars = New R2CoreParkingSystemInstanceCarsManager
@@ -716,8 +716,8 @@ Namespace CarTrucksManagement
 
                 If YourNewTruckLicensePlate = String.Empty Then Throw New DataEntryException
 
-                Dim SherkatHazinehChangeCarTruckNumberPlate As Int64 = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 8)
-                Dim AnjomanHazinehChangeCarTruckNumberPlate As Int64 = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 10)
+                Dim SherkatHazinehChangeCarTruckNumberPlate As Int64 = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 8)
+                Dim AnjomanHazinehChangeCarTruckNumberPlate As Int64 = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 10)
 
                 'کنترل موجودی کیف پول و کسر هزینه
                 Dim InstanceCars = New R2CoreParkingSystemInstanceCarsManager
@@ -1006,7 +1006,7 @@ Namespace ProcessesManagement
         Public Shared ReadOnly FrmcTruckDriversWaitingToGetLoadPermissionReport As Int64 = 52
         Public Shared ReadOnly FrmcTrucksAverageOfSleepDaysToGetLoadPermissionReport As Int64 = 53
         Public Shared ReadOnly FrmcTravelLengthOfLoadTargetsReport As Int64 = 54
-        Public Shared ReadOnly FrmcTransportPriceTarrifsReport As Int64 = 55
+        Public Shared ReadOnly FrmcTransportPriceTariffsReport As Int64 = 55
         Public Shared ReadOnly FrmcIndigenousTrucksWithUNNativeLPReport As Int64 = 56
         Public Shared ReadOnly FrmcSedimentedLoadsReport As Int64 = 58
         Public Shared ReadOnly FrmcLoadPermissionsIssuedOrderByPriorityReport As Int64 = 61
@@ -1431,8 +1431,8 @@ Namespace DriverTruckPresentManagement
         Public Shared Function GetBedehyJamForDriverTruckSalonPresentSystem(ByVal YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure) As Int64
             Try
                 ''''Dim BedehyJam As Int64 = 0
-                ''''Dim RangePayehTavaghof As Int64 = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 2) * 60
-                ''''Dim MblghPayehSalon As Int64 = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 0) + R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayaneh, 1)
+                ''''Dim RangePayehTavaghof As Int64 = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 2) * 60
+                ''''Dim MblghPayehSalon As Int64 = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 0) + R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayaneh, 1)
                 '''''فعلا کل بدهی صفر فرض می شود
                 ''''BedehyJam = 0
                 '''''بررسی اینکه ناوگان در پایانه حضور داشته باشد
@@ -1839,7 +1839,7 @@ Namespace ReportsManagement
         Public Shared ReadOnly TruckDriversWaitingToGetLoadPermissionReport As Int64 = 17
         Public Shared ReadOnly TrucksAverageOfSleepDaysToGetLoadPermissionReport As Int64 = 18
         Public Shared ReadOnly TravelLengthOfLoadTargetsReport As Int64 = 19
-        Public Shared ReadOnly TransportPriceTarrifsReport As Int64 = 20
+        Public Shared ReadOnly TransportPriceTariffsReport As Int64 = 20
         Public Shared ReadOnly IndigenousTrucksWithUNNativeLPReport As Int64 = 21
         Public Shared ReadOnly SedimentedLoadsByTransportCompnayTargetCityReport As Int64 = 24
         Public Shared ReadOnly SedimentedLoadsByTargetCityReport As Int64 = 25
@@ -2208,7 +2208,7 @@ Namespace ReportsManagement
                 CmdSql.CommandText = "Delete R2PrimaryReports.dbo.TblCapacitorLoadsforAnnounceReport "
                 CmdSql.ExecuteNonQuery()
 
-                Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
+                Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsParametersManager
                 For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
                     Dim myAnnouncementHallName As String = PayanehClassLibraryAnnouncementsManagement.GetNSSAnnouncementHall(YourAnnouncementHallId).AHName
                     Dim mynEstelamid As String = Ds.Tables(0).Rows(Loopx).Item("nEstelamId")
@@ -2222,7 +2222,7 @@ Namespace ReportsManagement
                     Dim myStrBarname As String = Ds.Tables(0).Rows(Loopx).Item("strBarName").trim
                     Dim mydDateElam As String = Ds.Tables(0).Rows(Loopx).Item("dDateElam").trim
                     Dim mydTimeElam As String = Ds.Tables(0).Rows(Loopx).Item("dTimeElam").trim
-                    Dim myTPTParams As String = InstanceTransportTarrifsParameters.GetTransportTarrifsComposit(Ds.Tables(0).Rows(Loopx).Item("TPTParams").trim)
+                    Dim myTPTParams As String = InstanceTransportTariffsParameters.GetTransportTariffsComposit(Ds.Tables(0).Rows(Loopx).Item("TPTParams").trim)
                     Dim myCompanyName As String = Ds.Tables(0).Rows(Loopx).Item("StrCompName").trim
                     Dim myStrCarName As String = Ds.Tables(0).Rows(Loopx).Item("StrCarName").trim
 
@@ -2396,7 +2396,7 @@ Namespace ReportsManagement
                     DaLoadPermission.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
                     DaLoadPermission.Fill(DsLoadPermission)
 
-                    Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
+                    Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsParametersManager
                     For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
                         'اطلاعات بار
                         Dim mynEstelamid As String = Ds.Tables(0).Rows(Loopx).Item("nEstelamId")
@@ -2414,7 +2414,7 @@ Namespace ReportsManagement
                         Dim myAHSGTitle As String = Ds.Tables(0).Rows(Loopx).Item("AHSGTitle").trim
                         Dim myLoadStatusName = Ds.Tables(0).Rows(Loopx).Item("LoadStatusName").trim
                         Dim UserName = Ds.Tables(0).Rows(Loopx).Item("UserName").trim
-                        Dim TPTParams = InstanceTransportTarrifsParameters.GetTransportTarrifsComposit(Ds.Tables(0).Rows(Loopx).Item("TPTParams"))
+                        Dim TPTParams = InstanceTransportTariffsParameters.GetTransportTariffsComposit(Ds.Tables(0).Rows(Loopx).Item("TPTParams"))
                         Dim myLoadingPlace = Ds.Tables(0).Rows(Loopx).Item("LoadingPlaceTitle").trim
                         Dim myDischargingPlace = Ds.Tables(0).Rows(Loopx).Item("DischargingPlaceTitle").trim
 
@@ -2547,7 +2547,7 @@ Namespace ReportsManagement
                     DaLoadPermission.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
                     DaLoadPermission.Fill(DsLoadPermission)
 
-                    Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
+                    Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsParametersManager
                     For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
                         'اطلاعات بار
                         Dim mynEstelamid As String = Ds.Tables(0).Rows(Loopx).Item("nEstelamId")
@@ -2565,7 +2565,7 @@ Namespace ReportsManagement
                         Dim myAHSGTitle As String = Ds.Tables(0).Rows(Loopx).Item("AHSGTitle").trim
                         Dim myLoadStatusName = Ds.Tables(0).Rows(Loopx).Item("LoadStatusName").trim
                         Dim UserName = Ds.Tables(0).Rows(Loopx).Item("UserName").trim
-                        Dim TPTParams = InstanceTransportTarrifsParameters.GetTransportTarrifsComposit(Ds.Tables(0).Rows(Loopx).Item("TPTParams"))
+                        Dim TPTParams = InstanceTransportTariffsParameters.GetTransportTariffsComposit(Ds.Tables(0).Rows(Loopx).Item("TPTParams"))
 
                         'اطلاعات مجوزهای صادره
                         Dim DataX As DataRow()
@@ -3166,23 +3166,23 @@ Namespace ReportsManagement
             End Try
         End Sub
 
-        Public Shared Sub ReportingInformationProviderTransportPriceTarrifsReport(YourAnnouncementHallId As Int64, YourAnnouncementsubGroupId As Int64, YourOActiveStatus As Boolean)
+        Public Shared Sub ReportingInformationProviderTransportPriceTariffsReport(YourAnnouncementHallId As Int64, YourAnnouncementsubGroupId As Int64, YourOActiveStatus As Boolean)
             'گزارش تعرفه های حمل بار
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
             Try
-                Dim OActiveSqlString As String = IIf(YourOActiveStatus = True, " Tarrifs.OActive=1 and ", "")
+                Dim OActiveSqlString As String = IIf(YourOActiveStatus = True, " Tariffs.OActive=1 and ", "")
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Delete R2PrimaryReports.dbo.TblTransportPriceTarrifsReport" : CmdSql.ExecuteNonQuery()
-                CmdSql.CommandText = "Insert Into R2PrimaryReports.dbo.TblTransportPriceTarrifsReport
-                   Select AH.AHTitle,AHSG.AHSGTitle,Tarrifs.SourceCityId ,Sources.StrCityName as SourceName,Tarrifs.TargetCityId,Targets.strCityName as TargetName,Tarrifs.Tarrif,Tarrifs.DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTarrifs as Tarrifs
-                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements AS AH On Tarrifs.AHId=AH.AHId
-                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSG On Tarrifs.AHSGId=AHSG.AHSGId
-                     Inner Join dbtransport.dbo.tbCity as Targets On Tarrifs.TargetCityId=Targets.nCityCode
-					 Inner Join dbtransport.dbo.tbCity as Sources On Tarrifs.SourceCityId=Sources.nCityCode
-                       Where " + OActiveSqlString + " Tarrifs.AHId=" & YourAnnouncementHallId & " and Tarrifs.AHSGId=" & YourAnnouncementsubGroupId & " and Targets.Deleted=0 and Sources.Deleted=0 and AH.Deleted=0 and AHSG.Deleted=0
-                       Order By TargetName,SourceName,Tarrifs.DateTimeMilladi"
+                CmdSql.CommandText = "Delete R2PrimaryReports.dbo.TblTransportPriceTariffsReport" : CmdSql.ExecuteNonQuery()
+                CmdSql.CommandText = "Insert Into R2PrimaryReports.dbo.TblTransportPriceTariffsReport
+                   Select AH.AHTitle,AHSG.AHSGTitle,Tariffs.SourceCityId ,Sources.StrCityName as SourceName,Tariffs.TargetCityId,Targets.strCityName as TargetName,Tariffs.Tariff,Tariffs.DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffs as Tariffs
+                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements AS AH On Tariffs.AHId=AH.AHId
+                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSG On Tariffs.AHSGId=AHSG.AHSGId
+                     Inner Join dbtransport.dbo.tbCity as Targets On Tariffs.TargetCityId=Targets.nCityCode
+					 Inner Join dbtransport.dbo.tbCity as Sources On Tariffs.SourceCityId=Sources.nCityCode
+                       Where " + OActiveSqlString + " Tariffs.AHId=" & YourAnnouncementHallId & " and Tariffs.AHSGId=" & YourAnnouncementsubGroupId & " and Targets.Deleted=0 and Sources.Deleted=0 and AH.Deleted=0 and AHSG.Deleted=0
+                       Order By TargetName,SourceName,Tariffs.DateTimeMilladi"
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
             Catch ex As Exception
@@ -3322,7 +3322,7 @@ Namespace ReportsManagement
                 Dim Concat1 As String = YourDate1.GetConcatString
                 Dim Concat2 As String = YourDate2.GetConcatString
                 Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                Dim InstanceTransportTarrifsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTarrifsParametersManager
+                Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsParametersManager
 
                 Dim DS As New DataSet
                 InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
@@ -3360,7 +3360,7 @@ Namespace ReportsManagement
                     Dim Priority As Int16 = DS.Tables(0).Rows(Loopx).Item("Priority")
                     Dim nEstelamID As Int64 = DS.Tables(0).Rows(Loopx).Item("nEstelamID")
                     Dim nTonaj As String = DS.Tables(0).Rows(Loopx).Item("nTonaj").ToString
-                    Dim TPTParams As String = InstanceTransportTarrifsParameters.GetTransportTarrifsComposit(DS.Tables(0).Rows(Loopx).Item("TPTParams"))
+                    Dim TPTParams As String = InstanceTransportTariffsParameters.GetTransportTariffsComposit(DS.Tables(0).Rows(Loopx).Item("TPTParams"))
                     Dim strGoodName As String = DS.Tables(0).Rows(Loopx).Item("strGoodName").trim
                     Dim strCityName As String = DS.Tables(0).Rows(Loopx).Item("strCityName").trim
                     Dim LoadPermissionDateTime As String = DS.Tables(0).Rows(Loopx).Item("LoadPermissionDateTime").trim
@@ -4258,8 +4258,8 @@ Namespace TransportCompanies
 
         Public Shared Function GetTransportCompaniesDailyMessage(ByRef YourDailyMessageColor As String) As String
             Try
-                YourDailyMessageColor = R2CoreMClassConfigurationManagement.GetConfigString(PayanehClassLibraryConfigurations.TarrifsPayanehKiosk, 6)
-                Return R2CoreMClassConfigurationManagement.GetConfigString(PayanehClassLibraryConfigurations.TarrifsPayanehKiosk, 5)
+                YourDailyMessageColor = R2CoreMClassConfigurationManagement.GetConfigString(PayanehClassLibraryConfigurations.TariffsPayanehKiosk, 6)
+                Return R2CoreMClassConfigurationManagement.GetConfigString(PayanehClassLibraryConfigurations.TariffsPayanehKiosk, 5)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -4267,7 +4267,7 @@ Namespace TransportCompanies
 
         Public Shared Function GetTransportCompaniesFirstPageMessages() As String
             Try
-                Return R2CoreMClassConfigurationManagement.GetConfigString(PayanehClassLibraryConfigurations.TarrifsPayanehKiosk, 7) & " - " & R2CoreMClassConfigurationManagement.GetConfigString(PayanehClassLibraryConfigurations.TarrifsPayanehKiosk, 8) & " - " & R2CoreMClassConfigurationManagement.GetConfigString(PayanehClassLibraryConfigurations.TarrifsPayanehKiosk, 9)
+                Return R2CoreMClassConfigurationManagement.GetConfigString(PayanehClassLibraryConfigurations.TariffsPayanehKiosk, 7) & " - " & R2CoreMClassConfigurationManagement.GetConfigString(PayanehClassLibraryConfigurations.TariffsPayanehKiosk, 8) & " - " & R2CoreMClassConfigurationManagement.GetConfigString(PayanehClassLibraryConfigurations.TariffsPayanehKiosk, 9)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -4311,7 +4311,7 @@ Namespace TransportCompanies
         End Property
     End Class
 
-    Public Class TarrifsTransportPriceNotFoundException
+    Public Class TariffsTransportPriceNotFoundException
         Inherits ApplicationException
         Public Overrides ReadOnly Property Message As String
             Get
@@ -4400,9 +4400,9 @@ Namespace LoadNotification.LoadPermission
             Try
                 Dim NSS As TransportCompaniesStandardLoadCapacitorLoadStructure = TransportCompaniesLoadCapacitorLoadManipulation.GetNSSTransportCompanyLoadCapacitorLoad(YournEstelamId)
                 If NSS.nTruckType = 505 Or NSS.nTruckType = 455 Or NSS.nTruckType = 700 Then
-                    Return R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayanehKiosk, 0) + R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayanehKiosk, 1)
+                    Return R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayanehKiosk, 0) + R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayanehKiosk, 1)
                 ElseIf NSS.nTruckType <> 505 And NSS.nTruckType <> 455 And NSS.nTruckType <> 700 Then
-                    Return R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayanehKiosk, 0) + R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayanehKiosk, 2)
+                    Return R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayanehKiosk, 0) + R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayanehKiosk, 2)
                 End If
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -4455,14 +4455,14 @@ Namespace LoadNotification.LoadPermission
         '        '    Dim HazinehAS As Int64 = 0
         '        '    Dim NSS As TransportCompaniesStandardLoadCapacitorLoadStructure = TransportCompaniesLoadCapacitorLoadManipulation.GetNSSTransportCompanyLoadCapacitorLoad(YournEstelamId)
         '        '    If NSS.nTruckType = 505 Or NSS.nTruckType = 455 Or NSS.nTruckType = 700 Or NSS.nTruckType = 605 Then
-        '        '        HazinehAS = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayanehKiosk, 1)
+        '        '        HazinehAS = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayanehKiosk, 1)
         '        '    Else
-        '        '        HazinehAS = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayanehKiosk, 2)
+        '        '        HazinehAS = R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayanehKiosk, 2)
         '        '    End If
         '        '    'شرکت
         '        '    R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSMoneyWallet, BagPayType.MinusMoney, HazinehAS, R2CoreParkingSystemAccountings.SherkatHazinehSodoorMojavezKiosk)
         '        '    'انجمن
-        '        '    R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSMoneyWallet, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TarrifsPayanehKiosk, 0), R2CoreParkingSystemAccountings.AnjomanHazinehSodorMojavezKiosk)
+        '        '    R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSMoneyWallet, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TariffsPayanehKiosk, 0), R2CoreParkingSystemAccountings.AnjomanHazinehSodorMojavezKiosk)
         '        'End If
 
         '        Return TurnId

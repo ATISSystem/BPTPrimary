@@ -13,25 +13,25 @@ Imports System.Reflection
 Namespace TransportTariffs
 
 
-    Public Class R2CoreTransportationAndLoadNotificationStandardTransportTarrifStructure
+    Public Class R2CoreTransportationAndLoadNotificationStandardTransportTariffStructure
 
         Public Sub New()
             MyBase.New()
             _AHId = 0
             _AHSGId = 0
             _TargetCityId = Int64.MinValue
-            _Tarrif = 0
+            _Tariff = 0
             _DateTimeMilladi = Now
             _DateShamsi = String.Empty
             _Time = String.Empty
             _OActive = False
         End Sub
 
-        Public Sub New(ByVal YourAHId As Int64, YourAHSGId As Int64, YourTargetCityId As Int64, YourTarrif As Int64, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourTime As String, YourOActive As Boolean)
+        Public Sub New(ByVal YourAHId As Int64, YourAHSGId As Int64, YourTargetCityId As Int64, YourTariff As Int64, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourTime As String, YourOActive As Boolean)
             _AHId = YourAHId
             _AHSGId = YourAHSGId
             _TargetCityId = YourTargetCityId
-            _Tarrif = YourTarrif
+            _Tariff = YourTariff
             _DateTimeMilladi = YourDateTimeMilladi
             _DateShamsi = YourDateShamsi
             _Time = YourTime
@@ -42,7 +42,7 @@ Namespace TransportTariffs
         Public Property AHId As Int64
         Public Property AHSGId As Int64
         Public Property TargetCityId As Int64
-        Public Property Tarrif As Int64
+        Public Property Tariff As Int64
         Public Property DateTimeMilladi As DateTime
         Public Property DateShamsi As String
         Public Property Time As String
@@ -53,17 +53,17 @@ Namespace TransportTariffs
     Public Class R2CoreTransportationAndLoadNotificationInstanceTransportTariffsManager
         Private _DateTimeService As New R2DateTimeService
 
-        Public Sub TransportTarrifRegistering(YourTargetCityId As Int64, YourSourceCityId As Int64, YourAHId As Int64, YourAHSGId As Int64, YourTarrif As Int64)
+        Public Sub TransportTariffRegistering(YourTargetCityId As Int64, YourSourceCityId As Int64, YourAHId As Int64, YourAHSGId As Int64, YourTariff As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTarrifs Set OActive=0
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffs Set OActive=0
                                       where SourceCityId=" & YourSourceCityId & " and TargetCityId=" & YourTargetCityId & " and AHId=" & YourAHId & " and AHSGId=" & YourAHSGId & ""
                 CmdSql.ExecuteNonQuery()
-                CmdSql.CommandText = "Insert R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTarrifs(AHId,AHSGId,SourceCityId,TargetCityId,Tarrif,DateTimeMilladi,DateShamsi,Time,OActive)
-                                      values(" & YourAHId & "," & YourAHSGId & "," & YourSourceCityId & "," & YourTargetCityId & "," & YourTarrif & ",'" & _DateTimeService.DateTimeServ.GetCurrentDateTimeMilladiFormated & "','" & _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull & "','" & _DateTimeService.DateTimeServ.GetCurrentTime & "',1)"
+                CmdSql.CommandText = "Insert R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffs(AHId,AHSGId,SourceCityId,TargetCityId,Tariff,DateTimeMilladi,DateShamsi,Time,OActive)
+                                      values(" & YourAHId & "," & YourAHSGId & "," & YourSourceCityId & "," & YourTargetCityId & "," & YourTariff & ",'" & _DateTimeService.DateTimeServ.GetCurrentDateTimeMilladiFormated & "','" & _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull & "','" & _DateTimeService.DateTimeServ.GetCurrentTime & "',1)"
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
             Catch ex As Exception
@@ -74,32 +74,32 @@ Namespace TransportTariffs
             End Try
         End Sub
 
-        Public Function GetNSSTransportTarrif(YourNSS As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadStructure) As R2CoreTransportationAndLoadNotificationStandardTransportTarrifStructure
+        Public Function GetNSSTransportTariff(YourNSS As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadStructure) As R2CoreTransportationAndLoadNotificationStandardTransportTariffStructure
             Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTarrifs Where (AHId=" & YourNSS.AHId & ") and (AHSGId=" & YourNSS.AHSGId & ") and (TargetCityId=" & YourNSS.nCityCode & ") and (SourceCityId=" & YourNSS.nBarSource & ") and OActive=1", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportPriceTarrifNotFoundException
-                Return New R2CoreTransportationAndLoadNotificationStandardTransportTarrifStructure(DS.Tables(0).Rows(0).Item("AHId"), DS.Tables(0).Rows(0).Item("AHSGId"), DS.Tables(0).Rows(0).Item("TargetCityId"), DS.Tables(0).Rows(0).Item("Tarrif"), DS.Tables(0).Rows(0).Item("DateTimeMilladi"), DS.Tables(0).Rows(0).Item("DateShamsi"), DS.Tables(0).Rows(0).Item("Time"), DS.Tables(0).Rows(0).Item("OActive"))
-            Catch exx As TransportPriceTarrifNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffs Where (AHId=" & YourNSS.AHId & ") and (AHSGId=" & YourNSS.AHSGId & ") and (TargetCityId=" & YourNSS.nCityCode & ") and (SourceCityId=" & YourNSS.nBarSource & ") and OActive=1", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportPriceTariffNotFoundException
+                Return New R2CoreTransportationAndLoadNotificationStandardTransportTariffStructure(DS.Tables(0).Rows(0).Item("AHId"), DS.Tables(0).Rows(0).Item("AHSGId"), DS.Tables(0).Rows(0).Item("TargetCityId"), DS.Tables(0).Rows(0).Item("Tariff"), DS.Tables(0).Rows(0).Item("DateTimeMilladi"), DS.Tables(0).Rows(0).Item("DateShamsi"), DS.Tables(0).Rows(0).Item("Time"), DS.Tables(0).Rows(0).Item("OActive"))
+            Catch exx As TransportPriceTariffNotFoundException
                 Throw exx
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Function
 
-        Public Function GetUltimateTransportTarrif(YourAHSGId As Int64, YournTonaj As Double, YourTarrif As Int64) As Double
+        Public Function GetUltimateTransportTariff(YourAHSGId As Int64, YournTonaj As Double, YourTariff As Int64) As Double
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Parameters.Add("@AHSGId", SqlDbType.BigInt) : CmdSql.Parameters("@AHSGId").Value = YourAHSGId
-                CmdSql.Parameters.Add("@Tarrif", SqlDbType.BigInt) : CmdSql.Parameters("@Tarrif").Value = YourTarrif
+                CmdSql.Parameters.Add("@Tariff", SqlDbType.BigInt) : CmdSql.Parameters("@Tariff").Value = YourTariff
                 CmdSql.Parameters.Add("@Tonaj", SqlDbType.Float) : CmdSql.Parameters("@Tonaj").Value = YournTonaj
                 CmdSql.CommandType = CommandType.StoredProcedure
-                CmdSql.CommandText = "R2PrimaryTransportationAndLoadNotification.dbo.GetUltimateTransportTarrif"
-                Dim Tarrif = CmdSql.ExecuteScalar
+                CmdSql.CommandText = "R2PrimaryTransportationAndLoadNotification.dbo.GetUltimateTransportTariff"
+                Dim Tariff = CmdSql.ExecuteScalar
                 CmdSql.Connection.Close()
-                Return Tarrif
+                Return Tariff
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -108,13 +108,13 @@ Namespace TransportTariffs
 
     End Class
 
-    Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassTransportTarrifsManagement
-        Public Shared Function GetNSSTransportTarrif(YourNSS As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadStructure) As R2CoreTransportationAndLoadNotificationStandardTransportTarrifStructure
+    Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassTransportTariffsManagement
+        Public Shared Function GetNSSTransportTariff(YourNSS As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadStructure) As R2CoreTransportationAndLoadNotificationStandardTransportTariffStructure
             Try
                 Dim DS As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTarrifs Where (AHId=" & YourNSS.AHId & ") and (AHSGId=" & YourNSS.AHSGId & ") and (TargetCityId=" & YourNSS.nCityCode & ") and OActive=1", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportPriceTarrifNotFoundException
-                Return New R2CoreTransportationAndLoadNotificationStandardTransportTarrifStructure(DS.Tables(0).Rows(0).Item("AHId"), DS.Tables(0).Rows(0).Item("AHSGId"), DS.Tables(0).Rows(0).Item("TargetCityId"), DS.Tables(0).Rows(0).Item("Tarrif"), DS.Tables(0).Rows(0).Item("DateTimeMilladi"), DS.Tables(0).Rows(0).Item("DateShamsi"), DS.Tables(0).Rows(0).Item("Time"), DS.Tables(0).Rows(0).Item("OActive"))
-            Catch exx As TransportPriceTarrifNotFoundException
+                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffs Where (AHId=" & YourNSS.AHId & ") and (AHSGId=" & YourNSS.AHSGId & ") and (TargetCityId=" & YourNSS.nCityCode & ") and OActive=1", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportPriceTariffNotFoundException
+                Return New R2CoreTransportationAndLoadNotificationStandardTransportTariffStructure(DS.Tables(0).Rows(0).Item("AHId"), DS.Tables(0).Rows(0).Item("AHSGId"), DS.Tables(0).Rows(0).Item("TargetCityId"), DS.Tables(0).Rows(0).Item("Tariff"), DS.Tables(0).Rows(0).Item("DateTimeMilladi"), DS.Tables(0).Rows(0).Item("DateShamsi"), DS.Tables(0).Rows(0).Item("Time"), DS.Tables(0).Rows(0).Item("OActive"))
+            Catch exx As TransportPriceTariffNotFoundException
                 Throw exx
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -124,7 +124,7 @@ Namespace TransportTariffs
 
     'BPTChanged
     Namespace Exceptions
-        Public Class TransportPriceTarrifNotFoundException
+        Public Class TransportPriceTariffNotFoundException
             Inherits ApplicationException
             Public Overrides ReadOnly Property Message As String
                 Get
@@ -366,34 +366,34 @@ Namespace TransportTariffs
             End Try
         End Sub
 
-        Public Function GetTransportTarrif(YourSourceCityId As Int64, YourTargetCityId As Int64, YourLoaderTypeId As Int64, YourGoodId As Int64) As Int64
+        Public Function GetTransportTariff(YourSourceCityId As Int64, YourTargetCityId As Int64, YourLoaderTypeId As Int64, YourGoodId As Int64) As Int64
             Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
             Try
                 Dim DS As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
                      "Select Top 1 TransportPriceTariffs.Tariff from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffs as TransportPriceTariffs
-                      Where TransportPriceTariffs.SourceCityId=" & YourSourceCityId & " and TransportPriceTariffs.TargetCityId=" & YourTargetCityId & " and LoaderTypeId=" & YourLoaderTypeId & " and GoodId=" & YourGoodId & " and TransportPriceTariffs.Active=1", 32767, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportPriceTarrifNotFoundException
+                      Where TransportPriceTariffs.SourceCityId=" & YourSourceCityId & " and TransportPriceTariffs.TargetCityId=" & YourTargetCityId & " and LoaderTypeId=" & YourLoaderTypeId & " and GoodId=" & YourGoodId & " and TransportPriceTariffs.Active=1", 32767, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportPriceTariffNotFoundException
                 Return DS.Tables(0).Rows(0).Item("Tariff")
-            Catch exx As TransportPriceTarrifNotFoundException
+            Catch exx As TransportPriceTariffNotFoundException
                 Throw exx
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Function
 
-        Public Function GetUltimateTransportTarrif(YourAnnouncementSGId As Int64, YournTonaj As Double, YourTarrif As Int64) As Double
+        Public Function GetUltimateTransportTariff(YourAnnouncementSGId As Int64, YournTonaj As Double, YourTariff As Int64) As Double
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Parameters.Add("@AnnouncementSGId", SqlDbType.BigInt) : CmdSql.Parameters("@AnnouncementSGId").Value = YourAnnouncementSGId
-                CmdSql.Parameters.Add("@Tarrif", SqlDbType.BigInt) : CmdSql.Parameters("@Tarrif").Value = YourTarrif
+                CmdSql.Parameters.Add("@Tariff", SqlDbType.BigInt) : CmdSql.Parameters("@Tariff").Value = YourTariff
                 CmdSql.Parameters.Add("@Tonaj", SqlDbType.Float) : CmdSql.Parameters("@Tonaj").Value = YournTonaj
                 CmdSql.CommandType = CommandType.StoredProcedure
-                CmdSql.CommandText = "R2PrimaryTransportationAndLoadNotification.dbo.GetUltimateTransportTarrif"
-                Dim Tarrif = CmdSql.ExecuteScalar
+                CmdSql.CommandText = "R2PrimaryTransportationAndLoadNotification.dbo.GetUltimateTransportTariff"
+                Dim Tariff = CmdSql.ExecuteScalar
                 CmdSql.Connection.Close()
-                Return Tarrif
+                Return Tariff
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try

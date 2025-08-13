@@ -62,7 +62,7 @@ namespace APITransportation.PayanehWebService {
         
         private System.Threading.SendOrPostCallback WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportOperationCompleted;
         
-        private System.Threading.SendOrPostCallback WebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted;
+        private System.Threading.SendOrPostCallback WebMethodReportingInformationProviderTransportPriceTariffsReportOperationCompleted;
         
         private System.Threading.SendOrPostCallback WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReportOperationCompleted;
         
@@ -167,7 +167,7 @@ namespace APITransportation.PayanehWebService {
         public event WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportCompletedEventHandler WebMethodReportingInformationPrividerTravelLengthOfLoadTargetsReportCompleted;
         
         /// <remarks/>
-        public event WebMethodReportingInformationProviderTransportPriceTarrifsReportCompletedEventHandler WebMethodReportingInformationProviderTransportPriceTarrifsReportCompleted;
+        public event WebMethodReportingInformationProviderTransportPriceTariffsReportCompletedEventHandler WebMethodReportingInformationProviderTransportPriceTariffsReportCompleted;
         
         /// <remarks/>
         public event WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReportCompletedEventHandler WebMethodReportingInformationProviderIndigenousTrucksWithUNNativeLPReportCompleted;
@@ -828,10 +828,10 @@ namespace APITransportation.PayanehWebService {
         }
         
         /// <remarks/>
-        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationProviderTransportPriceTarrifsRepo" +
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationProviderTransportPriceTariffsRepo" +
             "rt", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void WebMethodReportingInformationProviderTransportPriceTarrifsReport(long YourAnnouncementHallId, long YourAnnouncementHallSubGroupId, bool YourOActiveStatus, long YourExchangeKey) {
-            this.Invoke("WebMethodReportingInformationProviderTransportPriceTarrifsReport", new object[] {
+        public void WebMethodReportingInformationProviderTransportPriceTariffsReport(long YourAnnouncementHallId, long YourAnnouncementHallSubGroupId, bool YourOActiveStatus, long YourExchangeKey) {
+            this.Invoke("WebMethodReportingInformationProviderTransportPriceTariffsReport", new object[] {
                         YourAnnouncementHallId,
                         YourAnnouncementHallSubGroupId,
                         YourOActiveStatus,
@@ -839,26 +839,26 @@ namespace APITransportation.PayanehWebService {
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationProviderTransportPriceTarrifsReportAsync(long YourAnnouncementHallId, long YourAnnouncementHallSubGroupId, bool YourOActiveStatus, long YourExchangeKey) {
-            this.WebMethodReportingInformationProviderTransportPriceTarrifsReportAsync(YourAnnouncementHallId, YourAnnouncementHallSubGroupId, YourOActiveStatus, YourExchangeKey, null);
+        public void WebMethodReportingInformationProviderTransportPriceTariffsReportAsync(long YourAnnouncementHallId, long YourAnnouncementHallSubGroupId, bool YourOActiveStatus, long YourExchangeKey) {
+            this.WebMethodReportingInformationProviderTransportPriceTariffsReportAsync(YourAnnouncementHallId, YourAnnouncementHallSubGroupId, YourOActiveStatus, YourExchangeKey, null);
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationProviderTransportPriceTarrifsReportAsync(long YourAnnouncementHallId, long YourAnnouncementHallSubGroupId, bool YourOActiveStatus, long YourExchangeKey, object userState) {
-            if ((this.WebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted == null)) {
-                this.WebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted);
+        public void WebMethodReportingInformationProviderTransportPriceTariffsReportAsync(long YourAnnouncementHallId, long YourAnnouncementHallSubGroupId, bool YourOActiveStatus, long YourExchangeKey, object userState) {
+            if ((this.WebMethodReportingInformationProviderTransportPriceTariffsReportOperationCompleted == null)) {
+                this.WebMethodReportingInformationProviderTransportPriceTariffsReportOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodReportingInformationProviderTransportPriceTariffsReportOperationCompleted);
             }
-            this.InvokeAsync("WebMethodReportingInformationProviderTransportPriceTarrifsReport", new object[] {
+            this.InvokeAsync("WebMethodReportingInformationProviderTransportPriceTariffsReport", new object[] {
                         YourAnnouncementHallId,
                         YourAnnouncementHallSubGroupId,
                         YourOActiveStatus,
-                        YourExchangeKey}, this.WebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted, userState);
+                        YourExchangeKey}, this.WebMethodReportingInformationProviderTransportPriceTariffsReportOperationCompleted, userState);
         }
         
-        private void OnWebMethodReportingInformationProviderTransportPriceTarrifsReportOperationCompleted(object arg) {
-            if ((this.WebMethodReportingInformationProviderTransportPriceTarrifsReportCompleted != null)) {
+        private void OnWebMethodReportingInformationProviderTransportPriceTariffsReportOperationCompleted(object arg) {
+            if ((this.WebMethodReportingInformationProviderTransportPriceTariffsReportCompleted != null)) {
                 System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
-                this.WebMethodReportingInformationProviderTransportPriceTarrifsReportCompleted(this, new System.ComponentModel.AsyncCompletedEventArgs(invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+                this.WebMethodReportingInformationProviderTransportPriceTariffsReportCompleted(this, new System.ComponentModel.AsyncCompletedEventArgs(invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
             }
         }
         
@@ -1451,7 +1451,7 @@ namespace APITransportation.PayanehWebService {
     
     /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")]
-    public delegate void WebMethodReportingInformationProviderTransportPriceTarrifsReportCompletedEventHandler(object sender, System.ComponentModel.AsyncCompletedEventArgs e);
+    public delegate void WebMethodReportingInformationProviderTransportPriceTariffsReportCompletedEventHandler(object sender, System.ComponentModel.AsyncCompletedEventArgs e);
     
     /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.9037.0")]

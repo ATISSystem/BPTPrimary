@@ -2,16 +2,6 @@
 <wsdl:definitions xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:tns="http://tempuri.org/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
   <wsdl:types>
     <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
-      <s:element name="HelloWorld">
-        <s:complexType />
-      </s:element>
-      <s:element name="HelloWorldResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="HelloWorldResult" type="s:string" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
       <s:element name="WebMethodLogin">
         <s:complexType>
           <s:sequence>
@@ -317,12 +307,6 @@
       </s:element>
     </s:schema>
   </wsdl:types>
-  <wsdl:message name="HelloWorldSoapIn">
-    <wsdl:part name="parameters" element="tns:HelloWorld" />
-  </wsdl:message>
-  <wsdl:message name="HelloWorldSoapOut">
-    <wsdl:part name="parameters" element="tns:HelloWorldResponse" />
-  </wsdl:message>
   <wsdl:message name="WebMethodLoginSoapIn">
     <wsdl:part name="parameters" element="tns:WebMethodLogin" />
   </wsdl:message>
@@ -444,10 +428,6 @@
     <wsdl:part name="parameters" element="tns:WebMethodVerificationRequestResponse" />
   </wsdl:message>
   <wsdl:portType name="R2PrimaryWebServiceSoap">
-    <wsdl:operation name="HelloWorld">
-      <wsdl:input message="tns:HelloWorldSoapIn" />
-      <wsdl:output message="tns:HelloWorldSoapOut" />
-    </wsdl:operation>
     <wsdl:operation name="WebMethodLogin">
       <wsdl:input message="tns:WebMethodLoginSoapIn" />
       <wsdl:output message="tns:WebMethodLoginSoapOut" />
@@ -531,15 +511,6 @@
   </wsdl:portType>
   <wsdl:binding name="R2PrimaryWebServiceSoap" type="tns:R2PrimaryWebServiceSoap">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
-    <wsdl:operation name="HelloWorld">
-      <soap:operation soapAction="http://tempuri.org/HelloWorld" style="document" />
-      <wsdl:input>
-        <soap:body use="literal" />
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal" />
-      </wsdl:output>
-    </wsdl:operation>
     <wsdl:operation name="WebMethodLogin">
       <soap:operation soapAction="http://tempuri.org/WebMethodLogin" style="document" />
       <wsdl:input>
@@ -723,15 +694,6 @@
   </wsdl:binding>
   <wsdl:binding name="R2PrimaryWebServiceSoap12" type="tns:R2PrimaryWebServiceSoap">
     <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
-    <wsdl:operation name="HelloWorld">
-      <soap12:operation soapAction="http://tempuri.org/HelloWorld" style="document" />
-      <wsdl:input>
-        <soap12:body use="literal" />
-      </wsdl:input>
-      <wsdl:output>
-        <soap12:body use="literal" />
-      </wsdl:output>
-    </wsdl:operation>
     <wsdl:operation name="WebMethodLogin">
       <soap12:operation soapAction="http://tempuri.org/WebMethodLogin" style="document" />
       <wsdl:input>

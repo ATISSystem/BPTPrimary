@@ -103,7 +103,7 @@ Namespace TurnRegisterRequest
 
     Public Class R2CoreTransportationAndLoadNotificationMClassTurnRegisterRequestManager
         Private _DateTime As New R2DateTime
-        Private _R2PrimaryFSWS As R2Core.R2PrimaryFileSharingWS.R2PrimaryFileSharingWebService = New R2PrimaryFileSharingWebService()
+        Private _R2PrimaryFSWS = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
 
         Public Function GetNSSTurnRegisterRequestType(YourTurnRegisterRequestTypeId As Int64) As R2CoreTransportationAndLoadNotificationStandardTurnRegisterRequestTypeStructure
             Try
@@ -211,7 +211,7 @@ Namespace TurnRegisterRequest
 
     Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassTurnRegisterRequestManagement
         Private Shared _DateTime As New R2DateTime
-        Private Shared _R2PrimaryFSWS As R2Core.R2PrimaryFileSharingWS.R2PrimaryFileSharingWebService = New R2PrimaryFileSharingWebService()
+        Private Shared _R2PrimaryFSWS = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
 
 
         Public Shared Function GetNSSTurnRegisterRequestType(YourTurnRegisterRequestTypeId As Int64) As R2CoreTransportationAndLoadNotificationStandardTurnRegisterRequestTypeStructure
@@ -319,7 +319,7 @@ Namespace TurnRegisterRequest
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager
         Private _R2DateTimeService As IR2DateTimeService
-        Private _R2PrimaryFSWS As R2Core.R2PrimaryFileSharingWS.R2PrimaryFileSharingWebService = New R2PrimaryFileSharingWebService()
+        Private _R2PrimaryFSWS = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
 
         Public Sub New(YourR2DateTimeService As IR2DateTimeService)
             _R2DateTimeService = YourR2DateTimeService

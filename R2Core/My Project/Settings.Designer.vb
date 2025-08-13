@@ -57,16 +57,6 @@ Namespace My
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("http://172.26.29.22:2013/R2PrimaryFileSharingWebService.asmx")>  _
-        Public ReadOnly Property R2Core_R2PrimaryFileSharingWS_R2PrimaryFileSharingWebService() As String
-            Get
-                Return CType(Me("R2Core_R2PrimaryFileSharingWS_R2PrimaryFileSharingWebService"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),  _
          Global.System.Configuration.DefaultSettingValueAttribute("http://192.168.1.2:2011/R2PrimaryWebService.asmx")>  _
         Public ReadOnly Property R2Core_R2PrimaryWS_R2PrimaryWebService() As String
             Get
@@ -81,6 +71,16 @@ Namespace My
         Public ReadOnly Property R2Core_net_sepahansms_smsSendWebServiceforPHP() As String
             Get
                 Return CType(Me("R2Core_net_sepahansms_smsSendWebServiceforPHP"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("http://192.168.1.2:2013/R2PrimaryFileSharingWebService.asmx")>  _
+        Public ReadOnly Property R2Core_R2PrimaryFileSharingWebService_R2PrimaryFileSharingWebService() As String
+            Get
+                Return CType(Me("R2Core_R2PrimaryFileSharingWebService_R2PrimaryFileSharingWebService"),String)
             End Get
         End Property
     End Class

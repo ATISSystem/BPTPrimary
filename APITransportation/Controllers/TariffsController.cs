@@ -1,5 +1,5 @@
 ﻿using APITransportation.Models;
-using APITransportation.Models.Tarrif;
+using APITransportation.Models.Tariff;
 using Newtonsoft.Json;
 using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;

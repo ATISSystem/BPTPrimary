@@ -12,8 +12,8 @@ using R2CoreTransportationAndLoadNotification.LoadCapacitor.Exceptions;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoadManipulation;
 using R2CoreTransportationAndLoadNotification.RequesterManagement;
-using R2CoreTransportationAndLoadNotification.TransportTarrifsParameters;
-using R2CoreTransportationAndLoadNotification.TransportTarrifsParameters.Exceptions;
+using R2CoreTransportationAndLoadNotification.TransportTariffsParameters;
+using R2CoreTransportationAndLoadNotification.TransportTariffsParameters.Exceptions;
 using R2CoreTransportationAndLoadNotification.TruckDrivers;
 using System;
 using System.Collections.Generic;
@@ -55,7 +55,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTarrifParameterDetailNotFoundException ex)
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (LoadCapacitorLoadNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -86,7 +86,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTarrifParameterDetailNotFoundException ex)
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (LoadCapacitorLoadNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -130,7 +130,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTarrifParameterDetailNotFoundException ex)
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (LoadCapacitorLoadNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -176,7 +176,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTarrifParameterDetailNotFoundException ex)
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (LoadCapacitorLoadNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -189,8 +189,8 @@ namespace APITransportation.LoadCapacitor.Controllers
         }
 
                 [HttpPost]
-        [Route("api/GetLoadsforaAdministrator")]
-        public HttpResponseMessage GetLoadsforaAdministrator([FromBody] APITransportationLoadCapacitorSessionIdPlus8Parameters Content)
+        [Route("api/GetLoadsforAdministrator")]
+        public HttpResponseMessage GetLoadsforAdministrator([FromBody] APITransportationLoadCapacitorSessionIdPlus8Parameters Content)
         {
             try
             {
@@ -222,7 +222,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTarrifParameterDetailNotFoundException ex)
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (LoadCapacitorLoadNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -254,7 +254,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTarrifParameterDetailNotFoundException ex)
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (LoadCapacitorLoadNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -267,8 +267,8 @@ namespace APITransportation.LoadCapacitor.Controllers
         }
 
         [HttpPost]
-        [Route("api/GetListofTransportTarrifsParams")]
-        public HttpResponseMessage GetListofTransportTarrifsParams([FromBody] APITransportationLoadCapacitorSessionIdTPTParams Content)
+        [Route("api/GetListofTransportTariffsParams")]
+        public HttpResponseMessage GetListofTransportTariffsParams([FromBody] APITransportationLoadCapacitorSessionIdTPTParams Content)
         {
             try
             {
@@ -278,15 +278,15 @@ namespace APITransportation.LoadCapacitor.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTransportTarrifsParameters = new R2CoreTransportationAndLoadNotificationTransportTarrifsParametersManager(_DateTimeService);
+                var InstanceTransportTariffsParameters = new R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTransportTarrifsParameters.GetListofTransportTarrifsParams(TPTParams)), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTransportTariffsParameters.GetListofTransportTariffsParams(TPTParams)), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTarrifParameterDetailNotFoundException ex)
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (LoadCapacitorLoadNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -320,7 +320,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTarrifParameterDetailNotFoundException ex)
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (LoadCapacitorLoadNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -354,7 +354,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTarrifParameterDetailNotFoundException ex)
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (LoadCapacitorLoadNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -388,7 +388,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTarrifParameterDetailNotFoundException ex)
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (LoadCapacitorLoadNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -422,7 +422,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTarrifParameterDetailNotFoundException ex)
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (LoadCapacitorLoadNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -456,7 +456,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTarrifParameterDetailNotFoundException ex)
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (LoadCapacitorLoadNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -490,7 +490,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTarrifParameterDetailNotFoundException ex)
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (LoadCapacitorLoadNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
