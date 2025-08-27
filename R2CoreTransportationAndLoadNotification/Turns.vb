@@ -106,6 +106,7 @@ Imports R2CoreTransportationAndLoadNotification.Turns.TurnAccounting
 Imports R2CoreParkingSystem.AccountingManagement
 Imports R2Core.Caching
 Imports R2CoreTransportationAndLoadNotification.Caching
+Imports System.Data.Common
 
 
 Namespace Turns
@@ -1445,6 +1446,12 @@ Namespace Turns
                     Dim Truck = InstanceTrucks.GetTruck(Turn.TruckId, False)
                     TWSClassLibrary.TDBClientManagement.TWSClassTDBClientManagement.AddNobat(Truck.Pelak, Truck.Serial)
                 End If
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    If CmdSql.Transaction IsNot Nothing Then CmdSql.Transaction.Rollback()
+                    CmdSql.Connection.Close()
+                End If
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As TurnResuscitationNotPossibleBecuaseTurnStatusException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then
                     CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
@@ -2790,7 +2797,7 @@ Namespace Turns
             Inherits ApplicationException
             Public Overrides ReadOnly Property Message As String
                 Get
-                    Return "درخواست صدور نوبت با شماره شاخص مورد نظر وجود ندارد"
+                    Return "نوبت رزرو یافت نشد"
                 End Get
             End Property
         End Class

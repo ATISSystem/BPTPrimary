@@ -24,6 +24,7 @@ using R2Core.MoneyWallet.Exceptions;
 using APICommon.Models;
 using R2CoreParkingSystem.SoftwareUsersManagement;
 using System.Web.Services.Protocols;
+using R2Core.WebProcessesManagement.Exceptions;
 
 
 
@@ -142,6 +143,58 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(WebProccesses, Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
+        [Route("api/GetVeyUsefulWebProcesses")]
+        public HttpResponseMessage GetVeyUsefulWebProcesses([FromBody] APICommonSessionId Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+
+                var SessionId = Content.SessionId;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+                var InstanceWebProcesses = new R2CoreWebProcessesManager();
+                var WebProccesses = InstanceWebProcesses.GetVeryUsefulWebProcesses(User);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(WebProccesses, Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (SoftwareUserHasNotAnyVeryUsefulWebProcessPermissionException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
+        [Route("api/GetTaskBarWebProcesses")]
+        public HttpResponseMessage GetTaskBarWebProcesses([FromBody] APICommonSessionId Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+
+                var SessionId = Content.SessionId;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+                var InstanceWebProcesses = new R2CoreWebProcessesManager();
+                var WebProccesses = InstanceWebProcesses.GetTaskBarWebProcesses (User);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(WebProccesses, Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (SoftwareUserHasNotAnyTaskBarWebProcessPermissionException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)

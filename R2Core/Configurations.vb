@@ -55,6 +55,7 @@ Namespace ConfigurationManagement
         Public Shared ReadOnly Property ShepaPaymentGate As Int64 = 84
         Public Shared ReadOnly Property SiteIsBusy As Int64 = 87
         Public Shared ReadOnly Property AqayepardakhtPaymentGate As Int64 = 94
+        Public Shared ReadOnly Property Carousels As Int64 = 96
 
 
     End Class
@@ -386,6 +387,39 @@ Namespace ConfigurationManagement
 
         Private R2PrimaryFSWS = New R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
 
+        Public Function GetConfigInt64(YourCId As Int64, YourIndex As Int64) As Int64
+            Try
+                Return GetConfig(YourCId, YourIndex)
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetConfig(YourCId As Int64, YourIndex As Int64) As Object
+            Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+            Try
+                Dim Ds As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 32767, Ds, New Boolean).GetRecordsCount = 0 Then
+                    Throw New GetDataException
+                End If
+                Return Split(Ds.Tables(0).Rows(0).Item("CValue"), ";")(YourIndex)
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetConfig(YourCId As Int64) As Object
+            Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+            Try
+                Dim Ds As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 32767, Ds, New Boolean).GetRecordsCount = 0 Then
+                    Throw New GetDataException
+                End If
+                Return Ds.Tables(0).Rows(0).Item("CValue")
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
 
         Public Function GetConfigurations() As String
             Try
@@ -439,15 +473,15 @@ Namespace ConfigurationManagement
             End Try
         End Function
 
-        Public Function GetConfigurationHelper(YourCId As Int64, YourSoftwareUser As R2CoreSoftwareUser) As Byte()
-            Try
-                Return R2PrimaryFSWS.WebMethodGetFile(R2CoreRawGroups.ConfigurationHelpers, YourCId.ToString() + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 0), R2PrimaryFSWS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
-            Catch ex As SoapException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function GetConfigurationHelper(YourCId As Int64, YourSoftwareUser As R2CoreSoftwareUser) As Byte()
+        '    Try
+        '        Return R2PrimaryFSWS.WebMethodGetFile(R2CoreRawGroups.ConfigurationHelpers, YourCId.ToString() + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 0), R2PrimaryFSWS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
+        '    Catch ex As SoapException
+        '        Throw ex
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
         Public Sub SetConfigurations(YourCId As Int64, YourCValue As String)
             Dim CmdSql As New SqlClient.SqlCommand

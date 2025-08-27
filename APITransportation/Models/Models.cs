@@ -340,14 +340,14 @@ namespace APITransportation.Models
 
     namespace LoadPermissions
     {
-        public class APITransportationSessionIdLoadAllocationIdDescriptionTurnResusitutionLoadResusitution
+        public class APITransportationSessionIdLAIdDescriptionTurnResuscitautionLoadResuscitaution
 
         {
             public String SessionId;
-            public Int64 LoadAllocationId;
+            public Int64 LAId;
             public string Description;
-            public bool TurnResusitution;
-            public bool LoadResusitution;
+            public bool TurnResuscitaution;
+            public bool LoadResuscitaution;
         }
     }
 

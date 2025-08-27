@@ -145,6 +145,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Caching.vb" />
+    <Compile Include="Carrousels.vb" />
     <Compile Include="Configurations.vb" />
     <Compile Include="Exceptions.vb" />
     <Compile Include="RawGroups.vb" />
@@ -184,6 +185,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.map</DependentUpon>
     </Compile>
+    <Compile Include="WebProcesses.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">

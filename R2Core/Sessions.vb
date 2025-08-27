@@ -73,10 +73,13 @@ Namespace SessionManagement
                 Dim InstanceCaptcha = New R2CoreInstanceCaptchaManager
                 Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
                 Dim InstanceCache = New R2CoreCacheManager
-                Dim CaptchaWord = InstanceCaptcha.GenerateFakeWordNumeric(InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 6))
+                'Dim CaptchaWord = InstanceCaptcha.GenerateFakeWordNumeric(InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 6))
+
+                Dim CaptchaWord = "ABCDE"
+
                 Dim CaptchaBitMap = InstanceCaptcha.GetCaptcha(CaptchaWord)
                 Dim SessionId = GetNewSessionId()
-                InstanceCache.SetCache(InstanceCache.GetCacheType(R2CoreCacheTypes.Session).CacheTypeName + SessionId, New R2CoreStandardSessionCaptchaWordStructure(SessionId, CaptchaWord), R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions)
+                InstanceCache.SetCache(InstanceCache.GetCacheType(R2CoreCacheTypes.Session).CacheTypeName + SessionId, New R2CoreStandardSessionCaptchaWordStructure(SessionId, CaptchaWord), R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions, False)
                 Return New R2CoreStandardSessionCaptchaBitMapStructure(SessionId, CaptchaBitMap)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)

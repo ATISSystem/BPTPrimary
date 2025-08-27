@@ -8,6 +8,7 @@ using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoadMan
 using R2CoreTransportationAndLoadNotification.LoadPermission;
 using R2CoreTransportationAndLoadNotification.RequesterManagement;
 using R2CoreTransportationAndLoadNotification.SoftwareUserManagement;
+using R2CoreTransportationAndLoadNotification.Turns;
 using System;
 using System.Diagnostics;
 using System.Web.Http.ModelBinding.Binders;
@@ -20,6 +21,8 @@ namespace LoadCapacitor
         [TestMethod]
         public void TestMethod1()
         {
+            var x = new R2CoreTransportationAndLoadNotificationTurnsManager(new R2DateTimeService());
+            x.TurnResuscitationByUser(14,21);
             //var x = new R2CoreTransportationAndLoadNotificationLoadManipulationManager (new R2DateTimeService() );
             var z = new R2Core.SoftwareUserManagement.R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(21));
             //R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad.R2CoreTransportationAndLoadNotificationLoad load = 
@@ -35,8 +38,8 @@ namespace LoadCapacitor
 
             //var InstanceLoadPermission = new R2CoreTransportationAndLoadNotificationLoadPermissionManager(new R2DateTimeService());
             //InstanceLoadPermission.GetLoadPermissions(22);
-            var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotificationLoadAllocationManager(new R2DateTimeService());
-            var Turn = InstanceLoadAllocation.LoadAllocateToOther(30027, R2CoreTransportationAndLoadNotificationRequesters.LoadAllocationController_LoadAllocateToOther, z.GetUser(7046, true));
+            //var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotificationLoadAllocationManager(new R2DateTimeService());
+            //var Turn = InstanceLoadAllocation.LoadAllocateToOther(30027, R2CoreTransportationAndLoadNotificationRequesters.LoadAllocationController_LoadAllocateToOther, z.GetUser(7046, true));
 
         }
 

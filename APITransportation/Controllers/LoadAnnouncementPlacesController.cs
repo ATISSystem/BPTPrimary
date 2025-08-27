@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Text;
-using APITransportation.Models;
 using Newtonsoft.Json;
 using R2Core.DateAndTimeManagement;
 using R2Core.SecurityAlgorithmsManagement.AESAlgorithms;
@@ -17,9 +16,11 @@ using R2CoreTransportationAndLoadNotification.LoadAnnouncementPlaces;
 using System.Web.Services.Protocols;
 using R2Core.ExceptionManagement;
 using R2Core.DatabaseManagement;
+using R2CoreTransportationAndLoadNotification.Exceptions;
 
 
-namespace APITransportation.Controllers
+
+namespace APICommonCentralSystem.Controllers
 {
     [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "*")]
     public class LoadAnnouncementPlacesController : ApiController
@@ -27,18 +28,22 @@ namespace APITransportation.Controllers
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
 
         [HttpGet]
+        //[HttpPost]
         [Route("api/GetLoadAnnouncementPlaces")]
         public HttpResponseMessage GetLoadAnnouncementPlaces()
+        //public HttpResponseMessage GetLoadAnnouncementPlaces([FromBody] Int64 ProvinceId)
         {
             try
             {
                 var InstanceLoadAnnouncementPlaces = new R2CoreTransportationAndLoadNotificationLoadAnnouncementPlacesManager();
-                var LoadAnnouncementPlaces = InstanceLoadAnnouncementPlaces.GetLoadAnnouncementPlaces();
+                var LoadAnnouncementPlaces = InstanceLoadAnnouncementPlaces.GetLoadAnnouncementPlaces(0);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(LoadAnnouncementPlaces, Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (LoadAnnouncementPlacesForThisProvinceNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)

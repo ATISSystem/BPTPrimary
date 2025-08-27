@@ -39,7 +39,7 @@ Namespace RawGroups
         Public Shared ReadOnly UserImages As Int64 = 1
         Public Shared ReadOnly PersonnelImages As Int64 = 4
         Public Shared ReadOnly UploadedFiles As Int64 = 6
-        Public Shared ReadOnly ConfigurationHelpers As Int64 = 9
+        Public Shared ReadOnly Carousels As Int64 = 9
 
     End Class
 
@@ -117,7 +117,7 @@ Namespace RawGroups
                     YourByteArray = New Byte(FS.Length) {}
                     FS.Read(YourByteArray, 0, FS.Length)
                 End Using
-            Catch exx As IO.FileNotFoundException
+            Catch ex As IO.FileNotFoundException
                 Throw New R2CoreFileNotFoundInRawGroupsException
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)

@@ -10,11 +10,13 @@ Namespace Caching
 
     Public MustInherit Class R2CoreCatchDataBases
         Public Shared ReadOnly Property SoftwareUserSessions As Int64 = 0
+        Public Shared ReadOnly Property Carousels As Int64 = 2
     End Class
 
     Public MustInherit Class R2CoreCacheTypes
         Public Shared ReadOnly Property None As Int64 = 0
         Public Shared ReadOnly Property Session As Int64 = 1
+        Public Shared ReadOnly Property Carousel As Int64 = 3
     End Class
 
     Public Class R2CoreStandardCacheTypeStructure
@@ -118,10 +120,14 @@ Namespace Caching
             End Try
         End Function
 
-        Public Sub SetCache(YourKeyId As String, YourCacheValue As Object, YourCacheTypeId As Int64, YourDataBaseId As Integer)
+        Public Sub SetCache(YourKeyId As String, YourCacheValue As Object, YourCacheTypeId As Int64, YourDataBaseId As Integer, YourIndefiniteTimeSpan As Boolean)
             Try
                 Dim Cache = RedisConnectorHelper.Connection.GetDatabase(YourDataBaseId)
-                Cache.StringSet(YourKeyId, JsonConvert.SerializeObject(YourCacheValue), TimeSpan.FromSeconds(GetCacheType(YourCacheTypeId).CacheTime))
+                If Not YourIndefiniteTimeSpan Then
+                    Cache.StringSet(YourKeyId, JsonConvert.SerializeObject(YourCacheValue), TimeSpan.FromSeconds(GetCacheType(YourCacheTypeId).CacheTime))
+                Else
+                    Cache.StringSet(YourKeyId, JsonConvert.SerializeObject(YourCacheValue))
+                End If
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
@@ -136,9 +142,9 @@ Namespace Caching
             End Try
         End Function
 
-        Public Sub RemoveCache(YourCacheKey As String)
+        Public Sub RemoveCache(YourCacheKey As String, YourDataBaseId As Integer)
             Try
-                Dim Cache = RedisConnectorHelper.Connection.GetDatabase
+                Dim Cache = RedisConnectorHelper.Connection.GetDatabase(YourDataBaseId)
                 Cache.KeyDelete(YourCacheKey)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)

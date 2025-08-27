@@ -27,22 +27,22 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/LoadPersmissionCancelling")]
-        public HttpResponseMessage LoadPersmissionCancelling([FromBody] APITransportationSessionIdLoadAllocationIdDescriptionTurnResusitutionLoadResusitution Content)
+        public HttpResponseMessage LoadPermissionCancelling([FromBody] APITransportationSessionIdLAIdDescriptionTurnResuscitautionLoadResuscitaution Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
-                var LoadAllocationId = Content.LoadAllocationId ;
+                var LoadAllocationId = Content.LAId ;
                 var Description = Content.Description ;
-                var TurnResusitution=Content.TurnResusitution ;
-                var LoadResusitution= Content.LoadResusitution ;
+                var TurnResuscitaution = Content.TurnResuscitaution;
+                var LoadResuscitaution = Content.LoadResuscitaution;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceLoadPermission = new R2CoreTransportationAndLoadNotificationLoadPermissionManager(_DateTimeService);
-                InstanceLoadPermission.LoadPersmissionCancelling(LoadAllocationId ,Description ,TurnResusitution ,LoadResusitution, User);
+                InstanceLoadPermission.LoadPersmissionCancelling(LoadAllocationId ,Description , TurnResuscitaution, LoadResuscitaution, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");

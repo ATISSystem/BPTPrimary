@@ -1232,8 +1232,8 @@ Namespace SoftwareUserManagement
                     Dim SessionIdSoftwareUser = New R2CoreSessionIdSoftwareUser
                     SessionIdSoftwareUser.SessionId = YourSessionId
                     SessionIdSoftwareUser.SoftWareUser = GetUser(YourUserShenaseh, YourUserPassword)
-                    InstanceCacheKeys.RemoveCache(CachKey)
-                    InstanceCacheKeys.SetCache(CachKey, SessionIdSoftwareUser, R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions)
+                    InstanceCacheKeys.RemoveCache(CachKey, R2CoreCatchDataBases.SoftwareUserSessions)
+                    InstanceCacheKeys.SetCache(CachKey, SessionIdSoftwareUser, R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions, False)
                 Else
                     Throw New CaptchaWordNotCorrectException
                 End If
@@ -1402,8 +1402,8 @@ Namespace SoftwareUserManagement
                 SessionVerificationCode.VerificationCode = AES.GenerateVerificationCode(InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 9))
                 SessionVerificationCode.UserId = NSSSoftwareUser.UserId
                 Dim CachKey = InstanceCacheKeys.GetCacheType(Caching.R2CoreCacheTypes.Session).CacheTypeName + YourSessionId
-                InstanceCacheKeys.RemoveCache(CachKey)
-                InstanceCacheKeys.SetCache(CachKey, SessionVerificationCode, R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions)
+                InstanceCacheKeys.RemoveCache(CachKey, R2CoreCatchDataBases.SoftwareUserSessions)
+                InstanceCacheKeys.SetCache(CachKey, SessionVerificationCode, R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions, False)
 
                 SendSMSSoftwareUserVerificationCode(NSSSoftwareUser, SessionVerificationCode.VerificationCode)
             Catch ex As SessionOverException

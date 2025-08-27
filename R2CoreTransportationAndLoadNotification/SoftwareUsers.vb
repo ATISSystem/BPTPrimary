@@ -123,8 +123,8 @@ Namespace SoftwareUserManagement
                             TurnInfo = New R2CoreTransportationAndLoadNotificationTruckDriverTurnInfo With {.TurnId = DSPreInformations.Tables(0).Rows(0).Item("TurnId"), .TurnStatusId = DSPreInformations.Tables(0).Rows(0).Item("TurnStatusId"), .SeqTId = DSPreInformations.Tables(0).Rows(0).Item("SeqTId"), .NativenessTypeId = DSPreInformations.Tables(0).Rows(0).Item("NativenessTypeId")}
                         End If
                         If TurnInfo IsNot Nothing Then
-                            InstanceCache.RemoveCache(InstanceCache.GetCacheType(R2CoreTransportationAndLoadNotificationCacheTypes.TruckDriverTurnInfo).CacheTypeName + Content.SoftWareUser.UserId.ToString())
-                            InstanceCache.SetCache(InstanceCache.GetCacheType(R2CoreTransportationAndLoadNotificationCacheTypes.TruckDriverTurnInfo).CacheTypeName + Content.SoftWareUser.UserId.ToString(), TurnInfo, R2CoreTransportationAndLoadNotificationCacheTypes.TruckDriverTurnInfo, R2CoreTransportationAndLoadNotificationCatchDataBases.TruckDriverInformation)
+                            InstanceCache.RemoveCache(InstanceCache.GetCacheType(R2CoreTransportationAndLoadNotificationCacheTypes.TruckDriverTurnInfo).CacheTypeName + Content.SoftWareUser.UserId.ToString(), R2CoreTransportationAndLoadNotificationCatchDataBases.TruckDriverInformation)
+                            InstanceCache.SetCache(InstanceCache.GetCacheType(R2CoreTransportationAndLoadNotificationCacheTypes.TruckDriverTurnInfo).CacheTypeName + Content.SoftWareUser.UserId.ToString(), TurnInfo, R2CoreTransportationAndLoadNotificationCacheTypes.TruckDriverTurnInfo, R2CoreTransportationAndLoadNotificationCatchDataBases.TruckDriverInformation, False)
                         End If
                     End If
                 Next
