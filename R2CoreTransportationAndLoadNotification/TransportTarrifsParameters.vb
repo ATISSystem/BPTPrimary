@@ -290,22 +290,81 @@ Namespace TransportTariffsParameters
             _DateTimeService = YourDateTimeService
         End Sub
 
-        Public Function GetListofTransportTariffsParams(YourTPTParams As String) As List(Of R2CoreTransportationAndLoadNotificationTransportTariffsParametersDetails)
+        Public Function GetListofTransportTariffsParams(YourTPTParams As String) As List(Of R2CoreTransportationAndLoadNotificationTPTParamsDetails)
             ' Standard String : TPTPDId1:0;TPTPDId2:1;.....
             Try
                 Dim Params As String() = YourTPTParams.Split(";")
-                Dim Lst = New List(Of R2CoreTransportationAndLoadNotificationTransportTariffsParametersDetails)
+                Dim Lst = New List(Of R2CoreTransportationAndLoadNotificationTPTParamsDetails)
                 If Params(0).Trim = String.Empty Then Return Lst
                 For Loopx As Int64 = 0 To Params.Length - 1
                     Dim TPTParamDetailId As Int64 = Params(Loopx).Split(":")(0).Trim
                     Dim Checked As Boolean = IIf(Params(Loopx).Split(":")(1).Trim = "1", True, False)
                     Dim NSS = GetTransportTariffsParameterDetail(TPTParamDetailId)
-                    NSS.Checked = Checked
-                    Lst.Add(NSS)
+                    Lst.Add(New R2CoreTransportationAndLoadNotificationTPTParamsDetails With {.TPTPDId = TPTParamDetailId, .TPTPTitle = NSS.TPTPTitle, .Checked = Checked, .Cost = NSS.Mblgh})
                 Next
                 Return Lst
             Catch ex As TransportPriceTariffParameterDetailNotFoundException
                 Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetListofTransportTariffsParamsJSON(YourAnnouncementSGId As Int64) As String
+            Try
+                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim DS As DataSet
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                      "Select Details.TPTPDId,TransportPriceTariffsParameters.TPTPTitle,Details.Mblgh as Cost,0 as Checked
+                       from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails as Details
+                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Details.AHSGId=AnnouncementsubGroups.AnnouncementSGId 
+                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters as TransportPriceTariffsParameters On Details.TPTPId=TransportPriceTariffsParameters.TPTPId 
+                       Where AnnouncementsubGroups.AnnouncementSGId =" & YourAnnouncementSGId & " AND AnnouncementsubGroups.Active=1 AND Details.RelationActive=1 AND TransportPriceTariffsParameters.Active=1 AND TransportPriceTariffsParameters.Deleted=0
+                       Order By TransportPriceTariffsParameters.TPTPId for JSON Path", 32767, DS, New Boolean).GetRecordsCount = 0 Then
+                    Throw New TransportPriceTariffParameterDetailsforAHSGNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(DS)
+            Catch ex As TransportPriceTariffParameterDetailsforAHSGNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetListofTransportTariffsParamsByAnnouncementSGId(YourAnnouncementSGId As Int64) As List(Of R2CoreTransportationAndLoadNotificationTPTParamsDetails)
+            Try
+                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim DS As DataSet
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                      "Select Details.TPTPDId,TransportPriceTariffsParameters.TPTPTitle,Details.Mblgh as Cost,0 as Checked
+                       from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails as Details
+                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Details.AHSGId=AnnouncementsubGroups.AnnouncementSGId 
+                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters as TransportPriceTariffsParameters On Details.TPTPId=TransportPriceTariffsParameters.TPTPId 
+                       Where AnnouncementsubGroups.AnnouncementSGId =" & YourAnnouncementSGId & " AND AnnouncementsubGroups.Active=1 AND Details.RelationActive=1 AND TransportPriceTariffsParameters.Active=1 AND TransportPriceTariffsParameters.Deleted=0
+                       Order By TransportPriceTariffsParameters.TPTPId for JSON Path", 32767, DS, New Boolean).GetRecordsCount = 0 Then
+                    Throw New TransportPriceTariffParameterDetailsforAHSGNotFoundException
+                End If
+                Dim Lst = New List(Of R2CoreTransportationAndLoadNotificationTPTParamsDetails)
+                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+                    Lst.Add(New R2CoreTransportationAndLoadNotificationTPTParamsDetails With {.TPTPDId = DS.Tables(0).Rows(Loopx).Item("TPTPDId"), .TPTPTitle = DS.Tables(0).Rows(Loopx).Item("TPTPTitle"), .Cost = DS.Tables(0).Rows(Loopx).Item("Cost"), .Checked = False})
+                Next
+                Return Lst
+            Catch ex As TransportPriceTariffParameterDetailsforAHSGNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetTPTParams(YourListofTransportTariffsParams As List(Of R2CoreTransportationAndLoadNotificationTPTParamsDetails)) As String
+            Try
+                Dim TPTParams = String.Empty
+                For Loopx = 0 To YourListofTransportTariffsParams.Count - 1
+                    TPTParams += YourListofTransportTariffsParams(Loopx).TPTPDId + ":" + YourListofTransportTariffsParams(Loopx).Checked
+                Next
+                Return TPTParams
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -385,54 +444,6 @@ Namespace TransportTariffsParameters
                 Next
                 Return SB.ToString
             Catch ex As TransportPriceTariffParameterDetailNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Function GetListofTransportTariffsParamsJSON(YourAnnouncementSGId As Int64) As String
-            Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
-                Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
-                      "Select Details.TPTPDId,TransportPriceTariffsParameters.TPTPTitle,Details.Mblgh as Cost,0 as Checked
-                       from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails as Details
-                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Details.AHSGId=AnnouncementsubGroups.AnnouncementSGId 
-                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters as TransportPriceTariffsParameters On Details.TPTPId=TransportPriceTariffsParameters.TPTPId 
-                       Where AnnouncementsubGroups.AnnouncementSGId =" & YourAnnouncementSGId & " AND AnnouncementsubGroups.Active=1 AND Details.RelationActive=1 AND TransportPriceTariffsParameters.Active=1 AND TransportPriceTariffsParameters.Deleted=0
-                       Order By TransportPriceTariffsParameters.TPTPId for JSON Path", 32767, DS, New Boolean).GetRecordsCount = 0 Then
-                    Throw New TransportPriceTariffParameterDetailsforAHSGNotFoundException
-                End If
-                Return InstancePublicProcedures.GetIntegratedJson(DS)
-            Catch ex As TransportPriceTariffParameterDetailsforAHSGNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Function GetListofTransportTariffsParamsByAnnouncementSGId(YourAnnouncementSGId As Int64) As List(Of R2CoreTransportationAndLoadNotificationTPTParamsDetails)
-            Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
-                Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
-                      "Select Details.TPTPDId,TransportPriceTariffsParameters.TPTPTitle,Details.Mblgh as Cost,0 as Checked
-                       from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails as Details
-                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Details.AHSGId=AnnouncementsubGroups.AnnouncementSGId 
-                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters as TransportPriceTariffsParameters On Details.TPTPId=TransportPriceTariffsParameters.TPTPId 
-                       Where AnnouncementsubGroups.AnnouncementSGId =" & YourAnnouncementSGId & " AND AnnouncementsubGroups.Active=1 AND Details.RelationActive=1 AND TransportPriceTariffsParameters.Active=1 AND TransportPriceTariffsParameters.Deleted=0
-                       Order By TransportPriceTariffsParameters.TPTPId for JSON Path", 32767, DS, New Boolean).GetRecordsCount = 0 Then
-                    Throw New TransportPriceTariffParameterDetailsforAHSGNotFoundException
-                End If
-                Dim Lst = New List(Of R2CoreTransportationAndLoadNotificationTPTParamsDetails)
-                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
-                    Lst.Add(New R2CoreTransportationAndLoadNotificationTPTParamsDetails With {.TPTPDId = DS.Tables(0).Rows(Loopx).Item("TPTPDId"), .TPTPTitle = DS.Tables(0).Rows(Loopx).Item("TPTPTitle"), .Cost = DS.Tables(0).Rows(Loopx).Item("Cost"), .Checked = False})
-                Next
-                Return Lst
-            Catch ex As TransportPriceTariffParameterDetailsforAHSGNotFoundException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)

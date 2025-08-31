@@ -1,4 +1,5 @@
 ﻿using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad;
+using R2CoreTransportationAndLoadNotification.TransportTariffsParameters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,6 +48,19 @@ namespace APITransportation.LoadCapacitor.Models
             public string   TPTParams;
         }
 
+        public class APITransportationLoadCapacitorSessionIdAnnouncementSGId
+        {
+            public String SessionId;
+            public string AnnouncementSGId;
+        }
+
+        public class APITransportationLoadCapacitorSessionIdListofTransportTariffsParams
+        {
+            public String SessionId;
+            public List<R2CoreTransportationAndLoadNotificationTPTParamsDetails> ListofTransportTariffsParams;
+        }
+
+        
 
     }
 }

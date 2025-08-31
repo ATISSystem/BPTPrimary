@@ -728,7 +728,7 @@ Namespace SMS
                 Try
                     Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
                     If Not InstanceConfiguration.GetConfigBoolean(R2CoreConfigurations.SmsSystemSetting, 0) Then Throw New SmsSystemIsDisabledException
-                    Dim InstanceLogging = New R2CoreInstanceLoggingManager
+                    'Dim InstanceLogging = New R2CoreInstanceLoggingManager
 
                     'ایجاد لیست اس ام اس ها
                     Dim DS As DataSet
@@ -757,7 +757,7 @@ Namespace SMS
                             CmdSql.CommandText = "Update R2PrimarySMSSystem.dbo.TblSmsWareHouse Set Active=0 where SmsId=" & mySMSId & ""
                             CmdSql.ExecuteNonQuery()
                         Else
-                            InstanceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.SendSMSResult, InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 5), LstSMSId(LoopSMSs).ToString(), SentSmsStatus(LoopSMSs).ToString(), String.Empty, String.Empty, String.Empty, YourNSSUser.UserId, Nothing, Nothing))
+                            'InstanceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.SendSMSResult, InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 5), LstSMSId(LoopSMSs).ToString(), SentSmsStatus(LoopSMSs).ToString(), String.Empty, String.Empty, String.Empty, YourNSSUser.UserId, Nothing, Nothing))
                         End If
                     Next
                     CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
@@ -1674,17 +1674,17 @@ Namespace SMS
     Namespace SMSResultLogging
 
         Public Class R2CoreLoggingSMSResultManager
-            Public Sub Logging(YourSMSResult As List(Of KeyValuePair(Of Int64, String)), YourNSSUser As R2CoreStandardSoftwareUserStructure)
-                Try
-                    Dim InstanceLogging = New R2CoreInstanceLoggingManager
-                    Dim InstanceSendSMSCode = New R2CoreSendSMSCodeManager
-                    For Loopx As Int64 = 0 To YourSMSResult.Count - 1
-                        InstanceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.SendSMSResult, InstanceLogging.GetNSSLogType(R2CoreLogType.SendSMSResult).LogTitle, InstanceSendSMSCode.GetNSSSendSMSCode(YourSMSResult(Loopx).Key).SendSMSCodeTitle, YourSMSResult(Loopx).Value, String.Empty, String.Empty, String.Empty, YourNSSUser.UserId, Nothing, Nothing))
-                    Next
-                Catch ex As Exception
+            'Public Sub Logging(YourSMSResult As List(Of KeyValuePair(Of Int64, String)), YourNSSUser As R2CoreStandardSoftwareUserStructure)
+            '    Try
+            '        Dim InstanceLogging = New R2CoreInstanceLoggingManager
+            '        Dim InstanceSendSMSCode = New R2CoreSendSMSCodeManager
+            '        For Loopx As Int64 = 0 To YourSMSResult.Count - 1
+            '            InstanceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.SendSMSResult, InstanceLogging.GetNSSLogType(R2CoreLogType.SendSMSResult).LogTitle, InstanceSendSMSCode.GetNSSSendSMSCode(YourSMSResult(Loopx).Key).SendSMSCodeTitle, YourSMSResult(Loopx).Value, String.Empty, String.Empty, String.Empty, YourNSSUser.UserId, Nothing, Nothing))
+            '        Next
+            '    Catch ex As Exception
 
-                End Try
-            End Sub
+            '    End Try
+            'End Sub
         End Class
     End Namespace
 

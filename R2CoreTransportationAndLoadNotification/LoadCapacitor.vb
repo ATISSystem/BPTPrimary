@@ -1996,7 +1996,7 @@ Namespace LoadCapacitor
                          Order By ProvinceName,MyLoads.TargetCityTitle 
                          for JSON Auto"
                     If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
-                           SqlQuery, 180, DSLoads, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                           SqlQuery, 0, DSLoads, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
                     Return InstancePublicProcedures.GetIntegratedJson(DSLoads)
                 Catch ex As AnyNotFoundException
                     Throw ex
@@ -2049,7 +2049,7 @@ Namespace LoadCapacitor
                          Order By ProvinceName,MyLoads.TargetCityTitle 
                          for JSON Auto"
                     If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
-                           SqlQuery, 180, DSLoads, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                           SqlQuery, 0, DSLoads, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
                     Return InstancePublicProcedures.GetIntegratedJson(DSLoads)
                 Catch ex As AnyNotFoundException
                     Throw ex
@@ -3485,6 +3485,7 @@ Namespace LoadCapacitor
                     'کاربر ادمین مجوز تناژ بدون محدودیت دارد
                     If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanRegisterOrEditLoadsAnyTonaj, YourSoftwareUser.UserId, 0) Then
                     Else
+                        'R2CoreLoggingManager.WriteInfLog(New R2CoreLog With {.LogTypeId = 0, .Description = YourLoad.Tonaj.ToString(), .MessageDetail1 = YourLoad.AnnouncementGroupId.ToString(), .MessageDetail2 = YourLoad.AnnouncementSubGroupId.ToString(), .MessageDetail3 = "", .UserId = 21}, 21)
                         InstanceLoad.LoadTonajValidate(YourLoad)
                     End If
 

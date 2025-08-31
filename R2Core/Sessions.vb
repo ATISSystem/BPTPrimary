@@ -3,16 +3,19 @@
 
 
 Imports Newtonsoft.Json
+Imports NLog
 Imports R2Core.Caching
 Imports R2Core.ConfigurationManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.ExceptionManagement
+Imports R2Core.LoggingManagement
 Imports R2Core.SecurityAlgorithmsManagement.AESAlgorithms
 Imports R2Core.SecurityAlgorithmsManagement.Captcha
 Imports R2Core.SecurityAlgorithmsManagement.Hashing
 Imports R2Core.SoftwareUserManagement
 Imports System.Reflection
 Imports System.Runtime.InteropServices.WindowsRuntime
+Imports System.Web.UI.WebControls.WebParts
 
 Namespace SessionManagement
 
@@ -82,6 +85,7 @@ Namespace SessionManagement
                 InstanceCache.SetCache(InstanceCache.GetCacheType(R2CoreCacheTypes.Session).CacheTypeName + SessionId, New R2CoreStandardSessionCaptchaWordStructure(SessionId, CaptchaWord), R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions, False)
                 Return New R2CoreStandardSessionCaptchaBitMapStructure(SessionId, CaptchaBitMap)
             Catch ex As Exception
+                R2CoreLoggingManager.WriteErrorLog(ex)
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Function

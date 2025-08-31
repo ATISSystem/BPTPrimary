@@ -494,17 +494,16 @@ Namespace MonetaryCreditSupplySources
                     End Try
                 End Sub
 
-                Private Sub LoggingPosResult(YourPosResult As PosResult)
-                    Try
-                        Dim InstanceLogging As New R2CoreInstanceLoggingManager
-                        Dim InstanceSoftwareUsers As New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
-                        Dim DataStruct As DataStruct = GetPosResultComposit(YourPosResult)
-                        _TransactionId = DataStruct.Data1
-                        InstanceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Note, "پوز - خرید", DataStruct.Data1, DataStruct.Data2, DataStruct.Data3, DataStruct.Data4, DataStruct.Data5, InstanceSoftwareUsers.GetSystemUserId, _DateTime.GetCurrentDateTimeMilladiFormated(), _DateTime.GetCurrentDateShamsiFull))
-                    Catch ex As Exception
-                        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                    End Try
-                End Sub
+                'Private Sub LoggingPosResult(YourPosResult As PosResult)
+                '    Try
+                '        Dim InstanceSoftwareUsers As New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+                '        Dim DataStruct As DataStruct = GetPosResultComposit(YourPosResult)
+                '        _TransactionId = DataStruct.Data1
+                '        InstanceLogging.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Note, "پوز - خرید", DataStruct.Data1, DataStruct.Data2, DataStruct.Data3, DataStruct.Data4, DataStruct.Data5, InstanceSoftwareUsers.GetSystemUserId, _DateTime.GetCurrentDateTimeMilladiFormated(), _DateTime.GetCurrentDateShamsiFull))
+                '    Catch ex As Exception
+                '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                '    End Try
+                'End Sub
 
                 Private Function GetPosResultComposit(YourPosResult As PosResult) As R2Core.BaseStandardClass.DataStruct
                     Try
@@ -538,7 +537,7 @@ Namespace MonetaryCreditSupplySources
 
                 Private Sub _PCPOS_OnSaleResult(sender As Object, e As PosResult) Handles _PCPOS.OnSaleResult
                     Try
-                        LoggingPosResult(e)
+                        'LoggingPosResult(e)
                         If e.ResponseCode = "00" Then
                             _SupplyReport = e.PcPosStatus
                             _MonetarySupplyType = MonetarySupply.MonetarySupplyType.PaymentRequest
@@ -1967,6 +1966,7 @@ Namespace PredefinedMessagesManagement
         Public Shared ReadOnly AnyNotFoundException As Int64 = 28
         Public Shared ReadOnly MoneyWalletNotFoundException As Int64 = 30
         Public Shared ReadOnly WebServiceConnectingException As Int64 = 31
+        Public Shared ReadOnly UserHasAlreadyBeenAuthenticated As Int64 = 32
     End Class
 
     Public Class R2CoreStandardPredefinedMessageStructure

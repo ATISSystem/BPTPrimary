@@ -117,7 +117,7 @@ Namespace Rmto
 
         Private Shared Function GetInf(ByVal YourInfoType As InfoType, ByVal YourDFP As String) As String()
             Try
-                Dim InstanceLogging = New R2CoreInstanceLoggingManager
+                'Dim InstanceLogging = New R2CoreInstanceLoggingManager
                 If Not R2Core.NetworkInternetManagement.R2CoreMClassComputerMessagesManagement.IsInternetAvailable() Then
                     Throw New InternetIsnotAvailableException
                 End If

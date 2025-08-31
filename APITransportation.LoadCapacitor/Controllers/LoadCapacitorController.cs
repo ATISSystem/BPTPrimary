@@ -35,7 +35,7 @@ namespace APITransportation.LoadCapacitor.Controllers
         private IR2DateTimeService _DateTimeService = new R2DateTimeService();
 
         [HttpPost]
-        [Route("api/GetLoadsforTruckDriver")]                        
+        [Route("api/GetLoadsforTruckDriver")]
         public HttpResponseMessage GetLoadsforTruckDriver([FromBody] APITransportationLoadCapacitorSessionIdAnnouncementSGIdLoadStatusId Content)
         {
             try
@@ -152,7 +152,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 var SessionId = Content.SessionId;
                 var AnnouncementGroupId = Content.AnnouncementGroupId;
                 var AnnouncementSubGroupId = Content.AnnouncementSubGroupId;
-                var TransportCompanyId=Content.TransportCompanyId;
+                var TransportCompanyId = Content.TransportCompanyId;
                 var Inventory = Content.Inventory;
                 var ShamsiDate = Content.ShamsiDate;
                 var LoadStatusId = Content.LoadStatusId;
@@ -171,7 +171,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 var InstanceLoad = new R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceLoad.GetLoadsforFactoriesAndProductionCenters(User,TransportCompanyId, AnnouncementGroupId, AnnouncementSubGroupId, Inventory, ShamsiDate, LoadStatusId, LoadSourceCityId, LoadTargetCityId), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(InstanceLoad.GetLoadsforFactoriesAndProductionCenters(User, TransportCompanyId, AnnouncementGroupId, AnnouncementSubGroupId, Inventory, ShamsiDate, LoadStatusId, LoadSourceCityId, LoadTargetCityId), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -188,7 +188,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
 
-                [HttpPost]
+        [HttpPost]
         [Route("api/GetLoadsforAdministrator")]
         public HttpResponseMessage GetLoadsforAdministrator([FromBody] APITransportationLoadCapacitorSessionIdPlus8Parameters Content)
         {
@@ -217,7 +217,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 var InstanceLoad = new R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceLoad.GetLoadsforaAdministrator( AnnouncementGroupId, AnnouncementSubGroupId,TransportCompanyId , Inventory, ShamsiDate, LoadStatusId, LoadSourceCityId, LoadTargetCityId), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(InstanceLoad.GetLoadsforaAdministrator(AnnouncementGroupId, AnnouncementSubGroupId, TransportCompanyId, Inventory, ShamsiDate, LoadStatusId, LoadSourceCityId, LoadTargetCityId), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -299,6 +299,70 @@ namespace APITransportation.LoadCapacitor.Controllers
         }
 
         [HttpPost]
+        [Route("api/GetListofTransportTariffsParamsByAnnouncementSGId")]
+        public HttpResponseMessage GetListofTransportTariffsParamsByAnnouncementSGId([FromBody] APITransportationLoadCapacitorSessionIdAnnouncementSGId Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var SessionId = Content.SessionId;
+                var AnnouncementSGId = Convert.ToInt64(Content.AnnouncementSGId);
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceTransportTariffsParameters = new R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTransportTariffsParameters.GetListofTransportTariffsParamsByAnnouncementSGId(AnnouncementSGId)), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (LoadCapacitorLoadNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
+        [Route("api/GetTPTParams")]
+        public HttpResponseMessage GetTPTParams([FromBody] APITransportationLoadCapacitorSessionIdListofTransportTariffsParams Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var SessionId = Content.SessionId;
+                var ListofTransportTariffsParams = Content.ListofTransportTariffsParams;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceTransportTariffsParameters = new R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { TPTParams = InstanceTransportTariffsParameters.GetTPTParams(ListofTransportTariffsParams) }), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (TransportPriceTariffParameterDetailNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (LoadCapacitorLoadNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
         [Route("api/LoadRegistering")]
         public HttpResponseMessage LoadRegistering([FromBody] APITransportationLoadCapacitorSessionIdLoad Content)
         {
@@ -312,10 +376,10 @@ namespace APITransportation.LoadCapacitor.Controllers
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceLoadManipulation = new R2CoreTransportationAndLoadNotificationLoadManipulationManager(_DateTimeService);
-                var newLoadId=InstanceLoadManipulation.LoadRegistering(Load, User);
+                var newLoadId = InstanceLoadManipulation.LoadRegistering(Load, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { newLoadId= newLoadId }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { newLoadId = newLoadId }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -383,7 +447,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 InstanceLoadManipulation.LoadDeleting(LoadId, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed ).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)

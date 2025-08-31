@@ -1093,6 +1093,16 @@ Namespace SoftwareUserManagement
             End Property
         End Class
 
+        Public Class UserHasAlreadyBeenAuthenticated
+            Inherits BPTException
+
+            Public Sub New()
+                _Message = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.UserHasAlreadyBeenAuthenticated).MsgContent
+                _MessageCode = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.UserHasAlreadyBeenAuthenticated).MsgId
+            End Sub
+
+        End Class
+
 
     End Namespace
 
@@ -1641,6 +1651,7 @@ Namespace SoftwareUserManagement
 
 
     End Class
+
 
     'BPTChanged
     Public Class R2CoreSoftwareUser

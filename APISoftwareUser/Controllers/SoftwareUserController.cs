@@ -25,6 +25,10 @@ using APICommon.Models;
 using R2CoreParkingSystem.SoftwareUsersManagement;
 using System.Web.Services.Protocols;
 using R2Core.WebProcessesManagement.Exceptions;
+using Swashbuckle.Swagger;
+using System.Web.Services.Description;
+using System.Web;
+using R2Core.SoftwareUserManagement.Exceptions;
 
 
 
@@ -42,6 +46,21 @@ namespace APISoftwareUser.Controllers
         public SoftwareUserController()
         { _DateTimeService = new R2DateTimeService(); }
 
+        [HttpPost]
+        [Route("api/urlparse")]
+        [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "*")]
+        public HttpResponseMessage urlparse()
+        {
+            try
+            {
+                var x = Request.Headers.GetCookies();
+                throw new Exception(x[0]["SessionId"].Value);
+            }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+
         [HttpGet]
         [Route("api/GetCaptcha")]
         [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "*")]
@@ -50,10 +69,19 @@ namespace APISoftwareUser.Controllers
             try
             {
                 var InstanceSession = new R2Core.SessionManagement.R2CoreSessionManager();
-                var sessionStartBox = InstanceSession.StartSession();
+                var SessionStartBox = InstanceSession.StartSession();
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(sessionStartBox), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(SessionStartBox), Encoding.UTF8, "application/json");
                 return response;
+
+                //var InstanceSession = new R2Core.SessionManagement.R2CoreSessionManager();
+                //var SessionStartBox = InstanceSession.StartSession();
+                //HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                //response.Content = new StringContent(JsonConvert.SerializeObject(new { Captcha=SessionStartBox.Captcha }), Encoding.UTF8, "application/json");
+                //var SessionIdCookie = new System.Net.Http.Headers.CookieHeaderValue("SessionId", SessionStartBox.SessionId)
+                //{ Expires = DateTimeOffset.Now.AddDays(1), Path = "/"};
+                //response.Headers.AddCookies(new[] { SessionIdCookie });
+                //return response;
             }
             catch (Exception ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -65,6 +93,18 @@ namespace APISoftwareUser.Controllers
         {
             try
             {
+                var InstanceSession = new R2CoreSessionManager();
+                var SessionId = Content.SessionId;
+                try
+                {
+                    var User = InstanceSession.ConfirmSession(SessionId);
+                    throw new UserHasAlreadyBeenAuthenticated();
+                }
+                catch (UserHasAlreadyBeenAuthenticated ex)
+                { throw ex; }
+                catch (Exception ex)
+                { }
+
                 var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), null);
                 InstanceSoftwareUsers.ConfirmUser(Content.SessionId, Content.UserShenaseh, Content.UserPassword, Content.Captcha);
 
@@ -72,6 +112,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(new APICommonSessionId { SessionId = Content.SessionId }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (UserHasAlreadyBeenAuthenticated ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -187,7 +229,7 @@ namespace APISoftwareUser.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
                 var InstanceWebProcesses = new R2CoreWebProcessesManager();
-                var WebProccesses = InstanceWebProcesses.GetTaskBarWebProcesses (User);
+                var WebProccesses = InstanceWebProcesses.GetTaskBarWebProcesses(User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(WebProccesses, Encoding.UTF8, "application/json");
@@ -613,7 +655,7 @@ namespace APISoftwareUser.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(),null );
+                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), null);
                 InstanseSoftwareUsers.SendWebSiteLink(InstanseSoftwareUsers.GetUser(SoftwareUserId, true));
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -671,7 +713,7 @@ namespace APISoftwareUser.Controllers
                 var SoftwareUserComposedInf = InstanceSoftwareUsers.GetSoftwareUserComposedInf(User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                var RawSoftwareUser = new R2CoreRawSoftwareUserStructure { UserId = SoftwareUserComposedInf.SoftwareUserExtended.UserId, UserName = SoftwareUserComposedInf.SoftwareUserExtended.UserName, MobileNumber = SoftwareUserComposedInf.SoftwareUserExtended.MobileNumber, UserTypeId = SoftwareUserComposedInf.SoftwareUserExtended.UserTypeId, UserActive = SoftwareUserComposedInf.SoftwareUserExtended.UserActive, UserTypeTitle= SoftwareUserComposedInf.SoftwareUserExtended.SoftwareUserTypeTitle };
+                var RawSoftwareUser = new R2CoreRawSoftwareUserStructure { UserId = SoftwareUserComposedInf.SoftwareUserExtended.UserId, UserName = SoftwareUserComposedInf.SoftwareUserExtended.UserName, MobileNumber = SoftwareUserComposedInf.SoftwareUserExtended.MobileNumber, UserTypeId = SoftwareUserComposedInf.SoftwareUserExtended.UserTypeId, UserActive = SoftwareUserComposedInf.SoftwareUserExtended.UserActive, UserTypeTitle = SoftwareUserComposedInf.SoftwareUserExtended.SoftwareUserTypeTitle };
                 var TempComposedInf = new { RawSoftwareUser = RawSoftwareUser, MoneyWallet = SoftwareUserComposedInf.MoneyWallet };
                 response.Content = new StringContent(JsonConvert.SerializeObject(TempComposedInf), Encoding.UTF8, "application/json");
                 return response;

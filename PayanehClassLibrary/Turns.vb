@@ -230,7 +230,7 @@ Namespace CarTruckNobatManagement
                     Dim NSSCarTruck As R2StandardCarTruckStructure = PayanehClassLibraryMClassCarTrucksManagement.GetNSSCarTruckByCarId(R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTruck(DSTurns.Tables(0).Rows(LoopOnLine).Item("nEnterExitId")).NSSCar.nIdCar)
                     TWSClassLibrary.TDBClientManagement.TWSClassTDBClientManagement.DelNobat(NSSCarTruck.NSSCar.StrCarNo, NSSCarTruck.NSSCar.StrCarSerialNo)
                 Next
-                R2CoreMClassLoggingManagement.LogRegister(New R2CoreStandardLoggingStructure(Nothing, PayanehClassLibraryLogType.TurnsCancellation, "کنسل کردن گروهی نوبت ها", "SeqT=" + YourNSSSequentialTurn.SequentialTurnTitle, "TotalTurn=" + TotalTurns.ToString, String.Empty, String.Empty, String.Empty, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser.UserId, Nothing, Nothing))
+                'R2CoreMClassLoggingManagement.LogRegister(New R2CoreStandardLoggingStructure(Nothing, PayanehClassLibraryLogType.TurnsCancellation, "کنسل کردن گروهی نوبت ها", "SeqT=" + YourNSSSequentialTurn.SequentialTurnTitle, "TotalTurn=" + TotalTurns.ToString, String.Empty, String.Empty, String.Empty, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser.UserId, Nothing, Nothing))
             Catch ex As SqlInjectionException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then
                     CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
@@ -318,7 +318,7 @@ Namespace CarTruckNobatManagement
                     'For LoopxLog As Int64 = 0 To DSTurns.Tables(0).Rows.Count - 1
                     '    TurnsSB.Append(DSTurns.Tables(0).Rows(LoopxLog).Item("nEnterExitId")).Append(",")
                     'Next
-                    R2CoreMClassLoggingManagement.LogRegister(New R2CoreStandardLoggingStructure(Nothing, PayanehClassLibraryLogType.TurnsCancellation, "کنسل کردن گروهی نوبت ها", "SeqT=" + YourNSSSequentialTurn.SequentialTurnTitle, "TotalTurn=" + TotalTurns.ToString, String.Empty, String.Empty, String.Empty, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser.UserId, Nothing, Nothing))
+                    'R2CoreMClassLoggingManagement.LogRegister(New R2CoreStandardLoggingStructure(Nothing, PayanehClassLibraryLogType.TurnsCancellation, "کنسل کردن گروهی نوبت ها", "SeqT=" + YourNSSSequentialTurn.SequentialTurnTitle, "TotalTurn=" + TotalTurns.ToString, String.Empty, String.Empty, String.Empty, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser.UserId, Nothing, Nothing))
                 End If
             Catch ex As SqlInjectionException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then
@@ -1176,7 +1176,7 @@ Namespace CarTruckNobatManagement
                     CmdSql.Connection.Open()
                     CmdSql.ExecuteNonQuery()
                     CmdSql.Connection.Close()
-                    R2CoreMClassLoggingManagement.LogRegister(New R2CoreStandardLoggingStructure(Nothing, PayanehClassLibraryLogType.TurnsCancellation, "کنسل کردن نوبت های موقت", "TotalTurns=" + TotalTurns.ToString, String.Empty, String.Empty, String.Empty, String.Empty, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser.UserId, Nothing, Nothing))
+                    'R2CoreMClassLoggingManagement.LogRegister(New R2CoreStandardLoggingStructure(Nothing, PayanehClassLibraryLogType.TurnsCancellation, "کنسل کردن نوبت های موقت", "TotalTurns=" + TotalTurns.ToString, String.Empty, String.Empty, String.Empty, String.Empty, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser.UserId, Nothing, Nothing))
                 End If
             Catch ex As Exception
                 If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()

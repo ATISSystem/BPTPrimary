@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PayanehClassLibrary.LoadAllocations;
 using R2Core.DateAndTimeManagement;
+using R2Core.LoggingManagement;
 using R2Core.SoftwareUserManagement;
 using R2CoreTransportationAndLoadNotification.LoadAllocation;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad;
@@ -21,6 +22,18 @@ namespace LoadCapacitor
         [TestMethod]
         public void TestMethod1()
         {
+            var xxx = new R2CoreLog { LogTypeId = 0, Description = "22", MessageDetail1 = "AnnouncementGroupId", MessageDetail2 = "", MessageDetail3 = "", UserId = 21 };
+            R2CoreLoggingManager.WriteInfLog(xxx, 21);
+
+
+            var xx = new R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad.R2CoreTransportationAndLoadNotificationLoadManager (new R2DateTimeService());
+            xx.LoadTonajValidate(new R2CoreTransportationAndLoadNotificationLoad {  AnnouncementGroupId=2,AnnouncementSubGroupId=7, Tonaj=29 });
+
+            var InstanceSession = new R2Core.SessionManagement.R2CoreSessionManager();
+            var sessionStartBox = InstanceSession.StartSession();
+
+
+
             var x = new R2CoreTransportationAndLoadNotificationTurnsManager(new R2DateTimeService());
             x.TurnResuscitationByUser(14,21);
             //var x = new R2CoreTransportationAndLoadNotificationLoadManipulationManager (new R2DateTimeService() );

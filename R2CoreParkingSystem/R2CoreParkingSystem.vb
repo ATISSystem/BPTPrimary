@@ -986,7 +986,7 @@ Namespace EnterExitManagement
                     LastEnterExitId = R2CoreParkingSystemMClassEnterExitManagement.GetEnterExitIdforTerafficCardWhichNotExited(YourTerafficCard)
                     R2CoreParkingSystemMClassEnterExitManagement.UpdateForExit(New R2StandardEnterExitStructure(LastEnterExitId, _DateTime.GetCurrentDateTimeMilladiFormated(), "", "", R2CaptureType.None, R2CameraType.None, Nothing, "", 0, R2EnterStatus.None, 0, 0, Nothing, _DateTime.GetCurrentDateTimeMilladi, _DateTime.GetCurrentDateShamsiFull, _DateTime.GetCurrentTime, R2CaptureType.None, R2CameraType.None, Nothing, YourTerafficCard.CardNo, YourUserNSS.UserId, R2ExitStatus.NotUserPullCard, YourMblgh, R2CoreMClassConfigurationManagement.GetComputerCode, New R2StandardLicensePlateStructure(), True))
                     R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(YourTerafficCard, BagPayType.MinusMoney, YourMblgh, R2CoreParkingSystemAccountings.ExitTemp, YourUserNSS)
-                    R2CoreMClassLoggingManagement.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Info, "خروج موقت کارت تردد انجام گرفت", YourTerafficCard.CardNo, 0, 0, 0, 0, YourUserNSS.UserId, _DateTime.GetCurrentDateTimeMilladiFormated(), _DateTime.GetCurrentDateShamsiFull))
+                    'R2CoreMClassLoggingManagement.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Info, "خروج موقت کارت تردد انجام گرفت", YourTerafficCard.CardNo, 0, 0, 0, 0, YourUserNSS.UserId, _DateTime.GetCurrentDateTimeMilladiFormated(), _DateTime.GetCurrentDateShamsiFull))
                 Else
                     Throw New MoneyWalletCurrentChargeNotEnoughException
                 End If
@@ -2318,7 +2318,7 @@ Namespace BlackList
                 CmdSql.CommandText = "Update dbtransport.dbo.TbBlackList Set nAmount=" & YourNewAmount & ",StrDate='" & _DateTime.GetCurrentDateShamsiFull() & "',nUser=" & YourUserNSS.UserId & " Where nId=" & YourNSSBlackList.nId & ""
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
-                R2CoreMClassLoggingManagement.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Info, "مبلغ تخلف برای لیست سیاه خودرو تغییر یافت" + vbCrLf + YourNSSBlackList.nId.ToString() + vbCrLf + YourNewAmount.ToString(), 0, 0, 0, 0, 0, YourUserNSS.UserId, _DateTime.GetCurrentDateTimeMilladiFormated(), _DateTime.GetCurrentDateShamsiFull))
+                'R2CoreMClassLoggingManagement.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Info, "مبلغ تخلف برای لیست سیاه خودرو تغییر یافت" + vbCrLf + YourNSSBlackList.nId.ToString() + vbCrLf + YourNewAmount.ToString(), 0, 0, 0, 0, 0, YourUserNSS.UserId, _DateTime.GetCurrentDateTimeMilladiFormated(), _DateTime.GetCurrentDateShamsiFull))
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try

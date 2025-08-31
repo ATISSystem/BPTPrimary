@@ -495,12 +495,6 @@
     <Compile Include="Information Management\UCComputerMessageProducerGeneralMessage.vb">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Logging Management\FrmcLogsViewer.Designer.vb">
-      <DependentUpon>FrmcLogsViewer.vb</DependentUpon>
-    </Compile>
-    <Compile Include="Logging Management\FrmcLogsViewer.vb">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="GUI Management\UCActiveForm.Designer.vb">
       <DependentUpon>UCActiveForm.vb</DependentUpon>
     </Compile>
@@ -511,18 +505,6 @@
       <DependentUpon>UCCollectionofUCActiveForm.vb</DependentUpon>
     </Compile>
     <Compile Include="GUI Management\UCCollectionofUCActiveForm.vb">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Logging Management\UCLog.Designer.vb">
-      <DependentUpon>UCLog.vb</DependentUpon>
-    </Compile>
-    <Compile Include="Logging Management\UCLog.vb">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Logging Management\UCUCLogCollection.Designer.vb">
-      <DependentUpon>UCUCLogCollection.vb</DependentUpon>
-    </Compile>
-    <Compile Include="Logging Management\UCUCLogCollection.vb">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="MonetarySupply\Amount UIs\UCMblghSelector.Designer.vb">
@@ -904,20 +886,11 @@
     <EmbeddedResource Include="Information Management\UCComputerMessageProducerGeneralMessage.resx">
       <DependentUpon>UCComputerMessageProducerGeneralMessage.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Logging Management\FrmcLogsViewer.resx">
-      <DependentUpon>FrmcLogsViewer.vb</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="GUI Management\UCActiveForm.resx">
       <DependentUpon>UCActiveForm.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI Management\UCCollectionofUCActiveForm.resx">
       <DependentUpon>UCCollectionofUCActiveForm.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Logging Management\UCLog.resx">
-      <DependentUpon>UCLog.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Logging Management\UCUCLogCollection.resx">
-      <DependentUpon>UCUCLogCollection.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MonetarySupply\Amount UIs\UCMblghSelector.resx">
       <DependentUpon>UCMblghSelector.vb</DependentUpon>

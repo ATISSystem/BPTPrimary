@@ -350,7 +350,7 @@ Namespace LoadAllocation
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceLoadAllocationManager
         Private _DateTime As New R2DateTime
-        Private InstanceLogging As New R2CoreInstanceLoggingManager
+        'Private InstanceLogging As New R2CoreInstanceLoggingManager
         Private InstanceSiteIsBusy = New R2CoreSiteIsBusyManager
 
         Public Function GetLoadAllocationsforTruckDriver(Optional YourSoftwareUserId As Int64 = Int64.MinValue, Optional YourTurnId As Int64 = Int64.MinValue) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationExtendedforTruckDriverStructure)
