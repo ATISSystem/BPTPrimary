@@ -29,6 +29,7 @@ using Swashbuckle.Swagger;
 using System.Web.Services.Description;
 using System.Web;
 using R2Core.SoftwareUserManagement.Exceptions;
+using StackExchange.Redis;
 
 
 
@@ -83,6 +84,8 @@ namespace APISoftwareUser.Controllers
                 //response.Headers.AddCookies(new[] { SessionIdCookie });
                 //return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
@@ -112,6 +115,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(new APICommonSessionId { SessionId = Content.SessionId }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (UserHasAlreadyBeenAuthenticated ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -134,6 +139,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(User), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -157,6 +164,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { ISSessionLive = true }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             {
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
@@ -185,6 +194,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(WebProccesses, Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -209,6 +220,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(WebProccesses, Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoftwareUserHasNotAnyVeryUsefulWebProcessPermissionException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -235,6 +248,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(WebProccesses, Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoftwareUserHasNotAnyTaskBarWebProcessPermissionException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -262,6 +277,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { SoftwareUserId = SoftwareUserId }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -288,6 +305,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(string.Empty), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -314,6 +333,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(string.Empty), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -340,6 +361,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(SoftWareUserSecurity), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -364,6 +387,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(UserTypes, Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -390,6 +415,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.EditingSoftWareUserSuccessed).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -419,6 +446,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(SMSOwnerCurrentState), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -446,6 +475,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -473,6 +504,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ActivateSMSOwnerSuccessed).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -501,6 +534,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(RawSoftwareUser), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -527,6 +562,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(AllOfWebProcessGroupsWebProcesses, Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -556,6 +593,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ChangeSoftwareUserWebProcessGroupAccessSuccessed).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -585,6 +624,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ChangeSoftwareUserWebProcessAccess).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -610,6 +651,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(new APISoftwareUserSessionIdSoftwareUserIdWPGId { SessionId = SessionId, SoftwareUserId = SoftwareUserId, PGId = WPGId, PGAccess = InstanceSoftwareUsers.GetSoftwareUserWebProcessGroupAccess(SoftwareUserId, WPGId) }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -635,6 +678,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(new APISoftwareUserSessionIdSoftwareUserIdWPId { SessionId = SessionId, SoftwareUserId = SoftwareUserId, PId = WPId, PAccess = InstanceSoftwareUsers.GetSoftwareUserWebProcessAccess(SoftwareUserId, WPId) }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -662,6 +707,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.SendWebSiteLink).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
@@ -688,6 +735,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceMoneyWallet.GetMoneyWallet(MoneyWalletId, true)), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (MoneyWalletNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -718,6 +767,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(TempComposedInf), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)

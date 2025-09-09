@@ -100,6 +100,10 @@ Imports R2CoreTransportationAndLoadNotification.Caching
 Imports System.CodeDom
 Imports R2Core.MoneyWallet.Exceptions
 Imports R2CoreParkingSystem.EnterExitManagement
+Imports R2CoreTransportationAndLoadNotification.Turns.TurnInfo
+Imports R2Core.CachHelper
+Imports R2CoreTransportationAndLoadNotification.PubSubMessaging
+Imports StackExchange.Redis
 
 
 
@@ -2257,6 +2261,14 @@ Namespace LoadAllocation
                 CmdSql.Connection.Open()
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
+
+                'PubSubMessaging
+                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(YourTurnId))
+
+            Catch ex As RedisException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw ex
             Catch ex As SqlException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                 Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
@@ -2278,9 +2290,9 @@ Namespace LoadAllocation
         Public Sub LoadAllocationRegisteringForTruckDriver(YourSoftwareUser As R2CoreSoftwareUser, YourLoadId As Int64, YourRequesterId As Int64)
             Try
                 Dim InstanceCache = New R2Core.Caching.R2CoreCacheManager
-                Dim Value = DirectCast(InstanceCache.GetCache(InstanceCache.GetCacheType(R2CoreTransportationAndLoadNotificationCacheTypes.TruckDriverTurnInfo).CacheTypeName + YourSoftwareUser.UserId.ToString, R2CoreTransportationAndLoadNotificationCatchDataBases.TruckDriverInformation), StackExchange.Redis.RedisValue)
+                Dim Value = DirectCast(InstanceCache.GetCache(InstanceCache.GetCacheType(R2CoreTransportationAndLoadNotificationCacheTypes.TurnInfo).CacheTypeName + YourSoftwareUser.UserId.ToString, R2CoreTransportationAndLoadNotificationCatchDataBases.TruckDriverInformation), StackExchange.Redis.RedisValue)
                 If Value.IsNullOrEmpty Then Throw New BaseInfFailedException
-                Dim TurnInfo = JsonConvert.DeserializeObject(Of R2CoreTransportationAndLoadNotificationTruckDriverTurnInfo)(Value)
+                Dim TurnInfo = JsonConvert.DeserializeObject(Of R2CoreTransportationAndLoadNotificationTurnInfo)(Value)
 
                 LoadAllocationRegistering(YourLoadId, TurnInfo.TurnId, TurnInfo.SeqTId, TurnInfo.NativenessTypeId, TurnInfo.TurnStatusId, YourRequesterId, YourSoftwareUser)
 
@@ -2533,10 +2545,12 @@ Namespace LoadAllocation
             Try
                 Dim InstanceTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
                 Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(New R2DateTimeService)
+                Dim InstanceLoadAllocation = New R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService)
 
                 'اطلاعات بار
                 Dim Load = InstanceLoad.GetLoadForLoadAllocationProccess(YourLoadId)
-
+                'نوبت
+                Dim TurnId = InstanceLoadAllocation.GetTurnIdfromLoadAllocationId(YourLAId)
                 'آیا زمان تخصیص بار برای زیرگروه سالن مورد نظر فرارسیده است
                 If InstanceTiming.GetTiming(Load.AnnouncementGroupId, Load.AnnouncementSubGroupId, _DateTimeService.DateTimeServ.GetCurrentTime) <> R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
                     Throw New TimingNotReachedException
@@ -2558,6 +2572,14 @@ Namespace LoadAllocation
                 CmdSql.Connection.Open()
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
+
+                'PubSubMessaging
+                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(TurnId))
+
+            Catch ex As RedisException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw ex
             Catch ex As SqlException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                 Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)

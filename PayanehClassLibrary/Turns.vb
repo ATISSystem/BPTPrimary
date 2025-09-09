@@ -69,6 +69,10 @@ Imports R2Core.MoneyWallet.MoneyWallet
 Imports R2CoreTransportationAndLoadNotification.TurnRegisterRequest
 Imports R2CoreTransportationAndLoadNotification.Turns.TurnAccounting
 Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
+Imports R2Core.CachHelper
+Imports R2CoreTransportationAndLoadNotification.PubSubMessaging
+Imports Newtonsoft.Json
+Imports StackExchange.Redis
 
 
 Namespace CarTruckNobatManagement
@@ -259,7 +263,7 @@ Namespace CarTruckNobatManagement
 	                            Turns.strEnterDate Collate Arabic_CI_AI_WS<=(Select Top 1 DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
                                                                              Where DateShamsi<
                                                                                 (Select Top 1 DateShamsi from 
-                                                                                  (Select Top " & InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTurnCancellationSetting, 5) & " DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
+                                                                                  (Select Top " & InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 5) & " DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
                                                                                    Where PCType=0 and DateShamsi<='" & YourTimeOfDay.DateShamsiFull & "' Order By DateShamsi desc) as DataBox
                                                                                  Order By DateShamsi)
                                                                              Order By DateShamsi Desc)
@@ -269,7 +273,7 @@ Namespace CarTruckNobatManagement
 	                            Turns.strEnterDate Collate Arabic_CI_AI_WS<=(Select Top 1 DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
                                                                              Where DateShamsi<
                                                                                 (Select Top 1 DateShamsi from 
-                                                                                  (Select Top " & InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTurnCancellationSetting, 6) & " DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
+                                                                                  (Select Top " & InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 6) & " DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
                                                                                    Where PCType=0 and DateShamsi<='" & YourTimeOfDay.DateShamsiFull & "' Order By DateShamsi desc) as DataBox
                                                                                  Order By DateShamsi)
                                                                              Order By DateShamsi Desc)
@@ -290,7 +294,7 @@ Namespace CarTruckNobatManagement
 	                            Turns.strEnterDate Collate Arabic_CI_AI_WS<=(Select Top 1 DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
                                                                              Where DateShamsi<
                                                                                 (Select Top 1 DateShamsi from 
-                                                                                  (Select Top " & InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTurnCancellationSetting, 5) & " DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
+                                                                                  (Select Top " & InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 5) & " DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
                                                                                    Where PCType=0 and DateShamsi<='" & YourTimeOfDay.DateShamsiFull & "' Order By DateShamsi desc) as DataBox
                                                                                  Order By DateShamsi)
                                                                              Order By DateShamsi Desc)
@@ -300,7 +304,7 @@ Namespace CarTruckNobatManagement
 	                            Turns.strEnterDate Collate Arabic_CI_AI_WS<=(Select Top 1 DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
                                                                              Where DateShamsi<
                                                                                 (Select Top 1 DateShamsi from 
-                                                                                  (Select Top " & InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTurnCancellationSetting, 6) & " DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
+                                                                                  (Select Top " & InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 6) & " DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
                                                                                    Where PCType=0 and DateShamsi<='" & YourTimeOfDay.DateShamsiFull & "' Order By DateShamsi desc) as DataBox
                                                                                  Order By DateShamsi)
                                                                              Order By DateShamsi Desc)
@@ -344,7 +348,7 @@ Namespace CarTruckNobatManagement
                 Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager
                 Dim TimeOfDay = _DateTime.GetCurrentDateTime()
                 'طبق کانفیگ سیستم کلا ابطال نوبت ها فعال باشد یا نه
-                If Not InstanceConfigurations.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTurnCancellationSetting, 0) Then Return
+                If Not InstanceConfigurations.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 0) Then Return
 
                 'ابطال نوبت ها در روزهای تعطیل صورت نمی گیرد
                 If InstanceSpecializedPersianCalendar.IsTodayIsHoliday() Then Return
@@ -356,7 +360,7 @@ Namespace CarTruckNobatManagement
                 Dim LstSeqTs = InstanceSequentialTurns.GetSequentialTurns()
                 For Loopx As Int64 = 0 To LstSeqTs.Count - 1
                     Dim ComposeSearchString As String = LstSeqTs(Loopx).SequentialTurnId.ToString + "="
-                    Dim AllSeqTConfig As String() = Split(InstanceConfigurations.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTurnCancellationSetting, 2), "-")
+                    Dim AllSeqTConfig As String() = Split(InstanceConfigurations.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 2), "-")
                     Dim ConfigSeqTTurnsCancellationActiveFlag As Boolean = Split(Mid(AllSeqTConfig.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllSeqTConfig.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), "|")(0)
                     Dim ConfigSeqTTurnsCancellationStartSendingTime As String = Split(Mid(AllSeqTConfig.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllSeqTConfig.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), "|")(1)
                     If Not ConfigSeqTTurnsCancellationActiveFlag Then Continue For
@@ -740,7 +744,7 @@ Namespace CarTruckNobatManagement
 
                 'کنترل فعال بودن و غیرفعال بودن سرویس
                 Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager
-                If Not InstanceConfigurations.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTurnCancellationSetting, 7) Then Throw New ResuscitationReserveTurnServiceIsUnactiveException
+                If Not InstanceConfigurations.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 7) Then Throw New ResuscitationReserveTurnServiceIsUnactiveException
 
                 'کنترل بومی و غیر بومی ناوگان
                 Dim InstanceTruckNativeness = New R2CoreTransportationAndLoadNotificationsTruckNativenessManager
@@ -759,7 +763,7 @@ Namespace CarTruckNobatManagement
                 'کنترل محدوده زمانی مجاز برای درخواست احیا نوبت
                 If YourNSSTurn.LastChangedDate = _DateTime.GetCurrentDateShamsiFull Then Throw New ResuscitationReserveTurnEndTimeReachedException
                 If YourNSSTurn.LastChangedDate <> _DateTime.GetCurrentDateShamsiFull Then
-                    If _DateTime.GetCurrentTime > InstanceConfigurations.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTurnCancellationSetting, 8) Then Throw New ResuscitationReserveTurnEndTimeReachedException
+                    If _DateTime.GetCurrentTime > InstanceConfigurations.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 8) Then Throw New ResuscitationReserveTurnEndTimeReachedException
                 End If
 
                 'کنترل تاریخ تغییر وضعیت نوبت ، درخواست میتواند در همان روز و یا حداکثر تا روز کاری بعد ارسال گردد به سامانه
@@ -768,7 +772,7 @@ Namespace CarTruckNobatManagement
                 InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
                        "Select Count(*) as Counting From R2PrimaryTransportationAndLoadNotification.Dbo.TblTransportationLoadNotificationSpecializedPersianCalendar AS SpecializedPersianCalendar
                             Where SpecializedPersianCalendar.DateShamsi > '" & YourNSSTurn.EnterDate & "' and SpecializedPersianCalendar.DateShamsi < '" & _DateTime.GetCurrentDateShamsiFull & "' and PCType=0 ", 3600, Ds, New Boolean)
-                Dim CancellingDates = InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotification.ConfigurationsManagement.R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTurnCancellationSetting, 5)
+                Dim CancellingDates = InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotification.ConfigurationsManagement.R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 5)
                 If Ds.Tables(0).Rows(0).Item("Counting") <> CancellingDates Then Throw New ResuscitationReserveTurnEndDateReachedException
 
                 'هزینه نوبت انجمن و شرکت
@@ -1161,18 +1165,18 @@ Namespace CarTruckNobatManagement
                 Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
                 Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
                 'آیا سرویس ابطال نوبت های موقت بر اساس کانفیگ فعال است یا نه
-                If Not InstanceConfiguration.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTurnCancellationSetting, 3) Then Return
+                If Not InstanceConfiguration.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 3) Then Return
                 Dim myCurrentDateShamsi = _DateTime.GetCurrentDateShamsiFull
                 Dim TotalTurns As Int64
                 Dim DS As DataSet
                 TotalTurns = InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
                      "Select nEnterExitId from dbtransport.dbo.tbEnterExit
                       Where strEnterDate='" & myCurrentDateShamsi & "' and (TurnStatus=1 or TurnStatus=7 or TurnStatus=8 or TurnStatus=9 or TurnStatus=10) 
-                            and DATEDIFF(MINUTE,RegisteringTimeStamp,GETDATE())>" & InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTurnCancellationSetting, 4) & " and RegisteringTimeStamp<>'2015-01-01 00:00:00.000'", 0, DS, New Boolean).GetRecordsCount
+                            and DATEDIFF(MINUTE,RegisteringTimeStamp,GETDATE())>" & InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 4) & " and RegisteringTimeStamp<>'2015-01-01 00:00:00.000'", 0, DS, New Boolean).GetRecordsCount
                 If TotalTurns <> 0 Then
                     CmdSql.CommandText = "Update dbtransport.dbo.tbEnterExit Set TurnStatus=" & TurnStatuses.CancelledSystem & ",bFlag=1,bFlagDriver=1,nUserIdExit=1
                                           Where strEnterDate='" & myCurrentDateShamsi & "' and (TurnStatus=1 or TurnStatus=7 or TurnStatus=8 or TurnStatus=9 or TurnStatus=10)
-                                                and DATEDIFF(MINUTE,RegisteringTimeStamp,GETDATE())>" & InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTurnCancellationSetting, 4) & " and RegisteringTimeStamp<>'2015-01-01 00:00:00.000'"
+                                                and DATEDIFF(MINUTE,RegisteringTimeStamp,GETDATE())>" & InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 4) & " and RegisteringTimeStamp<>'2015-01-01 00:00:00.000'"
                     CmdSql.Connection.Open()
                     CmdSql.ExecuteNonQuery()
                     CmdSql.Connection.Close()
@@ -1971,6 +1975,7 @@ Namespace Turns
         End Function
 
 
+
     End Class
 
     Public Class TurnRegisteringStrategy
@@ -2200,6 +2205,16 @@ Namespace Turns
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
                 DoStrategyComplementaryWorks()
+
+                'PubSubMessaging
+                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(mynIdEnterExit))
+
+            Catch ex As RedisException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
             Catch ex As SqlException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then
                     CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
@@ -2267,6 +2282,16 @@ Namespace Turns
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
                 DoStrategyComplementaryWorks()
+
+                'PubSubMessaging
+                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(Turn.TurnId))
+
+            Catch ex As RedisException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
             Catch ex As SqlException
                 R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As Exception When TypeOf ex Is TurnNotFoundException OrElse TypeOf ex Is ReserveTurnAlreadyUsedException OrElse TypeOf ex Is ResuscitationReserveTurnFailedException

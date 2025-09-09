@@ -74,6 +74,14 @@ Imports R2CoreParkingSystem.CarsNativeness
 Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
 Imports System.Runtime.Serialization.Formatters.Binary
 
+Namespace PubSubMessages
+    Public MustInherit Class R2CoreParkingSystemPubSubChannels
+        Inherits R2Core.PubSubMessaging.R2CorePubSubChannels
+
+    End Class
+
+End Namespace
+
 Namespace Logging
 
     Public MustInherit Class R2CoreParkingSystemLogType

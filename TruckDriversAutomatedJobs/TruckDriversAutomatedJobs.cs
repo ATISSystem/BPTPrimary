@@ -1,8 +1,17 @@
-﻿using R2Core.ConfigurationManagement;
+﻿
+using R2Core.CachHelper;
+using R2Core.Caching;
+using R2Core.ConfigurationManagement;
 using R2Core.DateAndTimeManagement;
+using R2Core.ExceptionManagement;
+using R2Core.LoggingManagement;
+using R2Core.PubSubMessaging;
 using R2Core.SoftwareUserManagement;
 using R2CoreTransportationAndLoadNotification.ConfigurationsManagement;
+using R2CoreTransportationAndLoadNotification.PubSubMessaging;
 using R2CoreTransportationAndLoadNotification.SoftwareUserManagement;
+using R2CoreTransportationAndLoadNotification.Turns.TurnInfo;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -20,6 +29,7 @@ namespace TruckDriversAutomatedJobs
     {
         private System.Timers.Timer _AutomatedJobsTimer = new System.Timers.Timer();
         private bool _FailStatus = true;
+        private ISubscriber _Subscriber = null;
 
         public TruckDriversAutomatedJobs()
         {
@@ -56,8 +66,6 @@ namespace TruckDriversAutomatedJobs
 
                 try
                 {
-                    var InstanceSoftwareUsers = new R2CoreTransportationAndLoadNotificationSoftwareUsersManager();
-                    InstanceSoftwareUsers.SetTruckDriversTurnInfo();
                 }
                 catch (Exception ex)
                 { EventLog.WriteEntry("TruckDriversAutomatedJobs", "SetTruckDriversSeqTIdNativenessTypeId:" + ex.Message.ToString(), EventLogEntryType.Error); }
@@ -68,6 +76,36 @@ namespace TruckDriversAutomatedJobs
             _AutomatedJobsTimer.Enabled = true;
             _AutomatedJobsTimer.Start();
 
+        }
+
+        void InitializeTurnInfo(StackExchange.Redis.RedisChannel channel, StackExchange.Redis.RedisValue value)
+        {
+            try
+            {
+                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnInfoManager();
+                InstanceTurns.InitializeTurnInfo(value);
+            }
+            catch (AnyNotFoundException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw ex; }
+        }
+
+        void SetTurnInfo(StackExchange.Redis.RedisChannel channel, StackExchange.Redis.RedisValue value)
+        {
+            try
+            {
+                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnInfoManager();
+                InstanceTurns.SetTurnInfo(value);
+            }
+            catch (DataEntryException ex)
+            { throw ex; }
+            catch (CacheNotFoundException ex)
+            { throw ex; }
+            catch (AnyNotFoundException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw ex; }
         }
 
         protected override void OnStart(string[] args)
@@ -83,6 +121,9 @@ namespace TruckDriversAutomatedJobs
                 _AutomatedJobsTimer.Enabled = true;
                 _AutomatedJobsTimer.Start();
 
+                _Subscriber = RedisConnectorHelper.Connection.GetSubscriber();
+                _Subscriber.Subscribe(R2CorePubSubChannels.UserAuthenticated, new Action<StackExchange.Redis.RedisChannel, StackExchange.Redis.RedisValue>(InitializeTurnInfo));
+                _Subscriber.Subscribe(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, new Action<StackExchange.Redis.RedisChannel, StackExchange.Redis.RedisValue>(SetTurnInfo));
                 EventLog.WriteEntry("TruckDriversAutomatedJobs", "TruckDriversAutomatedJobs Start ...", EventLogEntryType.SuccessAudit);
             }
             catch (Exception ex)

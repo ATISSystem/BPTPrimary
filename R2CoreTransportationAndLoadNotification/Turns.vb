@@ -20,7 +20,6 @@ Imports R2Core.PermissionManagement
 Imports R2Core.PermissionManagement.Exceptions
 Imports R2Core.PredefinedMessagesManagement
 Imports R2Core.PublicProc
-Imports R2Core.R2PrimaryFileSharingWS
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
 Imports R2Core.SiteIsBusy
@@ -107,6 +106,11 @@ Imports R2CoreParkingSystem.AccountingManagement
 Imports R2Core.Caching
 Imports R2CoreTransportationAndLoadNotification.Caching
 Imports System.Data.Common
+Imports R2Core.CachHelper
+Imports R2CoreTransportationAndLoadNotification.Turns.TurnInfo
+Imports R2Core.PubSubMessaging
+Imports R2CoreTransportationAndLoadNotification.PubSubMessaging
+Imports StackExchange.Redis
 
 
 Namespace Turns
@@ -1179,6 +1183,32 @@ Namespace Turns
             _R2DateTimeService = YourR2DateTimeService
         End Sub
 
+        Public Function GetSoftwareUserId(YourTurnId As Int64) As Int64
+            Try
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim DS As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                     "Select Top 1 SoftwareUsers.UserId as SoftwareUserId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                        Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
+                        Inner Join dbtransport.dbo.TbPerson as Persons On EntityRelations.E2 =Persons.nIDPerson
+                        Inner Join dbtransport.dbo.TbCarAndPerson as CarAndPerson On Persons.nIDPerson=CarAndPerson.nIDPerson 
+                        Inner Join dbtransport.dbo.TbCar as Cars On CarAndPerson.nIDCar=Cars.nIDCar 
+                        Inner Join dbtransport.dbo.tbEnterExit as Turns On Cars.nIDCar=Turns.strCardno 
+                      Where Turns.nEnterExitId=" & YourTurnId & " and SoftwareUsers.UserActive=1 and EntityRelations.ERTypeId=" & R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & "  
+                            and EntityRelations.RelationActive=1 and CarAndPerson.snRelation=2 and Cars.ViewFlag=1 
+                            and ((DATEDIFF(SECOND,CarAndPerson.RelationTimeStamp,getdate())<240) Or (CarAndPerson.RelationTimeStamp='2015-01-01 00:00:00.000'))
+                      Order By Turns.nEnterExitId Desc", 32767, DS, New Boolean).GetRecordsCount <> 0 Then
+                    Return DS.Tables(0).Rows(0).Item("SoftwareUserId")
+                Else
+                    Throw New AnyNotFoundException
+                End If
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
         Public Function GetLastActiveTurnfromTruckId(YourTruckId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTurnExtended
             Try
                 Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
@@ -1384,12 +1414,16 @@ Namespace Turns
 
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Update DBTransport.dbo.tbEnterExit Set TurnStatus=" & TurnStatuses.CancelledUser & ",nUserIdExit=" & YourSoftwareUserId & ",bFlag=1,bFlagDriver=1,strElamDate='" & _R2DateTimeService.DateTimeServ.GetCurrentDateShamsiFull & "',strElamTime='" & _R2DateTimeService.DateTimeServ.GetCurrentTime & "'
+                CmdSql.CommandText = "Update DBTransport.dbo.tbEnterExit Set TurnStatus=" & TurnStatuses.CancelledUser & ",nUserIdExit=" & YourSoftwareUserId & ",bFlag=1,bFlagDriver=1,strElamDate=R2Primary.DBO.BPTCOGregorianToPersian(GETDATE()),strElamTime=convert(varchar, getdate(), 8)
                                       Where nEnterExitId=" & YourTurnId & ""
                 CmdSql.ExecuteNonQuery()
                 'اکانتینگ نوبت
                 InstanceTurnAccounting.TurnAccountingRegistering(YourTurnId, TurnAccounting.TurnAccouningTypes.TurnCancellation, YourSoftwareUserId, CmdSql)
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+
+                'PubSubMessaging
+                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(YourTurnId))
 
                 'ارسال پیام ابطال نوبت به سرویس نوبت آنلاین
                 'بررسی فعال بودن نوبت آنلاین
@@ -1398,6 +1432,72 @@ Namespace Turns
                     Dim Truck = InstanceTrucks.GetTruck(Turn.TruckId, False)
                     TWSClassLibrary.TDBClientManagement.TWSClassTDBClientManagement.DelNobat(Truck.Pelak, Truck.Serial)
                 End If
+
+            Catch ex As RedisException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As TurnNotFoundException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As TurnCancellationNotPossibleBecuaseTurnStatusException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As TruckNotFoundException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub TurnCancellationBySystem(YourTurnId As Int64)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+            Try
+                Dim InstanceTurnAccounting = New R2CoreTransportationAndLoadNotificationTurnAccountingManager(New R2DateTimeService)
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+
+                Dim Turn = GetTurn(YourTurnId, True)
+                If Not (Turn.TurnStatusId = TurnStatuses.Registered Or Turn.TurnStatusId = TurnStatuses.UsedLoadAllocationRegistered Or Turn.TurnStatusId = TurnStatuses.ResuscitationLoadPermissionCancelled Or Turn.TurnStatusId = TurnStatuses.ResuscitationLoadAllocationCancelled Or Turn.TurnStatusId = TurnStatuses.ResuscitationUser) Then Throw New TurnCancellationNotPossibleBecuaseTurnStatusException
+
+                CmdSql.Connection.Open()
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                CmdSql.CommandText = "Update DBTransport.dbo.tbEnterExit Set TurnStatus=" & TurnStatuses.CancelledSystem & ",bFlag=1,bFlagDriver=1,nUserIdExit=1,strElamDate=R2Primary.DBO.BPTCOGregorianToPersian(GETDATE()),strElamTime=convert(varchar, getdate(), 8)
+                                      Where nEnterExitId=" & YourTurnId & ""
+                CmdSql.ExecuteNonQuery()
+
+                'اکانتینگ نوبت
+                InstanceTurnAccounting.TurnAccountingRegistering(YourTurnId, TurnAccounting.TurnAccouningTypes.TurnCancellation, R2CoreSoftwareUsersManager.GetSystemUserId, CmdSql)
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+
+                'PubSubMessaging
+                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(YourTurnId))
+
+                'ارسال پیام ابطال نوبت به سرویس نوبت آنلاین
+                'بررسی فعال بودن نوبت آنلاین
+                If InstanceConfiguration.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.TWS, 0) Then
+                    Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationTrucksManager(New R2DateTimeService)
+                    Dim Truck = InstanceTrucks.GetTruck(Turn.TruckId, False)
+                    TWSClassLibrary.TDBClientManagement.TWSClassTDBClientManagement.DelNobat(Truck.Pelak, Truck.Serial)
+                End If
+
+            Catch ex As RedisException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
             Catch ex As TurnNotFoundException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then
                     CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
@@ -1432,12 +1532,17 @@ Namespace Turns
 
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Update dbtransport.dbo.TbEnterExit Set TurnStatus=" & TurnStatuses.ResuscitationUser & ",nUserIdExit=" & YourSoftwareUserId & ",bFlag=1,bFlagDriver=0 ,strElamDate='" & _R2DateTimeService.DateTimeServ.GetCurrentDateShamsiFull & "',strElamTime='" & _R2DateTimeService.DateTimeServ.GetCurrentTime & "'
+                CmdSql.CommandText = "Update dbtransport.dbo.TbEnterExit Set TurnStatus=" & TurnStatuses.ResuscitationUser & ",nUserIdExit=" & YourSoftwareUserId & ",bFlag=1,bFlagDriver=0 ,strElamDate=R2Primary.DBO.BPTCOGregorianToPersian(GETDATE()),strElamTime=convert(varchar, getdate(), 8)
                                       Where nEnterExitId=" & YourTurnId & ""
                 CmdSql.ExecuteNonQuery()
+
                 'اکانتینگ نوبت
                 InstanceTurnAccounting.TurnAccountingRegistering(YourTurnId, TurnAccounting.TurnAccouningTypes.TurnResuscitation, YourSoftwareUserId, CmdSql)
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+
+                'PubSubMessaging
+                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(YourTurnId))
 
                 'ارسال پیام ابطال نوبت به سرویس نوبت آنلاین
                 'بررسی فعال بودن نوبت آنلاین
@@ -1446,6 +1551,12 @@ Namespace Turns
                     Dim Truck = InstanceTrucks.GetTruck(Turn.TruckId, False)
                     TWSClassLibrary.TDBClientManagement.TWSClassTDBClientManagement.AddNobat(Truck.Pelak, Truck.Serial)
                 End If
+
+            Catch ex As RedisException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
             Catch ex As SqlException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then
                     If CmdSql.Transaction IsNot Nothing Then CmdSql.Transaction.Rollback()
@@ -1725,7 +1836,7 @@ Namespace Turns
             End Try
         End Function
 
-        Public Function GetTurnInfo(YourTurnId As Int64) As R2CoreTransportationAndLoadNotificationTruckDriverTurnInfo
+        Public Function GetTurnInfo(YourTurnId As Int64) As R2CoreTransportationAndLoadNotificationTurnInfo
             Try
                 Dim DS As DataSet
                 Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
@@ -1737,13 +1848,44 @@ Namespace Turns
                            Where Turns.nEnterExitId=" & YourTurnId & " and Cars.ViewFlag=1", 300, DS, New Boolean).GetRecordsCount = 0 Then
                     Throw New TurnInfoNotFoundException
                 End If
-                Return New R2CoreTransportationAndLoadNotificationTruckDriverTurnInfo With {.TurnId = DS.Tables(0).Rows(0).Item("TurnId"), .TurnStatusId = DS.Tables(0).Rows(0).Item("TurnStatusId"), .SeqTId = DS.Tables(0).Rows(0).Item("SeqTId"), .NativenessTypeId = DS.Tables(0).Rows(0).Item("CarNativenessTypeId")}
+                Return New R2CoreTransportationAndLoadNotificationTurnInfo With {.TurnId = DS.Tables(0).Rows(0).Item("TurnId"), .TurnStatusId = DS.Tables(0).Rows(0).Item("TurnStatusId"), .SeqTId = DS.Tables(0).Rows(0).Item("SeqTId"), .NativenessTypeId = DS.Tables(0).Rows(0).Item("CarNativenessTypeId")}
             Catch ex As TurnInfoNotFoundException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Function
+
+        Public Sub TempTurnsCancellation()
+            Try
+                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+
+                'آیا سرویس ابطال نوبت های موقت بر اساس کانفیگ فعال است یا نه
+                If Not InstanceConfiguration.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 3) Then Return
+
+                Dim DS As DataSet
+                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                     "Select nEnterExitId from dbtransport.dbo.tbEnterExit
+                      Where  strEnterDate=R2Primary.DBO.BPTCOGregorianToPersian(GETDATE()) and (TurnStatus=1 or TurnStatus=7 or TurnStatus=8 or TurnStatus=9 or TurnStatus=10) 
+                             and DATEDIFF(MINUTE,RegisteringTimeStamp,GETDATE())>" & InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 4) & " and RegisteringTimeStamp<>'2015-01-01 00:00:00.000'", 0, DS, New Boolean)
+
+                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+                    TurnCancellationBySystem(DS.Tables(0).Rows(Loopx).Item("nEnterExitId"))
+                Next
+
+            Catch ex As RedisException
+                Throw ex
+            Catch ex As TurnNotFoundException
+                Throw ex
+            Catch ex As TurnCancellationNotPossibleBecuaseTurnStatusException
+                Throw ex
+            Catch ex As TruckNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
 
     End Class
 
@@ -1811,6 +1953,111 @@ Namespace Turns
             End Function
 
         End Class
+
+    End Namespace
+
+    'BPTChanged
+    Namespace TurnInfo
+
+        Public Class R2CoreTransportationAndLoadNotificationTurnInfo
+            Public SeqTId As Int64
+            Public NativenessTypeId As Int64
+            Public TurnId As Int64
+            Public TurnStatusId As Int64
+        End Class
+
+        Public Class R2CoreTransportationAndLoadNotificationTurnInfoManager
+
+            Public Sub InitializeTurnInfo(YourValue As StackExchange.Redis.RedisValue)
+                Try
+                    Dim InstanceCache = New R2CoreCacheManager
+                    Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+
+                    Dim SoftwareUser = JsonConvert.DeserializeObject(Of R2CoreSoftwareUser)(YourValue)
+                    If (SoftwareUser.UserTypeId = R2Core.SoftwareUserManagement.R2CoreSoftwareUserTypes.None) Then
+                        Throw New AnyNotFoundException
+                    Else
+                        If SoftwareUser.UserTypeId = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.Driver Then
+                            Dim DS As DataSet = Nothing
+                            If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                                  "Select Top 1 Turns.nEnterExitId as TurnId,Turns.TurnStatus as TurnStatusId,Cars.CarNativenessTypeId as NativenessTypeId,SequentialTurns.SeqTId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                                      Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
+                                      Inner Join dbtransport.dbo.TbPerson as Persons On EntityRelations.E2 =Persons.nIDPerson
+                                      Inner Join dbtransport.dbo.TbCarAndPerson as CarAndPerson On Persons.nIDPerson=CarAndPerson.nIDPerson 
+                                      Inner Join dbtransport.dbo.TbCar as Cars On CarAndPerson.nIDCar=Cars.nIDCar 
+                                      Inner Join dbtransport.dbo.tbEnterExit as Turns On Cars.nIDCar=Turns.strCardno 
+                                      Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SequentialTurns On substring(Turns.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS=SequentialTurns.SeqTKeyWord  Collate Arabic_CI_AI_WS 
+                                      Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTruckNativenessTypes as TruckNativenessTypes On Cars.CarNativenessTypeId=TruckNativenessTypes.NId 
+                                   Where SoftwareUsers.UserId=" & SoftwareUser.UserId & " and SoftwareUsers.UserActive=1 and EntityRelations.ERTypeId=" & R2CoreParkingSystem.EntityRelations.R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & " and EntityRelations.RelationActive=1 and CarAndPerson.snRelation=2 and Cars.ViewFlag=1 and SequentialTurns.Active=1 and TruckNativenessTypes.Active=1
+                                       and ((DATEDIFF(SECOND,CarAndPerson.RelationTimeStamp,getdate())<240) Or (CarAndPerson.RelationTimeStamp='2015-01-01 00:00:00.000'))
+                                       and (Turns.TurnStatus=1 or Turns.TurnStatus=7 or Turns.TurnStatus=8 or Turns.TurnStatus=9 or Turns.TurnStatus=10) and Turns.bFlagDriver=0
+                                   Order By Turns.nEnterExitId Desc", 0, DS, New Boolean).GetRecordsCount <> 0 Then
+                                Dim TurnInfo = New R2CoreTransportationAndLoadNotificationTurnInfo With {.TurnId = DS.Tables(0).Rows(0).Item("TurnId"), .TurnStatusId = DS.Tables(0).Rows(0).Item("TurnStatusId"), .SeqTId = DS.Tables(0).Rows(0).Item("SeqTId"), .NativenessTypeId = DS.Tables(0).Rows(0).Item("NativenessTypeId")}
+                                Dim CachKey = InstanceCache.GetCacheType(R2CoreTransportationAndLoadNotificationCacheTypes.TurnInfo).CacheTypeName + SoftwareUser.UserId.ToString()
+                                InstanceCache.RemoveCache(CachKey, R2CoreTransportationAndLoadNotificationCatchDataBases.TruckDriverInformation)
+                                InstanceCache.SetCache(CachKey, TurnInfo, R2CoreTransportationAndLoadNotificationCacheTypes.TurnInfo, R2CoreTransportationAndLoadNotificationCatchDataBases.TruckDriverInformation, False)
+                            End If
+                        Else
+                            Exit Sub
+                        End If
+                    End If
+                Catch ex As AnyNotFoundException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Sub
+
+            Public Sub SetTurnInfo(YourValue As StackExchange.Redis.RedisValue)
+                Try
+                    Dim InstanceCache = New R2CoreCacheManager
+                    Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(New R2DateTimeService)
+                    Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+
+                    Dim TurnId = JsonConvert.DeserializeObject(Of Int64)(YourValue)
+                    If (TurnId = 0) Then
+                        Throw New DataEntryException
+                    Else
+                        Dim SoftwareUserId = InstanceTurns.GetSoftwareUserId(TurnId)
+                        Dim CacheKey = InstanceCache.GetCacheType(R2CoreTransportationAndLoadNotificationCacheTypes.TurnInfo).CacheTypeName + SoftwareUserId.ToString
+                        'Dim Value = DirectCast(InstanceCache.GetCache(CacheKey, R2CoreTransportationAndLoadNotificationCatchDataBases.TruckDriverInformation), StackExchange.Redis.RedisValue)
+                        'If Value.IsNullOrEmpty Then Throw New CacheNotFoundException
+                        InstanceCache.RemoveCache(CacheKey, R2CoreTransportationAndLoadNotificationCatchDataBases.TruckDriverInformation)
+                        Dim DS As DataSet = Nothing
+                        If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                                  "Select Top 1 Turns.nEnterExitId as TurnId,Turns.TurnStatus as TurnStatusId,Cars.CarNativenessTypeId as NativenessTypeId,SequentialTurns.SeqTId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                                      Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
+                                      Inner Join dbtransport.dbo.TbPerson as Persons On EntityRelations.E2 =Persons.nIDPerson
+                                      Inner Join dbtransport.dbo.TbCarAndPerson as CarAndPerson On Persons.nIDPerson=CarAndPerson.nIDPerson 
+                                      Inner Join dbtransport.dbo.TbCar as Cars On CarAndPerson.nIDCar=Cars.nIDCar 
+                                      Inner Join dbtransport.dbo.tbEnterExit as Turns On Cars.nIDCar=Turns.strCardno 
+                                      Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SequentialTurns On substring(Turns.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS=SequentialTurns.SeqTKeyWord  Collate Arabic_CI_AI_WS 
+                                      Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTruckNativenessTypes as TruckNativenessTypes On Cars.CarNativenessTypeId=TruckNativenessTypes.NId 
+                                   Where SoftwareUsers.UserId=" & SoftwareUserId & " and SoftwareUsers.UserActive=1 and EntityRelations.ERTypeId=" & R2CoreParkingSystem.EntityRelations.R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & " and EntityRelations.RelationActive=1 and CarAndPerson.snRelation=2 and Cars.ViewFlag=1 and SequentialTurns.Active=1 and TruckNativenessTypes.Active=1
+                                       and ((DATEDIFF(SECOND,CarAndPerson.RelationTimeStamp,getdate())<240) Or (CarAndPerson.RelationTimeStamp='2015-01-01 00:00:00.000'))
+                                       and (Turns.TurnStatus=1 or Turns.TurnStatus=7 or Turns.TurnStatus=8 or Turns.TurnStatus=9 or Turns.TurnStatus=10) and Turns.bFlagDriver=0
+                                   Order By Turns.nEnterExitId Desc", 0, DS, New Boolean).GetRecordsCount <> 0 Then
+                            Dim TurnInfo = New R2CoreTransportationAndLoadNotificationTurnInfo With {.TurnId = DS.Tables(0).Rows(0).Item("TurnId"), .TurnStatusId = DS.Tables(0).Rows(0).Item("TurnStatusId"), .SeqTId = DS.Tables(0).Rows(0).Item("SeqTId"), .NativenessTypeId = DS.Tables(0).Rows(0).Item("NativenessTypeId")}
+                            Dim CachKey = InstanceCache.GetCacheType(R2CoreTransportationAndLoadNotificationCacheTypes.TurnInfo).CacheTypeName + SoftwareUserId.ToString()
+                            InstanceCache.SetCache(CachKey, TurnInfo, R2CoreTransportationAndLoadNotificationCacheTypes.TurnInfo, R2CoreTransportationAndLoadNotificationCatchDataBases.TruckDriverInformation, False)
+                        End If
+                    End If
+                Catch ex As DataEntryException
+                    Throw ex
+                Catch ex As CacheNotFoundException
+                    Throw ex
+                Catch ex As AnyNotFoundException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Sub
+
+        End Class
+
+
+
+
 
     End Namespace
 

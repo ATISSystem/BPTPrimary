@@ -94,6 +94,7 @@ Imports R2CoreTransportationAndLoadNotification.TravelTime
 Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
 
 
+
 Namespace TruckLoaderTypes
 
     Public NotInheritable Class R2CoreTransportationAndLoadNotificationTruckLoaderTypeManagement

@@ -100,6 +100,10 @@ Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad.
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoadManipulation.Exceptions
 Imports R2CoreTransportationAndLoadNotification.LoaderTypes
 Imports System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel
+Imports R2CoreTransportationAndLoadNotification.Turns.TurnInfo
+Imports R2Core.CachHelper
+Imports R2CoreTransportationAndLoadNotification.PubSubMessaging
+Imports StackExchange.Redis
 
 
 Namespace LoadCapacitor
@@ -1891,18 +1895,24 @@ Namespace LoadCapacitor
                 End Try
             End Function
 
-            Private Shared LoadsCollection = New Dictionary(Of String, String)
+            Public Class PubSubMessageforCachingLoads
+                Public Property Query As String
+                Public Property CacheKey As String
+            End Class
+
             Public Function GetLoadsforTruckDriver(YourRequesterId As Int64, YourSoftwareUser As R2CoreSoftwareUser, YourAnnouncementSGId As Int64, YourLoadStatusId As Int64) As String
                 Try
                     Dim InstanceCache = New R2Core.Caching.R2CoreCacheManager
-                    Dim Value = DirectCast(InstanceCache.GetCache(InstanceCache.GetCacheType(R2CoreTransportationAndLoadNotificationCacheTypes.TruckDriverTurnInfo).CacheTypeName + YourSoftwareUser.UserId.ToString, R2CoreTransportationAndLoadNotificationCatchDataBases.TruckDriverInformation), StackExchange.Redis.RedisValue)
-                    If Value.IsNullOrEmpty Then Throw New BaseInfFailedException
-                    Dim TurnInfo = JsonConvert.DeserializeObject(Of R2CoreTransportationAndLoadNotificationTruckDriverTurnInfo)(Value)
+                    'دریافت اطلاعات نوبت
+                    Dim ValueTurnInfo = DirectCast(InstanceCache.GetCache(InstanceCache.GetCacheType(R2CoreTransportationAndLoadNotificationCacheTypes.TurnInfo).CacheTypeName + YourSoftwareUser.UserId.ToString, R2CoreTransportationAndLoadNotificationCatchDataBases.TruckDriverInformation), StackExchange.Redis.RedisValue)
+                    If ValueTurnInfo.IsNullOrEmpty Then Throw New BaseInfFailedException
+                    Dim TurnInfo = JsonConvert.DeserializeObject(Of R2CoreTransportationAndLoadNotificationTurnInfo)(ValueTurnInfo)
 
-                    Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
-                    Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                    Dim DSLoads As DataSet = Nothing
-                    Dim SqlQuery =
+                    'دریافت لیست بار از کش
+                    Dim CacheKeyLoads = InstanceCache.GetCacheType(R2CoreTransportationAndLoadNotificationCacheTypes.Loads).CacheTypeName + YourRequesterId.ToString + YourAnnouncementSGId.ToString + YourLoadStatusId.ToString + TurnInfo.SeqTId.ToString + TurnInfo.NativenessTypeId.ToString
+                    Dim Value = InstanceCache.GetCache(CacheKeyLoads, R2CoreTransportationAndLoadNotificationCatchDataBases.Loads)
+                    If DirectCast(Value, StackExchange.Redis.RedisValue).IsNull Then
+                        Dim SqlQuery =
                         "Select Provinces.ProvinceName,Provinces.ProvinceId,MyLoads.* from 
                            (Select Loads.nEstelamId LoadId,TransportCompanies.TCTitle as TCTitle,TransportCompanies.TCTel as TCTel,Products.strGoodName as GoodTitle,
                                    Loads.nTonaj as Tonaj,LoadSources.strCityName as SoureCityTitle,LoadTargets.strCityName as TargetCityTitle,LoadTargets.nProvince as ProvinceId,
@@ -1922,22 +1932,20 @@ Namespace LoadCapacitor
                             Where Loads.dDateElam=R2Primary.dbo.BPTCOGregorianToPersian(GETDATE()) and Loads.LoadStatus=" & YourLoadStatusId & " and LoadsViewConditions.LoadStatusId=" & YourLoadStatusId & " and 
                                   LoadsViewConditions.RequesterId=" & YourRequesterId & " and Loads.nCarNum>0 and Loads.AHSGId=" & YourAnnouncementSGId & " and LoadsViewConditions.SeqTId=" & TurnInfo.SeqTId & " and LoadsViewConditions.NativenessTypeId=" & TurnInfo.NativenessTypeId & ") as myLoads
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces On MyLoads.ProvinceId=Provinces.ProvinceId  
-						 Order By ProvinceName,MyLoads.TargetCityTitle 
-						 for JSON AUTO"
-                    Dim DataChangeStatus As Boolean = False
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
-                           SqlQuery, 180, DSLoads, DataChangeStatus).GetRecordsCount = 0 Then Throw New NoLoadsorLoadsViewConditionsMismatchException
-                    If DataChangeStatus = True Then
-                        Try
-                            LoadsCollection.Remove(SqlQuery)
-                        Catch ex As ArgumentException
-                        Catch ex As KeyNotFoundException
-                        Catch ex As Exception
-                        End Try
-                        LoadsCollection.Add(SqlQuery, InstancePublicProcedures.GetIntegratedJson(DSLoads))
+						 Order By ProvinceName,MyLoads.TargetCityTitle for JSON AUTO"
+                        Dim PubSubMessage = New PubSubMessageforCachingLoads With {.Query = SqlQuery, .CacheKey = CacheKeyLoads}
+                        Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                        _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.LoadsForTruckDrivers, JsonConvert.SerializeObject(PubSubMessage))
+                        Throw New PleaseReTryException
+                    Else
+                        If JsonConvert.DeserializeObject(Of LoadListCache)(Value.ToString).Result.ToString = "" Then Throw New AnyLoadNotFoundException
+                        Return JsonConvert.DeserializeObject(Of LoadListCache)(Value.ToString).Result.ToString
                     End If
-                    Return LoadsCollection(SqlQuery)
-                Catch ex As NoLoadsorLoadsViewConditionsMismatchException
+                Catch ex As AnyLoadNotFoundException
+                    Throw ex
+                Catch ex As RedisException
+                    Throw ex
+                Catch ex As PleaseReTryException
                     Throw ex
                 Catch ex As BaseInfFailedException
                     Throw
@@ -1945,6 +1953,108 @@ Namespace LoadCapacitor
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
                 End Try
             End Function
+
+            Public Class LoadListCache
+                Public Query As String
+                Public Result As Object
+            End Class
+
+            Public Sub CacheLoads(YourValue As StackExchange.Redis.RedisValue)
+                Try
+                    Dim InstanceCache = New R2Core.Caching.R2CoreCacheManager
+                    Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+
+                    Dim PubSubMessage = JsonConvert.DeserializeObject(Of PubSubMessageforCachingLoads)(YourValue)
+
+                    Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                    Dim DSLoads As DataSet = Nothing
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                                        PubSubMessage.Query, 0, DSLoads, New Boolean).GetRecordsCount = 0 Then
+                        Dim aLoadListCache = New LoadListCache With {.Query = PubSubMessage.Query, .Result = ""}
+                        InstanceCache.SetCache(PubSubMessage.CacheKey, aLoadListCache, R2CoreTransportationAndLoadNotificationCacheTypes.Loads, R2CoreTransportationAndLoadNotificationCatchDataBases.Loads, True)
+                    Else
+                        Dim aLoadListCache = New LoadListCache With {.Query = PubSubMessage.Query, .Result = JsonConvert.DeserializeObject(Of Object)(InstancePublicProcedures.GetIntegratedJson(DSLoads))}
+                        InstanceCache.SetCache(PubSubMessage.CacheKey, aLoadListCache, R2CoreTransportationAndLoadNotificationCacheTypes.Loads, R2CoreTransportationAndLoadNotificationCatchDataBases.Loads, True)
+                    End If
+                Catch ex As RedisException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Sub
+
+            Public Sub UpdateLoadLists()
+                Try
+                    Dim InstanceCache = New R2Core.Caching.R2CoreCacheManager
+                    Dim CacheServer = RedisConnectorHelper.GetServer()
+                    Dim Keys = CacheServer.Keys(R2CoreTransportationAndLoadNotificationCatchDataBases.Loads)
+                    For Each Key In Keys
+                        Dim Value = InstanceCache.GetCache(Key, R2CoreTransportationAndLoadNotificationCatchDataBases.Loads).ToString
+                        Dim Query = JsonConvert.DeserializeObject(Of LoadListCache)(Value).Query
+                        Dim PubSubMessage = New PubSubMessageforCachingLoads With {.Query = Query, .CacheKey = Key}
+                        CacheLoads(JsonConvert.SerializeObject(PubSubMessage))
+                    Next
+                Catch ex As RedisException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Sub
+
+            '     Private Shared LoadsCollection = New Dictionary(Of String, String)
+            '     Public Function GetLoadsforTruckDriver(YourRequesterId As Int64, YourSoftwareUser As R2CoreSoftwareUser, YourAnnouncementSGId As Int64, YourLoadStatusId As Int64) As String
+            '         Try
+            '             Dim InstanceCache = New R2Core.Caching.R2CoreCacheManager
+            '             Dim Value = DirectCast(InstanceCache.GetCache(InstanceCache.GetCacheType(R2CoreTransportationAndLoadNotificationCacheTypes.TurnInfo).CacheTypeName + YourSoftwareUser.UserId.ToString, R2CoreTransportationAndLoadNotificationCatchDataBases.TruckDriverInformation), StackExchange.Redis.RedisValue)
+            '             If Value.IsNullOrEmpty Then Throw New BaseInfFailedException
+            '             Dim TurnInfo = JsonConvert.DeserializeObject(Of R2CoreTransportationAndLoadNotificationTurnInfo)(Value)
+
+            '             Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+            '             Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+            '             Dim DSLoads As DataSet = Nothing
+            '             Dim SqlQuery =
+            '                 "Select Provinces.ProvinceName,Provinces.ProvinceId,MyLoads.* from 
+            '                    (Select Loads.nEstelamId LoadId,TransportCompanies.TCTitle as TCTitle,TransportCompanies.TCTel as TCTel,Products.strGoodName as GoodTitle,
+            '                            Loads.nTonaj as Tonaj,LoadSources.strCityName as SoureCityTitle,LoadTargets.strCityName as TargetCityTitle,LoadTargets.nProvince as ProvinceId,
+            '                            LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,
+            '                            Loads.nCarNumKol as Total,Loads.StrPriceSug as Tariff,
+            '                         Loads.StrBarName as Recipient,Loads.StrAddress as Address,Loads.strDescription as Description,
+            '                            Loads.TPTParamsJoint as TPTParamsJoint,LoadsforTurnCancellation.Description as LoadColor
+            '                     from DBTransport.dbo.TbElam as Loads
+            '                       Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On Loads.nCompCode=TransportCompanies.TCId 
+            '                       Inner Join dbtransport.dbo.tbProducts as Products On Loads.nBarcode=Products.strGoodCode 
+            '                       Inner Join dbtransport.dbo.tbCity as LoadSources On Loads.nBarSource=LoadSources.nCityCode
+            '                       Inner Join dbtransport.dbo.tbCity as LoadTargets On Loads.nCityCode=LoadTargets.nCityCode 
+            '                       Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as LoadingPlaces On Loads.LoadingPlaceId=LoadingPlaces.LADPlaceId 
+            '                       Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as DischargingPlaces On Loads.DischargingPlaceId=DischargingPlaces.LADPlaceId 
+            '                       Inner Join R2PrimaryTransportationAndLoadNotification.dbo.tblLoadsViewConditions as LoadsViewConditions On Loads.AHSGId=LoadsViewConditions.AHSGId
+            '                       Inner join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadsforTurnCancellation as LoadsforTurnCancellation on Loads.nEstelamID=LoadsforTurnCancellation.nEstelamID
+            '                     Where Loads.dDateElam=R2Primary.dbo.BPTCOGregorianToPersian(GETDATE()) and Loads.LoadStatus=" & YourLoadStatusId & " and LoadsViewConditions.LoadStatusId=" & YourLoadStatusId & " and 
+            '                           LoadsViewConditions.RequesterId=" & YourRequesterId & " and Loads.nCarNum>0 and Loads.AHSGId=" & YourAnnouncementSGId & " and LoadsViewConditions.SeqTId=" & TurnInfo.SeqTId & " and LoadsViewConditions.NativenessTypeId=" & TurnInfo.NativenessTypeId & ") as myLoads
+            '                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces On MyLoads.ProvinceId=Provinces.ProvinceId  
+            'Order By ProvinceName,MyLoads.TargetCityTitle 
+            'for JSON AUTO"
+            '             Dim DataChangeStatus As Boolean = False
+            '             If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+            '                    SqlQuery, 180, DSLoads, DataChangeStatus).GetRecordsCount = 0 Then Throw New NoLoadsorLoadsViewConditionsMismatchException
+            '             If DataChangeStatus = True Then
+            '                 Try
+            '                     LoadsCollection.Remove(SqlQuery)
+            '                 Catch ex As ArgumentException
+            '                 Catch ex As KeyNotFoundException
+            '                 Catch ex As Exception
+            '                 End Try
+            '                 LoadsCollection.Add(SqlQuery, InstancePublicProcedures.GetIntegratedJson(DSLoads))
+            '             End If
+            '             Return LoadsCollection(SqlQuery)
+            '         Catch ex As NoLoadsorLoadsViewConditionsMismatchException
+            '             Throw ex
+            '         Catch ex As BaseInfFailedException
+            '             Throw
+            '         Catch ex As Exception
+            '             Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '         End Try
+            '     End Function
 
             Public Function GetLoadsforTransportCompanies(YourSoftwareUser As R2CoreSoftwareUser, YourAnnouncementGroupId As Int64, YourAnnouncementSubGroupId As Int64, YourInventory As Boolean, YourShamsiDate As String, YourLoadStatusId As Int64, YourLoadSourceId As Int64, YourLoadTargetId As Int64) As String
                 Try
@@ -2328,6 +2438,24 @@ Namespace LoadCapacitor
                 Public Overrides ReadOnly Property Message As String
                     Get
                         Return "مقدار یا تعداد بار مجاز نیست"
+                    End Get
+                End Property
+            End Class
+
+            Public Class AnyLoadNotFoundException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "باری در سامانه موجود نیست"
+                    End Get
+                End Property
+            End Class
+
+            Public Class AnyLoadNotFoundAndPleaseRetryException
+                Inherits ApplicationException
+                Public Overrides ReadOnly Property Message As String
+                    Get
+                        Return "باری در سامانه موجود نیست" + vbCrLf + "لطفا مجددا تلاش نمایید"
                     End Get
                 End Property
             End Class

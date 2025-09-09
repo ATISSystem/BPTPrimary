@@ -33,6 +33,10 @@ Imports R2Core.RawGroups
 Imports System.IO
 Imports System.Runtime.Serialization.Formatters.Binary
 Imports System.Web
+Imports R2Core.CachHelper
+Imports StackExchange.Redis
+Imports R2Core.PubSubMessaging
+Imports R2Core.LoggingManagement
 
 Namespace SoftwareUserManagement
 
@@ -1244,6 +1248,10 @@ Namespace SoftwareUserManagement
                     SessionIdSoftwareUser.SoftWareUser = GetUser(YourUserShenaseh, YourUserPassword)
                     InstanceCacheKeys.RemoveCache(CachKey, R2CoreCatchDataBases.SoftwareUserSessions)
                     InstanceCacheKeys.SetCache(CachKey, SessionIdSoftwareUser, R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions, False)
+
+                    'PubSubMessage-UserAuthenticated
+                    Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                    _Subscriber.Publish(R2CorePubSubChannels.UserAuthenticated, JsonConvert.SerializeObject(SessionIdSoftwareUser.SoftWareUser))
                 Else
                     Throw New CaptchaWordNotCorrectException
                 End If
@@ -1442,7 +1450,7 @@ Namespace SoftwareUserManagement
             End Try
         End Sub
 
-        Public Function GetSystemUserId() As Int64
+        Public Shared Function GetSystemUserId() As Int64
             Try
                 Return 1
             Catch ex As Exception

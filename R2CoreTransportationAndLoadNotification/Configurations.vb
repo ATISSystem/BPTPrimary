@@ -18,7 +18,7 @@ Namespace ConfigurationsManagement
         Public Shared ReadOnly Property AnnouncementHallMonitoring As Int64 = 52
         Public Shared ReadOnly Property LoadCapacitorLoadManipulationSetting As Int64 = 54
         Public Shared ReadOnly Property AnnouncementHallAnnounceTime As Int64 = 55
-        Public Shared ReadOnly Property AnnouncementsTurnCancellationSetting As Int64 = 56
+        Public Shared ReadOnly Property TurnsCancellationSetting As Int64 = 56
         Public Shared ReadOnly Property AnnouncementsTruckDriverAttendance As Int64 = 57
         Public Shared ReadOnly Property DefaultTransportationAndLoadNotificationConfigs As Int64 = 58
         Public Shared ReadOnly Property AnnouncementsLoadAllocationsLoadPermissionRegisteringSetting As Int64 = 59
@@ -35,8 +35,7 @@ Namespace ConfigurationsManagement
         Public Shared ReadOnly Property BillOfLading As Int64 = 92
         Public Shared ReadOnly Property LoadingDischargingPlaces As Int64 = 93
         Public Shared ReadOnly Property TruckDriversAutomatedJobsService As Int64 = 95
-
-
+        Public Shared ReadOnly Property LoadListsPreparingAutomatedJob As Int64 = 98
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager

@@ -1967,6 +1967,7 @@ Namespace PredefinedMessagesManagement
         Public Shared ReadOnly MoneyWalletNotFoundException As Int64 = 30
         Public Shared ReadOnly WebServiceConnectingException As Int64 = 31
         Public Shared ReadOnly UserHasAlreadyBeenAuthenticated As Int64 = 32
+        Public Shared ReadOnly PleaseReTryException As Int64 = 33
     End Class
 
     Public Class R2CoreStandardPredefinedMessageStructure

@@ -47,8 +47,6 @@ Namespace ExceptionManagement
         End Sub
     End Class
 
-
-
     Public MustInherit Class R2CoreMClassExceptionsManagement
         Public Shared Function GetSqlExceptionMessage(YourSqlExceptionId As Int64) As String
             Try
@@ -163,6 +161,15 @@ Namespace ExceptionManagement
                 Return "اندازه تصویر ارسال شده بیش از حد مجاز است"
             End Get
         End Property
+    End Class
+
+    Public Class PleaseReTryException
+        Inherits BPTException
+
+        Public Sub New()
+            _Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.PleaseReTryException).MsgContent
+            _MessageCode = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.PleaseReTryException).MsgId
+        End Sub
     End Class
 
     Public Class AnyNotFoundException

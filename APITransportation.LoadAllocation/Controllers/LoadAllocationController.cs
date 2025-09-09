@@ -12,6 +12,7 @@ using R2CoreTransportationAndLoadNotification.LoadCapacitor.Exceptions;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad;
 using R2CoreTransportationAndLoadNotification.RequesterManagement;
 using R2CoreTransportationAndLoadNotification.TransportTariffsParameters.Exceptions;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,6 +51,8 @@ namespace APITransportation.LoadAllocation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -86,6 +89,8 @@ namespace APITransportation.LoadAllocation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -120,6 +125,8 @@ namespace APITransportation.LoadAllocation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(Turn), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -156,6 +163,8 @@ namespace APITransportation.LoadAllocation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -188,6 +197,8 @@ namespace APITransportation.LoadAllocation.Controllers
                 response.Content = new StringContent(InstanceLoadAllocation.GetTruckDriverLoadAllocationsForRepriority(User), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -223,6 +234,8 @@ namespace APITransportation.LoadAllocation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException  ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -257,6 +270,8 @@ namespace APITransportation.LoadAllocation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -291,6 +306,8 @@ namespace APITransportation.LoadAllocation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -323,6 +340,8 @@ namespace APITransportation.LoadAllocation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { TravelTime = InstanceLoadAllocation.GetTravelTimeforLoadAllocation(User.UserId, LAId) } ), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -354,6 +373,8 @@ namespace APITransportation.LoadAllocation.Controllers
                 response.Content = new StringContent(InstanceLoadAllocation.GetTruckDriverLoadAllocationsRecords(User), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (TransportPriceTariffParameterDetailNotFoundException ex)

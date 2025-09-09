@@ -173,6 +173,7 @@
     <Compile Include="LoadSedimentation.vb" />
     <Compile Include="LoadSources.vb" />
     <Compile Include="LoadTargets.vb" />
+    <Compile Include="PubSubMessages.vb" />
     <Compile Include="R2CoreTransportationAndLoadNotification-Partial.vb" />
     <Compile Include="R2CoreTransportationAndLoadNotification.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />

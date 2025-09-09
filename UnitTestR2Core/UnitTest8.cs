@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using PayanehClassLibrary.LoadAllocations;
 using R2Core.DateAndTimeManagement;
 using R2Core.LoggingManagement;
@@ -10,6 +11,7 @@ using R2CoreTransportationAndLoadNotification.LoadPermission;
 using R2CoreTransportationAndLoadNotification.RequesterManagement;
 using R2CoreTransportationAndLoadNotification.SoftwareUserManagement;
 using R2CoreTransportationAndLoadNotification.Turns;
+using StackExchange.Redis;
 using System;
 using System.Diagnostics;
 using System.Web.Http.ModelBinding.Binders;
@@ -22,8 +24,17 @@ namespace LoadCapacitor
         [TestMethod]
         public void TestMethod1()
         {
-            var xxx = new R2CoreLog { LogTypeId = 0, Description = "22", MessageDetail1 = "AnnouncementGroupId", MessageDetail2 = "", MessageDetail3 = "", UserId = 21 };
-            R2CoreLoggingManager.WriteInfLog(xxx, 21);
+            var x1 = new R2CoreTransportationAndLoadNotification.Turns.R2CoreTransportationAndLoadNotificationTurnsManager(new R2DateTimeService());
+            x1.TempTurnsCancellation();
+
+            var xxxx = new R2CoreTransportationAndLoadNotificationLoadManager(new R2DateTimeService() );
+            //xxxx.UpdateLoadLists();
+            var zzz = xxxx.GetLoadsforTruckDriver(5, new R2CoreSoftwareUser { UserId = 7003 }, 3, 1);
+            //xxxx.CacheLoadsforTruckDriver(JsonConvert.SerializeObject( new  {Query = "Select Provinces.ProvinceName,Provinces.ProvinceId,MyLoads.* from \r\n                           (Select Loads.nEstelamId LoadId,TransportCompanies.TCTitle as TCTitle,TransportCompanies.TCTel as TCTel,Products.strGoodName as GoodTitle,\r\n                                   Loads.nTonaj as Tonaj,LoadSources.strCityName as SoureCityTitle,LoadTargets.strCityName as TargetCityTitle,LoadTargets.nProvince as ProvinceId,\r\n                                   LoadingPlaces.LADPlaceTitle as LoadingPlaceTitle,DischargingPlaces.LADPlaceTitle as DischargingPlaceTitle,\r\n                                   Loads.nCarNumKol as Total,Loads.StrPriceSug as Tariff,\r\n\t                               Loads.StrBarName as Recipient,Loads.StrAddress as Address,Loads.strDescription as Description,\r\n                                   Loads.TPTParamsJoint as TPTParamsJoint,LoadsforTurnCancellation.Description as LoadColor\r\n                            from DBTransport.dbo.TbElam as Loads\r\n                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On Loads.nCompCode=TransportCompanies.TCId \r\n                              Inner Join dbtransport.dbo.tbProducts as Products On Loads.nBarcode=Products.strGoodCode \r\n                              Inner Join dbtransport.dbo.tbCity as LoadSources On Loads.nBarSource=LoadSources.nCityCode\r\n                              Inner Join dbtransport.dbo.tbCity as LoadTargets On Loads.nCityCode=LoadTargets.nCityCode \r\n                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as LoadingPlaces On Loads.LoadingPlaceId=LoadingPlaces.LADPlaceId \r\n                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as DischargingPlaces On Loads.DischargingPlaceId=DischargingPlaces.LADPlaceId \r\n                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.tblLoadsViewConditions as LoadsViewConditions On Loads.AHSGId=LoadsViewConditions.AHSGId\r\n                              Inner join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadsforTurnCancellation as LoadsforTurnCancellation on Loads.nEstelamID=LoadsforTurnCancellation.nEstelamID\r\n                            Where Loads.dDateElam=R2Primary.dbo.BPTCOGregorianToPersian(GETDATE()) and Loads.LoadStatus=1 and LoadsViewConditions.LoadStatusId=1 and \r\n                                  LoadsViewConditions.RequesterId=5 and Loads.nCarNum>0 and Loads.AHSGId=8 and LoadsViewConditions.SeqTId=2 and LoadsViewConditions.NativenessTypeId=1) as myLoads\r\n                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces On MyLoads.ProvinceId=Provinces.ProvinceId  \r\n\t\t\t\t\t\t Order By ProvinceName,MyLoads.TargetCityTitle FOR JSON AUTO", CacheKey ="123" }));
+
+
+            var xxx = new R2CoreRawLog { LogTypeId = 0, Description = "22", MessageDetail1 = "AnnouncementGroupId", MessageDetail2 = "", MessageDetail3 = "", UserId = 21 };
+            R2CoreLoggingManager.WriteInfLog(xxx);
 
 
             var xx = new R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad.R2CoreTransportationAndLoadNotificationLoadManager (new R2DateTimeService());

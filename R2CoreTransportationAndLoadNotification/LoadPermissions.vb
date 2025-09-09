@@ -59,6 +59,10 @@ Imports R2CoreTransportationAndLoadNotification.DriverSelfDeclaration.Exceptions
 Imports R2CoreTransportationAndLoadNotification.RequesterManagement
 Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters
 Imports R2CoreTransportationAndLoadNotification.SMS.SMSTypes
+Imports Newtonsoft.Json
+Imports R2Core.CachHelper
+Imports R2CoreTransportationAndLoadNotification.PubSubMessaging
+Imports StackExchange.Redis
 
 
 
@@ -1471,6 +1475,7 @@ Namespace LoadPermission
 
                 'کنترل زمان 
                 Dim Load = InstanceLoad.GetLoadSimpleModel(InstanceLoadAllocation.GetLoadIdfromLoadAllocationId(YourLoadAllocationId), True)
+                Dim TurnId = InstanceLoadAllocation.GetTurnIdfromLoadAllocationId(YourLoadAllocationId)
                 Dim Timing = InstanceAnnouncementTiming.GetTiming(Load.AnnouncementGroupId, Load.AnnouncementSubGroupId, _DateTimeService.DateTimeServ.GetCurrentTime)
                 If Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadPermissionRegistering Then
                     Throw New LoadPermisionCancellationTimePassedException
@@ -1493,6 +1498,14 @@ Namespace LoadPermission
                 CmdSql.Connection.Open()
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
+
+                'PubSubMessaging
+                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(TurnId))
+
+            Catch ex As RedisException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw ex
             Catch ex As SqlException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                 Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)

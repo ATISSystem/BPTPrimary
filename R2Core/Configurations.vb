@@ -54,8 +54,10 @@ Namespace ConfigurationManagement
         Public Shared ReadOnly Property EmailSystem As Int64 = 83
         Public Shared ReadOnly Property ShepaPaymentGate As Int64 = 84
         Public Shared ReadOnly Property SiteIsBusy As Int64 = 87
+        Public Shared ReadOnly Property LoggingAutomatedJobsSetting As Int64 = 88
         Public Shared ReadOnly Property AqayepardakhtPaymentGate As Int64 = 94
         Public Shared ReadOnly Property Carousels As Int64 = 96
+        Public Shared ReadOnly Property Caching As Int64 = 97
 
 
     End Class
@@ -535,5 +537,32 @@ Namespace ConfigurationManagement
 
     End Class
 
+    'BPTChanged
+    Public MustInherit Class R2CoreConfigurationManagement
+
+        Public Shared Function GetConfig(YourCId As Int64, YourIndex As Int64) As Object
+            Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+            Try
+                Dim Ds As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 32767, Ds, New Boolean).GetRecordsCount = 0 Then
+                    Throw New GetDataException
+                End If
+                Return Split(Ds.Tables(0).Rows(0).Item("CValue"), ";")(YourIndex)
+            Catch ex As GetDataException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Shared Function GetConfigString(YourCId As Int64, YourIndex As Int64) As String
+            Try
+                Return GetConfig(YourCId, YourIndex).trim
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+    End Class
 
 End Namespace

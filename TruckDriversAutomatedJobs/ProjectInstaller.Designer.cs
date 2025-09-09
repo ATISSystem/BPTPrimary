@@ -39,6 +39,7 @@
             // 
             // serviceInstaller1
             // 
+            this.serviceInstaller1.Description = "BPT.Corporation Truck Drivers Automated Processes";
             this.serviceInstaller1.ServiceName = "TruckDriversAutomatedJobs";
             this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
             // 

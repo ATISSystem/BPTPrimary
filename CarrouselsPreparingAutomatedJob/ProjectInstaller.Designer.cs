@@ -39,7 +39,7 @@
             // 
             // serviceInstaller1
             // 
-            this.serviceInstaller1.Description = "CarouselsPreparingAutomatedJob";
+            this.serviceInstaller1.Description = "BPT.Corporation Carousels Preparing Automated Process";
             this.serviceInstaller1.DisplayName = "CarouselsPreparingAutomatedJob";
             this.serviceInstaller1.ServiceName = "CarouselsPreparingAutomatedJob";
             this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;

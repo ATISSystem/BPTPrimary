@@ -2,9 +2,60 @@
 
 
 Imports Newtonsoft.Json
+Imports R2Core.CachHelper
+Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports StackExchange.Redis
 Imports System.Reflection
+Imports System.Web
+
+Namespace CachHelper
+    Public NotInheritable Class RedisConnectorHelper
+
+        Private Shared ReadOnly Property RedisHost As String
+            Get
+                Return R2CoreConfigurationManagement.GetConfigString(R2Core.ConfigurationManagement.R2CoreConfigurations.Caching, 0)
+            End Get
+        End Property
+
+        Public Shared ReadOnly lazyConnection As New Lazy(Of ConnectionMultiplexer)(
+        Function()
+            Try
+                Return ConnectionMultiplexer.Connect(RedisHost)
+            Catch ex As RedisException
+                Throw ex
+            Catch ex As Exception
+                Throw ex
+            End Try
+        End Function)
+
+        Public Shared ReadOnly Property Connection As ConnectionMultiplexer
+            Get
+                Try
+                    Return lazyConnection.Value
+                Catch ex As RedisException
+                    Throw ex
+                Catch ex As Exception
+                    Throw ex
+                End Try
+            End Get
+        End Property
+
+        Public Shared ReadOnly Property GetServer As IServer
+            Get
+                Try
+                    Return Connection.GetServer(RedisHost)
+                Catch ex As RedisException
+                    Throw ex
+                Catch ex As Exception
+                    Throw ex
+                End Try
+            End Get
+        End Property
+
+    End Class
+
+End Namespace
 
 Namespace Caching
 
@@ -64,30 +115,6 @@ Namespace Caching
 
     End Class
 
-    Public NotInheritable Class RedisConnectorHelper
-
-        Private Shared RedisHost = "192.168.1.4:6379"
-
-        Public Shared ReadOnly lazyConnection As New Lazy(Of ConnectionMultiplexer)(
-        Function()
-            Return ConnectionMultiplexer.Connect(RedisHost)
-        End Function
-    )
-
-        Public Shared ReadOnly Property Connection As ConnectionMultiplexer
-            Get
-                Return lazyConnection.Value
-            End Get
-        End Property
-
-        Public Shared ReadOnly Property GetServer As IServer
-            Get
-                Return Connection.GetServer(RedisHost)
-            End Get
-        End Property
-
-    End Class
-
     Public Class R2CoreCacheManager
 
         Public Function GetCacheType(YourCacheTypeId As Int64) As R2CoreStandardCacheTypeStructure
@@ -109,7 +136,7 @@ Namespace Caching
 
         Public Function ExistCache(YourKeyId As String, YourDataBaseId As Integer) As Boolean
             Try
-                Dim Cache = RedisConnectorHelper.Connection.GetDatabase(YourDataBaseId)
+                Dim Cache = CachHelper.RedisConnectorHelper.Connection.GetDatabase(YourDataBaseId)
                 If Cache.KeyExists(YourKeyId) Then
                     Return True
                 Else
@@ -122,7 +149,7 @@ Namespace Caching
 
         Public Sub SetCache(YourKeyId As String, YourCacheValue As Object, YourCacheTypeId As Int64, YourDataBaseId As Integer, YourIndefiniteTimeSpan As Boolean)
             Try
-                Dim Cache = RedisConnectorHelper.Connection.GetDatabase(YourDataBaseId)
+                Dim Cache = CachHelper.RedisConnectorHelper.Connection.GetDatabase(YourDataBaseId)
                 If Not YourIndefiniteTimeSpan Then
                     Cache.StringSet(YourKeyId, JsonConvert.SerializeObject(YourCacheValue), TimeSpan.FromSeconds(GetCacheType(YourCacheTypeId).CacheTime))
                 Else
@@ -135,7 +162,7 @@ Namespace Caching
 
         Public Function GetCache(YourKeyId As String, YourDataBaseId As Integer) As Object
             Try
-                Dim Cache = RedisConnectorHelper.Connection.GetDatabase(YourDataBaseId)
+                Dim Cache = CachHelper.RedisConnectorHelper.Connection.GetDatabase(YourDataBaseId)
                 Return Cache.StringGet(YourKeyId)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -144,7 +171,7 @@ Namespace Caching
 
         Public Sub RemoveCache(YourCacheKey As String, YourDataBaseId As Integer)
             Try
-                Dim Cache = RedisConnectorHelper.Connection.GetDatabase(YourDataBaseId)
+                Dim Cache = CachHelper.RedisConnectorHelper.Connection.GetDatabase(YourDataBaseId)
                 Cache.KeyDelete(YourCacheKey)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -161,5 +188,25 @@ Namespace Caching
             End Get
         End Property
     End Class
+
+    Public Class CacheNotFoundException
+        Inherits ApplicationException
+        Public Overrides ReadOnly Property Message As String
+            Get
+                Return "اطلاعلت مورد نظر در کش سیستم یافت نشد"
+            End Get
+        End Property
+    End Class
+
+End Namespace
+
+Namespace PubSubMessaging
+
+    Public MustInherit Class R2CorePubSubChannels
+        Public Shared ReadOnly Property None As String = "None"
+        Public Shared ReadOnly Property UserAuthenticated As String = "UserAuthenticated"
+        Public Shared ReadOnly Property Logging As String = "Logging"
+    End Class
+
 
 End Namespace

@@ -51,6 +51,18 @@ Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "CarrouselsPreparingAutomate
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APICarousels", "APICarousels\APICarousels.csproj", "{074DE159-9DCB-45C2-A86E-4D9B3DB3378D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoggingAutomatedJobs", "LoggingAutomatedJobs\LoggingAutomatedJobs.csproj", "{CD4B8385-D592-4C7C-81F0-520C5B6DE184}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "LoggingAutomatedJobsSetup", "LoggingAutomatedJobsSetup\LoggingAutomatedJobsSetup.vdproj", "{202752EB-3EF8-D04A-2D1A-44CBEED10607}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoadListsPreparingAutomatedJob", "LoadListsPreparingAutomatedJob\LoadListsPreparingAutomatedJob.csproj", "{AF4AD499-6A1A-4B60-A678-79055580C20A}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "LoadListsPreparingAutomatedJobSetup", "LoadListsPreparingAutomatedJobSetup\LoadListsPreparingAutomatedJobSetup.vdproj", "{1C07A490-8CB4-E925-9E55-E26F5E94825D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TempTurnsCancellationAutomatedJob", "TempTurnsCancellationAutomatedJob\TempTurnsCancellationAutomatedJob.csproj", "{D2DA1513-5944-4344-932B-C846036504F9}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "TempTurnsCancellationAutomatedJobSetup", "TempTurnsCancellationAutomatedJobSetup\TempTurnsCancellationAutomatedJobSetup.vdproj", "{BC0F4DF4-DE8E-2AA1-1CA6-79CDFD074C6D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -149,6 +161,24 @@ Global
 		{074DE159-9DCB-45C2-A86E-4D9B3DB3378D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{074DE159-9DCB-45C2-A86E-4D9B3DB3378D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{074DE159-9DCB-45C2-A86E-4D9B3DB3378D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD4B8385-D592-4C7C-81F0-520C5B6DE184}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD4B8385-D592-4C7C-81F0-520C5B6DE184}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD4B8385-D592-4C7C-81F0-520C5B6DE184}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD4B8385-D592-4C7C-81F0-520C5B6DE184}.Release|Any CPU.Build.0 = Release|Any CPU
+		{202752EB-3EF8-D04A-2D1A-44CBEED10607}.Debug|Any CPU.ActiveCfg = Debug
+		{202752EB-3EF8-D04A-2D1A-44CBEED10607}.Release|Any CPU.ActiveCfg = Release
+		{AF4AD499-6A1A-4B60-A678-79055580C20A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF4AD499-6A1A-4B60-A678-79055580C20A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF4AD499-6A1A-4B60-A678-79055580C20A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF4AD499-6A1A-4B60-A678-79055580C20A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C07A490-8CB4-E925-9E55-E26F5E94825D}.Debug|Any CPU.ActiveCfg = Debug
+		{1C07A490-8CB4-E925-9E55-E26F5E94825D}.Release|Any CPU.ActiveCfg = Release
+		{D2DA1513-5944-4344-932B-C846036504F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2DA1513-5944-4344-932B-C846036504F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2DA1513-5944-4344-932B-C846036504F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2DA1513-5944-4344-932B-C846036504F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC0F4DF4-DE8E-2AA1-1CA6-79CDFD074C6D}.Debug|Any CPU.ActiveCfg = Debug
+		{BC0F4DF4-DE8E-2AA1-1CA6-79CDFD074C6D}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

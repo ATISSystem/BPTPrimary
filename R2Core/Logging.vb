@@ -8,6 +8,11 @@ Imports R2Core.LoggingManagement.ExceptionManagement
 Imports System.Drawing
 Imports System.Reflection
 Imports NLog
+Imports StackExchange.Redis
+Imports R2Core.CachHelper
+Imports Newtonsoft.Json
+Imports R2Core.MobileProcessesManagement.Exceptions
+Imports Newtonsoft.Json.Linq
 
 Namespace LoggingManagement
 
@@ -144,6 +149,15 @@ Namespace LoggingManagement
     End Class
 
     'BPTChanged
+    Public Class R2CoreRawLog
+        Public LogTypeId As Int64
+        Public Description As String
+        Public MessageDetail1 As String
+        Public MessageDetail2 As String
+        Public MessageDetail3 As String
+        Public UserId As Int64
+    End Class
+
     Public Class R2CoreLog
         Public LogId As Int64
         Public LogTypeId As Int64
@@ -158,22 +172,62 @@ Namespace LoggingManagement
     End Class
 
 
-    Public Class R2CoreLoggingManager
-        Private Shared ReadOnly Logger As Logger = LogManager.GetCurrentClassLogger()
+    Public MustInherit Class R2CoreLoggingManager
 
-        Public Shared Sub WriteInfLog(YourLog As R2CoreLog, YourSoftwareUserId As Int64)
+        Private Shared _Logger As Logger = Nothing
+        Private Shared _Subscriber As ISubscriber = Nothing
+
+        Public Shared Sub RegisterLog(YourPubSubChannel As RedisChannel, YourRawLog As R2CoreRawLog)
             Try
-                Logger.WithProperty("LogTypeId", YourLog.LogTypeId).WithProperty("MessageDetail1", YourLog.MessageDetail1).WithProperty("MessageDetail2", YourLog.MessageDetail2).WithProperty("MessageDetail3", YourLog.MessageDetail3).WithProperty("UserId", YourSoftwareUserId).Info(YourLog.Description)
+                If _Subscriber Is Nothing Then _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                _Subscriber.Publish(YourPubSubChannel, JsonConvert.SerializeObject(YourRawLog))
+            Catch ex As RedisException
+                Throw ex
             Catch ex As Exception
-                Throw New LoggingProcessForInfLogFailedException
+                Throw ex
+            End Try
+        End Sub
+
+        Public Shared Sub RegisterLog(YourPubSubChannel As RedisChannel, YourException As Exception)
+            Try
+                If _Subscriber Is Nothing Then _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                _Subscriber.Publish(YourPubSubChannel, JsonConvert.SerializeObject(YourException))
+            Catch ex As RedisException
+                Throw ex
+            Catch ex As Exception
+                Throw ex
+            End Try
+        End Sub
+
+        Public Shared Sub WriteInfLog(YourLog As R2CoreRawLog)
+            Try
+                If _Logger Is Nothing Then _Logger = LogManager.GetCurrentClassLogger()
+                _Logger.WithProperty("LogTypeId", YourLog.LogTypeId).WithProperty("MessageDetail1", YourLog.MessageDetail1).WithProperty("MessageDetail2", YourLog.MessageDetail2).WithProperty("MessageDetail3", YourLog.MessageDetail3).WithProperty("UserId", YourLog.UserId).Info(YourLog.Description)
+            Catch ex As Exception
+                Throw ex
             End Try
         End Sub
 
         Public Shared Sub WriteErrorLog(YourException As Exception)
             Try
-                Logger.Error(YourException, YourException.Message)
+                If _Logger Is Nothing Then _Logger = LogManager.GetCurrentClassLogger()
+                _Logger.Error(YourException, YourException.Message)
             Catch ex As Exception
-                Throw New LoggingProcessForExceptionLogFailedException
+                Throw ex
+            End Try
+        End Sub
+
+        Public Shared Sub Logger(Yourvalue As StackExchange.Redis.RedisValue)
+            Try
+                Dim RawLog = JsonConvert.DeserializeObject(Of R2CoreRawLog)(Yourvalue)
+                If (RawLog.LogTypeId = R2Core.LoggingManagement.R2CoreLogType.None) Then
+                    Dim Err = JsonConvert.DeserializeObject(Of Exception)(Yourvalue)
+                    WriteErrorLog(Err)
+                Else
+                    WriteInfLog(RawLog)
+                End If
+            Catch ex As Exception
+                Throw ex
             End Try
         End Sub
 

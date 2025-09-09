@@ -343,7 +343,7 @@ Namespace TransportTariffsParameters
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Details.AHSGId=AnnouncementsubGroups.AnnouncementSGId 
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters as TransportPriceTariffsParameters On Details.TPTPId=TransportPriceTariffsParameters.TPTPId 
                        Where AnnouncementsubGroups.AnnouncementSGId =" & YourAnnouncementSGId & " AND AnnouncementsubGroups.Active=1 AND Details.RelationActive=1 AND TransportPriceTariffsParameters.Active=1 AND TransportPriceTariffsParameters.Deleted=0
-                       Order By TransportPriceTariffsParameters.TPTPId for JSON Path", 32767, DS, New Boolean).GetRecordsCount = 0 Then
+                       Order By TransportPriceTariffsParameters.TPTPId", 32767, DS, New Boolean).GetRecordsCount = 0 Then
                     Throw New TransportPriceTariffParameterDetailsforAHSGNotFoundException
                 End If
                 Dim Lst = New List(Of R2CoreTransportationAndLoadNotificationTPTParamsDetails)
@@ -362,7 +362,11 @@ Namespace TransportTariffsParameters
             Try
                 Dim TPTParams = String.Empty
                 For Loopx = 0 To YourListofTransportTariffsParams.Count - 1
-                    TPTParams += YourListofTransportTariffsParams(Loopx).TPTPDId + ":" + YourListofTransportTariffsParams(Loopx).Checked
+                    If Loopx = YourListofTransportTariffsParams.Count - 1 Then
+                        TPTParams += YourListofTransportTariffsParams(Loopx).TPTPDId.ToString + ":" + IIf(YourListofTransportTariffsParams(Loopx).Checked, "1", "0")
+                    Else
+                        TPTParams += YourListofTransportTariffsParams(Loopx).TPTPDId.ToString + ":" + IIf(YourListofTransportTariffsParams(Loopx).Checked, "1", "0") + ";"
+                    End If
                 Next
                 Return TPTParams
             Catch ex As Exception

@@ -24,15 +24,12 @@ Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.ExceptionManagement
-Imports R2Core.FileShareRawGroupsManagement
 Imports R2Core.NetworkInternetManagement.Exceptions
 Imports R2Core.DesktopProcessesManagement
 Imports R2Core.PublicProc
-Imports R2Core.R2PrimaryFileSharingWS
 Imports R2Core.SoftwareUserManagement
 Imports R2Core.SoftwareUserManagement.Exceptions
 Imports R2Core.SecurityAlgorithmsManagement.Hashing
-Imports R2Core.LoggingManagement.ExceptionManagemen
 Imports R2Core.SecurityAlgorithmsManagement.AESAlgorithms
 Imports R2Core.SecurityAlgorithmsManagement.Captcha
 Imports R2Core.SecurityAlgorithmsManagement.ExpressionValidationAlgorithms
@@ -52,7 +49,6 @@ Imports R2Core.SessionManagement
 Imports Newtonsoft.Json
 Imports System.Security.Cryptography
 Imports System.Security.Policy
-Imports log4net.Appender.RollingFileAppender
 Imports R2Core.MoneyWallet.MoneyWallet
 Imports R2Core.PermissionManagement
 Imports System.Object

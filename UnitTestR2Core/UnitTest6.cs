@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PayanehClassLibrary.TerminalsWebService;
+using R2Core.CachHelper;
 using R2Core.Caching;
 using StackExchange.Redis;
 using System;
