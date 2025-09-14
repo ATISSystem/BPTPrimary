@@ -76,10 +76,7 @@ Namespace SessionManagement
                 Dim InstanceCaptcha = New R2CoreInstanceCaptchaManager
                 Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
                 Dim InstanceCache = New R2CoreCacheManager
-                'Dim CaptchaWord = InstanceCaptcha.GenerateFakeWordNumeric(InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 6))
-
-                Dim CaptchaWord = "ABCDE"
-
+                Dim CaptchaWord = InstanceCaptcha.GenerateFakeWordNumeric(InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 6))
                 Dim CaptchaBitMap = InstanceCaptcha.GetCaptcha(CaptchaWord)
                 Dim SessionId = GetNewSessionId()
                 InstanceCache.SetCache(InstanceCache.GetCacheType(R2CoreCacheTypes.Session).CacheTypeName + SessionId, New R2CoreStandardSessionCaptchaWordStructure(SessionId, CaptchaWord), R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions, False)

@@ -3,6 +3,7 @@ Imports System.ComponentModel
 Imports System.Reflection
 
 Imports R2Core.DateAndTimeManagement
+Imports R2Core.DateAndTimeManagement.Exceptions
 Imports R2Core.HumanResourcesManagement.Personnel
 
 Public Class UCTimeEntry
@@ -68,7 +69,7 @@ Public Class UCTimeEntry
             Return UCGetTime().Time
         End Get
         Set(value As String)
-            UCSetTime(New R2StandardDateAndTimeStructure(Nothing, Nothing, value))
+            UCSetTime(New R2CoreDateAndTime With {.Time = value})
         End Set
     End Property
 
@@ -99,10 +100,10 @@ Public Class UCTimeEntry
 
         ' Add any initialization after the InitializeComponent() call.
         Try
-            Dim CurrentDateTime As R2StandardDateAndTimeStructure = New R2StandardDateAndTimeStructure(_DateTime.GetCurrentDateTimeMilladiFormated(), _DateTime.GetCurrentDateShamsiFull(), _DateTime.GetCurrentTime)
-            UcTextBoxHour.UCValue = CurrentDateTime.GetHour
-            UcTextBoxMinute.UCValue = CurrentDateTime.GetMinute
-            UcTextBoxSecond.UCValue = CurrentDateTime.GetSecond
+            Dim CurrentDateTime As R2CoreDateAndTime = New R2CoreDateAndTime With {.DateTimeMilladi = _DateTime.GetCurrentDateTimeMilladi(), .ShamsiDate = _DateTime.GetCurrentShamsiDate(), .Time = _DateTime.GetCurrentTime}
+            'UcTextBoxHour.UCValue = CurrentDateTime.GetHour
+            'UcTextBoxMinute.UCValue = CurrentDateTime.GetMinute
+            'UcTextBoxSecond.UCValue = CurrentDateTime.GetSecond
         Catch ex As Exception
             Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
         End Try
@@ -112,21 +113,21 @@ Public Class UCTimeEntry
         Return UcTextBoxHour.UCValue.Trim + ":" + UcTextBoxMinute.UCValue.Trim + ":" + UcTextBoxSecond.UCValue.Trim
     End Function
 
-    Public Function UCGetTime() As R2StandardDateAndTimeStructure
+    Public Function UCGetTime() As R2CoreDateAndTime
 
         Dim DirtTime As String = GetDirtTime()
-        If _DateTime.ChekTimeSyntax(DirtTime) Then
-            Return New R2StandardDateAndTimeStructure(Nothing, Nothing, DirtTime)
+        If _DateTime.CheckTimeSyntax(DirtTime) Then
+            Return New R2CoreDateAndTime With {.Time = DirtTime}
         Else
             Throw New TimeSyntaxNotValidException
         End If
     End Function
 
-    Public Sub UCSetTime(YourTime As R2StandardDateAndTimeStructure)
+    Public Sub UCSetTime(YourTime As R2CoreDateAndTime)
         Try
-            UcTextBoxHour.UCValue = YourTime.GetHour
-            UcTextBoxMinute.UCValue = YourTime.GetMinute
-            UcTextBoxSecond.UCValue = YourTime.GetSecond
+            'UcTextBoxHour.UCValue = YourTime.GetHour
+            'UcTextBoxMinute.UCValue = YourTime.GetMinute
+            'UcTextBoxSecond.UCValue = YourTime.GetSecond
         Catch ex As Exception
             Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
         End Try
@@ -134,7 +135,7 @@ Public Class UCTimeEntry
 
     Public Sub UCSetCurrentTime()
         Try
-            UCSetTime(New R2StandardDateAndTimeStructure(Nothing, Nothing, _DateTime.GetCurrentTime()))
+            UCSetTime(New R2CoreDateAndTime With {.Time = _DateTime.GetCurrentTime()})
         Catch ex As Exception
             Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
         End Try

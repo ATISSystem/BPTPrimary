@@ -20,6 +20,7 @@ using System.Xml;
 using R2Core.SoftwareUserManagement;
 using System.Web.Services.Description;
 using R2CoreTransportationAndLoadNotification.TruckDrivers;
+using R2Core.DateTimeProvider;
 
 namespace UnitTestR2Core
 {

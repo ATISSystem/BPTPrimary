@@ -9,7 +9,7 @@ Imports Newtonsoft.Json
 Imports R2Core.Caching
 Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
-Imports R2Core.DateAndTimeManagement
+Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.PublicProc
 Imports R2Core.SoftwareUserManagement
@@ -39,7 +39,7 @@ Namespace Carousels
         Public Function GetCarousels(YourAllCarousels As Boolean) As String
             Try
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
 
                 If YourAllCarousels Then
@@ -162,7 +162,6 @@ Namespace Carousels
                     Dim CarouselCache = New With {.CId = Carousel.CId, .URL = Carousel.URL, .Picture = GetCarousel(Carousel.CId, YourSoftwareUser)}
                     Lst.Add(CarouselCache)
                 Next
-                InstanceCache.RemoveCache(InstanceCache.GetCacheType(R2CoreCacheTypes.Carousel).CacheTypeName, R2Core.Caching.R2CoreCatchDataBases.Carousels)
                 InstanceCache.SetCache(InstanceCache.GetCacheType(R2CoreCacheTypes.Carousel).CacheTypeName, Lst, R2CoreCacheTypes.Carousel, R2Core.Caching.R2CoreCatchDataBases.Carousels, True)
             Catch ex As SoapException
                 Throw ex

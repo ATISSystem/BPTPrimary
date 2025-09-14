@@ -2,11 +2,13 @@
 using Newtonsoft.Json;
 using PayanehClassLibrary.LoadAllocations;
 using R2Core.DateAndTimeManagement;
+using R2Core.DateTimeProvider;
 using R2Core.LoggingManagement;
 using R2Core.SoftwareUserManagement;
 using R2CoreTransportationAndLoadNotification.LoadAllocation;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoadManipulation;
+using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoadOtherThanManipulation;
 using R2CoreTransportationAndLoadNotification.LoadPermission;
 using R2CoreTransportationAndLoadNotification.RequesterManagement;
 using R2CoreTransportationAndLoadNotification.SoftwareUserManagement;
@@ -14,6 +16,9 @@ using R2CoreTransportationAndLoadNotification.Turns;
 using StackExchange.Redis;
 using System;
 using System.Diagnostics;
+using System.Net.Http;
+using System.Net;
+using System.Text;
 using System.Web.Http.ModelBinding.Binders;
 
 namespace LoadCapacitor
@@ -24,6 +29,19 @@ namespace LoadCapacitor
         [TestMethod]
         public void TestMethod1()
         {
+            var InstanceSession = new R2Core.SessionManagement.R2CoreSessionManager();
+            var SessionStartBox = InstanceSession.StartSession();
+
+            R2Core.LoggingManagement.R2CoreLoggingManager.RegisterLog(R2Core.PubSubMessaging.R2CorePubSubChannels.Logging,new R2CoreRawLog { LogTypeId=0, Description="14040623", MessageDetail1="1", MessageDetail2="2", MessageDetail3="3", UserId=21  });
+            return;
+
+            //var y = new R2DateTime();
+            //y.CheckShamsiDateSyntax("1404/06/22");
+            var x3 = new R2Core.DateTimeProvider.R2DateTimeService();
+            var x4 = x3.Get6ZeroTime();
+
+            var x5 =x4;
+            
             var x1 = new R2CoreTransportationAndLoadNotification.Turns.R2CoreTransportationAndLoadNotificationTurnsManager(new R2DateTimeService());
             x1.TempTurnsCancellation();
 
@@ -40,7 +58,7 @@ namespace LoadCapacitor
             var xx = new R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad.R2CoreTransportationAndLoadNotificationLoadManager (new R2DateTimeService());
             xx.LoadTonajValidate(new R2CoreTransportationAndLoadNotificationLoad {  AnnouncementGroupId=2,AnnouncementSubGroupId=7, Tonaj=29 });
 
-            var InstanceSession = new R2Core.SessionManagement.R2CoreSessionManager();
+            //var InstanceSession = new R2Core.SessionManagement.R2CoreSessionManager();
             var sessionStartBox = InstanceSession.StartSession();
 
 

@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using R2Core.ConfigurationManagement;
 using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
+using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
@@ -220,7 +221,8 @@ namespace APIKernelTasks.Controllers
                 ;
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { Image = InstanceConfigurations.GetConfigurationHelper(CId, User) }), Encoding.UTF8, "application/json");
+                //response.Content = new StringContent(JsonConvert.SerializeObject(new { Image = InstanceConfigurations.GetConfigurationHelper(CId, User) }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Image = 123 }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SoapException ex)

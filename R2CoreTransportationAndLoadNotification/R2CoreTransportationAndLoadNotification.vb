@@ -97,6 +97,7 @@ Imports R2Core.SMS.SMSHandling
 Imports R2CoreTransportationAndLoadNotification.LoadSources
 Imports System.Net
 Imports R2CoreTransportationAndLoadNotification.PredefinedMessagesManagement
+Imports R2Core.DateTimeProvider
 
 Namespace Rmto
     Public MustInherit Class RmtoWebService
@@ -331,7 +332,7 @@ Namespace ReportManagement
                                        Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUser On BLC.UserId=SoftwareUser.UserId
                                     Where BLC.BLCId=" & YourBLCId & " Order By BLCDetails.BLCIndex "
                 CmdSql.ExecuteNonQuery()
-                CmdSql.CommandText = "Update R2PrimaryReports.dbo.TblBillOfLadingControlsReport Set ReportDateTime='" & _DateTime.GetCurrentDateShamsiFull().Replace("/", "") + " - " + _DateTime.GetCurrentTime() & "'"
+                CmdSql.CommandText = "Update R2PrimaryReports.dbo.TblBillOfLadingControlsReport Set ReportDateTime='" & _DateTime.GetCurrentShamsiDate().Replace("/", "") + " - " + _DateTime.GetCurrentTime() & "'"
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
             Catch ex As Exception
@@ -360,7 +361,7 @@ Namespace ReportManagement
                                               Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUser On BLCInfraction.UserId=SoftwareUser.UserId
                                           Where BLCInfraction.BLCIId=" & YourBLCIId & " Order By BLCInfractionDetail.BLCIIndex"
                 CmdSql.ExecuteNonQuery()
-                CmdSql.CommandText = "Update R2PrimaryReports.dbo.TblBillOfLadingControlInfractionsReport Set ReportDateTime='" & _DateTime.GetCurrentDateShamsiFull().Replace("/", "") + " - " + _DateTime.GetCurrentTime() & "'"
+                CmdSql.CommandText = "Update R2PrimaryReports.dbo.TblBillOfLadingControlInfractionsReport Set ReportDateTime='" & _DateTime.GetCurrentShamsiDate().Replace("/", "") + " - " + _DateTime.GetCurrentTime() & "'"
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
             Catch ex As Exception
@@ -424,10 +425,10 @@ Namespace TurnAttendance
 
         Public Function IsPresentRegisteredInLast30Minute(YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure, ByVal YourTurnId As UInt64) As Boolean
             Try
-                Dim InstanceSqlDataBox = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBox = New R2CoreSqlDataBOXManager
                 Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
                 Dim Ds As DataSet
-                If InstanceSqlDataBox.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateTimeMilladi From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") and (DateShamsi='" & _DateTime.GetCurrentDateShamsiFull & "') Order By DateTimeMilladi Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBox.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateTimeMilladi From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") and (DateShamsi='" & _DateTime.GetCurrentShamsiDate & "') Order By DateTimeMilladi Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Return False
                 Else
                     Dim Last30Minute As Int64 = InstanceConfigurationOfAnnouncements.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 1)
@@ -447,8 +448,8 @@ Namespace TurnAttendance
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim NSSTurn = InstanceTurns.GetNSSTurn(YourTurnId)
-                Dim TurnDateTime As String = _DateTime.GetMilladiDateTimeFromDateShamsiFull(NSSTurn.EnterDate, NSSTurn.EnterTime)
-                Return InstancePublicProcedures.GetDateDiff(DateInterval.Day, TurnDateTime, _DateTime.GetCurrentDateTimeMilladiFormated())
+                Dim TurnDateTime As String = _DateTime.GetMilladiDateTimeFromShamsiDate(NSSTurn.EnterDate, NSSTurn.EnterTime)
+                Return InstancePublicProcedures.GetDateDiff(DateInterval.Day, TurnDateTime, _DateTime.GetCurrentDateTimeMilladi())
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -456,7 +457,7 @@ Namespace TurnAttendance
 
         Public Function GetTotalNumberOfPresentRegistered(YourTurnId As Int64) As Int64
             Try
-                Dim InstanceSqlDataBox = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBox = New R2CoreSqlDataBOXManager
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
                 Dim NSSTurn = InstanceTurns.GetNSSTurn(YourTurnId)
                 Dim DS As DataSet
@@ -488,7 +489,7 @@ Namespace TurnAttendance
                 Else
                     If YourNSSAnnouncementHall.AHId = Announcements.Announcements.Zobi Then
                         'غير بومي ها در سالن ذوبی به تعداد اختلاف تاريخ صدور مجوز با تاريخ صدور نوبت باید حاضری داشته باشند
-                        Return GetTurnDateTimeDiferenceToToday(YourTurnId) - InstanceDateAndTimePersianCalendar.GetHoliDayNumber(NSSTurn.EnterDate, _DateTime.GetCurrentDateShamsiFull)
+                        Return GetTurnDateTimeDiferenceToToday(YourTurnId) - InstanceDateAndTimePersianCalendar.GetHoliDayNumber(NSSTurn.EnterDate, _DateTime.GetCurrentShamsiDate)
                     ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Anbari Then
                         Return InstanceConfigurationOfAnnouncements.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 5)
                     ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Otaghdar Then
@@ -535,12 +536,13 @@ Namespace TurnAttendance
 
     Public MustInherit Class R2CoreTransportationAndLoadNotificationMClassTurnAttendanceManagement
         Private Shared _DateTime As New R2DateTime
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
 
         Public Shared Function GetTotalNumberOfPresentRegistered(YourTurnId As Int64) As Int64
             Try
                 Dim NSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure = R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTurn(YourTurnId)
                 Dim DS As DataSet
-                Return R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Count(*) AS M From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") And (DateShamsi<>'" & NSSTurn.EnterDate & "') GROUP BY DateShamsi", 1, DS, New Boolean).GetRecordsCount()
+                Return InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Count(*) AS M From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") And (DateShamsi<>'" & NSSTurn.EnterDate & "') GROUP BY DateShamsi", 1, DS, New Boolean).GetRecordsCount()
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -549,7 +551,7 @@ Namespace TurnAttendance
         Public Shared Function IsPresentRegisteredInLast30Minute(YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure, ByVal YourTurnId As UInt64) As Boolean
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateTimeMilladi From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") and (DateShamsi='" & _DateTime.GetCurrentDateShamsiFull & "') Order By DateTimeMilladi Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateTimeMilladi From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") and (DateShamsi='" & _DateTime.GetCurrentShamsiDate & "') Order By DateTimeMilladi Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Return False
                 Else
                     Dim Last30Minute As Int64 = R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 1)
@@ -567,8 +569,8 @@ Namespace TurnAttendance
         Public Shared Function GetTurnDateTimeDiferenceToToday(YourTurnId As Int64) As Int64
             Try
                 Dim NSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure = R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTurn(YourTurnId)
-                Dim TurnDateTime As String = _DateTime.GetMilladiDateTimeFromDateShamsiFull(NSSTurn.EnterDate, NSSTurn.EnterTime)
-                Return R2CoreMClassPublicProcedures.GetDateDiff(DateInterval.Day, TurnDateTime, _DateTime.GetCurrentDateTimeMilladiFormated())
+                Dim TurnDateTime As String = _DateTime.GetMilladiDateTimeFromShamsiDate(NSSTurn.EnterDate, NSSTurn.EnterTime)
+                Return R2CoreMClassPublicProcedures.GetDateDiff(DateInterval.Day, TurnDateTime, _DateTime.GetCurrentDateTimeMilladi())
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -577,7 +579,7 @@ Namespace TurnAttendance
         Public Shared Function IsPresentsContinuous(ByVal YourTurnId As UInt64) As Boolean
             Try
                 Dim NSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure = R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTurn(YourTurnId)
-                If GetTotalNumberOfPresentRegistered(YourTurnId) + 1 >= GetTurnDateTimeDiferenceToToday(YourTurnId) - R2CoreDateAndTimePersianCalendarManagement.GetHoliDayNumber(NSSTurn.EnterDate, _DateTime.GetCurrentDateShamsiFull) Then
+                If GetTotalNumberOfPresentRegistered(YourTurnId) + 1 >= GetTurnDateTimeDiferenceToToday(YourTurnId) - R2CoreDateAndTimePersianCalendarManagement.GetHoliDayNumber(NSSTurn.EnterDate, _DateTime.GetCurrentShamsiDate) Then
                     Return True
                 Else
                     Return False
@@ -590,7 +592,7 @@ Namespace TurnAttendance
         Public Function IsThisDayTruckDriverPresentRegistered(ByVal YourTurnId As UInt64) As Boolean
             Try
                 Dim DS As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") and (DateShamsi='" & _DateTime.GetCurrentDateShamsiFull & "')", 1, DS, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") and (DateShamsi='" & _DateTime.GetCurrentShamsiDate & "')", 1, DS, New Boolean).GetRecordsCount() = 0 Then
                     Return False
                 Else
                     Return True
@@ -618,7 +620,7 @@ Namespace TurnAttendance
                 Else
                     If YourNSSAnnouncementHall.AHId = Announcements.Announcements.Zobi Then
                         'غير بومي ها در سالن ذوبی به تعداد اختلاف تاريخ صدور مجوز با تاريخ صدور نوبت باید حاضری داشته باشند
-                        Return GetTurnDateTimeDiferenceToToday(YourTurnId) - R2CoreDateAndTimePersianCalendarManagement.GetHoliDayNumber(NSSTurn.EnterDate, _DateTime.GetCurrentDateShamsiFull)
+                        Return GetTurnDateTimeDiferenceToToday(YourTurnId) - R2CoreDateAndTimePersianCalendarManagement.GetHoliDayNumber(NSSTurn.EnterDate, _DateTime.GetCurrentShamsiDate)
                     ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Anbari Then
                         Return R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 5)
                     ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Otaghdar Then
@@ -724,7 +726,7 @@ Namespace TerraficCardsManagement
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceTerraficCardsManager
         Public Function GetNSSTerafficCard(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure) As R2CoreParkingSystemStandardTrafficCardStructure
-            Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+            Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
             Dim InstanceTrafficCards = New R2CoreParkingSystemInstanceTrafficCardsManager
             Try
                 Dim Ds As New DataSet
@@ -769,7 +771,7 @@ Namespace TerraficCardsManagement
         End Function
 
         Public Function GetNSSTerafficCard(YourNSSTransprortCompany As R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure) As R2CoreParkingSystemStandardTrafficCardStructure
-            Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+            Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
             Dim InstanceTrafficCards = New R2CoreParkingSystemInstanceTrafficCardsManager
             Try
                 Dim Ds As New DataSet
@@ -861,6 +863,8 @@ Namespace SMS
             Public Shared ReadOnly Property TransportCompanyChangeActiveStatus = 19
             Public Shared ReadOnly Property ChangeLoadInformation = 20
             Public Shared ReadOnly Property FactoryAndProductionCenterChangeActiveStatus = 22
+            Public Shared ReadOnly Property ChangingStatusOfTommorowLoadsSucceeded = 23
+
         End Class
 
     End Namespace
@@ -916,19 +920,6 @@ Namespace SMS
 
 End Namespace
 
-Namespace PredefinedMessagesManagement
-
-    Public MustInherit Class R2CoreTransportationAndLoadNotificationPredefinedMessages
-        Public Shared ReadOnly LoadAllocationIdNotPairWithDriver As Int64 = 4
-        Public Shared ReadOnly UnIndigenousTrucks As Int64 = 15
-        Public Shared ReadOnly TruckNotFoundException As Int64 = 27
-        Public Shared ReadOnly FactoryAndProductionCenterNotFoundException As Int64 = 29
-
-    End Class
-
-
-End Namespace
-
 Namespace TWS
     Public Class R2CoreTransportationAndLoadNotificationsTWSManager
 
@@ -941,11 +932,11 @@ Namespace TWS
                 Dim InstanceLoadTargets = New R2CoreTransportationAndLoadNotificationMclassLoadTargetsManager
                 Dim InstanceLoadPermission = New R2CoreTransportationAndLoadNotificationInstanceLoadPermissionManager
                 Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationInstanceTrucksManager
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As New DataSet
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
                   "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblTWSCapacitor 
-                   Where TWSStatusId=" & TWSClassLibrary.NobatsManagement.NobatsStatus.Sodoor & " and ShamsiDate='" & _dateTime.GetCurrentDateShamsiFull & "'", 0, DS, New Boolean).GetRecordsCount = 0 Then Exit Try
+                   Where TWSStatusId=" & TWSClassLibrary.NobatsManagement.NobatsStatus.Sodoor & " and ShamsiDate='" & _dateTime.GetCurrentShamsiDate & "'", 0, DS, New Boolean).GetRecordsCount = 0 Then Exit Try
 
                 For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
                     Dim TruckId As Int64 = DS.Tables(0).Rows(Loopx).Item("TruckId")
@@ -958,7 +949,7 @@ Namespace TWS
                 'پاک کردن اطلاعات
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblTWSCapacitor 
-                                          Where ShamsiDate='" & _dateTime.GetCurrentDateShamsiFull & "' and TWSStatusId=" & TWSClassLibrary.NobatsManagement.NobatsStatus.Sodoor & ""
+                                          Where ShamsiDate='" & _dateTime.GetCurrentShamsiDate & "' and TWSStatusId=" & TWSClassLibrary.NobatsManagement.NobatsStatus.Sodoor & ""
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
 
@@ -1014,10 +1005,12 @@ Namespace Goods
     End Class
 
     Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassGoodsManagement
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
         Public Shared Function GetNSSGood(YourGoodId As Int64) As R2CoreTransportationAndLoadNotificationStandardGoodStructure
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from dbtransport.dbo.TbProducts Where StrGoodCode=" & YourGoodId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New GoodNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from dbtransport.dbo.TbProducts Where StrGoodCode=" & YourGoodId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New GoodNotFoundException
                 Dim NSS As R2CoreTransportationAndLoadNotificationStandardGoodStructure = New R2CoreTransportationAndLoadNotificationStandardGoodStructure(Ds.Tables(0).Rows(0).Item("StrGoodCode"), Ds.Tables(0).Rows(0).Item("StrGoodName").TRIM, Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("Deleted"))
                 Return NSS
             Catch exx As GoodNotFoundException
@@ -1033,7 +1026,7 @@ Namespace Goods
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
                 Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardGoodStructure)
                 Dim DS As DataSet = Nothing
-                R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select StrGoodCode,StrGoodName,ViewFlag,Active,Deleted From DBTransport.dbo.TbProducts Where StrGoodName Like '%" & YourSearchString.Replace("ی", "ي").Replace("ک", "ك") & "%' and ViewFlag=1 Order By StrGoodCode", 3600, DS, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select StrGoodCode,StrGoodName,ViewFlag,Active,Deleted From DBTransport.dbo.TbProducts Where StrGoodName Like '%" & YourSearchString.Replace("ی", "ي").Replace("ک", "ك") & "%' and ViewFlag=1 Order By StrGoodCode", 3600, DS, New Boolean)
                 For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
                     Lst.Add(New R2CoreTransportationAndLoadNotificationStandardGoodStructure(DS.Tables(0).Rows(Loopx).Item("StrGoodCode"), DS.Tables(0).Rows(Loopx).Item("StrGoodName"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted")))
                 Next
@@ -1051,7 +1044,7 @@ Namespace Goods
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
                 Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardGoodStructure)
                 Dim DS As DataSet = Nothing
-                R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select StrGoodCode,StrGoodName,ViewFlag,Active,Deleted  From DBTransport.dbo.TbProducts Where Left(StrGoodName," & YourSearchString.Length & ")='" & YourSearchString.Replace("ی", "ي").Replace("ک", "ك") & "' Order By StrGoodCode", 3600, DS, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select StrGoodCode,StrGoodName,ViewFlag,Active,Deleted  From DBTransport.dbo.TbProducts Where Left(StrGoodName," & YourSearchString.Length & ")='" & YourSearchString.Replace("ی", "ي").Replace("ک", "ك") & "' Order By StrGoodCode", 3600, DS, New Boolean)
                 For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
                     Lst.Add(New R2CoreTransportationAndLoadNotificationStandardGoodStructure(DS.Tables(0).Rows(Loopx).Item("StrGoodCode"), DS.Tables(0).Rows(Loopx).Item("StrGoodName"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted")))
                 Next
@@ -1085,6 +1078,8 @@ End Namespace
 Namespace Products
 
     Public Class R2CoreTransportationAndLoadNotificationProductsManager
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
         Public Function GetProducts_SearchIntroCharacters(YourSearchString As String, YourImmediately As Boolean) As String
             Try
                 Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
@@ -1105,7 +1100,7 @@ Namespace Products
                     Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
                     If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
                 Else
-                    If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
                            "Select ProductTypes.ProductTypeId as ProductTypeId,ProductTypes.ProductTypeTitle as ProductTypeTitle,ProductTypes.Active as ProductTypeActive,
                                    Products.strGoodCode as ProductId,Products.strGoodName as ProductTitle,Products.Active as ProductActive
                             from DBTransport.dbo.tbProductTypes as ProductTypes
@@ -1179,7 +1174,7 @@ Namespace TravelTime
         Public Function GetTravelTimes(YourLoaderTypeId As Int64, YourSourceCityId As Int64, YourTargetCityId As Int64, YourImmediately As Boolean) As String
             Try
                 Dim Ds As New DataSet
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
 
                 If YourImmediately Then
@@ -1221,7 +1216,7 @@ Namespace TravelTime
         Public Function GetTravelTime(YourLoaderTypeId As Int64, YourSourceCityId As Int64, YourTargetCityId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTravelTime
             Try
                 Dim Ds As New DataSet
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
 
                 If YourImmediately Then

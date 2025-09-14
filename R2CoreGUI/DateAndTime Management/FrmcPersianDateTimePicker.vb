@@ -5,7 +5,7 @@ Imports R2Core.DateAndTimeManagement
 
 Public Class FrmcPersianDateTimePicker
 
-    Public Event PersianDateTimeChangedEvent(DateTime As R2StandardDateAndTimeStructure)
+    Public Event PersianDateTimeChangedEvent(DateTime As R2CoreDateAndTime)
 
 #Region "General Properties"
 
@@ -36,7 +36,7 @@ Public Class FrmcPersianDateTimePicker
             Dim Year As String = e.CurrentValue.Year.ToString()
             Dim Month As String = R2Core.PublicProc.R2CoreMClassPublicProcedures.RepeatStr("0", 2 - e.CurrentValue.Month.ToString().Length) + e.CurrentValue.Month.ToString()
             Dim Day As String = R2Core.PublicProc.R2CoreMClassPublicProcedures.RepeatStr("0", 2 - e.CurrentValue.Day.ToString().Length) + e.CurrentValue.Day.ToString()
-            RaiseEvent PersianDateTimeChangedEvent(New R2StandardDateAndTimeStructure(Nothing, Year + "/" + Month + "/" + Day, Nothing))
+            RaiseEvent PersianDateTimeChangedEvent(New R2CoreDateAndTime With {.ShamsiDate = Year + "/" + Month + "/" + Day})
         Catch ex As Exception
             MessageBox.Show(ex.Message)
         End Try

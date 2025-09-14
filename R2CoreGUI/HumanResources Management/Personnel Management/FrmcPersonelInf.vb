@@ -191,7 +191,7 @@ Public Class FrmcPersonelInf
 
     Private Sub UcButtonInsertpersonnelPresent_UCClickedEvent() Handles UcButtonInsertpersonnelPresent.UCClickedEvent
         Try
-            R2CorePersonnelMClassManagement.InsertPersonnelPrecentAtThisDateTime(UcPersonnelPnlInsertPersonnelPresent.UCGetNSS(), New R2StandardDateAndTimeStructure(DateTimePicker.Value.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), _DateTime.ConvertToShamsiDateFull(DateTimePicker.Value), _DateTime.GetTimeOfDate(DateTimePicker.Value)))
+            R2CorePersonnelMClassManagement.InsertPersonnelPrecentAtThisDateTime(UcPersonnelPnlInsertPersonnelPresent.UCGetNSS(), New R2CoreDateAndTime With {.DateTimeMilladi = DateTimePicker.Value.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), .ShamsiDate = _DateTime.ConvertToShamsiDate(DateTimePicker.Value), .Time = _DateTime.GetTimeOfDate(DateTimePicker.Value)})
             _FrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.SuccessProccess, " حاضری پرسنل ثبت شد", "", FrmcMessageDialog.MessageType.PersianMessage, Nothing, Me)
         Catch ex As Exception
             _FrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.ErrorType, MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message, "", FrmcMessageDialog.MessageType.ErrorMessage, Nothing, Me)

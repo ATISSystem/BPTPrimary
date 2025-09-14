@@ -73,6 +73,7 @@ Imports R2Core.SMS.SMSHandling.Exceptions
 Imports R2CoreParkingSystem.CarsNativeness.Exceptions
 Imports R2CoreParkingSystem.CarsNativeness
 Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
+Imports R2Core.DateTimeProvider
 
 
 Namespace AccountingManagement
@@ -266,7 +267,7 @@ Namespace AccountingManagement
             Try
                 Dim Lst = New List(Of R2StandardEnterExitAccountingExtendedStructure)
                 Dim Ds As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
                      "Select Top " & YourTotalNumberofAccounts & " Accounting.EEAccountingProcessType,Accountings.AColor,Accountings.AName,Accounting.TimeA,Accounting.DateShamsiA,Accounting.CurrentChargeA,Accounting.MblghA,Accounting.ReminderChargeA,Computers.MDisplayTitle,SoftwareUsers.UserName,Accounting.DateMilladiA,Accounting.maabarcode,Accounting.userida from R2Primary.dbo.TblAccounting as Accounting
                          Inner Join  R2Primary.dbo.TblAccountingCodingTypes as Accountings On Accounting.EEAccountingProcessType=Accountings.ACode
@@ -316,11 +317,12 @@ Namespace AccountingManagement
     Public Class R2CoreParkingSystemMClassAccountingManagement
 
         Private Shared _DateTime As R2DateTime = New R2DateTime()
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
 
         Public Shared Function GetAccountingNamebyAccountingCode(ByVal YourAccountingCode As R2CoreParkingSystemAccountings) As String
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select AName from R2Primary.dbo.TblAccountingCodingTypes Where ACode=" & YourAccountingCode & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select AName from R2Primary.dbo.TblAccountingCodingTypes Where ACode=" & YourAccountingCode & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
                 Return Ds.Tables(0).Rows(0).Item("AName").trim
@@ -351,7 +353,7 @@ Namespace AccountingManagement
         Public Shared Function GetAccountingColorbyAccountingCode(ByVal YourAccountingCode As R2CoreParkingSystemAccountings) As String
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select AColor from R2Primary.dbo.TblAccountingCodingTypes Where ACode=" & YourAccountingCode & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select AColor from R2Primary.dbo.TblAccountingCodingTypes Where ACode=" & YourAccountingCode & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
                 Return Ds.Tables(0).Rows(0).Item("AColor").trim
@@ -364,7 +366,7 @@ Namespace AccountingManagement
             Try
                 Dim Lst As List(Of R2StandardEnterExitAccountingExtendedStructure) = New List(Of R2StandardEnterExitAccountingExtendedStructure)
                 Dim Ds As DataSet = New DataSet
-                R2Core.DatabaseManagement.R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
                      "Select Top " & YourTotalNumberofAccounts & " Accounting.EEAccountingProcessType,Accountings.AColor,Accountings.AName,Accounting.TimeA,Accounting.DateShamsiA,Accounting.CurrentChargeA,Accounting.MblghA,Accounting.ReminderChargeA,Computers.MName,SoftwareUsers.UserName,Accounting.DateMilladiA,Accounting.maabarcode,Accounting.userida from R2Primary.dbo.TblAccounting as Accounting
                          Inner Join  R2Primary.dbo.TblAccountingCodingTypes as Accountings On Accounting.EEAccountingProcessType=Accountings.ACode
                          Inner Join R2Primary.dbo.TblComputers as Computers On Accounting.MaabarCode=Computers.MId
@@ -391,7 +393,7 @@ Namespace AccountingManagement
 
         Public Shared Function GetNSSLastAccounting(YourAccountingCodeType As Int64) As R2StandardEnterExitAccountingStructure
             Try
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
                      "Select Top 1 * from R2Primary.dbo.TblAccounting as Accounting
@@ -448,7 +450,7 @@ Namespace AccountingManagement
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "insert into R2Primary.dbo.TblAccounting(CardId,EEAccountingProcessType,DateShamsiA,TimeA,DateMilladiA,PelakA,SerialA,CityA,PelakTypeA,MaabarCode,MblghA,UseridA,CurrentChargeA,ReminderChargeA) values(" & YourAccounting.MoneyWalletId & "," & YourAccounting.AccountingTypeId & ",'" & _R2DateTimeService.DateTimeServ.GetCurrentDateShamsiFull & "','" & _R2DateTimeService.DateTimeServ.GetCurrentTime & "','" & _R2DateTimeService.DateTimeServ.GetCurrentDateTimeMilladiFormated & "','','','',0,0," & YourAccounting.Mblgh & "," & YourAccounting.SoftwareUserId & ",0,0)"
+                CmdSql.CommandText = "insert into R2Primary.dbo.TblAccounting(CardId,EEAccountingProcessType,DateShamsiA,TimeA,DateMilladiA,PelakA,SerialA,CityA,PelakTypeA,MaabarCode,MblghA,UseridA,CurrentChargeA,ReminderChargeA) values(" & YourAccounting.MoneyWalletId & "," & YourAccounting.AccountingTypeId & ",'" & _R2DateTimeService.GetCurrentShamsiDate & "','" & _R2DateTimeService.GetCurrentTime & "','" & _R2DateTimeService.GetCurrentDateTimeMilladi & "','','','',0,0," & YourAccounting.Mblgh & "," & YourAccounting.SoftwareUserId & ",0,0)"
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
             Catch ex As Exception
@@ -462,7 +464,7 @@ Namespace AccountingManagement
         Public Function GetMoneyWalletTransactions(YourMoneyWalletIdCard As Int64) As String
             Try
                 Dim Ds As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
                      "Select Top 100 Accountings.AName as TransactionTitle,Accountings.AColor as TransactionColor,Accounting.DateShamsiA as ShamsiDate,Accounting.TimeA as Time,Accounting.CurrentChargeA as CurrentBalance,Accounting.MblghA as Amount,Accounting.ReminderChargeA as Reminder,SoftwareUsers.UserName as UserName

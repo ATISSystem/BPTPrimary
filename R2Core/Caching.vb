@@ -68,6 +68,7 @@ Namespace Caching
         Public Shared ReadOnly Property None As Int64 = 0
         Public Shared ReadOnly Property Session As Int64 = 1
         Public Shared ReadOnly Property Carousel As Int64 = 3
+        Public Shared ReadOnly Property SoftwareUserVerify As Int64 = 5
     End Class
 
     Public Class R2CoreStandardCacheTypeStructure
@@ -119,7 +120,7 @@ Namespace Caching
 
         Public Function GetCacheType(YourCacheTypeId As Int64) As R2CoreStandardCacheTypeStructure
             Try
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 * from R2Primary.dbo.TblCacheTypes Where CacheTypeId=" & YourCacheTypeId & "", 10000, DS, New Boolean).GetRecordsCount = 0 Then
                     Throw New CacheTypeNotFoundException

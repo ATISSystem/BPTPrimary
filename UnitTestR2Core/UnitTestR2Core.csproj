@@ -143,6 +143,7 @@
     <Compile Include="UnitTest7.cs" />
     <Compile Include="UnitTest8.cs" />
     <Compile Include="Carrousels.cs" />
+    <Compile Include="UnitTest9.cs" />
     <Compile Include="Web References\PayanehWebService\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -3,6 +3,7 @@
 Imports R2Core.BaseStandardClass
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
+Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2CoreParkingSystem.ProvincesAndCities
@@ -121,7 +122,7 @@ Namespace LoadSources
 
         Public Function IsActiveLoadSource(YourLoadSourceId As Int64) As Boolean
             Try
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
                 InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Active from DBTransport.dbo.tbCity Where nCityCode=" & YourLoadSourceId & "", 32767, DS, New Boolean)
                 Return Convert.ToBoolean(DS.Tables(0).Rows(0).Item("Active"))

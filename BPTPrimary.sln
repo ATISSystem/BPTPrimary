@@ -63,6 +63,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TempTurnsCancellationAutoma
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "TempTurnsCancellationAutomatedJobSetup", "TempTurnsCancellationAutomatedJobSetup\TempTurnsCancellationAutomatedJobSetup.vdproj", "{BC0F4DF4-DE8E-2AA1-1CA6-79CDFD074C6D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChangingStatusOfTommorowLoadsAutomatedJob", "ChangingStatusOfTommorowLoadsAutomatedJob\ChangingStatusOfTommorowLoadsAutomatedJob.csproj", "{B0B1A3C3-3ABA-458D-A3C7-1AEC0F81BA19}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "ChangingStatusOfTommorowLoadsAutomatedJobSetup", "ChangingStatusOfTommorowLoadsAutomatedJobSetup\ChangingStatusOfTommorowLoadsAutomatedJobSetup.vdproj", "{CFD4967E-1130-1954-0A4F-8E8BC8F91829}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIDateTime", "APIDateTime\APIDateTime.csproj", "{EFD139E0-97E5-485A-A3C7-F9529DCA288B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -179,6 +185,16 @@ Global
 		{D2DA1513-5944-4344-932B-C846036504F9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BC0F4DF4-DE8E-2AA1-1CA6-79CDFD074C6D}.Debug|Any CPU.ActiveCfg = Debug
 		{BC0F4DF4-DE8E-2AA1-1CA6-79CDFD074C6D}.Release|Any CPU.ActiveCfg = Release
+		{B0B1A3C3-3ABA-458D-A3C7-1AEC0F81BA19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0B1A3C3-3ABA-458D-A3C7-1AEC0F81BA19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0B1A3C3-3ABA-458D-A3C7-1AEC0F81BA19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0B1A3C3-3ABA-458D-A3C7-1AEC0F81BA19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFD4967E-1130-1954-0A4F-8E8BC8F91829}.Debug|Any CPU.ActiveCfg = Debug
+		{CFD4967E-1130-1954-0A4F-8E8BC8F91829}.Release|Any CPU.ActiveCfg = Release
+		{EFD139E0-97E5-485A-A3C7-F9529DCA288B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFD139E0-97E5-485A-A3C7-F9529DCA288B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFD139E0-97E5-485A-A3C7-F9529DCA288B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFD139E0-97E5-485A-A3C7-F9529DCA288B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

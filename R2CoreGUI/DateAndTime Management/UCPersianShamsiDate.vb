@@ -3,6 +3,7 @@ Imports System.ComponentModel
 Imports System.Reflection
 
 Imports R2Core.DateAndTimeManagement
+Imports R2Core.DateAndTimeManagement.Exceptions
 Imports R2Core.HumanResourcesManagement.Personnel
 
 Public Class UCPersianShamsiDate
@@ -48,10 +49,10 @@ Public Class UCPersianShamsiDate
 
     Public Overrides Sub UCRefreshGeneral()
         Try
-            Dim CurrentDateTime As R2StandardDateAndTimeStructure = New R2StandardDateAndTimeStructure(_DateTime.GetCurrentDateTimeMilladiFormated(), _DateTime.GetCurrentDateShamsiFull(), _DateTime.GetCurrentTime)
-            UcTextBoxYear.UCValue = CurrentDateTime.GetShamsiYear
-            UcTextBoxMonth.UCValue = CurrentDateTime.GetShamsiMonth
-            UcTextBoxDay.UCValue = CurrentDateTime.GetShamsiDay
+            Dim CurrentDateTime As R2CoreDateAndTime = New R2CoreDateAndTime With {.DateTimeMilladi = _DateTime.GetCurrentDateTimeMilladi(), .ShamsiDate = _DateTime.GetCurrentShamsiDate(), .Time = _DateTime.GetCurrentTime}
+            'UcTextBoxYear.UCValue = CurrentDateTime.GetShamsiYea
+            'UcTextBoxMonth.UCValue = CurrentDateTime.GetShamsiMonth
+            'UcTextBoxDay.UCValue = CurrentDateTime.GetShamsiDay
         Catch ex As Exception
             Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
         End Try
@@ -61,11 +62,11 @@ Public Class UCPersianShamsiDate
         Return UcTextBoxYear.UCValue.Trim + "/" + UcTextBoxMonth.UCValue.Trim + "/" + UcTextBoxDay.UCValue.Trim
     End Function
 
-    Public Function UCGetDate() As R2StandardDateAndTimeStructure
+    Public Function UCGetDate() As R2CoreDateAndTime
         Try
             Dim DirtDate As String = GetDirtDate()
-            If _DateTime.ChekDateShamsiFullSyntax(DirtDate) Then
-                Return New R2StandardDateAndTimeStructure(Nothing, DirtDate, Nothing)
+            If _DateTime.CheckShamsiDateSyntax(DirtDate) Then
+                Return New R2CoreDateAndTime With {.ShamsiDate = DirtDate}
             Else
                 Throw New ShamsiDateSyntaxNotValidException
             End If
@@ -76,11 +77,11 @@ Public Class UCPersianShamsiDate
         End Try
     End Function
 
-    Public Sub UCSetDate(YourShamsiDate As R2StandardDateAndTimeStructure)
+    Public Sub UCSetDate(YourShamsiDate As R2CoreDateAndTime)
         Try
-            UcTextBoxYear.UCValue = YourShamsiDate.GetShamsiYear
-            UcTextBoxMonth.UCValue = YourShamsiDate.GetShamsiMonth
-            UcTextBoxDay.UCValue = YourShamsiDate.GetShamsiDay
+            'UcTextBoxYear.UCValue = YourShamsiDate.GetShamsiYear
+            'UcTextBoxMonth.UCValue = YourShamsiDate.GetShamsiMonth
+            'UcTextBoxDay.UCValue = YourShamsiDate.GetShamsiDay
         Catch ex As Exception
             Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
         End Try
@@ -135,9 +136,9 @@ Public Class UCPersianShamsiDate
         _PersianDateTimePicker.ShowDialog()
     End Sub
 
-    Private Sub _PersianDateTimePicker_PersianDateTimeChangedEvent(DateTime As R2StandardDateAndTimeStructure) Handles _PersianDateTimePicker.PersianDateTimeChangedEvent
+    Private Sub _PersianDateTimePicker_PersianDateTimeChangedEvent(DateTime As R2CoreDateAndTime) Handles _PersianDateTimePicker.PersianDateTimeChangedEvent
         Try
-            UCSetDate(New R2StandardDateAndTimeStructure(Nothing, DateTime.DateShamsiFull, Nothing))
+            UCSetDate(New R2CoreDateAndTime With {.ShamsiDate = DateTime.ShamsiDate})
         Catch ex As Exception
             UCFrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.ErrorType, MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message, "", FrmcMessageDialog.MessageType.ErrorMessage, Nothing, Me)
         End Try

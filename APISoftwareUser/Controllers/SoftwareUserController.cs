@@ -30,6 +30,7 @@ using System.Web.Services.Description;
 using System.Web;
 using R2Core.SoftwareUserManagement.Exceptions;
 using StackExchange.Redis;
+using R2Core.DateTimeProvider;
 
 
 
@@ -287,22 +288,19 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/SoftwareUserForgetPassword")]
-        public HttpResponseMessage SoftwareUserForgetPassword([FromBody] APISoftwareUserSessionIdSoftwareUserMobileNumber Content)
+        public HttpResponseMessage SoftwareUserForgetPassword([FromBody] APISoftwareUserSoftwareUserMobileNumber Content)
         {
             try
             {
-                var InstanceSession = new R2CoreSessionManager();
-
-                var SessionId = Content.SessionId;
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
                 var SoftwareUserMobileNumber = Content.SoftwareUserMobileNumber;
 
-                var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
-                InstanseSoftwareUsers.SoftwareUserForgetPassword(SessionId, SoftwareUserMobileNumber);
+                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(1));
+                var SessionId = InstanseSoftwareUsers.SoftwareUserForgetPassword(SoftwareUserMobileNumber);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(string.Empty), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { SessionId = SessionId }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -315,22 +313,21 @@ namespace APISoftwareUser.Controllers
 
         [HttpPost]
         [Route("api/VerifySoftwareUserVerificationCode")]
-        public HttpResponseMessage VerifySoftwareUserVerificationCode([FromBody] APISoftwareUserSessionIdSoftwareUserVerificationCode Content)
+        public HttpResponseMessage VerifySoftwareUserVerificationCode([FromBody] APISoftwareUserSessionIdVerificationCode Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
 
                 var SessionId = Content.SessionId;
                 var SoftwareUserVerificationCode = Content.VerificationCode;
 
-                var User = InstanceSession.ConfirmSession(SessionId);
-
-                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
+                var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(1));
                 InstanseSoftwareUsers.VerifySoftwareUserVerificationCode(SessionId, SoftwareUserVerificationCode);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(string.Empty), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.InformationSentSuccessfully).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)

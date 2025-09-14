@@ -6,6 +6,7 @@ Imports PayanehClassLibrary.DriverTrucksManagement.Exceptions
 Imports PayanehClassLibrary.Turns
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
+Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.MoneyWallet.Exceptions
 Imports R2Core.SoftwareUserManagement

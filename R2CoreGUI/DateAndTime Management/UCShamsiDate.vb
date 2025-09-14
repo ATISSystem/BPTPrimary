@@ -20,7 +20,7 @@ Public Class UCShamsiDate
 
         ' Add any initialization after the InitializeComponent() call.
         Try
-            TxtShamsiDate.Text = _DateTime.GetCurrentDateShamsiFull
+            TxtShamsiDate.Text = _DateTime.GetCurrentShamsiDate
         Catch ex As Exception
             Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
         End Try
@@ -30,7 +30,7 @@ Public Class UCShamsiDate
         Try
             If (e.KeyChar >= "0" And e.KeyChar <= "9") Or Asc(e.KeyChar) = 13 Or Asc(e.KeyChar) = 27 Or Asc(e.KeyChar) = 8 Or e.KeyChar = "/" Then
                 If Asc(e.KeyChar) = 13 Then
-                    If _DateTime.ChekDateShamsiFullSyntax (TxtShamsiDate.Text) = True Then
+                    If _DateTime.CheckShamsiDateSyntax(TxtShamsiDate.Text) = True Then
                         RaiseEvent UC13Pressed(TxtShamsiDate.Text.Trim)
                         e.Handled = True
                     Else
@@ -66,7 +66,7 @@ Public Class UCShamsiDate
     End Property
 
     Public Sub UCSetValue(ByVal YourValue As String)
-        If _DateTime.ChekDateShamsiFullSyntax (YourValue) = True Then
+        If _DateTime.CheckShamsiDateSyntax(YourValue) = True Then
             TxtShamsiDate.Text = YourValue
         Else
             Throw New Exception("تاریخ شمسی نادرست است" + vbCrLf + YourValue)
@@ -74,11 +74,11 @@ Public Class UCShamsiDate
     End Sub
 
     Public Sub UCSetValueFirstDayOfYear()
-        TxtShamsiDate.Text =_DateTime.GetCurrentSalShamsiFull + "/01/01"
+        TxtShamsiDate.Text = _DateTime.GetCurrentShamsiSal + "/01/01"
     End Sub
 
     Public Function UCGetValue() As String
-        If _DateTime.ChekDateShamsiFullSyntax(TxtShamsiDate.Text) = True Then
+        If _DateTime.CheckShamsiDateSyntax(TxtShamsiDate.Text) = True Then
             Return TxtShamsiDate.Text.Trim
         Else
             Throw New Exception("تاریخ شمسی نادرست است" + vbCrLf + TxtShamsiDate.Text.Trim)

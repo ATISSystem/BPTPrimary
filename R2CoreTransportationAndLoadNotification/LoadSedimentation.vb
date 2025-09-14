@@ -28,7 +28,7 @@ Namespace LoadSedimentation
             _SedimentingActive = False
         End Sub
 
-        Public Sub New(ByVal YourSedimentingStartTime As R2StandardDateAndTimeStructure, YourSedimentingEndTime As R2StandardDateAndTimeStructure, YourSedimentingDelationMinutes As Int64, YourSedimentingActive As Boolean)
+        Public Sub New(ByVal YourSedimentingStartTime As R2CoreDateAndTime, YourSedimentingEndTime As R2CoreDateAndTime, YourSedimentingDelationMinutes As Int64, YourSedimentingActive As Boolean)
             _SedimentingStartTime = YourSedimentingStartTime
             _SedimentingEndTime = YourSedimentingEndTime
             _SedimentingDelationMinutes = YourSedimentingDelationMinutes
@@ -36,8 +36,8 @@ Namespace LoadSedimentation
         End Sub
 
 
-        Public Property SedimentingStartTime As R2StandardDateAndTimeStructure
-        Public Property SedimentingEndTime As R2StandardDateAndTimeStructure
+        Public Property SedimentingStartTime As R2CoreDateAndTime
+        Public Property SedimentingEndTime As R2CoreDateAndTime
         Public Property SedimentingDelationMinutes As Int64
         Public Property SedimentingActive As Boolean
     End Class
@@ -80,7 +80,7 @@ Namespace LoadSedimentation
                         Dim LastAnnounceTime = InstanceAnnouncements.GetAnnouncemenetHallLastAnnounceTime(AHId, AHSGId).Time
                         CmdSql.Connection.Open()
                         CmdSql.CommandText = "Update dbtransport.dbo.tbElam Set bFlag=1,LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " 
-                                              Where (dDateElam='" & _DateTime.GetCurrentDateShamsiFull & "') and (LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered & " or LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.FreeLined & ") and AHId=" & AHId & " and AHSGId=" & AHSGId & " and (dTimeElam<='" & LastAnnounceTime & "') and nCarNum>0"
+                                              Where (dDateElam='" & _DateTime.GetCurrentShamsiDate & "') and (LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered & " or LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.FreeLined & ") and AHId=" & AHId & " and AHSGId=" & AHSGId & " and (dTimeElam<='" & LastAnnounceTime & "') and nCarNum>0"
                         CmdSql.ExecuteNonQuery()
                         CmdSql.Connection.Close()
                         'ثبت اکانتینگ
@@ -134,7 +134,7 @@ Namespace LoadSedimentation
 
         Public Function HowManyMinutesPassedfromSedimentation(YourNSS As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadStructure) As Int64
             Try
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
                      "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorAccounting as LoadCapacitorAccounting

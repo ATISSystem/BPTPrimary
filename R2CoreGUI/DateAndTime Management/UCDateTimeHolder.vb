@@ -38,28 +38,28 @@ Public Class UCDateTimeHolder
     <Browsable(False)>
     Public ReadOnly Property UCGetConcat1 As String
         Get
-            Return UcPersianShamsiDate1.UCGetDate.DateShamsiFull.Replace("/", "") + UcTimeEntry1.UCGetTime.Time.Replace(":", "")
+            Return UcPersianShamsiDate1.UCGetDate.ShamsiDate.Replace("/", "") + UcTimeEntry1.UCGetTime.Time.Replace(":", "")
         End Get
     End Property
 
     <Browsable(False)>
     Public ReadOnly Property UCGetConcat2 As String
         Get
-            Return UcPersianShamsiDate2.UCGetDate.DateShamsiFull.Replace("/", "") + UcTimeEntry2.UCGetTime.Time.Replace(":", "")
+            Return UcPersianShamsiDate2.UCGetDate.ShamsiDate.Replace("/", "") + UcTimeEntry2.UCGetTime.Time.Replace(":", "")
         End Get
     End Property
 
     <Browsable(False)>
     Public ReadOnly Property UCGetDate1() As String
         Get
-            Return UcPersianShamsiDate1.UCGetDate.DateShamsiFull
+            Return UcPersianShamsiDate1.UCGetDate.ShamsiDate
         End Get
     End Property
 
     <Browsable(False)>
     Public ReadOnly Property UCGetDate2() As String
         Get
-            Return UcPersianShamsiDate2.UCGetDate.DateShamsiFull
+            Return UcPersianShamsiDate2.UCGetDate.ShamsiDate
         End Get
     End Property
 
@@ -78,16 +78,16 @@ Public Class UCDateTimeHolder
     End Property
 
     <Browsable(False)>
-    Public ReadOnly Property UCGetDateTime1() As R2StandardDateAndTimeStructure
+    Public ReadOnly Property UCGetDateTime1() As R2CoreDateAndTime
         Get
-            Return New R2StandardDateAndTimeStructure(_DateTime.GetMilladiDateTimeFromDateShamsiFull(UCGetDate1, UCGetTime1), UCGetDate1, UCGetTime1)
+            Return New R2CoreDateAndTime With {.DateTimeMilladi = _DateTime.GetMilladiDateTimeFromShamsiDate(UCGetDate1, UCGetTime1), .ShamsiDate = UCGetDate1, .Time = UCGetTime1}
         End Get
     End Property
 
     <Browsable(False)>
-    Public ReadOnly Property UCGetDateTime2() As R2StandardDateAndTimeStructure
+    Public ReadOnly Property UCGetDateTime2() As R2CoreDateAndTime
         Get
-            Return New R2StandardDateAndTimeStructure(_DateTime.GetMilladiDateTimeFromDateShamsiFull(UCGetDate2, UCGetTime2), UCGetDate2, UCGetTime2)
+            Return New R2CoreDateAndTime With {.DateTimeMilladi = _DateTime.GetMilladiDateTimeFromShamsiDate(UCGetDate2, UCGetTime2), .ShamsiDate = UCGetDate2, .Time = UCGetTime2}
         End Get
     End Property
 
@@ -108,7 +108,7 @@ Public Class UCDateTimeHolder
             Return UCGetTime1
         End Get
         Set(value As String)
-            UcTimeEntry1.UCSetTime(New R2StandardDateAndTimeStructure(Nothing, Nothing, value))
+            UcTimeEntry1.UCSetTime(New R2CoreDateAndTime With {.Time = value})
         End Set
     End Property
 
@@ -117,7 +117,7 @@ Public Class UCDateTimeHolder
             Return UCGetTime2
         End Get
         Set(value As String)
-            UcTimeEntry2.UCSetTime(New R2StandardDateAndTimeStructure(Nothing, Nothing, value))
+            UcTimeEntry2.UCSetTime(New R2CoreDateAndTime With {.Time = value})
         End Set
     End Property
 
@@ -141,10 +141,10 @@ Public Class UCDateTimeHolder
 
     Public Sub UCReset()
         Try
-            UcPersianShamsiDate1.UCSetDate(New R2StandardDateAndTimeStructure(Nothing, _DateTime.GetCurrentDateShamsiFull(), Nothing))
-            UcPersianShamsiDate2.UCSetDate(New R2StandardDateAndTimeStructure(Nothing, _DateTime.GetCurrentDateShamsiFull(), Nothing))
-            UcTimeEntry1.UCSetTime(New R2StandardDateAndTimeStructure(Nothing, Nothing, _DateTime.GetCurrentTime()))
-            UcTimeEntry2.UCSetTime(New R2StandardDateAndTimeStructure(Nothing, Nothing, _DateTime.GetCurrentTime()))
+            UcPersianShamsiDate1.UCSetDate(New R2CoreDateAndTime With {.ShamsiDate = _DateTime.GetCurrentShamsiDate()})
+            UcPersianShamsiDate2.UCSetDate(New R2CoreDateAndTime With {.ShamsiDate = _DateTime.GetCurrentShamsiDate()})
+            UcTimeEntry1.UCSetTime(New R2CoreDateAndTime With {.Time = _DateTime.GetCurrentTime()})
+            UcTimeEntry2.UCSetTime(New R2CoreDateAndTime With {.Time = _DateTime.GetCurrentTime()})
         Catch ex As Exception
             Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
         End Try

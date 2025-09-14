@@ -4,6 +4,7 @@
 Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
+Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2CoreTransportationAndLoadNotification.ConfigurationsManagement.Exceptions
 Imports System.Data.SqlClient
@@ -41,7 +42,7 @@ Namespace ConfigurationsManagement
     Public Class R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
         Public Function GetConfig(YourCId As Int64, YourAHId As Int64) As Object
             Try
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New ConfigurationOfAnnouncementHallNotFoundException
@@ -55,7 +56,7 @@ Namespace ConfigurationsManagement
         End Function
 
         Public Function GetConfig(YourCId As Int64, YourAHId As Int64, YourIndex As Int64) As Object
-            Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+            Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
             Try
                 Dim Ds As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
@@ -114,6 +115,7 @@ Namespace ConfigurationsManagement
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager
 
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
         Private _DateTimeService As IR2DateTimeService
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
@@ -121,7 +123,6 @@ Namespace ConfigurationsManagement
 
         Public Function GetConfig(YourCId As Int64, YourAHId As Int64) As Object
             Try
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
                 Dim Ds As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 32767, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New ConfigurationOfAnnouncementHallNotFoundException
@@ -135,7 +136,6 @@ Namespace ConfigurationsManagement
         End Function
 
         Public Function GetConfig(YourCId As Int64, YourAHId As Int64, YourIndex As Int64) As Object
-            Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
             Try
                 Dim Ds As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 32767, Ds, New Boolean).GetRecordsCount = 0 Then
@@ -193,6 +193,7 @@ Namespace ConfigurationsManagement
 
     Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement
         'Inherits R2CoreMClassConfigurationManagement
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
 
         Public Shared Function GetConfigOnLine(YourCId As Int64, YourAHId As Int64) As Object
             Try
@@ -209,7 +210,7 @@ Namespace ConfigurationsManagement
         Public Shared Function GetConfig(YourCId As Int64, YourAHId As Int64, YourIndex As Int64) As Object
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New ConfigurationOfAnnouncementHallNotFoundException
                 End If
                 Return Split(Ds.Tables(0).Rows(0).Item("CValue"), ";")(YourIndex)
@@ -223,7 +224,7 @@ Namespace ConfigurationsManagement
         Public Shared Function GetConfig(YourCId As Int64, YourAHId As Int64) As Object
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New ConfigurationOfAnnouncementHallNotFoundException
                 End If
                 Return Ds.Tables(0).Rows(0).Item("CValue")

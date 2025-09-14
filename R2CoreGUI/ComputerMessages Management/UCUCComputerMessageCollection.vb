@@ -11,7 +11,7 @@ Public Class UCUCComputerMessageCollection
     Inherits UCGeneral
 
     Private WithEvents _SweepTimer As Windows.Forms.Timer = New Timer()
-
+    Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
 
 #Region "General Properties"
 #End Region
@@ -62,13 +62,13 @@ Public Class UCUCComputerMessageCollection
         Try
             Cursor.Current = Cursors.WaitCursor
             Dim Ds As DataSet = New DataSet
-            R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
+            InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
                   "Select Top " & R2CoreMClassConfigurationOfComputersManagement.GetConfigInt64(R2CoreConfigurations.UCUCComputerMessageCollection, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, 0) & " * From R2Primary.dbo.TblComputerMessages as CM 
                     Where CM.CMType in 
                       (Select Distinct CMTypeId From R2Primary.dbo.TblComputerMessageTypes
                         inner join R2Primary.dbo.TblSoftwareUserWorkingGroupsRelationSoftwareUsers on R2Primary.dbo.TblComputerMessageTypes.WorkingGroup=R2Primary.dbo.TblSoftwareUserWorkingGroupsRelationSoftwareUsers.WGId 
                        Where R2Primary.dbo.TblSoftwareUserWorkingGroupsRelationSoftwareUsers.UserId=" & R2CoreGUIMClassGUIManagement.FrmMainMenu.UcUserImage.UCCurrentNSS.UserId & ") 
-                             and (CMActive=1) and (DateShamsi=('" & _DateTime.GetCurrentDateShamsiFull() & "'))
+                             and (CMActive=1) and (DateShamsi=('" & _DateTime.GetCurrentShamsiDate() & "'))
                        Order By DateTimeMilladi Desc", 1, Ds, New Boolean)
             PnlUCs.SuspendLayout()
             PnlUCs.Controls.Clear()

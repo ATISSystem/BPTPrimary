@@ -3,6 +3,7 @@ Imports System.Reflection
 Imports System.Web.Services
 Imports System.Web.Services.Protocols
 Imports R2Core.DateAndTimeManagement
+Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.HumanResourcesManagement.Personnel
 Imports R2Core.MoneyWallet.PaymentRequests
@@ -40,10 +41,10 @@ Public Class R2PrimaryWebService
     End Function
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationPrividerMoneyWalletsCurrentChargeReport(YourDateTimeMilladi1 As DateTime, YourDateShamsiFull1 As String, YourTime1 As String, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationPrividerMoneyWalletsCurrentChargeReport(YourDateTimeMilladi1 As DateTime, YourShamsiDate1 As String, YourTime1 As String, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderMoneyWalletsCurrentChargeReport(New R2StandardDateAndTimeStructure(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1))
+            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderMoneyWalletsCurrentChargeReport(New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi1, .ShamsiDate = YourShamsiDate1, .Time = YourTime1})
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -54,10 +55,10 @@ Public Class R2PrimaryWebService
     End Sub
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationPrividerUsersChargeReport(YourDateTimeMilladi1 As DateTime, YourDateShamsiFull1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourDateShamsiFull2 As String, YourTime2 As String, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationPrividerUsersChargeReport(YourDateTimeMilladi1 As DateTime, YourShamsiDate1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourShamsiDate2 As String, YourTime2 As String, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderUsersChargeReport(New R2StandardDateAndTimeStructure(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1), New R2StandardDateAndTimeStructure(YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2))
+            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderUsersChargeReport(New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi1, .ShamsiDate = YourShamsiDate1, .Time = YourTime1}, New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi2, .ShamsiDate = YourShamsiDate2, .Time = YourTime2})
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -68,10 +69,10 @@ Public Class R2PrimaryWebService
     End Sub
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationPrividerSoldRFIDCardsReport(YourDateTimeMilladi1 As DateTime, YourDateShamsiFull1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourDateShamsiFull2 As String, YourTime2 As String, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationPrividerSoldRFIDCardsReport(YourDateTimeMilladi1 As DateTime, YourShamsiDate1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourShamsiDate2 As String, YourTime2 As String, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderSoldRFIDCardsReport(New R2StandardDateAndTimeStructure(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1), New R2StandardDateAndTimeStructure(YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2))
+            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderSoldRFIDCardsReport(New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi1, .ShamsiDate = YourShamsiDate1, .Time = YourTime1}, New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi2, .ShamsiDate = YourShamsiDate2, .Time = YourTime2})
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -82,10 +83,10 @@ Public Class R2PrimaryWebService
     End Sub
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationPrividerParkingTotalEnteranceSeparationByTerraficCardReport(YourDateTimeMilladi1 As DateTime, YourDateShamsiFull1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourDateShamsiFull2 As String, YourTime2 As String, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationPrividerParkingTotalEnteranceSeparationByTerraficCardReport(YourDateTimeMilladi1 As DateTime, YourShamsiDate1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourShamsiDate2 As String, YourTime2 As String, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderParkingTotalEnteranceSeparationByTerraficCardReport(New R2StandardDateAndTimeStructure(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1), New R2StandardDateAndTimeStructure(YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2))
+            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderParkingTotalEnteranceSeparationByTerraficCardReport(New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi1, .ShamsiDate = YourShamsiDate1, .Time = YourTime1}, New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi2, .ShamsiDate = YourShamsiDate2, .Time = YourTime2})
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -96,10 +97,10 @@ Public Class R2PrimaryWebService
     End Sub
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationPrividerPresentCarsInParkingReport(YourDateTimeMilladi1 As DateTime, YourDateShamsiFull1 As String, YourTime1 As String, YourTerraficCardType As Int16, YourViewCarImages As Boolean, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationPrividerPresentCarsInParkingReport(YourDateTimeMilladi1 As DateTime, YourShamsiDate1 As String, YourTime1 As String, YourTerraficCardType As Int16, YourViewCarImages As Boolean, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderPresentCarsInParkingReport(New R2StandardDateAndTimeStructure(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1), YourTerraficCardType, YourViewCarImages)
+            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderPresentCarsInParkingReport(New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi1, .ShamsiDate = YourShamsiDate1, .Time = YourTime1}, YourTerraficCardType, YourViewCarImages)
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -110,10 +111,10 @@ Public Class R2PrimaryWebService
     End Sub
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationPrividerBlackListFinancialReport(YourDateTimeMilladi1 As DateTime, YourDateShamsiFull1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourDateShamsiFull2 As String, YourTime2 As String, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationPrividerBlackListFinancialReport(YourDateTimeMilladi1 As DateTime, YourShamsiDate1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourShamsiDate2 As String, YourTime2 As String, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderBlackListFinancialReport(New R2StandardDateAndTimeStructure(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1), New R2StandardDateAndTimeStructure(YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2))
+            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderBlackListFinancialReport(New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi1, .ShamsiDate = YourShamsiDate1, .Time = YourTime1}, New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi2, .ShamsiDate = YourShamsiDate2, .Time = YourTime2})
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -124,7 +125,7 @@ Public Class R2PrimaryWebService
     End Sub
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationPrividerCarEntranceReport(YourDateTimeMilladi1 As DateTime, YourDateShamsiFull1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourDateShamsiFull2 As String, YourTime2 As String, YourTerraficCard As String, YourPelak As String, YourSerial As String, YourEntranceDateTimeSupport As Int16, YourViewCarImages As Boolean, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationPrividerCarEntranceReport(YourDateTimeMilladi1 As DateTime, YourShamsiDate1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourShamsiDate2 As String, YourTime2 As String, YourTerraficCard As String, YourPelak As String, YourSerial As String, YourEntranceDateTimeSupport As Int16, YourViewCarImages As Boolean, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
             Dim NSSTerraficCard As R2CoreParkingSystemStandardTrafficCardStructure = Nothing
@@ -135,7 +136,7 @@ Public Class R2PrimaryWebService
             If YourPelak.Trim <> String.Empty Then
                 NSSCar = IIf(YourPelak.Trim = String.Empty, Nothing, New R2StandardCarStructure(0, 0, YourPelak, YourSerial, 0))
             End If
-            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderCarEntranceReport(New R2StandardDateAndTimeStructure(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1), New R2StandardDateAndTimeStructure(YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2), NSSTerraficCard, NSSCar, YourEntranceDateTimeSupport, YourViewCarImages)
+            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderCarEntranceReport(New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi1, .ShamsiDate = YourShamsiDate1, .Time = YourTime1}, New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi2, .ShamsiDate = YourShamsiDate2, .Time = YourTime2}, NSSTerraficCard, NSSCar, YourEntranceDateTimeSupport, YourViewCarImages)
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -146,10 +147,10 @@ Public Class R2PrimaryWebService
     End Sub
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationPrividerTerraficCardsIdentityReport(YourDateTimeMilladi1 As DateTime, YourDateShamsiFull1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourDateShamsiFull2 As String, YourTime2 As String, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationPrividerTerraficCardsIdentityReport(YourDateTimeMilladi1 As DateTime, YourShamsiDate1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourShamsiDate2 As String, YourTime2 As String, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderTerraficCardsIdentityReport(New R2StandardDateAndTimeStructure(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1), New R2StandardDateAndTimeStructure(YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2))
+            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderTerraficCardsIdentityReport(New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi1, .ShamsiDate = YourShamsiDate1, .Time = YourTime1}, New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi2, .ShamsiDate = YourShamsiDate2, .Time = YourTime2})
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -160,10 +161,10 @@ Public Class R2PrimaryWebService
     End Sub
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationPrividerBlackListReport(YourDateTimeMilladi1 As DateTime, YourDateShamsiFull1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourDateShamsiFull2 As String, YourTime2 As String, YourBlackListType As Int64, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationPrividerBlackListReport(YourDateTimeMilladi1 As DateTime, YourShamsiDate1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourShamsiDate2 As String, YourTime2 As String, YourBlackListType As Int64, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderBlackListReport(New R2StandardDateAndTimeStructure(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1), New R2StandardDateAndTimeStructure(YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2), YourBlackListType)
+            R2CoreParkingSystemMClassReportsManagement.ReportingInformationProviderBlackListReport(New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi1, .ShamsiDate = YourShamsiDate1, .Time = YourTime1}, New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi2, .ShamsiDate = YourShamsiDate2, .Time = YourTime2}, YourBlackListType)
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -177,7 +178,7 @@ Public Class R2PrimaryWebService
     Public Function WebMethodGetCurrentDateTimeMilladi(YourExchangeKey As Int64) As DateTime
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            Return _DateTime.GetCurrentDateTimeMilladiFormated()
+            Return _DateTime.GetCurrentDateTimeMilladi()
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -191,7 +192,7 @@ Public Class R2PrimaryWebService
     Public Sub WebMethodRegisteringHandyBills(YourTeadad As Int64, YourShamsiDate As String, YourTerafficCardType As Int64, YourExchangeKey As Int64)
         Try
             Dim NSS = _ExchangeKeyManager.GetNSSUser(YourExchangeKey)
-            R2CoreParkingSystemMClassEnterExitManagement.RegisteringHandyBills(YourTeadad, New R2StandardDateAndTimeStructure(Nothing, YourShamsiDate, Nothing), YourTerafficCardType, NSS)
+            R2CoreParkingSystemMClassEnterExitManagement.RegisteringHandyBills(YourTeadad, New R2CoreDateAndTime With {.ShamsiDate = YourShamsiDate}, YourTerafficCardType, NSS)
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -205,7 +206,7 @@ Public Class R2PrimaryWebService
     Public Function WebMethodGetTotalRegisteredHandyBills(YourShamsiDate As String, YourTerafficCardType As Int64, YourExchangeKey As Int64) As Int64
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            Return R2CoreParkingSystemMClassEnterExitManagement.GetTotalRegisteredHandyBills(New R2StandardDateAndTimeStructure(Nothing, YourShamsiDate, Nothing), YourTerafficCardType)
+            Return R2CoreParkingSystemMClassEnterExitManagement.GetTotalRegisteredHandyBills(New R2CoreDateAndTime With {.ShamsiDate = YourShamsiDate}, YourTerafficCardType)
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -219,7 +220,7 @@ Public Class R2PrimaryWebService
     Public Sub WebMethodDeleteRegisteredHandyBills(YourShamsiDate As String, YourTerafficCardType As Int64, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            R2CoreParkingSystemMClassEnterExitManagement.DeleteRegisteredHandyBills(New R2StandardDateAndTimeStructure(Nothing, YourShamsiDate, Nothing), YourTerafficCardType)
+            R2CoreParkingSystemMClassEnterExitManagement.DeleteRegisteredHandyBills(New R2CoreDateAndTime With {.ShamsiDate = YourShamsiDate}, YourTerafficCardType)
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -230,10 +231,10 @@ Public Class R2PrimaryWebService
     End Sub
 
     <WebMethod()>
-    Public Sub WebMethodReportingInformationPrividerPersonnelEnterExitReport(YourDateTimeMilladi1 As DateTime, YourDateShamsiFull1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourDateShamsiFull2 As String, YourTime2 As String, YourExchangeKey As Int64)
+    Public Sub WebMethodReportingInformationPrividerPersonnelEnterExitReport(YourDateTimeMilladi1 As DateTime, YourShamsiDate1 As String, YourTime1 As String, YourDateTimeMilladi2 As DateTime, YourShamsiDate2 As String, YourTime2 As String, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            R2CorePersonnelMClassManagement.ReportingInformationProviderPersonnelEnterExitReport(New R2StandardDateAndTimeStructure(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1), New R2StandardDateAndTimeStructure(YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2))
+            R2CorePersonnelMClassManagement.ReportingInformationProviderPersonnelEnterExitReport(New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi1, .ShamsiDate = YourShamsiDate1, .Time = YourTime1}, New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi2, .ShamsiDate = YourShamsiDate2, .Time = YourTime2})
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -247,7 +248,7 @@ Public Class R2PrimaryWebService
     Public Function WebMethodExistCar(YourPelak As String, YourSerial As String, YourExchangeKey As Int64) As Boolean
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            Dim InstanceProvincesAndCities = New R2CoreParkingSystemProvincesAndCitiesManager()
+            Dim InstanceProvincesAndCities = New R2CoreParkingSystemProvincesAndCitiesManager(New R2DateTimeService)
             R2CoreParkingSystemMClassCars.GetnIdCar(New R2StandardLicensePlateStructure(YourPelak, YourSerial, InstanceProvincesAndCities.GetCityNameFromnCityCode(R2CoreParkingSystemMClassCitys.IRANCityCode), Nothing))
             Return True
         Catch exx As GetDataException

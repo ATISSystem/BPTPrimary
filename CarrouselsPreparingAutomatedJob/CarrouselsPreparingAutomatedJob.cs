@@ -1,5 +1,6 @@
 ﻿using R2Core.ConfigurationManagement;
 using R2Core.DateAndTimeManagement;
+using R2Core.DateTimeProvider;
 using R2Core.SoftwareUserManagement;
 using System;
 using System.Collections.Generic;
@@ -44,7 +45,7 @@ namespace CarouselsPreparingAutomatedJob
                         var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(1));
 
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(_User);
-                        _AutomatedJobsTimer.Interval = InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.Carousels , 0) * 60000;
+                        _AutomatedJobsTimer.Interval = InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.Carousels , 0) * 1000;
                         _FailStatus = false;
                         EventLog.WriteEntry("CarouselsPreparingAutomatedJob", "CarouselsPreparingAutomatedJob.Interval=" + _AutomatedJobsTimer.Interval.ToString(), EventLogEntryType.SuccessAudit);
                     }

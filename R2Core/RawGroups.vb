@@ -48,7 +48,7 @@ Namespace RawGroups
         Public Shared Function GetRawGroup(YourRawGroupId As Int64) As R2CoreRawGroup
             Try
                 Dim Ds As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblRawGroups Where RGId=" & YourRawGroupId & "", 32767, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New R2CoreRawGroupNotFoundException
                 Else

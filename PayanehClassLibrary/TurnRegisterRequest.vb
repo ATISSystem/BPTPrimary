@@ -28,6 +28,7 @@ Imports PayanehClassLibrary.Turns
 Imports R2CoreTransportationAndLoadNotification.TurnRegisterRequest
 Imports R2Core.DatabaseManagement
 Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
+Imports R2Core.DateTimeProvider
 
 
 Namespace TurnRegisterRequest
@@ -486,7 +487,7 @@ Namespace TurnRegisterRequest
                 Dim InstanceTurnRegisterRequest = New R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(_R2DateTimeService)
                 Dim TRR = InstanceTurnRegisterRequest.GetTurnRegisterRequest(YourTurnRegisterRequestId, False)
                 If TRR.TRRTypeId <> TurnRegisterRequestTypes.Reserve Then Throw New TurnRegisteringRequestIdIsNotaReserveTypeException
-                If DateDiff(DateInterval.Hour, TRR.DateTimeMilladi, _R2DateTimeService.DateTimeServ.GetCurrentDateTimeMilladi) > InstanceTurnRegisterRequest.GetTurnRegisterRequestType(TRR.TRRTypeId).TurnExpirationHours Then Throw New TurnRegisteringRequestDateTimeExpiredException
+                If DateDiff(DateInterval.Hour, TRR.DateTimeMilladi, _R2DateTimeService.GetCurrentDateTimeMilladi) > InstanceTurnRegisterRequest.GetTurnRegisterRequestType(TRR.TRRTypeId).TurnExpirationHours Then Throw New TurnRegisteringRequestDateTimeExpiredException
 
                 'کنترل موجودی کیف پول برای هزینه صدور نوبت - درصورتی که موجودی کافی نباشداکسپشن پرتاب می گردد 
                 If Not IsMoneyWalletInventoryIsEnoughForTurnRegistering(YourTruckId, YourSeqTId) Then Throw New MoneyWalletCurrentChargeNotEnoughException

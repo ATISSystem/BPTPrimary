@@ -26,8 +26,13 @@ namespace APISoftwareUser.Models
         public String SessionId;
         public Int64 SoftwareUserId;
     }
+    public class APISoftwareUserSessionIdSoftwareUserMobileNumber
+    {
+        public String SessionId;
+        public string SoftwareUserMobileNumber;
+    }
 
-    public class APISoftwareUserSessionIdSoftwareUserVerificationCode
+    public class APISoftwareUserSessionIdVerificationCode
     {
         public String SessionId;
         public string VerificationCode;
@@ -49,9 +54,8 @@ namespace APISoftwareUser.Models
         public bool PAccess;
     }
 
-    public class APISoftwareUserSessionIdSoftwareUserMobileNumber
+    public class APISoftwareUserSoftwareUserMobileNumber
     {
-        public String SessionId;
         public string SoftwareUserMobileNumber;
     }
 }

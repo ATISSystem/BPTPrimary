@@ -58,6 +58,7 @@ Imports R2Core.SMS.SMSTypes.Exceptions
 Imports R2Core.SMS.SMSOwners
 Imports R2Core.RawGroups
 Imports System.Runtime.Serialization.Formatters.Binary
+Imports R2Core.DateTimeProvider
 
 Public Class R2Enums
 
@@ -1190,7 +1191,7 @@ Namespace ComputerMessagesManagement
             Try
                 Dim InstanceComputers = New R2CoreMClassComputersManager
                 Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
-                SabtComputerMessage(New R2StandardComputerMessageStructure(0, YourComputerMessage.CMNote, YourComputerMessage.CMType, True, False, InstanceComputers.GetNSSCurrentComputer.MId, InstanceSoftwareUsers.GetNSSSystemUser.UserId, _DateTime.GetCurrentDateTimeMilladiFormated(), _DateTime.GetCurrentDateShamsiFull(), _DateTime.GetCurrentTime(), YourComputerMessage.DataStruct))
+                SabtComputerMessage(New R2StandardComputerMessageStructure(0, YourComputerMessage.CMNote, YourComputerMessage.CMType, True, False, InstanceComputers.GetNSSCurrentComputer.MId, InstanceSoftwareUsers.GetNSSSystemUser.UserId, _DateTime.GetCurrentDateTimeMilladi(), _DateTime.GetCurrentShamsiDate(), _DateTime.GetCurrentTime(), YourComputerMessage.DataStruct))
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -1214,13 +1215,14 @@ Namespace ComputerMessagesManagement
     End Class
 
     Public NotInheritable Class R2CoreMClassComputerMessagesManagement
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
 
         Private Shared _DateTime As R2DateTime = New R2DateTime()
 
         Public Shared Function GetNSSComputerMessageType(YourCMTypeId As Int64) As R2StandardComputerMessageTypeStructure
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblComputerMessageTypes Where CMTypeId=" & YourCMTypeId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblComputerMessageTypes Where CMTypeId=" & YourCMTypeId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New GetNSSException
                 Else
                     Return New R2StandardComputerMessageTypeStructure(Ds.Tables(0).Rows(0).Item("CMTypeId"), Ds.Tables(0).Rows(0).Item("CMTypeName").trim, Ds.Tables(0).Rows(0).Item("CMTypeTitle").trim, Ds.Tables(0).Rows(0).Item("AssemblyDll").trim, Ds.Tables(0).Rows(0).Item("AssemblyPath").trim, Color.FromName(Ds.Tables(0).Rows(0).Item("SpecialColor").trim), Ds.Tables(0).Rows(0).Item("Automation"), Ds.Tables(0).Rows(0).Item("Description").trim, Ds.Tables(0).Rows(0).Item("WorkingGroup"))
@@ -1248,7 +1250,7 @@ Namespace ComputerMessagesManagement
 
         Public Shared Sub SendComputerMessage(YourComputerMessage As R2StandardComputerMessageStructure)
             Try
-                SabtComputerMessage(New R2StandardComputerMessageStructure(0, YourComputerMessage.CMNote, YourComputerMessage.CMType, True, False, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser.UserId, _DateTime.GetCurrentDateTimeMilladiFormated(), _DateTime.GetCurrentDateShamsiFull(), _DateTime.GetCurrentTime(), YourComputerMessage.DataStruct))
+                SabtComputerMessage(New R2StandardComputerMessageStructure(0, YourComputerMessage.CMNote, YourComputerMessage.CMType, True, False, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser.UserId, _DateTime.GetCurrentDateTimeMilladi(), _DateTime.GetCurrentShamsiDate(), _DateTime.GetCurrentTime(), YourComputerMessage.DataStruct))
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -1296,10 +1298,12 @@ End Namespace
 
 Namespace AuthenticationManagement
     Public MustInherit Class R2MClassAuthenticationManagement
+        Private Shared InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
+
         Public Shared Function UserHaveProcessPermission(YourUserNSS As R2CoreStandardSoftwareUserStructure, YourProcessNSS As R2StandardDesktopProcessStructure) As Boolean
             Try
                 Dim DS As New DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New DatabaseManagement.R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblSoftwareUsersRelationProcesses Where UserId='" & YourUserNSS.UserId & "' and PId='" & YourProcessNSS.PId & "'", 3600, DS, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New DatabaseManagement.R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblSoftwareUsersRelationProcesses Where UserId='" & YourUserNSS.UserId & "' and PId='" & YourProcessNSS.PId & "'", 3600, DS, New Boolean).GetRecordsCount = 0 Then
                     Return False
                 Else
                     Return True
@@ -1312,7 +1316,7 @@ Namespace AuthenticationManagement
         Public Shared Function UserHaveComputerPermission(YourUserNSS As R2CoreStandardSoftwareUserStructure, YourComputerNSS As R2CoreStandardComputerStructure) As Boolean
             Try
                 Dim DS As New DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblSoftwareUsersRelationComputers Where UserId='" & YourUserNSS.UserId & "' and MId='" & YourComputerNSS.MId & "'", 3600, DS, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblSoftwareUsersRelationComputers Where UserId='" & YourUserNSS.UserId & "' and MId='" & YourComputerNSS.MId & "'", 3600, DS, New Boolean).GetRecordsCount = 0 Then
                     Return False
                 Else
                     Return True
@@ -1325,7 +1329,7 @@ Namespace AuthenticationManagement
         Public Shared Function ComputerHaveProcessPermission(YourComputerNSS As R2CoreStandardComputerStructure, YourProcessNSS As R2StandardDesktopProcessStructure) As Boolean
             Try
                 Dim DS As New DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New DatabaseManagement.R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblComputersRelationProcesses Where CId=" & YourComputerNSS.MId & " and PId=" & YourProcessNSS.PId & "", 3600, DS, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New DatabaseManagement.R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblComputersRelationProcesses Where CId=" & YourComputerNSS.MId & " and PId=" & YourProcessNSS.PId & "", 3600, DS, New Boolean).GetRecordsCount = 0 Then
                     Return False
                 Else
                     Return True
@@ -1354,1143 +1358,6 @@ Namespace AuthenticationManagement
         Public Overrides ReadOnly Property Message As String
             Get
                 Return "فرآیند مورد نظر در این کامپیوتر قابل دسترس نیست"
-            End Get
-        End Property
-    End Class
-
-End Namespace
-
-Namespace DatabaseManagement
-
-    Public Enum R2OpenCloseConnectionStatus
-        OpenCloseYes = 0
-        OpenCloseNo = 1
-    End Enum
-
-    Public MustInherit Class R2ClassSqlConnection
-
-        Protected DefaultConnectionString As String = R2CoreMClassConfigurationManagement.GetDefaultConnectionString
-        Protected SubscriptionDBConnectionString As String = R2CoreMClassConfigurationManagement.GetSubscriptionDBConnectionString
-        Protected _Connection As SqlClient.SqlConnection = Nothing
-
-        Public Sub New()
-            Try
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Sub
-
-        Public Function GetConnection() As System.Data.SqlClient.SqlConnection
-            Try
-                Return _Connection
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-
-    End Class
-
-    Public Class R2PrimarySqlConnection
-        Inherits R2ClassSqlConnection
-
-        Public Sub New()
-            MyBase.New()
-            Try
-                _Connection = New SqlClient.SqlConnection(DefaultConnectionString.Replace("@IC", R2CoreMClassConfigurationManagement.GetMainDatabaseName))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Sub
-
-    End Class
-
-    Public Class R2PrimarySubscriptionDBSqlConnection
-        Inherits R2ClassSqlConnection
-
-        Public Sub New()
-            MyBase.New()
-            Try
-                _Connection = New SqlClient.SqlConnection(SubscriptionDBConnectionString.Replace("@IC", R2CoreMClassConfigurationManagement.GetMainDatabaseName))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Sub
-
-    End Class
-
-    Public Class R2PrimaryReportsSqlConnection
-        Inherits R2ClassSqlConnection
-
-        Public Sub New()
-            MyBase.New()
-            Try
-                _Connection = New SqlClient.SqlConnection(DefaultConnectionString.Replace("@IC", R2CoreMClassConfigurationManagement.GetMainDatabaseName + "Reports"))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Sub
-
-    End Class
-
-    Public Class R2ClassSqlDataBOX
-        Dim myR2ClassSqlConnection As R2ClassSqlConnection
-        Dim myDisposeCounter As Int16
-        Dim myStartTime As DateTime
-        Dim mySqlString As String
-        Dim myDS As New DataSet
-        Dim myRecordsCount As Int64
-        Public Sub New()
-        End Sub
-        Public Sub New(ByVal Sqlcnn As R2ClassSqlConnection, ByVal DisposeCounterr As Int16, ByVal SqlStringg As String)
-            Try
-                myR2ClassSqlConnection = Sqlcnn
-                myDisposeCounter = DisposeCounterr
-                myStartTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
-                mySqlString = SqlStringg
-                'پركردن ديتاست
-                Dim da As New SqlClient.SqlDataAdapter
-                da.SelectCommand = New SqlClient.SqlCommand(mySqlString)
-                da.SelectCommand.Connection = myR2ClassSqlConnection.GetConnection()
-                'da.SelectCommand.Connection = R2MClassDatabaseManagement.GetOpenConnection()
-                myDS.Tables.Clear()
-                myRecordsCount = da.Fill(myDS)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Sub
-
-        Public Sub RenewData()
-            Try
-                myStartTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
-                Dim da As New SqlClient.SqlDataAdapter
-                da.SelectCommand = New SqlClient.SqlCommand(mySqlString)
-                da.SelectCommand.Connection = myR2ClassSqlConnection.GetConnection
-                myDS.Tables.Clear()
-                myRecordsCount = da.Fill(myDS)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Sub
-
-        Public Function GetRecordsCount() As Int64
-            Return myRecordsCount
-        End Function
-
-        Public Function GetDS() As DataSet
-            Return myDS
-        End Function
-
-        Public Function DisposeCounter() As Int16
-            Return myDisposeCounter
-        End Function
-
-        Public Function StartTime() As DateTime
-            Return myStartTime
-        End Function
-
-        Public Function SqlString() As String
-            Return mySqlString
-        End Function
-
-        Public Function SqlConnection() As SqlClient.SqlConnection
-            Return myR2ClassSqlConnection.GetConnection
-        End Function
-
-    End Class
-
-    Public Class R2CoreInstanseSqlDataBOXManager
-        Private yourSqlcnn As R2ClassSqlConnection = Nothing
-        Private yourSqlString As String = Nothing
-        Private yourDisposeCounter As Int16 = Nothing
-
-        Public Function GetDataBOX(ByVal Sqlcnn As R2ClassSqlConnection, ByVal SqlString As String, ByVal DisposeCounter As Int16, ByRef DS As DataSet, ByRef DataChangeStatus As Boolean) As R2ClassSqlDataBOX
-            Try
-                yourSqlcnn = Sqlcnn
-                yourSqlString = SqlString : yourDisposeCounter = DisposeCounter
-                Dim myIndex As Int32 = R2ClassSqlDataBOXManagement.myList.FindIndex(AddressOf FindDataBox)
-                Dim myR2ClassSqlDataBOX As R2ClassSqlDataBOX
-                If yourDisposeCounter > 0 Then
-                    If myIndex >= 0 Then
-                        Dim myCurrentDateTime As DateTime = Date.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
-                        If (R2ClassSqlDataBOXManagement.myList.Item(myIndex).DisposeCounter <> 0) And (DateAndTime.DateDiff(DateInterval.Second, R2ClassSqlDataBOXManagement.myList.Item(myIndex).StartTime, myCurrentDateTime) >= R2ClassSqlDataBOXManagement.myList.Item(myIndex).DisposeCounter) Then
-                            R2ClassSqlDataBOXManagement.myList.Item(myIndex).RenewData()
-                            DataChangeStatus = True
-                        Else
-                            DataChangeStatus = False
-                        End If
-                        DS = R2ClassSqlDataBOXManagement.myList.Item(myIndex).GetDS
-                        Return R2ClassSqlDataBOXManagement.myList.Item(myIndex)
-                    Else
-                        myR2ClassSqlDataBOX = New R2ClassSqlDataBOX(Sqlcnn, DisposeCounter, SqlString)
-                        DataChangeStatus = True
-                        R2ClassSqlDataBOXManagement.myList.Add(myR2ClassSqlDataBOX)
-                        DS = myR2ClassSqlDataBOX.GetDS
-                        Return myR2ClassSqlDataBOX
-                    End If
-                ElseIf yourDisposeCounter = 0 Then
-                    myR2ClassSqlDataBOX = New R2ClassSqlDataBOX(Sqlcnn, DisposeCounter, SqlString)
-                    DataChangeStatus = True
-                    If myIndex >= 0 Then
-                        R2ClassSqlDataBOXManagement.myList.Item(myIndex) = Nothing
-                        R2ClassSqlDataBOXManagement.myList.Item(myIndex) = myR2ClassSqlDataBOX
-                        DS = myR2ClassSqlDataBOX.GetDS
-                        Return R2ClassSqlDataBOXManagement.myList.Item(myIndex)
-                    Else
-                        R2ClassSqlDataBOXManagement.myList.Add(myR2ClassSqlDataBOX)
-                        DS = myR2ClassSqlDataBOX.GetDS
-                        Return myR2ClassSqlDataBOX
-                    End If
-                ElseIf yourDisposeCounter < 0 Then
-                    Throw New Exception("Error:yourDisposeCounter < 0")
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-
-        Private Function FindDataBox(ByVal DataBox As R2ClassSqlDataBOX) As Boolean
-            Try
-                If DataBox.SqlString = yourSqlString And DataBox.SqlConnection.ConnectionString = yourSqlcnn.GetConnection().ConnectionString Then
-                    Return True
-                Else
-                    Return False
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-
-    End Class
-
-    Public NotInheritable Class R2ClassSqlDataBOXManagement
-        Public Shared myList As New Generic.List(Of R2ClassSqlDataBOX)
-        Private Shared yourSqlcnn As R2ClassSqlConnection = Nothing
-        Private Shared yourSqlString As String = Nothing
-        Private Shared yourDisposeCounter As Int16 = Nothing
-
-        Public Shared Function GetDataBOX(ByVal Sqlcnn As R2ClassSqlConnection, ByVal SqlString As String, ByVal DisposeCounter As Int32, ByRef DS As DataSet, ByRef DataChangeStatus As Boolean) As R2ClassSqlDataBOX
-            Try
-                yourSqlcnn = Sqlcnn
-                yourSqlString = SqlString : yourDisposeCounter = DisposeCounter
-                Dim myIndex As Int32 = myList.FindIndex(AddressOf FindDataBox)
-                Dim myR2ClassSqlDataBOX As R2ClassSqlDataBOX
-                If yourDisposeCounter > 0 Then
-                    If myIndex >= 0 Then
-                        Dim myCurrentDateTime As DateTime = Date.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
-                        If (myList.Item(myIndex).DisposeCounter <> 0) And (DateAndTime.DateDiff(DateInterval.Second, myList.Item(myIndex).StartTime, myCurrentDateTime) >= myList.Item(myIndex).DisposeCounter) Then
-                            myList.Item(myIndex).RenewData()
-                            DataChangeStatus = True
-                        Else
-                            DataChangeStatus = False
-                        End If
-                        DS = myList.Item(myIndex).GetDS
-                        Return myList.Item(myIndex)
-                    Else
-                        myR2ClassSqlDataBOX = New R2ClassSqlDataBOX(Sqlcnn, DisposeCounter, SqlString)
-                        DataChangeStatus = True
-                        myList.Add(myR2ClassSqlDataBOX)
-                        DS = myR2ClassSqlDataBOX.GetDS
-                        Return myR2ClassSqlDataBOX
-                    End If
-                ElseIf yourDisposeCounter = 0 Then
-                    myR2ClassSqlDataBOX = New R2ClassSqlDataBOX(Sqlcnn, DisposeCounter, SqlString)
-                    DataChangeStatus = True
-                    If myIndex >= 0 Then
-                        myList.Item(myIndex) = Nothing
-                        myList.Item(myIndex) = myR2ClassSqlDataBOX
-                        DS = myR2ClassSqlDataBOX.GetDS
-                        Return myList.Item(myIndex)
-                    Else
-                        myList.Add(myR2ClassSqlDataBOX)
-                        DS = myR2ClassSqlDataBOX.GetDS
-                        Return myR2ClassSqlDataBOX
-                    End If
-                ElseIf yourDisposeCounter < 0 Then
-                    Throw New Exception("Error:yourDisposeCounter < 0")
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-
-        Private Shared Function FindDataBox(ByVal DataBox As R2ClassSqlDataBOX) As Boolean
-            Try
-                If DataBox.SqlString = yourSqlString And DataBox.SqlConnection.ConnectionString = yourSqlcnn.GetConnection().ConnectionString Then
-                    Return True
-                Else
-                    Return False
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-
-    End Class
-
-    Public Class R2CoreMClassDatabaseManagement
-        Public Shared Function GetOLEDbConnectionString(ByVal FileName As String) As String
-            Dim Builder As New OleDb.OleDbConnectionStringBuilder
-            If IO.Path.GetExtension(FileName).ToUpper = ".XLS" Then
-                Builder.Provider = "Microsoft.Jet.OLEDB.4.0"
-                Builder.Add("Extended Properties", "Excel 8.0;IMEX=1;HDR=No;")
-            Else
-                Builder.Provider = "Microsoft.ACE.OLEDB.12.0"
-                Builder.Add("Extended Properties", "Excel 12.0;")
-                'Builder.Add("Extended Properties", "Excel 12.0;IMEX=1;HDR=No;")
-            End If
-            Builder.DataSource = FileName
-            Return Builder.ConnectionString
-        End Function
-
-        Public Shared Function GetOLEDbConnectionString(ByVal FileName As String, ByVal Header As String) As String
-            Dim Builder As New OleDb.OleDbConnectionStringBuilder
-            If IO.Path.GetExtension(FileName).ToUpper = ".XLS" Then
-                Builder.Provider = "Microsoft.Jet.OLEDB.4.0"
-                Builder.Add("Extended Properties", String.Format("Excel 8.0;IMEX=1;HDR={0};", Header))
-            Else
-                Builder.Provider = "Microsoft.ACE.OLEDB.12.0"
-                Builder.Add("Extended Properties", String.Format("Excel 12.0;IMEX=1;HDR={0};", Header))
-            End If
-            Builder.DataSource = FileName
-            Return Builder.ConnectionString
-        End Function
-
-        Public Shared Function DocPaths() As String
-            Try
-                Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\pic common"
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-
-        Public Shared Function RptPaths() As String
-            Try
-                Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\rpt"
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-
-        Public Shared Function IconsPath() As String
-            Try
-                Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\atlas icons"
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-
-        Public Shared Function EmzaPaths() As String
-            Try
-                Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\emza secret"
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-
-        Public Shared Function PersonelPicPath() As String
-            Try
-                Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\personelpic"
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-
-        'Private Shared _OpenConnection As SqlClient.SqlConnection = (New R2PrimarySqlConnection).GetConnection
-        'Private Shared WithEvents ConnectionTimer As New System.Timers.Timer(60000)
-
-        'Public Sub ForceConnectionToOpen(YourTimerInterval As Int64)
-        '    Try
-        '        _OpenConnection.Close()
-        '        _OpenConnection.Open()
-        '        ConnectionTimer.Interval = YourTimerInterval
-        '        ConnectionTimer.Enabled = True
-        '        ConnectionTimer.Start()
-        '    Catch ex As Exception
-        '        MessageBox.Show(ex.Message)
-        '    End Try
-        'End Sub
-
-        'Public Shared Function GetOpenConnection() As SqlConnection
-        '    Try
-        '        If _OpenConnection.State <> ConnectionState.Closed Then Return _OpenConnection
-        '        _OpenConnection.Open()
-        '        ConnectionTimer.Enabled = True
-        '        ConnectionTimer.Start()
-        '        Return _OpenConnection
-        '    Catch ex As Exception
-        '        MessageBox.Show(ex.Message)
-        '    End Try
-        'End Function
-
-        'Private Shared Sub ConnectionTimerHandler() Handles ConnectionTimer.Elapsed
-        '    Try
-        '        ConnectionTimer.Enabled = False
-        '        ConnectionTimer.Stop()
-        '        _OpenConnection.Close()
-        '    Catch ex As Exception
-        '        MessageBox.Show(ex.Message)
-        '    End Try
-        'End Sub
-
-    End Class
-
-    'BPTChanged
-    Public NotInheritable Class R2CoreDatabaseManager
-        Public Sub New()
-
-        End Sub
-
-        Public Shared Function GetEquivalenceMessage(YourException As SqlException) As DataBaseException
-            Try
-                Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select EquivalenceMessage from R2Primary.dbo.TblDatebaseErrorCodesEquivalence Where DatabaseErrorCode=" & YourException.Errors(0).Number & "", 32767, DS, New Boolean).GetRecordsCount <> 0 Then
-                    Throw New DataBaseException(DS.Tables(0).Rows(0).Item("EquivalenceMessage"))
-                Else
-                    Throw New DataBaseEquivalenceMessageNotFoundException
-                End If
-            Catch ex As DataBaseException
-                Throw ex
-            Catch ex As DataBaseEquivalenceMessageNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-    End Class
-
-    Public Class DataBaseEquivalenceMessageNotFoundException
-        Inherits ApplicationException
-
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "خطای سیستم - معادلی برای خطای بازگشتی از بانک اطلاعات یافت نشد"
-            End Get
-        End Property
-    End Class
-
-    Public Class DataBaseException
-        Inherits ApplicationException
-
-        Private _Message As String
-        Public Sub New(YourMessage As String)
-            _Message = YourMessage
-        End Sub
-
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return _Message
-            End Get
-        End Property
-    End Class
-
-
-End Namespace
-
-Namespace DateAndTimeManagement
-
-    Public Interface IR2DateTimeService
-        ReadOnly Property DateTimeServ As R2DateTime
-    End Interface
-
-    Public Class R2DateTimeService
-        Implements IR2DateTimeService
-
-        Private _DateTimeServ As R2DateTime
-
-        Public Sub New()
-            _DateTimeServ = New R2DateTime
-        End Sub
-
-        Public ReadOnly Property DateTimeServ As R2DateTime Implements IR2DateTimeService.DateTimeServ
-            Get
-                Return _DateTimeServ
-            End Get
-        End Property
-    End Class
-
-    Public NotInheritable Class R2CoreMclassDateAndTimeManagement
-        Public Shared Function GetPersianDaysDiffDate(YourDate1 As String, YourDate2 As String) As Int64
-            Try
-                Dim year1 As Int64 = Convert.ToInt64(YourDate1.Substring(0, 4))
-                Dim month1 As Int64 = Convert.ToInt64(YourDate1.Substring(5, 2))
-                Dim day1 As Int64 = Convert.ToInt64(YourDate1.Substring(8, 2))
-
-                Dim year2 As Int64 = Convert.ToInt64(YourDate2.Substring(0, 4))
-                Dim month2 As Int64 = Convert.ToInt64(YourDate2.Substring(5, 2))
-                Dim day2 As Int64 = Convert.ToInt64(YourDate2.Substring(8, 2))
-
-                Dim Calendar As System.Globalization.PersianCalendar = New System.Globalization.PersianCalendar()
-                Dim dt1 As DateTime = Calendar.ToDateTime(year1, month1, day1, 0, 0, 0, 0)
-                Dim dt2 As DateTime = Calendar.ToDateTime(year2, month2, day2, 0, 0, 0, 0)
-                Dim ts As TimeSpan = dt2.Subtract(dt1)
-                Return ts.Days
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-    End Class
-
-    Public Class R2StandardDateAndTimeStructure
-
-        Private myDateTimeMilladi As DateTime
-        Private myDateTimeMilladiFormated As String
-        Private myDateShamsiFull As String
-        Private myTime As String
-
-        Public Sub New()
-            MyBase.New()
-            myDateTimeMilladi = Date.Now : myDateTimeMilladiFormated = String.Empty : myDateShamsiFull = "" : myTime = ""
-        End Sub
-
-        Public Sub New(ByVal DateTimeMilladii As DateTime, ByVal DateShamsiFulll As String, ByVal Timee As String)
-            myDateTimeMilladi = DateTimeMilladii
-            myDateTimeMilladiFormated = myDateTimeMilladi.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
-            myDateShamsiFull = DateShamsiFulll
-            myTime = Timee
-        End Sub
-
-        Public Property DateTimeMilladi() As DateTime
-            Get
-                Return myDateTimeMilladi
-            End Get
-            Set(ByVal Value As DateTime)
-                myDateTimeMilladi = Value
-            End Set
-        End Property
-
-        Public ReadOnly Property DateTimeMilladiFormated() As String
-            Get
-                Return myDateTimeMilladiFormated
-            End Get
-        End Property
-
-
-        Public Property DateShamsiFull() As String
-            Get
-                Return myDateShamsiFull
-            End Get
-            Set(ByVal Value As String)
-                myDateShamsiFull = Value
-            End Set
-        End Property
-
-        Public Property Time() As String
-            Get
-                Return myTime
-            End Get
-            Set(ByVal Value As String)
-                myTime = Value
-            End Set
-        End Property
-
-        Public ReadOnly Property GetShamsiYear() As String
-            Get
-                Return Mid(DateShamsiFull, 1, 4)
-            End Get
-        End Property
-
-        Public ReadOnly Property GetShamsiMonth() As String
-            Get
-                Return Mid(DateShamsiFull, 6, 2)
-            End Get
-        End Property
-
-        Public ReadOnly Property GetShamsiDay() As String
-            Get
-                Return Mid(DateShamsiFull, 9, 2)
-            End Get
-        End Property
-
-        Public ReadOnly Property GetHour() As String
-            Get
-                Return Mid(Time, 1, 2)
-            End Get
-        End Property
-
-        Public ReadOnly Property GetMinute() As String
-            Get
-                Return Mid(Time, 4, 2)
-            End Get
-        End Property
-
-        Public ReadOnly Property GetSecond() As String
-            Get
-                Return Mid(Time, 7, 2)
-            End Get
-        End Property
-
-        Public ReadOnly Property GetConcatString() As String
-            Get
-                Return DateShamsiFull.Replace("/", "") + Time.Replace(":", "")
-            End Get
-        End Property
-
-
-
-    End Class
-
-    Public Class R2DateTime
-        'Dim mycurrenttime As String = Trim(Mid(DateAndTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), 12, 8))
-        Private myOpenConnection As R2PrimarySubscriptionDBSqlConnection = New R2PrimarySubscriptionDBSqlConnection
-        Private PC As New System.Globalization.PersianCalendar()
-        Private HC As New System.Globalization.HijriCalendar()
-
-        Public Sub New()
-            'myOpenConnection.GetConnection.Open()
-        End Sub
-        Protected Overrides Sub Finalize()
-            'If myOpenConnection.GetConnection.State <> ConnectionState.Closed Then myOpenConnection.GetConnection.Close()
-        End Sub
-        Public Function GetTimeOfDate(ByVal YouDateTime As DateTime) As String
-            Try
-                Dim mycurrenttime As String = Trim(Mid(YouDateTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), 12, 8))
-                Return mycurrenttime
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetTickofTime(YourDateTime As R2StandardDateAndTimeStructure) As TimeSpan
-            Try
-                Return Date.ParseExact(YourDateTime.DateTimeMilladiFormated, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture).TimeOfDay
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-
-        Public Function GetCurrentTickofTime() As TimeSpan
-            Try
-                Return Date.ParseExact(GetCurrentDateTimeMilladiFormated, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture).TimeOfDay
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetMilladiDateTimeFromDateShamsiFull(ByVal YourShamsiDateFull As String, YourTime As String) As Date
-            Try
-                Return PC.ToDateTime(Mid(YourShamsiDateFull, 1, 4), Mid(YourShamsiDateFull, 6, 2), Mid(YourShamsiDateFull, 9, 2), Mid(YourTime, 1, 2), Mid(YourTime, 4, 2), Mid(YourTime, 7, 2), 0)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetMilladiDateTimeFromDateShamsiFullFormated(ByVal YourShamsiDateFull As String, YourTime As String) As String
-            Try
-                Return PC.ToDateTime(Mid(YourShamsiDateFull, 1, 4), Mid(YourShamsiDateFull, 6, 2), Mid(YourShamsiDateFull, 9, 2), Mid(YourTime, 1, 2), Mid(YourTime, 4, 2), Mid(YourTime, 7, 2), 0).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetYesterdayShamsiDate() As String
-            Try
-                Return ConvertToShamsiDateFull(DateTime.Now.AddDays(-1))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetNextShamsiMonth(YourShamsiDate As R2StandardDateAndTimeStructure, YourNextMonth As Int16) As R2StandardDateAndTimeStructure
-            Try
-                Dim MilladiTemp As DateTime = GetMilladiDateTimeFromDateShamsiFull(YourShamsiDate.DateShamsiFull, YourShamsiDate.Time)
-                MilladiTemp = MilladiTemp.AddMonths(YourNextMonth)
-                Return New R2StandardDateAndTimeStructure(Nothing, ConvertToShamsiDateFull(MilladiTemp), Nothing)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Private Function GetSqlServerCurrentDate() As DateTime
-            Try
-                Dim CmdsqlDateTime As SqlClient.SqlCommand = New SqlClient.SqlCommand("Select Getdate()")
-                CmdsqlDateTime.Connection = myOpenConnection.GetConnection
-                CmdsqlDateTime.Connection.Open()
-                Dim myDateTime As DateTime = CmdsqlDateTime.ExecuteScalar
-                CmdsqlDateTime.Connection.Close()
-                Return myDateTime
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetCurrentTimeSecond() As String
-            Try
-                Return Trim(Mid(GetSqlServerCurrentDate.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), 12, 8))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetCurrentTimeMinute() As String
-            Try
-                Return Trim(Mid(GetSqlServerCurrentDate.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), 12, 5))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetNextDateShamsi() As String
-            Try
-                Return ConvertToShamsiDateFull(GetCurrentDateTimeMilladi().Today.AddDays(1))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-        Public Function GetNextDateShamsiWithoutSlashes() As String
-            Try
-                Return ConvertToShamsiDateFull(GetCurrentDateTimeMilladi().Today.AddDays(1)).Replace("/", "")
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-        Public Function GetCurrentTime() As String
-            Try
-                Return Trim(Mid(GetSqlServerCurrentDate.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), 12, 8))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetCurrentTime(YourDateTime As DateTime)
-            Return Mid(YourDateTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), 12, 20)
-        End Function
-        Public Function GetCurrentDateTime() As R2StandardDateAndTimeStructure
-            Try
-                Dim D = GetCurrentDateTimeMilladi()
-                Return New R2StandardDateAndTimeStructure(D, ConvertToShamsiDateFull(D), GetCurrentTime(D))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetCurrentDateShamsiFull() As String
-            Try
-                Return ConvertToShamsiDateFull(GetSqlServerCurrentDate())
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetCurrentDateShamsiFullWithoutSlashes() As String
-            Try
-                Return GetCurrentDateShamsiFull.Replace("/", "")
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetCurrentDateShamsi() As String
-            Try
-                Return Mid(Trim(GetCurrentDateShamsiFull), 3, 20)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function ConvertToShamsiDateFull(ByVal MilladiDate As DateTime) As String
-            Try
-                Dim MM(12) As Byte
-                Dim yy, y, D, M, sum, a As Int16
-                Dim m1, d1, y1 As String
-                MM(1) = 31
-                MM(2) = 28
-                MM(3) = 31
-                MM(4) = 30
-                MM(5) = 31
-                MM(6) = 30
-                MM(7) = 31
-                MM(8) = 31
-                MM(9) = 30
-                MM(10) = 31
-                MM(11) = 30
-                MM(12) = 31
-                D = MilladiDate.Day
-                M = MilladiDate.Month
-                y = MilladiDate.Year
-                yy = y - 1980
-                yy = yy - Int(yy / 4) * 4
-                If yy = 0 Then
-                    MM(2) = 29
-                Else
-                    MM(2) = 28
-                End If
-                sum = 0
-                If M <> 1 Then
-                    For I As Int16 = 1 To M - 1
-                        sum = sum + MM(I)
-                    Next
-                End If
-                sum = sum + D
-                If yy = 1 Then
-                    sum = sum + 287
-                Else
-                    sum = sum + 286
-                End If
-                If yy = 1 Then
-                    a = 366
-                Else
-                    a = 365
-                End If
-                If sum > a Then
-                    sum = sum - a
-                    y = y + 1
-                End If
-                If sum > 186 Then
-                    sum = sum - 186
-                    M = 7 + Int(sum / 30)
-                    D = sum - (Int(sum / 30) * 30)
-                    If D = 0 Then
-                        D = 30
-                        M = M - 1
-                    End If
-                Else
-                    M = 1 + Int(sum / 31)
-                    D = sum - (Int(sum / 31) * 31)
-                    If D = 0 Then
-                        M = M - 1
-                        D = 31
-                    End If
-                End If
-                y = y - 622
-                If M < 10 Then
-                    m1 = "0" + Trim(Str(M))
-                Else
-                    m1 = Trim(Str(M))
-                End If
-                If D < 10 Then
-                    d1 = "0" + Trim(Str(D))
-                Else
-                    d1 = Trim(Str(D))
-                End If
-                y1 = Trim(Str(y))
-                Return (y1 + "/" + m1 + "/" + d1)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetCurrentDateTimeMilladi() As DateTime
-            Try
-                Return GetSqlServerCurrentDate()
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetCurrentDateTimeMilladiFormated() As String
-            Try
-                Return GetSqlServerCurrentDate().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetCurrentSalShamsi() As String
-            Try
-                Return Mid(GetCurrentSalShamsiFull, 1, 2)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetCurrentSalShamsiFull() As String
-            Try
-                Return Mid(GetCurrentDateShamsiFull, 1, 4)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function ChekDateShamsiFullSyntax(ByVal Datex As String) As Boolean
-            Try
-                Dim mydate As String = Trim(Datex)
-                Dim mysal As String = Mid(mydate, 1, 4)
-                Dim mymah As String = Mid(mydate, 6, 2)
-                Dim myrooz As String = Mid(mydate, 9, 2)
-                If Len(mydate) <> 10 Then Return False
-                If Mid(mydate, 5, 1) <> "/" Then Return False
-                If Mid(mydate, 8, 1) <> "/" Then Return False
-                If Not ((Val(mymah) >= 1) And (Val(mymah) <= 12)) Then Return False
-                If ((Val(mymah) >= 1) And (Val(mymah) <= 6)) Then
-                    If Not ((Val(myrooz) >= 1) And (Val(myrooz) <= 31)) Then Return False
-                ElseIf ((Val(mymah) >= 7) And (Val(mymah) <= 11)) Then
-                    If Not ((Val(myrooz) >= 1) And (Val(myrooz) <= 30)) Then Return False
-                ElseIf (Val(mymah) = 12) Then
-                    If Not ((Val(myrooz) >= 1) And (Val(myrooz) <= R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.EsfandRooz, 0))) Then Return False
-                End If
-                Return True
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function ChekDateShamsiSyntax(ByVal Datex As String) As Boolean
-            Try
-                Dim mydate As String = Trim(Datex)
-                Dim mysal As String = Mid(mydate, 1, 2)
-                Dim mymah As String = Mid(mydate, 4, 2)
-                Dim myrooz As String = Mid(mydate, 7, 2)
-                If Len(mydate) <> 8 Then Return False
-                If Mid(mydate, 3, 1) <> "/" Then Return False
-                If Mid(mydate, 6, 1) <> "/" Then Return False
-                If Not ((Val(mymah) >= 1) And (Val(mymah) <= 12)) Then Return False
-                If ((Val(mymah) >= 1) And (Val(mymah) <= 6)) Then
-                    If Not ((Val(myrooz) >= 1) And (Val(myrooz) <= 31)) Then Return False
-                ElseIf ((Val(mymah) >= 7) And (Val(mymah) <= 11)) Then
-                    If Not ((Val(myrooz) >= 1) And (Val(myrooz) <= 30)) Then Return False
-                ElseIf (Val(mymah) = 12) Then
-                    If Not ((Val(myrooz) >= 1) And (Val(myrooz) <= R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.EsfandRooz, 0))) Then Return False
-                End If
-                Return True
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function ChekTimeSyntax(ByVal zaman As String) As Boolean
-            Try
-                Dim mytime As String = Trim(zaman)
-                If Len(mytime) <> 8 Then
-                    Return False : Exit Function
-                End If
-                If Mid(mytime, 3, 1) <> ":" Then
-                    Return False : Exit Function
-                End If
-                If Mid(mytime, 6, 1) <> ":" Then
-                    Return False : Exit Function
-                End If
-                If Not ((CInt(Mid(mytime, 1, 2)) >= 0) And (CInt(Mid(mytime, 1, 2)) <= 23)) Then
-                    Return False : Exit Function
-                End If
-                If Not ((CInt(Mid(mytime, 4, 2)) >= 0) And (CInt(Mid(mytime, 4, 2)) <= 59)) Then
-                    Return False : Exit Function
-                End If
-                If Not ((CInt(Mid(mytime, 7, 2)) >= 0) And (CInt(Mid(mytime, 4, 2)) <= 59)) Then
-                    Return False : Exit Function
-                End If
-                Return True
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-        Public Function GetPersianMonthName(ByVal YourDateShamsi As String) As String
-            Dim Mah As String = Mid(YourDateShamsi, 6, 2)
-            If Mah = "01" Then Return "فروردین ماه"
-            If Mah = "02" Then Return "اردیبهشت  ماه"
-            If Mah = "03" Then Return "خرداد  ماه"
-            If Mah = "04" Then Return "تیر  ماه"
-            If Mah = "05" Then Return "مرداد  ماه"
-            If Mah = "06" Then Return "شهریور  ماه"
-            If Mah = "07" Then Return "مهر  ماه"
-            If Mah = "08" Then Return "آبان  ماه"
-            If Mah = "09" Then Return "آذر  ماه"
-            If Mah = "10" Then Return "دی  ماه"
-            If Mah = "11" Then Return "بهمن  ماه"
-            If Mah = "12" Then Return "اسفند  ماه"
-        End Function
-        Public Function GetDelimetedTime(YourUnDelimetedTime As String) As String
-            Dim InstancePublicProcedures As New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
-            If YourUnDelimetedTime.Length < 8 Then YourUnDelimetedTime = YourUnDelimetedTime + InstancePublicProcedures.RepeatStr("0", 8 - YourUnDelimetedTime.Length)
-            Return Mid(YourUnDelimetedTime, 1, 2) + ":" + Mid(YourUnDelimetedTime, 3, 2) + ":" + Mid(YourUnDelimetedTime, 5, 2)
-        End Function
-
-        Public Function Get6ZeroTime() As String
-            Return "00:00:00"
-        End Function
-    End Class
-
-    Public Class HafteMahManagement
-        'روتين پر کردن کمبو هفته 
-        Public Shared Sub CmbHafteRefresh(ByVal cmbhafte As ComboBox)
-            Try
-                cmbhafte.Items.Clear()
-                For loopx As Int16 = 10 To 16
-                    cmbhafte.Items.Add(Trim(Str(loopx)) + "    " + Trim(GetHafteRoozNameFromCode(loopx)))
-                Next
-                cmbhafte.Text = cmbhafte.Items(0)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Sub
-        'روتين پر کردن کمبو ماه 
-        Public Shared Sub CmbMahRefresh(ByVal cmbmah As ComboBox)
-            Try
-                cmbmah.Items.Clear()
-                For loopx As Int16 = 10 To 21
-                    cmbmah.Items.Add(Trim(Str(loopx)) + "    " + Trim(GetMahNameFromMahCode(loopx)))
-                Next
-                cmbmah.Text = cmbmah.Items(0)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Sub
-        Public Shared Function GetMahNameFromMahCode(ByVal MahCode As String) As String
-            If MahCode.Trim = "10" Then
-                Return "فروردين"
-            ElseIf MahCode.Trim = "11" Then
-                Return "ارديبهشت"
-            ElseIf MahCode.Trim = "12" Then
-                Return "خرداد"
-            ElseIf MahCode.Trim = "13" Then
-                Return "تير"
-            ElseIf MahCode.Trim = "14" Then
-                Return "مرداد"
-            ElseIf MahCode.Trim = "15" Then
-                Return "شهريور"
-            ElseIf MahCode.Trim = "16" Then
-                Return "مهر"
-            ElseIf MahCode.Trim = "17" Then
-                Return "آبان"
-            ElseIf MahCode.Trim = "18" Then
-                Return "آذر"
-            ElseIf MahCode.Trim = "19" Then
-                Return "دي"
-            ElseIf MahCode.Trim = "20" Then
-                Return "بهمن"
-            ElseIf MahCode.Trim = "21" Then
-                Return "اسفند"
-            End If
-        End Function
-        Public Shared Function GetHafteRoozNameFromCode(ByVal RoozCode As String) As String
-            If RoozCode.Trim = "10" Then
-                Return "شنبه"
-            ElseIf RoozCode.Trim = "11" Then
-                Return "يکشنبه"
-            ElseIf RoozCode.Trim = "12" Then
-                Return "دوشنبه"
-            ElseIf RoozCode.Trim = "13" Then
-                Return "سه شنبه"
-            ElseIf RoozCode.Trim = "14" Then
-                Return "چهارشنبه"
-            ElseIf RoozCode.Trim = "15" Then
-                Return "پنجشنبه"
-            ElseIf RoozCode.Trim = "16" Then
-                Return "جمعه"
-            End If
-        End Function
-        'روتين برگرداندن تعداد روزهاي يک ماه شمسي
-        Public Shared Function GetDaysOfMah(ByVal mahcode As String) As Int16
-            'کد ماه بين 10 تا 21 است يعني فروردين تا اسفند
-            Try
-                Dim mymahcode As String = Trim(mahcode)
-                If (Len(Trim(mahcode)) <> 2) Or (CInt(mahcode) - 9 < 1) Or (CInt(mahcode) - 9 > 12) Then
-                    Throw New Exception("کد ماه شمسي بايد بين اعداد 10 تا 21 باشد")
-                End If
-                If (CInt(mahcode) - 9 >= 1) And (CInt(mahcode) - 9 <= 6) Then
-                    Return 31 : Exit Function
-                End If
-                If (CInt(mahcode) - 9 >= 7) And (CInt(mahcode) - 9 <= 11) Then
-                    Return 30 : Exit Function
-                End If
-                If (CInt(mahcode) - 9 = 12) Then Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.EsfandRooz, 0)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
-
-
-    End Class
-
-    Namespace CalendarManagement
-
-        Namespace PersianCalendar
-            Public Enum PersianCalendarType
-                None = 0
-                Holiday = 1
-            End Enum
-
-            Public Class R2CoreStandardPersianCalendarStructure
-                Inherits BaseStandardClass.R2StandardStructure
-                Public Sub New()
-                    _HId = Int64.MinValue
-                    _DateShamsi = String.Empty
-                    _PCType = Int16.MinValue
-                End Sub
-
-                Public Sub New(ByVal YourHId As Int64, YourDateShamsi As String, YourPCType As String)
-                    _HId = YourHId
-                    _DateShamsi = YourDateShamsi
-                    _PCType = YourPCType
-                End Sub
-
-                Public Property HId As Int64
-                Public Property DateShamsi As String
-                Public Property PCType As Int16
-
-            End Class
-
-            Public Class R2CoreInstanceDateAndTimePersianCalendarManager
-                Private _DateTime = New R2DateTime
-
-                Public Function GetHoliDayNumber(ByVal YourShamsiDate1 As String, ByVal YourShamsiDate2 As String) As UInteger
-                    Try
-                        Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                        Dim Ds As DataSet
-                        InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Count(*) AS Counting from R2Primary.dbo.TblPersianCalendar where (dateshamsi>'" & YourShamsiDate1 & "') and (dateshamsi<'" & YourShamsiDate2 & "')  and PCType=1", 1, Ds, New Boolean)
-                        Return Ds.Tables(0).Rows(0).Item("Counting")
-                    Catch ex As Exception
-                        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                    End Try
-                End Function
-
-                Public Function GetforThisMonth(YourDateTime As R2StandardDateAndTimeStructure) As List(Of R2CoreStandardPersianCalendarStructure)
-                    Try
-                        Dim DSPersianCallendar As New DataSet
-                        Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
-                        InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
-                         "Select * From R2Primary.Dbo.TblPersianCalendar Where SUBSTRING(DateShamsi,1,7)='" & Mid(YourDateTime.DateShamsiFull, 1, 7) & "' Order By DateShamsi ", 3600, DSPersianCallendar, New Boolean)
-                        Dim Lst = New List(Of R2CoreStandardPersianCalendarStructure)
-                        For Loopx As Int64 = 0 To DSPersianCallendar.Tables(0).Rows.Count - 1
-                            Dim PersianCalendar = New R2CoreStandardPersianCalendarStructure(DSPersianCallendar.Tables(0).Rows(Loopx).Item("HId"), DSPersianCallendar.Tables(0).Rows(Loopx).Item("DateShamsi").trim, DSPersianCallendar.Tables(0).Rows(Loopx).Item("PCType"))
-                            Lst.Add(PersianCalendar)
-                        Next
-                        Return Lst
-                    Catch ex As Exception
-                        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                    End Try
-                End Function
-
-            End Class
-
-            Public NotInheritable Class R2CoreDateAndTimePersianCalendarManagement
-                Public Shared Function GetHoliDayNumber(ByVal YourShamsiDate1 As String, ByVal YourShamsiDate2 As String) As UInteger
-                    Try
-                        Dim Ds As DataSet
-                        R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Count(*) AS Counting from R2Primary.dbo.TblPersianCalendar where (dateshamsi>'" & YourShamsiDate1 & "') and (dateshamsi<'" & YourShamsiDate2 & "')  and PCType=1", 1, Ds, New Boolean)
-                        Return Ds.Tables(0).Rows(0).Item("Counting")
-                    Catch ex As Exception
-                        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                    End Try
-                End Function
-
-                Public Shared Function GetLastNonHoliday(YourNSSDateTime As R2StandardDateAndTimeStructure) As R2StandardDateAndTimeStructure
-                    Try
-                        Dim Ds As DataSet
-                        R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblPersianCalendar Order By DateShamsi Desc", 3600, Ds, New Boolean)
-                        Dim Record As DataRow
-                        Record = Ds.Tables(0).Select("DateShamsi < '" & YourNSSDateTime.DateShamsiFull & "' and PCType=0", "DateShamsi Desc")(0)
-                        Return New R2StandardDateAndTimeStructure(Nothing, Record.Item("DateShamsi"), Nothing)
-                    Catch ex As Exception
-                        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                    End Try
-                End Function
-
-
-
-            End Class
-
-        End Namespace
-
-
-    End Namespace
-
-    Public Class ShamsiDateSyntaxNotValidException
-        Inherits ApplicationException
-
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "تاریخ شمسی نادرست است"
-            End Get
-        End Property
-    End Class
-
-    Public Class TimeSyntaxNotValidException
-        Inherits ApplicationException
-
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "فرمت ساعت نادرست است"
-            End Get
-        End Property
-    End Class
-
-    Public Class FirstDateShamsiInRangeWithoutHolidayException
-        Inherits ApplicationException
-
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "یافتن اولین تاریخ در محدوده درخواستی برای روزهای بدون تعطیل با خطای اساسی مواجه شد"
             End Get
         End Property
     End Class
@@ -2578,11 +1445,12 @@ Namespace DesktopProcessesManagement
     End Structure
 
     Public MustInherit Class R2CoreMClassDesktopProcessesManagement
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
 
         Public Shared Function GetNSSProcess(YourPId As Int64) As R2StandardDesktopProcessStructure
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblDesktopProcesses Where PId=" & YourPId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblDesktopProcesses Where PId=" & YourPId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New GetDataException
                 End If
                 Dim NSS As R2StandardDesktopProcessStructure = New R2StandardDesktopProcessStructure
@@ -2602,7 +1470,7 @@ Namespace DesktopProcessesManagement
         Public Shared Function GetNSSProcessGroup(YourPGId As Int64) As R2StandardDesktopProcessGroupStructure
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblDesktopProcessGroups Where PGId=" & YourPGId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblDesktopProcessGroups Where PGId=" & YourPGId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New GetDataException
                 End If
                 Dim NSS As R2StandardDesktopProcessGroupStructure = New R2StandardDesktopProcessGroupStructure
@@ -2620,7 +1488,7 @@ Namespace DesktopProcessesManagement
         Public Shared Function GetListOfProcessGroupsHaveUser(YourNSSUser As R2CoreStandardSoftwareUserStructure) As List(Of R2StandardDesktopProcessGroupStructure)
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select * From R2Primary.dbo.TblDesktopProcessGroups Where PGID In (Select PGID From R2Primary.dbo.TblSoftwareUsersRelationProcessGroups Where UserId=" & YourNSSUser.UserId & ") Order By PGId", 3600, Ds, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * From R2Primary.dbo.TblDesktopProcessGroups Where PGID In (Select PGID From R2Primary.dbo.TblSoftwareUsersRelationProcessGroups Where UserId=" & YourNSSUser.UserId & ") Order By PGId", 3600, Ds, New Boolean).GetRecordsCount <> 0 Then
                     Dim Lst As New List(Of R2StandardDesktopProcessGroupStructure)
                     For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
                         Dim NSS As New R2StandardDesktopProcessGroupStructure
@@ -3088,6 +1956,8 @@ Namespace RFIDCardsManagement
 
     Public Class R2CoreMClassRFIDCardManagement
         Private Shared _DateTime As R2DateTime = New R2DateTime()
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
         Public Shared Function IsRFIDCardNoConfirm(ByVal CardNo As String) As Boolean
             Try
                 Dim Ds As DataSet = New DataSet() : Dim Da As New SqlDataAdapter
@@ -3121,7 +1991,7 @@ Namespace RFIDCardsManagement
                     myCardID = "1"
                 End If
                 Cmdsql.Connection.Open()
-                Cmdsql.CommandText = "insert into R2Primary.dbo.tblrfidcards(CardId,CardNo,Charge,UserIdSabt,UserIdEdit,PelakType,Pelak,Serial,NoMoney,Active,CompanyName,NameFamily,Mobile,Address,Tel,Tahvilg,DateTimeMilladiSabt,DateTimeMilladiEdit,DateShamsiSabt,DateShamsiEdit,CardType,TempCardType) values(" & myCardID & ",'" & YourCardNo & "',0," & YourUserNSS.UserId & "," & YourUserNSS.UserId & ",0,'','',0,1,'','','','','','','" & _DateTime.GetCurrentDateTimeMilladiFormated() & "','" & _DateTime.GetCurrentDateTimeMilladiFormated() & "','" & _DateTime.GetCurrentDateShamsiFull() & "','" & _DateTime.GetCurrentDateShamsiFull() & "',0,0)"
+                Cmdsql.CommandText = "insert into R2Primary.dbo.tblrfidcards(CardId,CardNo,Charge,UserIdSabt,UserIdEdit,PelakType,Pelak,Serial,NoMoney,Active,CompanyName,NameFamily,Mobile,Address,Tel,Tahvilg,DateTimeMilladiSabt,DateTimeMilladiEdit,DateShamsiSabt,DateShamsiEdit,CardType,TempCardType) values(" & myCardID & ",'" & YourCardNo & "',0," & YourUserNSS.UserId & "," & YourUserNSS.UserId & ",0,'','',0,1,'','','','','','','" & _DateTime.GetCurrentDateTimeMilladi() & "','" & _DateTime.GetCurrentDateTimeMilladi() & "','" & _DateTime.GetCurrentShamsiDate() & "','" & _DateTime.GetCurrentShamsiDate() & "',0,0)"
                 Cmdsql.ExecuteNonQuery()
                 Cmdsql.Connection.Close()
             Catch ex As Exception
@@ -3132,7 +2002,7 @@ Namespace RFIDCardsManagement
         Public Shared Function GetNSSRFIDCard(ByVal YourCardNo As String) As R2CoreStandardRFIDCardStructure
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2Primary.dbo.TblRFIDCards Where ltrim(rtrim(CardNo))='" & YourCardNo & "' Order By CardId Desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then Throw New RFIdCardNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2Primary.dbo.TblRFIDCards Where ltrim(rtrim(CardNo))='" & YourCardNo & "' Order By CardId Desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then Throw New RFIdCardNotFoundException
                 Return New R2CoreStandardRFIDCardStructure(Ds.Tables(0).Rows(0).Item("CardId"), Ds.Tables(0).Rows(0).Item("CardNo"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("DateTimeMilladiSabt"), Ds.Tables(0).Rows(0).Item("DateTimeMilladiEdit"), Ds.Tables(0).Rows(0).Item("DateShamsiSabt"), Ds.Tables(0).Rows(0).Item("DateShamsiEdit"))
             Catch ex As RFIdCardNotFoundException
                 Throw ex
@@ -3143,7 +2013,7 @@ Namespace RFIDCardsManagement
         Public Shared Function GetNSSRFIDCard(ByVal YourCardId As Int64) As R2CoreStandardRFIDCardStructure
             Try
                 Dim Ds As DataSet
-                R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2Primary.dbo.TblRFIDCards Where ltrim(rtrim(CardId))=" & YourCardId & "", 1, Ds, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2Primary.dbo.TblRFIDCards Where ltrim(rtrim(CardId))=" & YourCardId & "", 1, Ds, New Boolean)
                 Return New R2CoreStandardRFIDCardStructure(Ds.Tables(0).Rows(0).Item("CardId"), Ds.Tables(0).Rows(0).Item("CardNo"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("DateTimeMilladiSabt"), Ds.Tables(0).Rows(0).Item("DateTimeMilladiEdit"), Ds.Tables(0).Rows(0).Item("DateShamsiSabt"), Ds.Tables(0).Rows(0).Item("DateShamsiEdit"))
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -3221,7 +2091,7 @@ Namespace ComputersManagement
         Public Function GetNSSComputer(YourMId As String) As R2CoreStandardComputerStructure
             Try
                 Dim Ds As DataSet
-                Dim InstanceSqlDataBOX As New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblComputers Where MId='" & YourMId & "'", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New GetNSSException
                 Else
@@ -3237,7 +2107,7 @@ Namespace ComputersManagement
         Public Function GetNSSCurrentComputer() As R2CoreStandardComputerStructure
             Try
                 Dim Ds As DataSet
-                Dim InstanceSqlDataBOX As New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblComputers Where MId=" & R2CoreMClassConfigurationManagement.GetComputerCode() & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New GetNSSException
                 Else
@@ -3253,7 +2123,7 @@ Namespace ComputersManagement
         Public Function GetComputers(YourSearchString As String) As List(Of R2StandardStructure)
             Try
                 Dim Ds As DataSet
-                Dim InstanceSqlDataBOX As New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
                 InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblComputers Where OActive=1 and ViewFlag=1 and MDisplayTitle Like  '%" & YourSearchString & "%' Order By MId", 3600, Ds, New Boolean)
                 Dim Lst As New List(Of R2StandardStructure)
                 For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
@@ -3268,10 +2138,12 @@ Namespace ComputersManagement
     End Class
 
     Public Class R2CoreMClassComputersManagement
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
         Public Shared Function GetNSSComputer(YourMId As String) As R2CoreStandardComputerStructure
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblComputers Where MId='" & YourMId & "'", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblComputers Where MId='" & YourMId & "'", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New GetNSSException
                 Else
                     Return New R2CoreStandardComputerStructure(Ds.Tables(0).Rows(0).Item("MId"), Ds.Tables(0).Rows(0).Item("MName").trim, Ds.Tables(0).Rows(0).Item("MDisplayTitle").trim, Ds.Tables(0).Rows(0).Item("MLocation").trim, Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("OActive"), Ds.Tables(0).Rows(0).Item("Deleted"))
@@ -3286,7 +2158,7 @@ Namespace ComputersManagement
         Public Shared Function GetNSSCurrentComputer() As R2CoreStandardComputerStructure
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblComputers Where MId=" & R2CoreMClassConfigurationManagement.GetComputerCode() & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblComputers Where MId=" & R2CoreMClassConfigurationManagement.GetComputerCode() & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New GetNSSException
                 Else
                     Return New R2CoreStandardComputerStructure(Ds.Tables(0).Rows(0).Item("MId"), Ds.Tables(0).Rows(0).Item("MName").trim, Ds.Tables(0).Rows(0).Item("MDisplayTitle").trim, Ds.Tables(0).Rows(0).Item("MLocation").trim, Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("OActive"), Ds.Tables(0).Rows(0).Item("Deleted"))
@@ -3301,7 +2173,7 @@ Namespace ComputersManagement
         Public Shared Function GetComputers(YourSearchString As String) As List(Of R2StandardStructure)
             Try
                 Dim Ds As DataSet
-                R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblComputers Where OActive=1 and ViewFlag=1 and MDisplayTitle Like  '%" & YourSearchString & "%' Order By MId", 3600, Ds, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblComputers Where OActive=1 and ViewFlag=1 and MDisplayTitle Like  '%" & YourSearchString & "%' Order By MId", 3600, Ds, New Boolean)
                 Dim Lst As New List(Of R2StandardStructure)
                 For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
                     Lst.Add(New R2CoreStandardComputerStructure(Ds.Tables(0).Rows(Loopx).Item("MId"), Ds.Tables(0).Rows(Loopx).Item("MName").trim, Ds.Tables(0).Rows(Loopx).Item("MDisplayTitle").trim, Ds.Tables(0).Rows(Loopx).Item("MLocation").trim, Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("OActive"), Ds.Tables(0).Rows(0).Item("Deleted")))
@@ -3365,7 +2237,7 @@ Namespace ComputersManagement
         Public Function GetConfig(YourCId As Int64, YourMId As Int64, YourIndex As Int64) As Object
             Try
                 Dim Ds As DataSet
-                Dim InstanceSqlDataBOX As New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurationsOfComputers Where CId=" & YourCId & " and MId=" & YourMId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
@@ -3441,7 +2313,7 @@ Namespace ComputersManagement
         'Public Function GetConfigurationOfComputer(YourMId As Int64) As List(Of R2CoreStandardConfigurationOfComputerStructure)
         '    Try
         '        Dim Ds As DataSet
-        '        Dim InstanceSqlDataBOX As New R2CoreInstanseSqlDataBOXManager
+        '        Dim InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
         '        InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
         '            "Select Configs.CId,Configs.CName,Configs.Description,Configs.Orientation,ConfigOfComps.CValue,ConfigOfComps.MId from R2Primary.dbo.TblConfigurations as Configs 
         '               Inner Join R2Primary.dbo.TblConfigurationsOfComputers as ConfigOfComps On Configs.CId=ConfigOfComps.CId
@@ -3493,6 +2365,7 @@ Namespace ComputersManagement
 
     Public NotInheritable Class R2CoreMClassConfigurationOfComputersManagement
         'Inherits R2CoreMClassConfigurationManagement
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
 
         Public Shared Function GetConfigOnLine(YourCId As Int64, YourMId As Int64) As Object
             Try
@@ -3522,7 +2395,7 @@ Namespace ComputersManagement
         Public Shared Function GetConfig(YourCId As Int64, YourMId As Int64, YourIndex As Int64) As Object
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurationsOfComputers Where CId=" & YourCId & " and MId=" & YourMId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurationsOfComputers Where CId=" & YourCId & " and MId=" & YourMId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
                 Return Split(Ds.Tables(0).Rows(0).Item("CValue"), ";")(YourIndex)
@@ -3597,7 +2470,7 @@ Namespace ComputersManagement
         Public Shared Function GetConfigurationOfComputer(YourMId As Int64) As List(Of R2CoreStandardConfigurationOfComputerStructure)
             Try
                 Dim Ds As DataSet
-                R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
                     "Select Configs.CId,Configs.CName,Configs.Description,Configs.Orientation,ConfigOfComps.CValue,ConfigOfComps.MId from R2Primary.dbo.TblConfigurations as Configs 
                        Inner Join R2Primary.dbo.TblConfigurationsOfComputers as ConfigOfComps On Configs.CId=ConfigOfComps.CId
                      Where ConfigOfComps.MId=" & YourMId & " Order By CId", 3600, Ds, New Boolean)
@@ -3758,10 +2631,12 @@ Namespace ReportsManagement
     End Class
 
     Public NotInheritable Class R2CoreMClassReportsManagement
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
         Public Shared Function GetNSSReport(YourRId As String) As R2StandardReportStructure
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblReports Where RId='" & YourRId & "'", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblReports Where RId='" & YourRId & "'", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New GetNSSException
                 Else
                     Return New R2StandardReportStructure(Ds.Tables(0).Rows(0).Item("RId"), Ds.Tables(0).Rows(0).Item("RName").trim, Ds.Tables(0).Rows(0).Item("RFullName").trim, Ds.Tables(0).Rows(0).Item("AssemblyFullPath").trim, Ds.Tables(0).Rows(0).Item("ReportServerURL").trim, Ds.Tables(0).Rows(0).Item("ReportServerPath").trim, Ds.Tables(0).Rows(0).Item("ReportServerCredential").trim, Ds.Tables(0).Rows(0).Item("Description").trim)
@@ -4029,12 +2904,12 @@ Namespace HumanResourcesManagement
 
             Private Shared _DateTime As R2DateTime = New R2DateTime()
             Private Shared _R2PrimaryFSWS = New R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
-
+            Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
 
             Public Shared Function GetNSSPersonnel(YourPId As Int64) As R2CoreStandardPersonnelStructure
                 Try
                     Dim DS As DataSet
-                    If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2Primary.dbo.TblPersonelInf Where PId=" & YourPId & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2Primary.dbo.TblPersonelInf Where PId=" & YourPId & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then
                         Throw New GetNSSException
                     End If
                     Dim NSS As New R2CoreStandardPersonnelStructure
@@ -4068,7 +2943,7 @@ Namespace HumanResourcesManagement
             Public Shared Function GetNSSPersonnel(YourPinCode As String) As R2CoreStandardPersonnelStructure
                 Try
                     Dim DS As DataSet
-                    If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2Primary.dbo.TblPersonelInf Where Ltrim(Rtrim(PinCode))='" & YourPinCode & "'", 1, DS, New Boolean).GetRecordsCount() = 0 Then
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2Primary.dbo.TblPersonelInf Where Ltrim(Rtrim(PinCode))='" & YourPinCode & "'", 1, DS, New Boolean).GetRecordsCount() = 0 Then
                         Throw New GetNSSException
                     End If
                     Dim NSS As New R2CoreStandardPersonnelStructure
@@ -4102,7 +2977,7 @@ Namespace HumanResourcesManagement
             Public Shared Function IsExistPersonnel(YourNSS As R2CoreStandardPersonnelStructure) As Boolean
                 Try
                     Dim DS As New DataSet
-                    If R2ClassSqlDataBOXManagement.GetDataBOX(New DatabaseManagement.R2PrimarySqlConnection, "Select PNameFamily from R2Primary.dbo.TblPersonelInf Where NationalCode='" & YourNSS.NationalCode & "'", 1, DS, New Boolean).GetRecordsCount <> 0 Then
+                    If InstanceSqlDataBOX.GetDataBOX(New DatabaseManagement.R2PrimarySqlConnection, "Select PNameFamily from R2Primary.dbo.TblPersonelInf Where NationalCode='" & YourNSS.NationalCode & "'", 1, DS, New Boolean).GetRecordsCount <> 0 Then
                         Return True
                     Else
                         Return False
@@ -4121,7 +2996,7 @@ Namespace HumanResourcesManagement
                     CmdSql.Transaction = CmdSql.Connection.BeginTransaction
                     CmdSql.CommandText = "Select top 1 PId from R2Primary.dbo.TblPersonelInf with (tablockx) Order by PId Desc "
                     Dim PId As Int64 = CmdSql.ExecuteScalar + 1
-                    CmdSql.CommandText = "Insert Into R2Primary.dbo.TblPersonelInf(PId,PIdOther,PNameFamily,PFatherName,NationalCode,Tel,Address,Active,DateTimeMilladiSabt,DateTimeMilladiEdit,DateShamsiSabt,DateShamsiEdit,UserIdSabt,UserIdEdit,FingerPrint,FingerPrint2,FingerPrint3,FingerPrint4,StartTImeShift,EndTImeShift,ShiftMinutes) Values(" & PId & ",'" & YourNSS.PIdOther & "','" & YourNSS.PNameFamily & "','" & YourNSS.PFatherName & "','" & YourNSS.NationalCode & "','" & YourNSS.Tel & "','" & YourNSS.Address & "'," & IIf(YourNSS.Active, 1, 0) & ",'" & _DateTime.GetCurrentDateTimeMilladiFormated() & "','" & _DateTime.GetCurrentDateTimeMilladiFormated() & "','" & _DateTime.GetCurrentDateShamsiFull() & "','" & _DateTime.GetCurrentDateShamsiFull() & "'," & YourUserNSS.UserId & "," & YourUserNSS.UserId & ",0,0,0,0,'" & YourNSS.StartTImeShift & "','" & YourNSS.EndTImeShift & "','" & YourNSS.ShiftMinutes & "')"
+                    CmdSql.CommandText = "Insert Into R2Primary.dbo.TblPersonelInf(PId,PIdOther,PNameFamily,PFatherName,NationalCode,Tel,Address,Active,DateTimeMilladiSabt,DateTimeMilladiEdit,DateShamsiSabt,DateShamsiEdit,UserIdSabt,UserIdEdit,FingerPrint,FingerPrint2,FingerPrint3,FingerPrint4,StartTImeShift,EndTImeShift,ShiftMinutes) Values(" & PId & ",'" & YourNSS.PIdOther & "','" & YourNSS.PNameFamily & "','" & YourNSS.PFatherName & "','" & YourNSS.NationalCode & "','" & YourNSS.Tel & "','" & YourNSS.Address & "'," & IIf(YourNSS.Active, 1, 0) & ",'" & _DateTime.GetCurrentDateTimeMilladi() & "','" & _DateTime.GetCurrentDateTimeMilladi() & "','" & _DateTime.GetCurrentShamsiDate() & "','" & _DateTime.GetCurrentShamsiDate() & "'," & YourUserNSS.UserId & "," & YourUserNSS.UserId & ",0,0,0,0,'" & YourNSS.StartTImeShift & "','" & YourNSS.EndTImeShift & "','" & YourNSS.ShiftMinutes & "')"
                     CmdSql.ExecuteNonQuery()
                     CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                     Return PId
@@ -4139,7 +3014,7 @@ Namespace HumanResourcesManagement
                 Try
                     CmdSql.Connection.Open()
                     CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                    CmdSql.CommandText = "Update R2Primary.dbo.TblPersonelInf Set PIdOther='" & YourNSS.PIdOther & "',PNameFamily='" & YourNSS.PNameFamily & "',PFatherName='" & YourNSS.PFatherName & "',NationalCode='" & YourNSS.NationalCode & "',Tel='" & YourNSS.Tel & "',Address='" & YourNSS.Address & "',Active=" & IIf(YourNSS.Active, 1, 0) & ",DateTimeMilladiEdit='" & _DateTime.GetCurrentDateTimeMilladiFormated() & "',DateShamsiEdit='" & _DateTime.GetCurrentDateShamsiFull() & "',UserIdEdit=" & YourUserNSS.UserId & ", StartTimeShift='" & YourNSS.StartTImeShift & "',EndTimeShift='" & YourNSS.EndTImeShift & "',ShiftMinutes='" & YourNSS.ShiftMinutes & "' Where PId=" & YourNSS.PId & ""
+                    CmdSql.CommandText = "Update R2Primary.dbo.TblPersonelInf Set PIdOther='" & YourNSS.PIdOther & "',PNameFamily='" & YourNSS.PNameFamily & "',PFatherName='" & YourNSS.PFatherName & "',NationalCode='" & YourNSS.NationalCode & "',Tel='" & YourNSS.Tel & "',Address='" & YourNSS.Address & "',Active=" & IIf(YourNSS.Active, 1, 0) & ",DateTimeMilladiEdit='" & _DateTime.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTime.GetCurrentShamsiDate() & "',UserIdEdit=" & YourUserNSS.UserId & ", StartTimeShift='" & YourNSS.StartTImeShift & "',EndTimeShift='" & YourNSS.EndTImeShift & "',ShiftMinutes='" & YourNSS.ShiftMinutes & "' Where PId=" & YourNSS.PId & ""
                     CmdSql.ExecuteNonQuery()
                     CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 Catch ex As Exception
@@ -4172,8 +3047,8 @@ Namespace HumanResourcesManagement
             Public Shared Function CreateListOfPersonnel(YourActiveStatus As Boolean) As List(Of R2CoreStandardPersonnelStructure)
                 Try
                     Dim DS As DataSet
-                    If YourActiveStatus = True Then R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblPersonelInf Where Active=1 Order By PNameFamily", 1, DS, New Boolean)
-                    If YourActiveStatus = False Then R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblPersonelInf Order By PNameFamily", 1, DS, New Boolean)
+                    If YourActiveStatus = True Then InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblPersonelInf Where Active=1 Order By PNameFamily", 1, DS, New Boolean)
+                    If YourActiveStatus = False Then InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblPersonelInf Order By PNameFamily", 1, DS, New Boolean)
                     Dim ListOfNSS As List(Of R2CoreStandardPersonnelStructure) = New List(Of R2CoreStandardPersonnelStructure)()
                     For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
                         ListOfNSS.Add(New R2CoreStandardPersonnelStructure(DS.Tables(0).Rows(Loopx).Item("PId"), DS.Tables(0).Rows(Loopx).Item("PIdOther"), DS.Tables(0).Rows(Loopx).Item("PNameFamily"), DS.Tables(0).Rows(Loopx).Item("PFatherName"), DS.Tables(0).Rows(Loopx).Item("NationalCode"), DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("Tel"), DS.Tables(0).Rows(Loopx).Item("Address"), DS.Tables(0).Rows(Loopx).Item("UserIdSabt"), DS.Tables(0).Rows(Loopx).Item("UserIdEdit"), DS.Tables(0).Rows(Loopx).Item("DateTimeMilladiSabt"), DS.Tables(0).Rows(Loopx).Item("DateTimeMilladiEdit"), DS.Tables(0).Rows(Loopx).Item("DateShamsiSabt"), DS.Tables(0).Rows(Loopx).Item("DateShamsiEdit"), DS.Tables(0).Rows(Loopx).Item("FingerPrint"), DS.Tables(0).Rows(Loopx).Item("FingerPrint2"), DS.Tables(0).Rows(Loopx).Item("FingerPrint3"), DS.Tables(0).Rows(Loopx).Item("FingerPrint4"), DS.Tables(0).Rows(Loopx).Item("StartTImeShift"), DS.Tables(0).Rows(Loopx).Item("EndTImeShift"), DS.Tables(0).Rows(Loopx).Item("ShiftMinutes")))
@@ -4212,7 +3087,7 @@ Namespace HumanResourcesManagement
             Public Shared Function GetNumberOfEnterExitAtThisDay(ByVal YourNSSPersonnel As R2CoreStandardPersonnelStructure) As Int64
                 Try
                     Dim DS As DataSet
-                    R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "SELECT COUNT(*) AS CCount FROM R2Primary.dbo.TblPersonelAttendance WHERE (PId=" & YourNSSPersonnel.PId & ")  AND (DateShamsi ='" & _DateTime.GetCurrentDateShamsiFull & "')", 1, DS, New Boolean)
+                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "SELECT COUNT(*) AS CCount FROM R2Primary.dbo.TblPersonelAttendance WHERE (PId=" & YourNSSPersonnel.PId & ")  AND (DateShamsi ='" & _DateTime.GetCurrentShamsiDate & "')", 1, DS, New Boolean)
                     Return DS.Tables(0).Rows(0).Item("ccount")
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -4222,8 +3097,8 @@ Namespace HumanResourcesManagement
             Public Shared Function GetTotalNumberOfPersonnelRegistered(YourActiveStatus As Boolean) As Int64
                 Try
                     Dim DS As DataSet
-                    If YourActiveStatus = True Then R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Count(*) as CCount from R2Primary.dbo.TblPersonelInf Where Active=1", 1, DS, New Boolean)
-                    If YourActiveStatus = False Then R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Count(*) as CCount from R2Primary.dbo.TblPersonelInf", 1, DS, New Boolean)
+                    If YourActiveStatus = True Then InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Count(*) as CCount from R2Primary.dbo.TblPersonelInf Where Active=1", 1, DS, New Boolean)
+                    If YourActiveStatus = False Then InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Count(*) as CCount from R2Primary.dbo.TblPersonelInf", 1, DS, New Boolean)
                     Return DS.Tables(0).Rows(0).Item("CCount")
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -4271,7 +3146,7 @@ Namespace HumanResourcesManagement
                 CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
                 Try
                     CmdSql.Connection.Open()
-                    CmdSql.CommandText = "Insert Into R2Primary.dbo.TblPersonelAttendance(PId,DateTimeMilladi,DateShamsi,Time,Flag) values(" & YourNSSPersonnel.PId & ",'" & _DateTime.GetCurrentDateTimeMilladiFormated & "','" & _DateTime.GetCurrentDateShamsiFull & "','" & _DateTime.GetCurrentTime & "',1)"
+                    CmdSql.CommandText = "Insert Into R2Primary.dbo.TblPersonelAttendance(PId,DateTimeMilladi,DateShamsi,Time,Flag) values(" & YourNSSPersonnel.PId & ",'" & _DateTime.GetCurrentDateTimeMilladi & "','" & _DateTime.GetCurrentShamsiDate & "','" & _DateTime.GetCurrentTime & "',1)"
                     CmdSql.ExecuteNonQuery()
                     CmdSql.Connection.Close()
                 Catch ex As Exception
@@ -4280,12 +3155,12 @@ Namespace HumanResourcesManagement
                 End Try
             End Sub
 
-            Public Shared Sub InsertPersonnelPrecentAtThisDateTime(YourNSSPersonnel As R2CoreStandardPersonnelStructure, YourDateTime As R2StandardDateAndTimeStructure)
+            Public Shared Sub InsertPersonnelPrecentAtThisDateTime(YourNSSPersonnel As R2CoreStandardPersonnelStructure, YourDateTime As R2CoreDateAndTime)
                 Dim CmdSql As New SqlClient.SqlCommand
                 CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
                 Try
                     CmdSql.Connection.Open()
-                    CmdSql.CommandText = "Insert Into R2Primary.dbo.TblPersonelAttendance(PId,DateTimeMilladi,DateShamsi,Time,Flag) values(" & YourNSSPersonnel.PId & ",'" & YourDateTime.DateTimeMilladi.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) & "','" & YourDateTime.DateShamsiFull & "','" & YourDateTime.Time & "',1)"
+                    CmdSql.CommandText = "Insert Into R2Primary.dbo.TblPersonelAttendance(PId,DateTimeMilladi,DateShamsi,Time,Flag) values(" & YourNSSPersonnel.PId & ",'" & YourDateTime.DateTimeMilladi.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) & "','" & YourDateTime.ShamsiDate & "','" & YourDateTime.Time & "',1)"
                     CmdSql.ExecuteNonQuery()
                     CmdSql.Connection.Close()
                 Catch ex As Exception
@@ -4298,7 +3173,7 @@ Namespace HumanResourcesManagement
                 Try
                     Dim Lst As New List(Of String)
                     Dim DS As DataSet
-                    R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select DateShamsi,Time from R2Primary.dbo.TblPersonelAttendance Where PId=" & YourNSSPersonnel.PId & "order by DateTimeMilladi Desc", 1, DS, New Boolean)
+                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select DateShamsi,Time from R2Primary.dbo.TblPersonelAttendance Where PId=" & YourNSSPersonnel.PId & "order by DateTimeMilladi Desc", 1, DS, New Boolean)
                     For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
                         Lst.Add(DS.Tables(0).Rows(Loopx).Item("DateShamsi").trim + "    " + DS.Tables(0).Rows(Loopx).Item("Time").trim)
                     Next
@@ -4308,14 +3183,14 @@ Namespace HumanResourcesManagement
                 End Try
             End Function
 
-            Public Shared Sub ReportingInformationProviderPersonnelEnterExitReport(YourDateTime1 As R2StandardDateAndTimeStructure, YourDateTime2 As R2StandardDateAndTimeStructure)
+            Public Shared Sub ReportingInformationProviderPersonnelEnterExitReport(YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime)
                 Dim CmdSql As New SqlClient.SqlCommand
                 CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection
                 Try
-                    Dim _Concat1 As String = YourDateTime1.GetConcatString
-                    Dim _Concat2 As String = YourDateTime2.GetConcatString
+                    Dim _Concat1 As String = YourDateTime1.ShamsiDate.Replace("/", "") + YourDateTime1.Time.Replace(":", "")
+                    Dim _Concat2 As String = YourDateTime2.ShamsiDate.Replace("/", "") + YourDateTime2.Time.Replace(":", "")
                     Dim DS As New DataSet
-                    R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select PA.PId,PA.DateShamsi,PA.Time,P.PNameFamily from R2Primary.dbo.TblPersonelAttendance as PA inner join R2Primary.dbo.TblPersonelInf as P on PA.PId=P.PId where (Replace(PA.DateShamsi,'/','')+Replace(PA.Time,':','')>='" & _Concat1 & "') and (Replace(PA.DateShamsi,'/','')+Replace(PA.Time,':','')<='" & _Concat2 & "')", 1, DS, New Boolean)
+                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select PA.PId,PA.DateShamsi,PA.Time,P.PNameFamily from R2Primary.dbo.TblPersonelAttendance as PA inner join R2Primary.dbo.TblPersonelInf as P on PA.PId=P.PId where (Replace(PA.DateShamsi,'/','')+Replace(PA.Time,':','')>='" & _Concat1 & "') and (Replace(PA.DateShamsi,'/','')+Replace(PA.Time,':','')<='" & _Concat2 & "')", 1, DS, New Boolean)
                     CmdSql.Connection.Open()
                     CmdSql.Transaction = CmdSql.Connection.BeginTransaction
                     CmdSql.CommandText = "Delete R2PrimaryReports.dbo.TblPersonnelEnterExit" : CmdSql.ExecuteNonQuery()
@@ -4336,11 +3211,11 @@ Namespace HumanResourcesManagement
                 End Try
             End Sub
 
-            Public Shared Sub PersonelFunctionCalculate(YourNSSPersonel As R2CoreStandardPersonnelStructure, YourDateTime As R2StandardDateAndTimeStructure)
+            Public Shared Sub PersonelFunctionCalculate(YourNSSPersonel As R2CoreStandardPersonnelStructure, YourDateTime As R2CoreDateAndTime)
                 Dim CmdSql As New SqlClient.SqlCommand
                 CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
                 Try
-                    Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                     'لیست روزهای ماه مورد نظر
                     Dim InstancePersianCalendar = New R2CoreInstanceDateAndTimePersianCalendarManager
                     Dim Lst = InstancePersianCalendar.GetforThisMonth(YourDateTime)

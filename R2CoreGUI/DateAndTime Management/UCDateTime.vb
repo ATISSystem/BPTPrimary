@@ -111,7 +111,7 @@ Public Class UCDateTime
 
     Public Sub SetCurrentDateTime()
         Try
-            UcLabelDateTime.UCValue = _DateTime.GetCurrentDateShamsiFull + "     " + Mid(_DateTime.GetCurrentTime(), 1, 5)
+            UcLabelDateTime.UCValue = _DateTime.GetCurrentShamsiDate + "     " + Mid(_DateTime.GetCurrentTime(), 1, 5)
         Catch ex As Exception
             Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
         End Try

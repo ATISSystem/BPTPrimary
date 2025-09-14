@@ -12,6 +12,7 @@ using R2CoreTransportationAndLoadNotification.RequesterManagement;
 using R2CoreTransportationAndLoadNotification.Turns.SequentialTurns;
 using PayanehClassLibrary.TurnRegisterRequest;
 using R2CoreTransportationAndLoadNotification.TurnRegisterRequest;
+using R2Core.DateTimeProvider;
 
 namespace UnitTestR2Core
 {
@@ -39,7 +40,7 @@ namespace UnitTestR2Core
         {
             var InstanceTurnRegisterRequestTransportation = new R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(new R2DateTimeService());
             var InstanceTurnRegisterRequestPayaneh = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
-            var TRR = InstanceTurnRegisterRequestTransportation.GetTurnRegisteringRequestWithReservedDateTime(new R2StandardDateAndTimeStructure(DateTime.Now, "1404/04/25", "00:00:00"), true);
+            var TRR = InstanceTurnRegisterRequestTransportation.GetTurnRegisteringRequestWithReservedDateTime(new R2CoreDateAndTime { DateTimeMilladi=DateTime.Now, ShamsiDate="1404/04/25", Time="00:00:00" }, true);
             Int64 TurnId = 0;
             InstanceTurnRegisterRequestPayaneh.ResuscitationReserveTurn(2, TRR.TRRId, 85183, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_ResuscitationReserveTurn, TurnType.Permanent, 21);
 

@@ -25,6 +25,7 @@ Imports R2CoreParkingSystem.SMS.SMSOwners
 Imports R2Core.SMS.SMSOwners.R2CoreMClassSMSOwnersManager
 Imports R2Core.SMS.SMSHandling.Exceptions
 Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
+Imports R2Core.DateTimeProvider
 
 
 
@@ -84,6 +85,7 @@ Namespace SMS
         Public MustInherit Class R2CoreParkingSystemMClassSMSControllingMoneyWalletManagement
 
             Private Shared _DateTime As New R2DateTime
+            Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
 
             Public Shared Function GetNSSMoneyWallet() As R2CoreParkingSystemStandardTrafficCardStructure
                 Try
@@ -97,12 +99,11 @@ Namespace SMS
             Private Shared _ControllingMoneyWalletAccountingExcecutedFlag As Boolean = False
             Public Shared Sub ControllingMoneyWalletAccounting(YourNSSUser As R2CoreStandardSoftwareUserStructure)
                 Try
-                    Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
                     Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager
                     Dim InstancePersianCallendar = New R2CoreInstanceDateAndTimePersianCalendarManager
                     'کنترل زمان اجرای فرآیند بر اساس کانفیگ
-                    Dim myCurrentDateTime = _DateTime.GetCurrentDateTime
-                    Dim TimeOfDay = _DateTime.GetTickofTime(myCurrentDateTime)
+                    Dim myCurrentDateTime = _DateTime.GetCurrentDateAndTime
+                    Dim TimeOfDay = _DateTime.GetTickofTime(myCurrentDateTime.DateTimeMilladi)
                     Dim StTime = TimeSpan.Parse("00:00:00")
                     Dim EndTime = TimeSpan.Parse("00:05:00")
                     Dim ConfigTime = TimeSpan.Parse(InstanceConfigurations.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 9))
@@ -122,7 +123,7 @@ Namespace SMS
                     'آخرین اکانت ثبت شده
                     Dim NSSLastAccounting = R2CoreParkingSystemMClassAccountingManagement.GetNSSLastAccounting(R2CoreParkingSystemAccountings.SMSControllingMoneyWallet)
                     'امروز یک مرتبه اکانت ثبت شده پس نیازی به ثبت مجدد نیست
-                    If NSSLastAccounting.DateShamsiA = myCurrentDateTime.DateShamsiFull Then Return
+                    If NSSLastAccounting.DateShamsiA = myCurrentDateTime.ShamsiDate Then Return
                     Dim Amount As Int64 = GetAmountforSMSControllingMoneyWallet()
                     'کسر پورسانت شرکت عامل
                     'هزینه شرکت عامل قبلا هنگام فعال سازی اس ام اس کاربر در فیلد ریمایندرشارژ در جدول مالکان اس ام اس منظور شده است
@@ -192,10 +193,10 @@ Namespace SMS
                 Try
                     Dim NSSLast = R2CoreParkingSystemMClassAccountingManagement.GetNSSLastAccounting(R2CoreParkingSystemAccountings.SMSControllingMoneyWallet)
                     Dim Ds As New DataSet
-                    If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
                                   "Select Sum(SMSOwnerTypes.PriceMinusCommission) as Amount from R2PrimarySMSSystem.dbo.TblSMSOwners As SMSOwners
                                         Inner Join R2PrimarySMSSystem.dbo.TblSMSOwnerTypes as SMSOwnerTypes On SMSOwners.SMSOTypeId=SMSOwnerTypes.SMSOTypeId 
-                                   Where SMSOwners.DateTimeMilladi Between '" & _DateTime.GetMilladiDateTimeFromDateShamsiFullFormated(NSSLast.DateShamsiA, NSSLast.TimeA) & "' and '" & _DateTime.GetCurrentDateTimeMilladiFormated() & "'
+                                   Where SMSOwners.DateTimeMilladi Between '" & _DateTime.GetMilladiDateTimeFromShamsiDate(NSSLast.DateShamsiA, NSSLast.TimeA) & "' and '" & _DateTime.GetCurrentDateTimeMilladi() & "'
                                          And SMSOwnerTypes.Active=1 and SMSOwnerTypes.Deleted=0 and SMSOwners.Active=1 and SMSOwners.Deleted=0", 0, Ds, New Boolean).GetRecordsCount = 0 Then
                         Return 0
                     Else

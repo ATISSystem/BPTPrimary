@@ -15,6 +15,9 @@ namespace APICommon.Models
         public string SearchString;
     }
 
-
+    public class APICommonResult
+    {
+        public string Result;
+    }
 
 }

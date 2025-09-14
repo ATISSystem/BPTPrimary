@@ -9,6 +9,8 @@ Imports System.Reflection
 
 Namespace LoadAnnouncementPlaces
     Public Class R2CoreTransportationAndLoadNotificationLoadAnnouncementPlacesManager
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
         Public Function GetLoadAnnouncementPlaces(YourProvinceId As Int64) As String
             Try
                 Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
@@ -18,7 +20,7 @@ Namespace LoadAnnouncementPlaces
                 '  from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAnnouncementPlaces as LoadAnnouncementPlaces 
                 '  Where Active=1 and ProvinceId=" & YourProvinceId & " Order By LAPId for JSON Auto"
 
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
                  "Select * 
                   from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAnnouncementPlaces as LoadAnnouncementPlaces 
                   Where Active=1 Order By LAPId for JSON Auto", 32767, Ds, New Boolean).GetRecordsCount <> 0 Then

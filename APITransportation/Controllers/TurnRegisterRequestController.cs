@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using PayanehClassLibrary.TurnRegisterRequest;
 using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
+using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
@@ -127,7 +128,7 @@ namespace APITransportation.Controllers
 
                 var InstanceTurnRegisterRequestTransportation = new R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(new R2DateTimeService());
                 var InstanceTurnRegisterRequestPayaneh = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
-                var TRR = InstanceTurnRegisterRequestTransportation.GetTurnRegisteringRequestWithReservedDateTime(new R2StandardDateAndTimeStructure(DateTime.Now, ShamsiDate, Time), true);
+                var TRR = InstanceTurnRegisterRequestTransportation.GetTurnRegisteringRequestWithReservedDateTime(new R2CoreDateAndTime  { DateTimeMilladi = DateTime.Now, ShamsiDate = ShamsiDate, Time = Time }, true);
                 Int64 TurnId = 0;
                 InstanceTurnRegisterRequestPayaneh.ResuscitationReserveTurn(SequentialTurnId, TRR.TRRId, TruckId, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_ResuscitationReserveTurn, TurnType.Permanent, User. UserId);
 

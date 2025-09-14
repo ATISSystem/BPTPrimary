@@ -5,6 +5,7 @@
 Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
+Imports R2Core.DateTimeProvider
 Imports R2CoreGUI
 Imports R2CoreTransportationAndLoadNotification.ConfigurationsManagement
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad
@@ -24,7 +25,7 @@ Namespace TurnCancellation
         Private Function IsLoadTargetforTurnCancellation(YourLoadTargetId As Int64) As Boolean
             Try
                 Dim DS As New DataSet
-                Dim InstanceSqlDataBOX = New R2CoreInstanseSqlDataBOXManager
+                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
                        "Select Top 1 LoadTargetId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadTargetsforTurnCancellation 
                         Where LoadTargetId=" & YourLoadTargetId & " and Active=1", 3600, DS, New Boolean).GetRecordsCount = 0 Then
@@ -66,7 +67,7 @@ Namespace TurnCancellation
                     myDescription = NonTurnCancellationLoadColor
                 End If
                 CmdSql.Connection.Open()
-                CmdSql.CommandText = " Insert into R2PrimaryTransportationAndLoadNotification.dbo.TblLoadsforTurnCancellation(nEstelamId,Description,DateShamsi,DateTimeMilladi,Time,Active) Values(" & YourLoadId & ",'" & myDescription & "','" & _DateTimeService.DateTimeServ.GetCurrentDateShamsiFull & "','" & _DateTimeService.DateTimeServ.GetCurrentDateTimeMilladiFormated & "','" & _DateTimeService.DateTimeServ.GetCurrentTime & "'," & IIf(YourCancellationFlag, 1, 0) & ")"
+                CmdSql.CommandText = " Insert into R2PrimaryTransportationAndLoadNotification.dbo.TblLoadsforTurnCancellation(nEstelamId,Description,DateShamsi,DateTimeMilladi,Time,Active) Values(" & YourLoadId & ",'" & myDescription & "','" & _DateTimeService.GetCurrentShamsiDate & "','" & _DateTimeService.GetCurrentDateTimeMilladi & "','" & _DateTimeService.GetCurrentTime & "'," & IIf(YourCancellationFlag, 1, 0) & ")"
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
             Catch ex As Exception

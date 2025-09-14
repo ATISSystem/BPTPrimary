@@ -154,8 +154,11 @@
     <Compile Include="Caching.vb" />
     <Compile Include="Carrousels.vb" />
     <Compile Include="Configurations.vb" />
+    <Compile Include="DataBases.vb" />
+    <Compile Include="DateAndTime.vb" />
     <Compile Include="Exceptions.vb" />
     <Compile Include="Logging.vb" />
+    <Compile Include="Networking.vb" />
     <Compile Include="RawGroups.vb" />
     <Compile Include="MoneyWallets.vb" />
     <Compile Include="R2ClassLibrary-Partial.vb" />

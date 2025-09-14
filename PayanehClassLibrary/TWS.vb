@@ -5,6 +5,7 @@ Imports System.ComponentModel.Design
 Imports System.Reflection
 Imports System.Windows.Forms
 Imports R2Core.DateAndTimeManagement
+Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports TWSClassLibrary.LoggingManagement
 Imports TWSClassLibrary.NobatsManagement
@@ -59,7 +60,7 @@ Namespace TWSManagement
                 ElseIf TruckTrace = TruckTrace.OK Then
                     Dim Lst As List(Of TruckTraceModel) = New List(Of TruckTraceModel)
                     For loopx As Int32 = InfDS.Tables(0).Rows.Count - 1 To 0 Step -1
-                        Dim Detail = New TruckTraceModel With {.TruckId = InfDS.Tables(0).Rows(0).Item("truckid"), .ProcessTitle = TWSClassNobatsManagement.GetStatusNameByCode(InfDS.Tables(0).Rows(loopx).Item("status")), .TravelTime = InfDS.Tables(0).Rows(loopx).Item("TravelTime"), .TerminalName = InfDS.Tables(0).Rows(loopx).Item("TerminalName"), .IssueDate = _R2DateTimeService.DateTimeServ.ConvertToShamsiDateFull(InfDS.Tables(0).Rows(loopx).Item("sodoortime")), .IssueTime = _R2DateTimeService.DateTimeServ.GetTimeOfDate(InfDS.Tables(0).Rows(loopx).Item("sodoortime")), .RealDate = _R2DateTimeService.DateTimeServ.ConvertToShamsiDateFull(InfDS.Tables(0).Rows(loopx).Item("DateReal")), .RealTime = _R2DateTimeService.DateTimeServ.GetTimeOfDate(InfDS.Tables(0).Rows(loopx).Item("DateReal")), .TraceWriter = InfDS.Tables(0).Rows(loopx).Item("TraceWriter")}
+                        Dim Detail = New TruckTraceModel With {.TruckId = InfDS.Tables(0).Rows(0).Item("truckid"), .ProcessTitle = TWSClassNobatsManagement.GetStatusNameByCode(InfDS.Tables(0).Rows(loopx).Item("status")), .TravelTime = InfDS.Tables(0).Rows(loopx).Item("TravelTime"), .TerminalName = InfDS.Tables(0).Rows(loopx).Item("TerminalName"), .IssueDate = _R2DateTimeService.ConvertToShamsiDate(InfDS.Tables(0).Rows(loopx).Item("sodoortime")), .IssueTime = _R2DateTimeService.GetTimeOfDate(InfDS.Tables(0).Rows(loopx).Item("sodoortime")), .RealDate = _R2DateTimeService.ConvertToShamsiDate(InfDS.Tables(0).Rows(loopx).Item("DateReal")), .RealTime = _R2DateTimeService.GetTimeOfDate(InfDS.Tables(0).Rows(loopx).Item("DateReal")), .TraceWriter = InfDS.Tables(0).Rows(loopx).Item("TraceWriter")}
                         Lst.Add(Detail)
                     Next
                     Return Lst

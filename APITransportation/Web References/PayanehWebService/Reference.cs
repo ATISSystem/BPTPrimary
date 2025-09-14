@@ -261,13 +261,13 @@ namespace APITransportation.PayanehWebService {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerLoadPermissionsByAHSGs", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void WebMethodReportingInformationPrividerLoadPermissionsByAHSGs(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey) {
+        public void WebMethodReportingInformationPrividerLoadPermissionsByAHSGs(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey) {
             this.Invoke("WebMethodReportingInformationPrividerLoadPermissionsByAHSGs", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourAHId,
                         YourAHSGId,
@@ -275,21 +275,21 @@ namespace APITransportation.PayanehWebService {
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerLoadPermissionsByAHSGsAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey) {
-            this.WebMethodReportingInformationPrividerLoadPermissionsByAHSGsAsync(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourAHId, YourAHSGId, YourExchangeKey, null);
+        public void WebMethodReportingInformationPrividerLoadPermissionsByAHSGsAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey) {
+            this.WebMethodReportingInformationPrividerLoadPermissionsByAHSGsAsync(YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourAHId, YourAHSGId, YourExchangeKey, null);
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerLoadPermissionsByAHSGsAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey, object userState) {
+        public void WebMethodReportingInformationPrividerLoadPermissionsByAHSGsAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey, object userState) {
             if ((this.WebMethodReportingInformationPrividerLoadPermissionsByAHSGsOperationCompleted == null)) {
                 this.WebMethodReportingInformationPrividerLoadPermissionsByAHSGsOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodReportingInformationPrividerLoadPermissionsByAHSGsOperationCompleted);
             }
             this.InvokeAsync("WebMethodReportingInformationPrividerLoadPermissionsByAHSGs", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourAHId,
                         YourAHSGId,
@@ -305,34 +305,34 @@ namespace APITransportation.PayanehWebService {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerLoadPermissionsBySeqTs", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void WebMethodReportingInformationPrividerLoadPermissionsBySeqTs(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourSeqTId, long YourExchangeKey) {
+        public void WebMethodReportingInformationPrividerLoadPermissionsBySeqTs(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourSeqTId, long YourExchangeKey) {
             this.Invoke("WebMethodReportingInformationPrividerLoadPermissionsBySeqTs", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourSeqTId,
                         YourExchangeKey});
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerLoadPermissionsBySeqTsAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourSeqTId, long YourExchangeKey) {
-            this.WebMethodReportingInformationPrividerLoadPermissionsBySeqTsAsync(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourSeqTId, YourExchangeKey, null);
+        public void WebMethodReportingInformationPrividerLoadPermissionsBySeqTsAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourSeqTId, long YourExchangeKey) {
+            this.WebMethodReportingInformationPrividerLoadPermissionsBySeqTsAsync(YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourSeqTId, YourExchangeKey, null);
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerLoadPermissionsBySeqTsAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourSeqTId, long YourExchangeKey, object userState) {
+        public void WebMethodReportingInformationPrividerLoadPermissionsBySeqTsAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourSeqTId, long YourExchangeKey, object userState) {
             if ((this.WebMethodReportingInformationPrividerLoadPermissionsBySeqTsOperationCompleted == null)) {
                 this.WebMethodReportingInformationPrividerLoadPermissionsBySeqTsOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodReportingInformationPrividerLoadPermissionsBySeqTsOperationCompleted);
             }
             this.InvokeAsync("WebMethodReportingInformationPrividerLoadPermissionsBySeqTs", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourSeqTId,
                         YourExchangeKey}, this.WebMethodReportingInformationPrividerLoadPermissionsBySeqTsOperationCompleted, userState);
@@ -347,13 +347,13 @@ namespace APITransportation.PayanehWebService {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerSedimentedLoadsReport", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void WebMethodReportingInformationPrividerSedimentedLoadsReport(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAnnouncementHallId, int YourSedimentedLoadsReportType, long YourExchangeKey) {
+        public void WebMethodReportingInformationPrividerSedimentedLoadsReport(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAnnouncementHallId, int YourSedimentedLoadsReportType, long YourExchangeKey) {
             this.Invoke("WebMethodReportingInformationPrividerSedimentedLoadsReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourAnnouncementHallId,
                         YourSedimentedLoadsReportType,
@@ -361,21 +361,21 @@ namespace APITransportation.PayanehWebService {
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerSedimentedLoadsReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAnnouncementHallId, int YourSedimentedLoadsReportType, long YourExchangeKey) {
-            this.WebMethodReportingInformationPrividerSedimentedLoadsReportAsync(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourAnnouncementHallId, YourSedimentedLoadsReportType, YourExchangeKey, null);
+        public void WebMethodReportingInformationPrividerSedimentedLoadsReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAnnouncementHallId, int YourSedimentedLoadsReportType, long YourExchangeKey) {
+            this.WebMethodReportingInformationPrividerSedimentedLoadsReportAsync(YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourAnnouncementHallId, YourSedimentedLoadsReportType, YourExchangeKey, null);
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerSedimentedLoadsReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAnnouncementHallId, int YourSedimentedLoadsReportType, long YourExchangeKey, object userState) {
+        public void WebMethodReportingInformationPrividerSedimentedLoadsReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAnnouncementHallId, int YourSedimentedLoadsReportType, long YourExchangeKey, object userState) {
             if ((this.WebMethodReportingInformationPrividerSedimentedLoadsReportOperationCompleted == null)) {
                 this.WebMethodReportingInformationPrividerSedimentedLoadsReportOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodReportingInformationPrividerSedimentedLoadsReportOperationCompleted);
             }
             this.InvokeAsync("WebMethodReportingInformationPrividerSedimentedLoadsReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourAnnouncementHallId,
                         YourSedimentedLoadsReportType,
@@ -392,33 +392,33 @@ namespace APITransportation.PayanehWebService {
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerTruckersAssociationFinanc" +
             "ialReport", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void WebMethodReportingInformationPrividerTruckersAssociationFinancialReport(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourExchangeKey) {
+        public void WebMethodReportingInformationPrividerTruckersAssociationFinancialReport(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourExchangeKey) {
             this.Invoke("WebMethodReportingInformationPrividerTruckersAssociationFinancialReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourExchangeKey});
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerTruckersAssociationFinancialReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourExchangeKey) {
-            this.WebMethodReportingInformationPrividerTruckersAssociationFinancialReportAsync(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourExchangeKey, null);
+        public void WebMethodReportingInformationPrividerTruckersAssociationFinancialReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourExchangeKey) {
+            this.WebMethodReportingInformationPrividerTruckersAssociationFinancialReportAsync(YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourExchangeKey, null);
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerTruckersAssociationFinancialReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourExchangeKey, object userState) {
+        public void WebMethodReportingInformationPrividerTruckersAssociationFinancialReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourExchangeKey, object userState) {
             if ((this.WebMethodReportingInformationPrividerTruckersAssociationFinancialReportOperationCompleted == null)) {
                 this.WebMethodReportingInformationPrividerTruckersAssociationFinancialReportOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodReportingInformationPrividerTruckersAssociationFinancialReportOperationCompleted);
             }
             this.InvokeAsync("WebMethodReportingInformationPrividerTruckersAssociationFinancialReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourExchangeKey}, this.WebMethodReportingInformationPrividerTruckersAssociationFinancialReportOperationCompleted, userState);
         }
@@ -433,34 +433,34 @@ namespace APITransportation.PayanehWebService {
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerContractorCompanyFinancia" +
             "lReport", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void WebMethodReportingInformationPrividerContractorCompanyFinancialReport(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, bool YourVatStatus, long YourExchangeKey) {
+        public void WebMethodReportingInformationPrividerContractorCompanyFinancialReport(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, bool YourVatStatus, long YourExchangeKey) {
             this.Invoke("WebMethodReportingInformationPrividerContractorCompanyFinancialReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourVatStatus,
                         YourExchangeKey});
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerContractorCompanyFinancialReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, bool YourVatStatus, long YourExchangeKey) {
-            this.WebMethodReportingInformationPrividerContractorCompanyFinancialReportAsync(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourVatStatus, YourExchangeKey, null);
+        public void WebMethodReportingInformationPrividerContractorCompanyFinancialReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, bool YourVatStatus, long YourExchangeKey) {
+            this.WebMethodReportingInformationPrividerContractorCompanyFinancialReportAsync(YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourVatStatus, YourExchangeKey, null);
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerContractorCompanyFinancialReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, bool YourVatStatus, long YourExchangeKey, object userState) {
+        public void WebMethodReportingInformationPrividerContractorCompanyFinancialReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, bool YourVatStatus, long YourExchangeKey, object userState) {
             if ((this.WebMethodReportingInformationPrividerContractorCompanyFinancialReportOperationCompleted == null)) {
                 this.WebMethodReportingInformationPrividerContractorCompanyFinancialReportOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodReportingInformationPrividerContractorCompanyFinancialReportOperationCompleted);
             }
             this.InvokeAsync("WebMethodReportingInformationPrividerContractorCompanyFinancialReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourVatStatus,
                         YourExchangeKey}, this.WebMethodReportingInformationPrividerContractorCompanyFinancialReportOperationCompleted, userState);
@@ -475,35 +475,35 @@ namespace APITransportation.PayanehWebService {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerDriverTruckLoadsReport", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void WebMethodReportingInformationPrividerDriverTruckLoadsReport(long YourDriverId, System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourExchangeKey) {
+        public void WebMethodReportingInformationPrividerDriverTruckLoadsReport(long YourDriverId, System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourExchangeKey) {
             this.Invoke("WebMethodReportingInformationPrividerDriverTruckLoadsReport", new object[] {
                         YourDriverId,
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourExchangeKey});
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerDriverTruckLoadsReportAsync(long YourDriverId, System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourExchangeKey) {
-            this.WebMethodReportingInformationPrividerDriverTruckLoadsReportAsync(YourDriverId, YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourExchangeKey, null);
+        public void WebMethodReportingInformationPrividerDriverTruckLoadsReportAsync(long YourDriverId, System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourExchangeKey) {
+            this.WebMethodReportingInformationPrividerDriverTruckLoadsReportAsync(YourDriverId, YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourExchangeKey, null);
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerDriverTruckLoadsReportAsync(long YourDriverId, System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourExchangeKey, object userState) {
+        public void WebMethodReportingInformationPrividerDriverTruckLoadsReportAsync(long YourDriverId, System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourExchangeKey, object userState) {
             if ((this.WebMethodReportingInformationPrividerDriverTruckLoadsReportOperationCompleted == null)) {
                 this.WebMethodReportingInformationPrividerDriverTruckLoadsReportOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodReportingInformationPrividerDriverTruckLoadsReportOperationCompleted);
             }
             this.InvokeAsync("WebMethodReportingInformationPrividerDriverTruckLoadsReport", new object[] {
                         YourDriverId,
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourExchangeKey}, this.WebMethodReportingInformationPrividerDriverTruckLoadsReportOperationCompleted, userState);
         }
@@ -551,17 +551,17 @@ namespace APITransportation.PayanehWebService {
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerCapacitorLoadsTransportCo" +
             "mpaniesRegisteredLoadsReport", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReport(long YourAHId, long YourAHSGId, long YourCompanyCode, System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourTargetCityId, long YourSoftwareUserId, long YourExchangeKey) {
+        public void WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReport(long YourAHId, long YourAHSGId, long YourCompanyCode, System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourTargetCityId, long YourSoftwareUserId, long YourExchangeKey) {
             this.Invoke("WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLo" +
                     "adsReport", new object[] {
                         YourAHId,
                         YourAHSGId,
                         YourCompanyCode,
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourTargetCityId,
                         YourSoftwareUserId,
@@ -569,12 +569,12 @@ namespace APITransportation.PayanehWebService {
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportAsync(long YourAHId, long YourAHSGId, long YourCompanyCode, System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourTargetCityId, long YourSoftwareUserId, long YourExchangeKey) {
-            this.WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportAsync(YourAHId, YourAHSGId, YourCompanyCode, YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourTargetCityId, YourSoftwareUserId, YourExchangeKey, null);
+        public void WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportAsync(long YourAHId, long YourAHSGId, long YourCompanyCode, System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourTargetCityId, long YourSoftwareUserId, long YourExchangeKey) {
+            this.WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportAsync(YourAHId, YourAHSGId, YourCompanyCode, YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourTargetCityId, YourSoftwareUserId, YourExchangeKey, null);
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportAsync(long YourAHId, long YourAHSGId, long YourCompanyCode, System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourTargetCityId, long YourSoftwareUserId, long YourExchangeKey, object userState) {
+        public void WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportAsync(long YourAHId, long YourAHSGId, long YourCompanyCode, System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourTargetCityId, long YourSoftwareUserId, long YourExchangeKey, object userState) {
             if ((this.WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportOperationCompleted == null)) {
                 this.WebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodReportingInformationPrividerCapacitorLoadsTransportCompaniesRegisteredLoadsReportOperationCompleted);
             }
@@ -584,10 +584,10 @@ namespace APITransportation.PayanehWebService {
                         YourAHSGId,
                         YourCompanyCode,
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourTargetCityId,
                         YourSoftwareUserId,
@@ -604,34 +604,34 @@ namespace APITransportation.PayanehWebService {
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementHallsPerforma" +
             "nceReport", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAHId, long YourExchangeKey) {
+        public void WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAHId, long YourExchangeKey) {
             this.Invoke("WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourAHId,
                         YourExchangeKey});
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAHId, long YourExchangeKey) {
-            this.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportAsync(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourAHId, YourExchangeKey, null);
+        public void WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAHId, long YourExchangeKey) {
+            this.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportAsync(YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourAHId, YourExchangeKey, null);
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAHId, long YourExchangeKey, object userState) {
+        public void WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAHId, long YourExchangeKey, object userState) {
             if ((this.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportOperationCompleted == null)) {
                 this.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportOperationCompleted);
             }
             this.InvokeAsync("WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourAHId,
                         YourExchangeKey}, this.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceReportOperationCompleted, userState);
@@ -647,35 +647,35 @@ namespace APITransportation.PayanehWebService {
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementHallsPerforma" +
             "nceGeneralStatisticsReport", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourExchangeKey) {
+        public void WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReport(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourExchangeKey) {
             this.Invoke("WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatistic" +
                     "sReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourExchangeKey});
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourExchangeKey) {
-            this.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportAsync(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourExchangeKey, null);
+        public void WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourExchangeKey) {
+            this.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportAsync(YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourExchangeKey, null);
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourExchangeKey, object userState) {
+        public void WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourExchangeKey, object userState) {
             if ((this.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportOperationCompleted == null)) {
                 this.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportOperationCompleted);
             }
             this.InvokeAsync("WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatistic" +
                     "sReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourExchangeKey}, this.WebMethodReportingInformationPrividerAnnouncementHallsPerformanceGeneralStatisticsReportOperationCompleted, userState);
         }
@@ -756,36 +756,36 @@ namespace APITransportation.PayanehWebService {
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysT" +
             "oGetLoadPermissionReport", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReport(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAnnouncementHallId, long YourExchangeKey) {
+        public void WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReport(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAnnouncementHallId, long YourExchangeKey) {
             this.Invoke("WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionR" +
                     "eport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourAnnouncementHallId,
                         YourExchangeKey});
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAnnouncementHallId, long YourExchangeKey) {
-            this.WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportAsync(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourAnnouncementHallId, YourExchangeKey, null);
+        public void WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAnnouncementHallId, long YourExchangeKey) {
+            this.WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportAsync(YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourAnnouncementHallId, YourExchangeKey, null);
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAnnouncementHallId, long YourExchangeKey, object userState) {
+        public void WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAnnouncementHallId, long YourExchangeKey, object userState) {
             if ((this.WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportOperationCompleted == null)) {
                 this.WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportOperationCompleted);
             }
             this.InvokeAsync("WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionR" +
                     "eport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourAnnouncementHallId,
                         YourExchangeKey}, this.WebMethodReportingInformationPrividerTrucksAverageOfSleepDaysToGetLoadPermissionReportOperationCompleted, userState);
@@ -894,13 +894,13 @@ namespace APITransportation.PayanehWebService {
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerClearanceLoadsReportRepor" +
             "t", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void WebMethodReportingInformationPrividerClearanceLoadsReportReport(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey) {
+        public void WebMethodReportingInformationPrividerClearanceLoadsReportReport(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey) {
             this.Invoke("WebMethodReportingInformationPrividerClearanceLoadsReportReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourAHId,
                         YourAHSGId,
@@ -908,21 +908,21 @@ namespace APITransportation.PayanehWebService {
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerClearanceLoadsReportReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey) {
-            this.WebMethodReportingInformationPrividerClearanceLoadsReportReportAsync(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourAHId, YourAHSGId, YourExchangeKey, null);
+        public void WebMethodReportingInformationPrividerClearanceLoadsReportReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey) {
+            this.WebMethodReportingInformationPrividerClearanceLoadsReportReportAsync(YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourAHId, YourAHSGId, YourExchangeKey, null);
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerClearanceLoadsReportReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey, object userState) {
+        public void WebMethodReportingInformationPrividerClearanceLoadsReportReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey, object userState) {
             if ((this.WebMethodReportingInformationPrividerClearanceLoadsReportReportOperationCompleted == null)) {
                 this.WebMethodReportingInformationPrividerClearanceLoadsReportReportOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodReportingInformationPrividerClearanceLoadsReportReportOperationCompleted);
             }
             this.InvokeAsync("WebMethodReportingInformationPrividerClearanceLoadsReportReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourAHId,
                         YourAHSGId,
@@ -939,13 +939,13 @@ namespace APITransportation.PayanehWebService {
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerAnnounceLoadsReportReport" +
             "", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void WebMethodReportingInformationPrividerAnnounceLoadsReportReport(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey) {
+        public void WebMethodReportingInformationPrividerAnnounceLoadsReportReport(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey) {
             this.Invoke("WebMethodReportingInformationPrividerAnnounceLoadsReportReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourAHId,
                         YourAHSGId,
@@ -953,21 +953,21 @@ namespace APITransportation.PayanehWebService {
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerAnnounceLoadsReportReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey) {
-            this.WebMethodReportingInformationPrividerAnnounceLoadsReportReportAsync(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourAHId, YourAHSGId, YourExchangeKey, null);
+        public void WebMethodReportingInformationPrividerAnnounceLoadsReportReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey) {
+            this.WebMethodReportingInformationPrividerAnnounceLoadsReportReportAsync(YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourAHId, YourAHSGId, YourExchangeKey, null);
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerAnnounceLoadsReportReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey, object userState) {
+        public void WebMethodReportingInformationPrividerAnnounceLoadsReportReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourAHId, long YourAHSGId, long YourExchangeKey, object userState) {
             if ((this.WebMethodReportingInformationPrividerAnnounceLoadsReportReportOperationCompleted == null)) {
                 this.WebMethodReportingInformationPrividerAnnounceLoadsReportReportOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodReportingInformationPrividerAnnounceLoadsReportReportOperationCompleted);
             }
             this.InvokeAsync("WebMethodReportingInformationPrividerAnnounceLoadsReportReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourAHId,
                         YourAHSGId,
@@ -984,33 +984,33 @@ namespace APITransportation.PayanehWebService {
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerSaleOfCommissionSMSReport" +
             "", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void WebMethodReportingInformationPrividerSaleOfCommissionSMSReport(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourExchangeKey) {
+        public void WebMethodReportingInformationPrividerSaleOfCommissionSMSReport(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourExchangeKey) {
             this.Invoke("WebMethodReportingInformationPrividerSaleOfCommissionSMSReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourExchangeKey});
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerSaleOfCommissionSMSReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourExchangeKey) {
-            this.WebMethodReportingInformationPrividerSaleOfCommissionSMSReportAsync(YourDateTimeMilladi1, YourDateShamsiFull1, YourTime1, YourDateTimeMilladi2, YourDateShamsiFull2, YourTime2, YourExchangeKey, null);
+        public void WebMethodReportingInformationPrividerSaleOfCommissionSMSReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourExchangeKey) {
+            this.WebMethodReportingInformationPrividerSaleOfCommissionSMSReportAsync(YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourExchangeKey, null);
         }
         
         /// <remarks/>
-        public void WebMethodReportingInformationPrividerSaleOfCommissionSMSReportAsync(System.DateTime YourDateTimeMilladi1, string YourDateShamsiFull1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourDateShamsiFull2, string YourTime2, long YourExchangeKey, object userState) {
+        public void WebMethodReportingInformationPrividerSaleOfCommissionSMSReportAsync(System.DateTime YourDateTimeMilladi1, string YourShamsiDate1, string YourTime1, System.DateTime YourDateTimeMilladi2, string YourShamsiDate2, string YourTime2, long YourExchangeKey, object userState) {
             if ((this.WebMethodReportingInformationPrividerSaleOfCommissionSMSReportOperationCompleted == null)) {
                 this.WebMethodReportingInformationPrividerSaleOfCommissionSMSReportOperationCompleted = new System.Threading.SendOrPostCallback(this.OnWebMethodReportingInformationPrividerSaleOfCommissionSMSReportOperationCompleted);
             }
             this.InvokeAsync("WebMethodReportingInformationPrividerSaleOfCommissionSMSReport", new object[] {
                         YourDateTimeMilladi1,
-                        YourDateShamsiFull1,
+                        YourShamsiDate1,
                         YourTime1,
                         YourDateTimeMilladi2,
-                        YourDateShamsiFull2,
+                        YourShamsiDate2,
                         YourTime2,
                         YourExchangeKey}, this.WebMethodReportingInformationPrividerSaleOfCommissionSMSReportOperationCompleted, userState);
         }

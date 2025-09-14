@@ -6,6 +6,7 @@ Imports Newtonsoft.Json
 Imports R2Core.BaseStandardClass
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
+Imports R2Core.DateTimeProvider
 Imports R2Core.EntityRelationManagement
 Imports R2Core.PublicProc
 Imports R2Core.SoftwareUserManagement
@@ -146,11 +147,13 @@ Namespace WebProcessesManagement
     End Class
 
     Public Class R2CoreWebProcessesManager
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
         Public Function GetWebProcesses(YourUserId As Int64) As String
             Try
                 Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
                  "Select WebProcessGroups.PGId,WebProcessGroups.PGTitle,WebProcessGroups.PGIconName,WebProcesses.PId,WebProcesses.PTitle,WebProcesses.PName,WebProcesses.Description,WebProcesses.PIconName,WebProcesses.PForeColor as ForeColor,WebProcesses.PBackColor as BackColor  
                   from R2Primary.dbo.TblSoftwareUsers as SoftwareUser
                          Inner Join R2Primary.dbo.TblEntityRelations as SoftwareUserWebProcessGroup On SoftwareUser.UserId=SoftwareUserWebProcessGroup.E1 
@@ -181,7 +184,7 @@ Namespace WebProcessesManagement
             Try
                 Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
                  "Select WebProcessGroups.PGId,WebProcessGroups.PGTitle,WebProcessGroups.PGIconName,WebProcesses.PId,WebProcesses.PTitle,WebProcesses.PName,
                          WebProcesses.Description,WebProcesses.PIconName,WebProcesses.PForeColor as ForeColor,WebProcesses.PBackColor as BackColor 
                   from R2Primary.dbo.TblSoftwareUsers as SoftwareUser
@@ -214,7 +217,7 @@ Namespace WebProcessesManagement
             Try
                 Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
                  "Select WebProcessGroups.PGId,WebProcessGroups.PGTitle,WebProcessGroups.PGIconName,WebProcesses.PId,WebProcesses.PTitle,WebProcesses.PName,
                          WebProcesses.Description,WebProcesses.PIconName,WebProcesses.PForeColor as ForeColor,WebProcesses.PBackColor as BackColor 
                   from R2Primary.dbo.TblSoftwareUsers as SoftwareUser
@@ -248,7 +251,7 @@ Namespace WebProcessesManagement
                 Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(New R2DateTimeService, Nothing)
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
                  "Select WebProcessGroups.PGId,WebProcessGroups.PGTitle,WebProcessGroups.PGIconName,WebProcesses.PId,WebProcesses.PTitle,WebProcesses.PName,WebProcesses.Description,WebProcesses.PIconName from R2Primary.dbo.TblWebProcessGroups as WebProcessGroups 
                      Inner Join R2Primary.dbo.TblEntityRelations as WebProcessGroupWebProcess On WebProcessGroups.PGId=WebProcessGroupWebProcess.E1 
                      Inner Join R2Primary.dbo.TblWebProcesses as WebProcesses on  WebProcessGroupWebProcess.E2=WebProcesses.PId 

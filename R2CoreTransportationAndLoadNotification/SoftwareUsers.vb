@@ -18,6 +18,7 @@ Imports R2CoreTransportationAndLoadNotification.Caching
 Imports R2CoreTransportationAndLoadNotification.PermissionManagement
 Imports R2Core.PermissionManagement
 Imports R2Core.CachHelper
+Imports R2Core.DateTimeProvider
 
 Namespace SoftwareUserManagement
 
@@ -35,7 +36,7 @@ Namespace SoftwareUserManagement
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceSoftwareUsersManager
         Public Function GetNSSSoftwareUser(YourTransportCompanyId As Int64) As R2CoreStandardSoftwareUserStructure
-            Dim InstanceSqlDataBOX As New R2CoreInstanseSqlDataBOXManager
+            Dim InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
             Dim InstanceSoftwareUser As New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
             Try
                 Dim Ds As DataSet

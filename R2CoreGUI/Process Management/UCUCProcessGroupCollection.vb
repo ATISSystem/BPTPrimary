@@ -12,6 +12,7 @@ Imports R2CoreGUI.ProcessesManagement
 Public Class UCUCProcessGroupCollection
     Inherits UCGeneral
 
+    Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
 
 #Region "General Properties"
 #End Region
@@ -88,7 +89,7 @@ Public Class UCUCProcessGroupCollection
             PnlUCs.SuspendLayout()
             PnlUCs.Controls.Clear()
             Dim DS As DataSet
-            R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblProcessGroupsRelationProcesses Where PGId=" & UC.UCGetNSS.PGId & " Order by PGId", 3600, DS, New Boolean)
+            InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblProcessGroupsRelationProcesses Where PGId=" & UC.UCGetNSS.PGId & " Order by PGId", 3600, DS, New Boolean)
             For Loopx As Int16 = DS.Tables(0).Rows.Count - 1 To 0 Step -1
                 Dim NSSProcess As R2StandardDesktopProcessStructure = R2CoreMClassDesktopProcessesManagement.GetNSSProcess(DS.Tables(0).Rows(Loopx).Item("PId"))
                 Dim UCP As UCProcess = New UCProcess(NSSProcess, UC.UCGetNSS.PGBackColor)

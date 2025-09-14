@@ -171,7 +171,6 @@ Namespace LoggingManagement
         Public Time As String
     End Class
 
-
     Public MustInherit Class R2CoreLoggingManager
 
         Private Shared _Logger As Logger = Nothing

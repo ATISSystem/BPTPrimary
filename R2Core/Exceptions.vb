@@ -48,10 +48,11 @@ Namespace ExceptionManagement
     End Class
 
     Public MustInherit Class R2CoreMClassExceptionsManagement
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
         Public Shared Function GetSqlExceptionMessage(YourSqlExceptionId As Int64) As String
             Try
                 Dim Ds As DataSet
-                If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 Message from R2Primary.dbo.TblSqlExceptions Where SEId=" & YourSqlExceptionId & " Order By SEId Asc", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New SqlExceptionNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 Message from R2Primary.dbo.TblSqlExceptions Where SEId=" & YourSqlExceptionId & " Order By SEId Asc", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New SqlExceptionNotFoundException
                 Return Ds.Tables(0).Rows(0).Item("Message")
             Catch ex As SqlExceptionNotFoundException
                 Throw ex
@@ -136,11 +137,17 @@ Namespace ExceptionManagement
         End Property
     End Class
 
-    Public Class FileNotFoundException
+    Public Class FileNotExistException
         Inherits ApplicationException
+
+        Private _FilePath = String.Empty
+        Public Sub New(YourFilePath As String)
+            _FilePath = YourFilePath
+        End Sub
+
         Public Overrides ReadOnly Property Message As String
             Get
-                Return "فایل موجود نیست"
+                Return "فایل مورد نظر یافت نشد" + vbCrLf + _FilePath
             End Get
         End Property
     End Class
@@ -179,6 +186,38 @@ Namespace ExceptionManagement
             _Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.AnyNotFoundException).MsgContent
             _MessageCode = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.AnyNotFoundException).MsgId
         End Sub
+    End Class
+
+    Public Class UnableConnectToAPIException
+        Inherits ApplicationException
+
+        Private _Message = String.Empty
+
+        Public Sub New(YourMessage As String)
+            _Message = YourMessage
+        End Sub
+
+        Public Overrides ReadOnly Property Message As String
+            Get
+                Return "ارتباط با سرویس مورد نظر بدرستی برقرار نیست" + vbCrLf + _Message
+            End Get
+        End Property
+    End Class
+
+    Public Class UnSuccessConnectionToAPIException
+        Inherits ApplicationException
+
+        Private _Message = String.Empty
+
+        Public Sub New(YourMessage As String)
+            _Message = YourMessage
+        End Sub
+
+        Public Overrides ReadOnly Property Message As String
+            Get
+                Return "ارتباط با سرویس مورد نظر موفقیت آمیز نیست" + vbCrLf + _Message
+            End Get
+        End Property
     End Class
 
     'BPTChanged

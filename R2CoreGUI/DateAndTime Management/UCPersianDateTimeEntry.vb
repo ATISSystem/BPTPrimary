@@ -12,21 +12,21 @@ Public Class UCPersianDateTimeEntry
 
 #Region "General Properties"
 
-    Public ReadOnly Property GetPersianDate As R2StandardDateAndTimeStructure
+    Public ReadOnly Property GetPersianDate As R2CoreDateAndTime
         Get
             Return UcPersianShamsiDate.UCGetDate
         End Get
     End Property
 
-    Public ReadOnly Property GetTime As R2StandardDateAndTimeStructure
+    Public ReadOnly Property GetTime As R2CoreDateAndTime
         Get
             Return UcTimeEntry.UCGetTime
         End Get
     End Property
 
-    Public ReadOnly Property GetPersianDateTime As R2StandardDateAndTimeStructure
+    Public ReadOnly Property GetPersianDateTime As R2CoreDateAndTime
         Get
-            Return New R2StandardDateAndTimeStructure(Nothing, UcPersianShamsiDate.UCGetDate.DateShamsiFull, UcTimeEntry.UCGetTime.Time)
+            Return New R2CoreDateAndTime With {.ShamsiDate = UcPersianShamsiDate.UCGetDate.ShamsiDate, .Time = UcTimeEntry.UCGetTime.Time}
         End Get
     End Property
 
