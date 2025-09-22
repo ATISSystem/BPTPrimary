@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -22,7 +23,16 @@ namespace APIDateTime.Controllers
     {
 
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private R2DateTime _DateTime = new R2DateTime();
+        private R2DateTime _DateTime;
+
+        public DateTimeController()
+        {
+            try { _DateTime = new R2DateTime(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/ConvertToShamsiDate")]
@@ -91,7 +101,7 @@ namespace APIDateTime.Controllers
             try
             {
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new R2CoreDateTimeProviderResult { Result = _DateTime.GetCurrentTickofTime().Ticks  }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new R2CoreDateTimeProviderResult { Result = _DateTime.GetCurrentTickofTime().Ticks }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -151,7 +161,7 @@ namespace APIDateTime.Controllers
             try
             {
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new R2CoreDateTimeProviderResult { Result = _DateTime.GetShamsiDateWithAddMonth(Content.ShamsiDate , Content.MonthsToAdd) }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new R2CoreDateTimeProviderResult { Result = _DateTime.GetShamsiDateWithAddMonth(Content.ShamsiDate, Content.MonthsToAdd) }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -411,7 +421,7 @@ namespace APIDateTime.Controllers
             try
             {
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new R2CoreDateTimeProviderResult { Result = _DateTime.CheckTimeSyntax(Content.Time ) }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new R2CoreDateTimeProviderResult { Result = _DateTime.CheckTimeSyntax(Content.Time) }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -431,7 +441,7 @@ namespace APIDateTime.Controllers
             try
             {
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new R2CoreDateTimeProviderResult { Result = _DateTime.GetPersianMonthName(Content.ShamsiDate ) }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new R2CoreDateTimeProviderResult { Result = _DateTime.GetPersianMonthName(Content.ShamsiDate) }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -451,7 +461,7 @@ namespace APIDateTime.Controllers
             try
             {
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new R2CoreDateTimeProviderResult { Result = _DateTime.GetDelimetedTime(Content.Time ) }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new R2CoreDateTimeProviderResult { Result = _DateTime.GetDelimetedTime(Content.Time) }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)

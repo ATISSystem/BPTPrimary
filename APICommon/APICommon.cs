@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json;
+using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,12 +16,24 @@ namespace APICommon
 {
     public class APICommon
     {
+        private R2DateTimeService _DateTimeService;
+
+        public APICommon()
+        { _DateTimeService = new R2DateTimeService(); }
 
         public HttpResponseMessage CreateErrorContentMessage(Exception YourException)
         {
-            var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+
+
+            var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+
+
             HttpResponseMessage response = new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError);
+            //response.Content = new StringContent(JsonConvert.SerializeObject(new { ErrorMessage = YourException.Message, ErrorMessageCode = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.None).MsgId }), Encoding.UTF8, "application/json");
             response.Content = new StringContent(JsonConvert.SerializeObject(new { ErrorMessage = YourException.Message, ErrorMessageCode = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.None).MsgId }), Encoding.UTF8, "application/json");
+
+            //return new HttpResponseMessage(HttpStatusCode.OK);
+
             return response;
         }
 
@@ -32,7 +46,7 @@ namespace APICommon
 
         public HttpResponseMessage CreateErrorContentMessage(SoapException YourException)
         {
-            var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+            var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
             HttpResponseMessage response = new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError);
             response.Content = new StringContent(JsonConvert.SerializeObject(new { ErrorMessage = YourException.Message.Split('\n')[0].Split(':')[1], ErrorMessageCode = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.BPTSoapException).MsgId }), Encoding.UTF8, "application/json");
             return response;

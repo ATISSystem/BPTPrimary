@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -27,7 +28,16 @@ namespace APITransportation.Controllers
     public class LoaderTypeController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService = new R2DateTimeService();
+        private IR2DateTimeService _DateTimeService;
+
+        public LoaderTypeController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/GetLoaderTypes")]
@@ -73,7 +83,7 @@ namespace APITransportation.Controllers
                 var InstanceLoaderTypes = new R2CoreTransportationAndLoadNotificationLoaderTypesManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject (InstanceLoaderTypes.GetLoaderTypeBySoftwareUser(User.UserId)), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceLoaderTypes.GetLoaderTypeBySoftwareUser(User.UserId)), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -96,15 +106,15 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLoaderTypeId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
-                var LoaderTypeId = Content.LoaderTypeId ;
+                var LoaderTypeId = Content.LoaderTypeId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoaderTypes = new R2CoreTransportationAndLoadNotificationLoaderTypesManager(_DateTimeService); 
-                InstanceLoaderTypes.LoaderTypeChangeActivate(LoaderTypeId); 
+                var InstanceLoaderTypes = new R2CoreTransportationAndLoadNotificationLoaderTypesManager(_DateTimeService);
+                InstanceLoaderTypes.LoaderTypeChangeActivate(LoaderTypeId);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }

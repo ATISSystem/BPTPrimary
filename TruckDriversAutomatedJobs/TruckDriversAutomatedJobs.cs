@@ -31,10 +31,12 @@ namespace TruckDriversAutomatedJobs
         private System.Timers.Timer _AutomatedJobsTimer = new System.Timers.Timer();
         private bool _FailStatus = true;
         private ISubscriber _Subscriber = null;
+        private R2DateTimeService _DateTimeService;
 
         public TruckDriversAutomatedJobs()
         {
             InitializeComponent();
+            _DateTimeService = new R2DateTimeService();
             _AutomatedJobsTimer.Elapsed += _AutomatedJobsTimer_Elapsed;
         }
 
@@ -50,8 +52,8 @@ namespace TruckDriversAutomatedJobs
                 {
                     try
                     {
-                        var InstanceConfiguration = new R2CoreInstanceConfigurationManager();
-                        var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(1));
+                        var InstanceConfiguration = new R2CoreInstanceConfigurationManager(_DateTimeService);
+                        var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(1));
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(InstanceSoftwareUsers.GetSystemUser());
                         _AutomatedJobsTimer.Interval = InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TruckDriversAutomatedJobsService, 0) * 1000;
                         _FailStatus = false;
@@ -83,7 +85,7 @@ namespace TruckDriversAutomatedJobs
         {
             try
             {
-                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnInfoManager();
+                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnInfoManager(_DateTimeService);
                 InstanceTurns.InitializeTurnInfo(value);
             }
             catch (AnyNotFoundException ex)
@@ -96,7 +98,7 @@ namespace TruckDriversAutomatedJobs
         {
             try
             {
-                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnInfoManager();
+                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnInfoManager(_DateTimeService);
                 InstanceTurns.SetTurnInfo(value);
             }
             catch (DataEntryException ex)

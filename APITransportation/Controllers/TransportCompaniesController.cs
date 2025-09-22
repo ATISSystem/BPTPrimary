@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -30,7 +31,16 @@ namespace APITransportation.Controllers
     public class TransportCompaniesController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService = new R2DateTimeService();
+        private IR2DateTimeService _DateTimeService;
+
+        public TransportCompaniesController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/GetTransportCompanies")]
@@ -39,7 +49,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
@@ -70,7 +80,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var TCId = Content.TransportCompanyId;
 
@@ -101,15 +111,15 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var SessionId = Content.SessionId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationTransportCompaniesManager(_DateTimeService );
+                var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationTransportCompaniesManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject( InstanceTransportCompanies.GetTransportCompanyfromSoftwareUser(User, false)), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTransportCompanies.GetTransportCompanyfromSoftwareUser(User, false)), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -130,7 +140,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var SessionId = Content.SessionId;
@@ -160,7 +170,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TransportCompanyId = Content.TransportCompanyId;
@@ -218,7 +228,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService );
                 var InstanceSession = new R2CoreSessionManager();
 
                 var SessionId = Content.SessionId;

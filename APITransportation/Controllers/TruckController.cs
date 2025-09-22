@@ -24,6 +24,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -35,6 +36,16 @@ namespace APITransportation.Controllers
     public class TruckController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
+        private R2DateTimeService _DateTimeService;
+
+        public TruckController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/GetTruckfromRMTO")]
@@ -43,7 +54,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var SmartCardNo = Content.SmartCardNo;
 
@@ -75,8 +86,8 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
-                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
+                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var SmartCardNo = Content.SmartCardNo;
 
@@ -107,12 +118,12 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
+                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService);
                 var SessionId = Content.SessionId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var Truck = InstanceTrucks.GetTruckBySoftwareUser(User.UserId, true );
+                var Truck = InstanceTrucks.GetTruckBySoftwareUser(User.UserId, true);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(Truck), Encoding.UTF8, "application/json");
@@ -137,7 +148,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager();
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
@@ -172,7 +183,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager();
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
@@ -209,7 +220,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
+                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService);
                 var ComposedTruckInf = InstanceTrucks.GetComposedTruckInf(TruckId, true, true);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -236,7 +247,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
@@ -246,7 +257,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
+                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService);
                 InstanceTrucks.SetComposedTruckInf(TruckId, TruckDriverId, MoneyWalletId, TurnId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -277,7 +288,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
+                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService);
                 var ComposedTruckInfForTurnIssue = InstanceTrucks.GetComposedTruckInf(TruckId, false, true);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);

@@ -4,6 +4,7 @@ Imports System.Reflection
 Imports System.Windows.Forms
 
 Imports R2Core.ConfigurationManagement
+Imports R2Core.DatabaseManagement
 Imports R2CoreGUI
 
 Public Class FrmcPersonnels
@@ -16,37 +17,37 @@ Public Class FrmcPersonnels
 #Region "Subroutins And Functions"
 
 
-    Public enum ViewType
-        None=0
-        ByNameFamily=1
-        ByNationalCode=2
-    End enum
+    Public Enum ViewType
+        None = 0
+        ByNameFamily = 1
+        ByNationalCode = 2
+    End Enum
 
-    Public Sub ViewPersonnels(YourSerachStr As String,YourViewType As ViewType)
+    Public Sub ViewPersonnels(YourSerachStr As String, YourViewType As ViewType)
         Try
             Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
             If YourViewType = YourViewType.ByNameFamily Then Da.SelectCommand = New SqlCommand("Select PId,PNameFamily,NationalCode from R2Primary.dbo.TblPersonelInf Where PNameFamily Like '%" & YourSerachStr & "%' Order by PNameFamily")
             If YourViewType = YourViewType.ByNationalCode Then Da.SelectCommand = New SqlCommand("Select PId,PNameFamily,NationalCode from R2Primary.dbo.TblPersonelInf Where PNameFamily Like '%" & YourSerachStr & "%' Order by NationalCode")
-            Da.SelectCommand.Connection =  (new R2Core.DatabaseManagement.R2PrimarySqlConnection).GetConnection()
+            Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
             Ds.Tables.Clear()
             Da.Fill(Ds)
             ListBoxPersonnels.Items.Clear()
             For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
-                ListBoxPersonnels.Items.Add(Ds.Tables(0).Rows(Loopx).Item("PId") & vbTab & Ds.Tables(0).Rows(Loopx).Item("PNameFamily").trim+" "+vbTab & Ds.Tables(0).Rows(Loopx).Item("NationalCode").trim )
+                ListBoxPersonnels.Items.Add(Ds.Tables(0).Rows(Loopx).Item("PId") & vbTab & Ds.Tables(0).Rows(Loopx).Item("PNameFamily").trim + " " + vbTab & Ds.Tables(0).Rows(Loopx).Item("NationalCode").trim)
             Next
         Catch ex As Exception
-            Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name +vbCrLf+ ex.Message)
+            Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
         End Try
     End Sub
 
     Public Function GetSelectedPersonnelId() As Int64
         Try
-            If ListBoxPersonnels.SelectedIndex<0 Then Return 0
+            If ListBoxPersonnels.SelectedIndex < 0 Then Return 0
             Dim Selected As String = ListBoxPersonnels.SelectedItem
             Dim SelectedArray As String() = Split(Selected, vbTab)
             Return SelectedArray(0)
         Catch ex As Exception
-            Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf+ ex.Message)
+            Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
         End Try
     End Function
 
@@ -60,23 +61,23 @@ Public Class FrmcPersonnels
         Try
             If Asc(e.KeyChar) = 13 Or Asc(e.KeyChar) = 27 Then Me.Hide()
         Catch ex As Exception
-            _FrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.ErrorType,MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message, "", FrmcMessageDialog.MessageType.PersianMessage, Nothing, Me)
+            _FrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.ErrorType, MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message, "", FrmcMessageDialog.MessageType.PersianMessage, Nothing, Me)
         End Try
     End Sub
 
     Private Sub UcPersianTextBoxPersonnelNameFamily_UC13PressedEvent(PersianText As String) Handles UcPersianTextBoxPersonnelNameFamily.UC13PressedEvent
         Try
-            ViewPersonnels(UcPersianTextBoxPersonnelNameFamily.UCValue,ViewType.ByNameFamily)
+            ViewPersonnels(UcPersianTextBoxPersonnelNameFamily.UCValue, ViewType.ByNameFamily)
         Catch ex As Exception
-            _FrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.ErrorType,MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message, "", FrmcMessageDialog.MessageType.PersianMessage, Nothing, Me)
+            _FrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.ErrorType, MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message, "", FrmcMessageDialog.MessageType.PersianMessage, Nothing, Me)
         End Try
     End Sub
 
     Private Sub ListBoxDPersonnels_DoubleClick(sender As Object, e As EventArgs) Handles ListBoxPersonnels.DoubleClick
         Try
-          Me.Hide()
+            Me.Hide()
         Catch ex As Exception
-            _FrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.ErrorType,MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message, "", FrmcMessageDialog.MessageType.ErrorMessage, Nothing, Me)
+            _FrmMessageDialog.ViewDialogMessage(FrmcMessageDialog.DialogColorType.ErrorType, MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message, "", FrmcMessageDialog.MessageType.ErrorMessage, Nothing, Me)
         End Try
     End Sub
 

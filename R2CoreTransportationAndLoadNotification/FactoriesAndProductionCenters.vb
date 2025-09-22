@@ -50,13 +50,13 @@ Namespace FactoriesAndProductionCentersManagement
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager
-        Private _R2DateTimeService As New R2DateTimeService
+        Private _DateTimeService As New R2DateTimeService
+        Private InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Function HasFactoryAndProductionCenterMoneyWallet(YourFactoryAndProductionCenterId As Int64) As Boolean
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select Top 1 MoneyWallets.CardId from R2Primary.dbo.TblRFIDCards as MoneyWallets 
                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationMoneyWallets as FPCRMoneyWallets On MoneyWallets.CardId=FPCRMoneyWallets.CardId 
                         Where MoneyWallets.Active=1 and FPCRMoneyWallets.RelationActive=1 and FPCRMoneyWallets.FPCId=" & YourFactoryAndProductionCenterId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then
@@ -72,7 +72,6 @@ Namespace FactoriesAndProductionCentersManagement
         Public Function GetFactoriesAndProductionCenters_SearchIntroCharacters(YourSearchString As String, YourImmediately As Boolean) As String
             Try
                 Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -83,10 +82,10 @@ Namespace FactoriesAndProductionCentersManagement
                         Where FPCTitle Like N'%" & YourSearchString & "%' and FPCs.Deleted=0
                         Order By FPCTitle
                         for json auto")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select FPCs.FPCId as FPCId,FPCs.FPCTitle as FPCTitle,FPCs.FPCTel as FPCTel,FPCs.FPCAddress as FPCAddress,FPCs.FPCManagerMobileNumber as FPCManagerMobileNumber,
                                FPCs.FPCManagerNameFamily as FPCManagerNameFamily,FPCs.EmailAddress as EmailAddress,FPCs.Active as Active
                         From R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters as FPCs
@@ -104,7 +103,6 @@ Namespace FactoriesAndProductionCentersManagement
 
         Public Function GetFactoryAndProductionCenter(YourFactoryAndProductionCenterId As Int64, YourImmediately As Boolean) As RawFactoryAndProductionCenter
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -112,10 +110,10 @@ Namespace FactoriesAndProductionCentersManagement
                                                          FPCs.FPCManagerNameFamily as FPCManagerNameFamily,FPCs.EmailAddress as EmailAddress,FPCs.Active as Active
                                                        From R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters as FPCs
                                                        Where FPCId = " & YourFactoryAndProductionCenterId & " and FPCs.Deleted=0")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                                      "Select FPCs.FPCId as FPCId,FPCs.FPCTitle as FPCTitle,FPCs.FPCTel as FPCTel,FPCs.FPCAddress as FPCAddress,FPCs.FPCManagerMobileNumber as FPCManagerMobileNumber,
                                                          FPCs.FPCManagerNameFamily as FPCManagerNameFamily,FPCs.EmailAddress as EmailAddress,FPCs.Active as Active
                                                       From R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters as FPCs
@@ -131,13 +129,13 @@ Namespace FactoriesAndProductionCentersManagement
 
         Public Function FactoryAndProductionCenterRegister(YourRawFactoryAndProductionCenter As RawFactoryAndProductionCenter) As Int64
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
-                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(_R2DateTimeService, Nothing)
+                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(_DateTimeService, Nothing)
                 If YourRawFactoryAndProductionCenter.FPCTitle = String.Empty Then Throw New DataEntryException
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                Dim D = _R2DateTimeService.GetCurrentDateAndTime
+                Dim D = _DateTimeService.GetCurrentDateAndTime
                 CmdSql.CommandText = "Select Top 1 FPCId From R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters with (tablockx) Order By FPCId Desc"
                 Dim FPCIdNew As Int64 = CmdSql.ExecuteScalar() + 1
                 CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters(FPCId,FPCTitle,FPCTel,FPCAddress,FPCManagerMobileNumber,FPCManagerNameFamily,EmailAddress,ViewFlag,Active,Deleted)
@@ -176,7 +174,7 @@ Namespace FactoriesAndProductionCentersManagement
 
                     ' کیف پول 
                     'ایجاد کیف پول کاربر
-                    Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager
+                    Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager(_DateTimeService)
                     Dim MoneyWalletId = InstanceMoneyWallet.CreateNewMoneyWallet()
                     CmdSql.CommandText = "Insert R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationMoneyWallets(CardId,FPCId) Values(" & MoneyWalletId & "," & FPCIdNew & ")"
                     CmdSql.ExecuteNonQuery()
@@ -229,7 +227,7 @@ Namespace FactoriesAndProductionCentersManagement
 
         Public Sub DeleteFactoryAndProductionCenter(YourFPCId As Int64)
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters Set Deleted=0
@@ -250,7 +248,7 @@ Namespace FactoriesAndProductionCentersManagement
 
         Public Sub EditFactoryAndProductionCenter(YourRawFactoryAndProductionCenter As RawFactoryAndProductionCenter)
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(New R2DateTimeService, Nothing)
                 If YourRawFactoryAndProductionCenter.FPCTitle = String.Empty Then Throw New DataEntryException
@@ -302,7 +300,7 @@ Namespace FactoriesAndProductionCentersManagement
                     Dim HasMoneyWallet = HasFactoryAndProductionCenterMoneyWallet(YourRawFactoryAndProductionCenter.FPCId)
                     If Not HasMoneyWallet Then
                         'ایجاد کیف پول کاربر
-                        Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager
+                        Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager(_DateTimeService)
                         Dim MoneyWalletId = InstanceMoneyWallet.CreateNewMoneyWallet()
                         CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationMoneyWallets 
                                               Where CardId=" & MoneyWalletId & " or FPCId=" & YourRawFactoryAndProductionCenter.FPCId & ""
@@ -357,7 +355,6 @@ Namespace FactoriesAndProductionCentersManagement
 
         Public Function GetSoftwareUserIdfromFactoryAndProductionCenterId(YourFactoryAndProductionCenterId As Int64, YourImmediate As Boolean) As Int64
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As New DataSet
                 If YourImmediate Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -365,10 +362,10 @@ Namespace FactoriesAndProductionCentersManagement
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationSoftwareUsers as FPCRelationSoftwareUsers on SoftwareUsers.UserId=FPCRelationSoftwareUsers.UserId 
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters as FactoriesAndProductionCenters on FPCRelationSoftwareUsers.FPCId=FactoriesAndProductionCenters.FPCId 
                         where FPCRelationSoftwareUsers.FPCId=" & YourFactoryAndProductionCenterId & "")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New FactoryAndProductionCenterNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "select Top 1 SoftwareUsers.UserId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "select Top 1 SoftwareUsers.UserId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationSoftwareUsers as FPCRelationSoftwareUsers on SoftwareUsers.UserId=FPCRelationSoftwareUsers.UserId 
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters as FactoriesAndProductionCenters on FPCRelationSoftwareUsers.FPCId=FactoriesAndProductionCenters.FPCId 
                         where FPCRelationSoftwareUsers.FPCId=" & YourFactoryAndProductionCenterId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New FactoryAndProductionCenterNotFoundException
@@ -383,7 +380,7 @@ Namespace FactoriesAndProductionCentersManagement
 
         Public Sub FactoryAndProductionCenterChangeActiveStatus(YourFactoryAndProductionCenterId As Int64)
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim SoftwareUserId = GetSoftwareUserIdfromFactoryAndProductionCenterId(YourFactoryAndProductionCenterId, True)
                 Dim FactoryAndProductionCenter = GetFactoryAndProductionCenter(YourFactoryAndProductionCenterId, True)
@@ -426,7 +423,7 @@ Namespace FactoriesAndProductionCentersManagement
 
         Public Sub SendFactoryAndProductionCenterChangeActiveStatusSMS(YourFPCTitle As String, YourStatus As String)
             Try
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager()
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 'کاربران
                 Dim TargetUsers = InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 9).Split("-")
                 Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
@@ -436,7 +433,7 @@ Namespace FactoriesAndProductionCentersManagement
                 Next
                 'ارسال اس ام اس
                 Dim myData = New SMSCreationData With {.Data1 = YourFPCTitle, .Data2 = YourStatus}
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager
+                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
                 Dim SMSResult = InstanceSMSHandling.SendSMS(LstSoftwareUsers, R2CoreTransportationAndLoadNotificationSMSTypes.FactoryAndProductionCenterChangeActiveStatus, InstanceSMSHandling.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
                 Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
             Catch ex As Exception

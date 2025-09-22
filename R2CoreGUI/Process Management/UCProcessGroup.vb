@@ -85,7 +85,7 @@ Public Class UCProcessGroup
     '        PnlUCProcessCollection.SuspendLayout()
     '        PnlUCProcessCollection.Controls.Clear()
     '        Dim DS As DataSet
-    '        R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblProcessGroupsRelationProcesses Where PGId=" & _NSS.PGId & " Order by PGId", 3600, DS)
+    '        R2ClassSqlDataBOXManagement.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblProcessGroupsRelationProcesses Where PGId=" & _NSS.PGId & " Order by PGId", 3600, DS)
     '        For Loopx As Int16 = DS.Tables(0).Rows.Count - 1 To 0 Step -1
     '            Dim NSSProcess As R2StandardDesktopProcessStructure = R2Core.DesktopProcessesManagement.R2CoreMClassDesktopProcessesManagement.GetNSSProcess(DS.Tables(0).Rows(Loopx).Item("PId"))
     '            Dim UC As UCProcess = New UCProcess(NSSProcess,_NSS.PGBackColor)

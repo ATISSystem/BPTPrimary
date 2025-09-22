@@ -159,11 +159,14 @@ Namespace Cars
     End Class
 
     Public Class R2CoreParkingSystemInstanceCarsManager
+
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
+
         Public Function GetNSSCar(YournIdCar As String) As R2StandardCarStructure
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select * from dbtransport.dbo.TbCar Where nIdCar=" & YournIdCar & "")
-                Da.SelectCommand.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Dim NSS As R2StandardCarStructure = New R2StandardCarStructure
@@ -187,7 +190,7 @@ Namespace Cars
             Try
                 Dim Da As New SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 nCarId from R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars Where (CardId='" & YourCardId & "') and (RelationActive=1) and ((DATEDIFF(SECOND,RelationTimeStamp,getdate())<240) or (RelationTimeStamp='2015-01-01 00:00:00.000')) Order By RelationId Desc")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item("nCarId")
@@ -204,8 +207,7 @@ Namespace Cars
         Public Function GetnIdPersonFirst(YournIdCar As Int64) As Int64
             Try
                 Dim DS As New DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                              "Select Top 1 nIdPerson from dbtransport.dbo.TbCarAndPerson where (nIdCar=" & YournIdCar & ") and (snRelation=2) And ((DATEDIFF(SECOND,RelationTimeStamp,getdate())<240) Or (RelationTimeStamp='2015-01-01 00:00:00.000')) Order By nIDCarAndPerson Desc", 300, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return DS.Tables(0).Rows(0).Item("nIdPerson")
                 Else
@@ -222,7 +224,7 @@ Namespace Cars
             Try
                 Dim Da As New SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 CardId from R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars Where (nCarId=" & YournCarId & ") and (RelationActive=1) and ((DATEDIFF(SECOND,RelationTimeStamp,getdate())<240) or (RelationTimeStamp='2015-01-01 00:00:00.000')) Order By RelationId Desc")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item("CardId")
@@ -240,14 +242,14 @@ Namespace Cars
 
     Public Class R2CoreParkingSystemMClassCars
 
-        Private Shared _DateTime As New R2DateTime
+        Private Shared _DateTimeService As New R2DateTimeService
         Private Shared _R2PrimaryFSWS = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function IsExistCar(YourNSS As R2StandardCarStructure) As Boolean
             Try
                 Dim DS As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select StrCarNo,StrCarSerialNo from dbtransport.dbo.TbCar Where StrCarNo='" & YourNSS.StrCarNo & "' and StrCarSerialNo='" & YourNSS.StrCarSerialNo & "' and nIdCity=" & YourNSS.nIdCity & "", 1, DS, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select StrCarNo,StrCarSerialNo from dbtransport.dbo.TbCar Where StrCarNo='" & YourNSS.StrCarNo & "' and StrCarSerialNo='" & YourNSS.StrCarSerialNo & "' and nIdCity=" & YourNSS.nIdCity & "", 1, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return True
                 Else
                     Return False
@@ -261,7 +263,7 @@ Namespace Cars
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select * from dbtransport.dbo.TbCar Where nIdCar=" & YournIdCar & "")
-                Da.SelectCommand.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Dim NSS As R2StandardCarStructure = New R2StandardCarStructure
@@ -283,7 +285,7 @@ Namespace Cars
 
         Public Shared Sub UpdateCar(YourNSS As R2StandardCarStructure)
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -301,7 +303,7 @@ Namespace Cars
 
         Public Shared Sub DeleteCar(YourNSS As R2StandardCarStructure)
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -321,7 +323,7 @@ Namespace Cars
             Try
                 Dim Da As New SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 nCarId from R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars Where (CardId='" & YourCardId & "') and (RelationActive=1) and ((DATEDIFF(SECOND,RelationTimeStamp,getdate())<240) or (RelationTimeStamp='2015-01-01 00:00:00.000')) Order By RelationId Desc")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item("nCarId")
@@ -339,7 +341,7 @@ Namespace Cars
             Try
                 Dim Da As New SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 CardId from R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars Where (nCarId=" & YournCarId & ") and (RelationActive=1) and ((DATEDIFF(SECOND,RelationTimeStamp,getdate())<240) or (RelationTimeStamp='2015-01-01 00:00:00.000')) Order By RelationId Desc")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item("CardId")
@@ -357,7 +359,7 @@ Namespace Cars
             Try
                 Dim da As New SqlDataAdapter : Dim ds As New DataSet
                 da.SelectCommand = New SqlCommand("Select Top 1 nIdPerson from dbtransport.dbo.TbCarAndPerson where (nIdCar=" & YournIdCar & ") and (snRelation=2) And ((DATEDIFF(SECOND,RelationTimeStamp,getdate())<240) Or (RelationTimeStamp='2015-01-01 00:00:00.000')) Order By nIDCarAndPerson Desc")
-                da.SelectCommand.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+                da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 ds.Tables.Clear()
                 If da.Fill(ds) <> 0 Then
                     Return ds.Tables(0).Rows(0).Item("nIdPerson")
@@ -375,7 +377,7 @@ Namespace Cars
             Try
                 Dim da As New SqlDataAdapter : Dim ds As New DataSet
                 da.SelectCommand = New SqlCommand("Select Top 1 nIdPerson from dbtransport.dbo.TbCarAndPerson where (nIdCar=" & YournIdCar & ") and (snRelation=3) And ((DATEDIFF(SECOND,RelationTimeStamp,getdate())<240) Or (RelationTimeStamp='2015-01-01 00:00:00.000'))  Order By nIDCarAndPerson Desc")
-                da.SelectCommand.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+                da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 ds.Tables.Clear()
                 If da.Fill(ds) <> 0 Then
                     Return ds.Tables(0).Rows(0).Item("nIdPerson")
@@ -393,7 +395,7 @@ Namespace Cars
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 nIdCar from dbtransport.dbo.TbCar Where StrCarNo='" & YourLP.Pelak & "' and StrCarSerialNo='" & YourLP.Serial & "' and nIdCity=" & R2CoreParkingSystemMClassCitys.GetnCityCodeFromStrCityName(YourLP.City) & " Order By nIdCar Desc")
-                Da.SelectCommand.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item("nIdCar")
@@ -510,7 +512,7 @@ Namespace Cars
 
         Public Shared Sub CreateRelationBetweenTerafficCardAndCar(YourNSSTerraficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourNSSCar As R2StandardCarStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2Core.DatabaseManagement.R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
@@ -569,17 +571,19 @@ Namespace Cars
     'BPTChanged
     Public Class R2CoreParkingSystemCarsManager
 
-        Private _R2DateTimeService As IR2DateTimeService
-        Public Sub New(YourR2DateTimeService As IR2DateTimeService)
-            _R2DateTimeService = YourR2DateTimeService
+        Private _DateTimeService As IR2DateTimeService
+        Private _InstanceSqlDataBox As R2CoreSqlDataBOXManager
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+            _InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Public Function InsertCar(YourNSS As R2StandardCarStructure) As Int64
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Dim InstanceSoftwareUserService = New SoftwareUserService(Nothing)
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 Dim AllCarSerials = Split(InstanceConfiguration.GetConfigString(R2CoreParkingSystemConfigurations.IndigenousCars, 1), ";")
                 Dim CarSerials() = Split(AllCarSerials(0), "-")
                 Dim NativenessType As Int16 = 0
@@ -593,7 +597,7 @@ Namespace Cars
                 CmdSql.CommandText = "Select top 1 * from dbtransport.dbo.tbcar with (tablockx)" : CmdSql.ExecuteNonQuery()
                 CmdSql.CommandText = "Select IDENT_CURRENT('dbtransport.dbo.tbCar')"
                 Dim mynIdCar As Int64 = CmdSql.ExecuteScalar + 1
-                CmdSql.CommandText = "Insert Into dbtransport.dbo.tbCar(snCarType,StrCarNo,StrCarSerialNo,nIdCity,StrBodyNo,nUserID,strFanniDate,CarNativenessTypeId,CarNativenessExpireDate,ViewFlag) Values(" & YourNSS.snCarType & ",'" & YourNSS.StrCarNo & "','" & YourNSS.StrCarSerialNo & "'," & YourNSS.nIdCity & ",'" & mynIdCar & "'," & InstanceSoftwareUserService.SystemUserId & ",'" & _R2DateTimeService.GetCurrentShamsiDate & "'," & NativenessType & ",'',1)"
+                CmdSql.CommandText = "Insert Into dbtransport.dbo.tbCar(snCarType,StrCarNo,StrCarSerialNo,nIdCity,StrBodyNo,nUserID,strFanniDate,CarNativenessTypeId,CarNativenessExpireDate,ViewFlag) Values(" & YourNSS.snCarType & ",'" & YourNSS.StrCarNo & "','" & YourNSS.StrCarSerialNo & "'," & YourNSS.nIdCity & ",'" & mynIdCar & "'," & InstanceSoftwareUserService.SystemUserId & ",'" & _DateTimeService.GetCurrentShamsiDate & "'," & NativenessType & ",'',1)"
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 Return mynIdCar
@@ -610,6 +614,34 @@ Namespace Cars
             End Try
         End Function
 
+        Public Function GetTerraficCardIdFromCarId(YourCarId As Int64, YourImmediately As Boolean) As Int64
+            Try
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand("Select Top 1 CardId from R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars 
+                                                       Where (nCarId=" & YourCarId & ") and (RelationActive=1) and 
+                                                             ((DATEDIFF(SECOND,RelationTimeStamp,getdate())<240) or (RelationTimeStamp='2015-01-01 00:00:00.000')) Order By RelationId Desc")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    Ds.Tables.Clear()
+                    If Da.Fill(Ds) <= 0 Then
+                        Throw New RelatedTerraficCardNotFoundException
+                    End If
+                Else
+                    If _InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                     "Select Top 1 CardId from R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars 
+                      Where (nCarId=" & YourCarId & ") and (RelationActive=1) and 
+                            ((DATEDIFF(SECOND,RelationTimeStamp,getdate())<240) or (RelationTimeStamp='2015-01-01 00:00:00.000')) Order By RelationId Desc", 3600, Ds, Nothing).GetRecordsCount = 0 Then
+                        Throw New RelatedTerraficCardNotFoundException
+                    End If
+                End If
+                Return Ds.Tables(0).Rows(0).Item("CardId")
+            Catch ex As RelatedTerraficCardNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
 
     End Class
 

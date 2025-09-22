@@ -39,16 +39,16 @@ Namespace Carousels
         Public Function GetCarousels(YourAllCarousels As Boolean) As String
             Try
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
+                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
 
                 If YourAllCarousels Then
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select CId,CTitle,URL,Description,DateTimeMilladi,ShamsiDate,Time,Active from R2Primary.dbo.TblCarousels Where Deleted=0 Order By CId for JSON Path", 0, DS, New Boolean).GetRecordsCount = 0 Then
                         Throw New AnyNotFoundException
                     End If
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select CId,CTitle,URL,Description,DateTimeMilladi,ShamsiDate,Time,Active from R2Primary.dbo.TblCarousels Where Active=1 and Deleted=0 Order By CId for JSON Path", 0, DS, New Boolean).GetRecordsCount = 0 Then
                         Throw New AnyNotFoundException
                     End If
@@ -73,7 +73,7 @@ Namespace Carousels
 
         Public Sub CarouselRegistering(YourCarousel As R2CoreCarousel, YourSoftwareUser As R2CoreSoftwareUser)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -98,7 +98,7 @@ Namespace Carousels
 
         Public Sub CarouselEditing(YourCarousel As R2CoreCarousel, YourSoftwareUser As R2CoreSoftwareUser)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -119,7 +119,7 @@ Namespace Carousels
 
         Public Sub CarouselDeleting(YourCarouselId As Int64, YourSoftwareUser As R2CoreSoftwareUser)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -138,7 +138,7 @@ Namespace Carousels
 
         Public Sub CarouselChangeActiveStatus(YourCarouselId As Int64, YourActive As Boolean, YourSoftwareUser As R2CoreSoftwareUser)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -154,7 +154,7 @@ Namespace Carousels
 
         Public Sub CarouselsCachePreparing(YourSoftwareUser As R2CoreSoftwareUser)
             Try
-                Dim InstanceCache = New R2CoreCacheManager
+                Dim InstanceCache = New R2CoreCacheManager(_DateTimeService)
 
                 Dim Carousels = JsonConvert.DeserializeObject(Of List(Of R2CoreCarousel))(GetCarousels(False))
                 Dim Lst As New List(Of Object)
@@ -172,7 +172,7 @@ Namespace Carousels
 
         Public Function GetCarouselsForViewing() As String
             Try
-                Dim InstanceCache = New R2CoreCacheManager
+                Dim InstanceCache = New R2CoreCacheManager(_DateTimeService)
                 Dim Carousel = InstanceCache.GetCache(InstanceCache.GetCacheType(R2CoreCacheTypes.Carousel).CacheTypeName, R2CoreCatchDataBases.Carousels).ToString
                 If Carousel Is Nothing Then Throw New Exception
                 Return Carousel

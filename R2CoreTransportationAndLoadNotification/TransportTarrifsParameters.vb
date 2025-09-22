@@ -104,11 +104,13 @@ Namespace TransportTariffsParameters
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceTransportTariffsParametersManager
 
+        Private _DateTimeService As R2DateTimeService
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
+
         Public Function GetNSSTransportTariffsParameterDetail(YourTTPDId As Int64) As R2CoreTransportationAndLoadNotificationStandardTransportTariffsParametersDetailsStructure
             Try
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select Top 1 TransportPriceTariffsParameters.TPTPTitle,Details.* from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails as Details
                          Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Details.AHSGId=AnnouncementsubGroups.AHSGId 
                          Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters as TransportPriceTariffsParameters On Details.TPTPId=TransportPriceTariffsParameters.TPTPId 
@@ -147,8 +149,7 @@ Namespace TransportTariffsParameters
         Public Function GetListofTransportTariffsParams(YourNSSAHSG As R2CoreTransportationAndLoadNotificationStandardAnnouncementsubGroupStructure) As List(Of R2CoreTransportationAndLoadNotificationStandardTransportTariffsParametersDetailsStructure)
             Try
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select TransportPriceTariffsParameters.TPTPTitle,Details.*,0 as Checked from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails as Details
                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Details.AHSGId=AnnouncementsubGroups.AHSGId 
                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters as TransportPriceTariffsParameters On Details.TPTPId=TransportPriceTariffsParameters.TPTPId 
@@ -171,8 +172,7 @@ Namespace TransportTariffsParameters
         Public Function HaveAnyTransportTariffsParams(YourNSSAHSG As R2CoreTransportationAndLoadNotificationStandardAnnouncementsubGroupStructure) As Boolean
             Try
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select TransportPriceTariffsParameters.TPTPId from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails as Details
                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Details.AHSGId=AnnouncementsubGroups.AHSGId 
                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters as TransportPriceTariffsParameters On Details.TPTPId=TransportPriceTariffsParameters.TPTPId 
@@ -286,9 +286,11 @@ Namespace TransportTariffsParameters
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager
 
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
         Private _DateTimeService As IR2DateTimeService
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Public Function GetListofTransportTariffsParams(YourTPTParams As String) As List(Of R2CoreTransportationAndLoadNotificationTPTParamsDetails)
@@ -315,8 +317,7 @@ Namespace TransportTariffsParameters
             Try
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select Details.TPTPDId,TransportPriceTariffsParameters.TPTPTitle,Details.Mblgh as Cost,0 as Checked
                        from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails as Details
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Details.AHSGId=AnnouncementsubGroups.AnnouncementSGId 
@@ -337,8 +338,7 @@ Namespace TransportTariffsParameters
             Try
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select Details.TPTPDId,TransportPriceTariffsParameters.TPTPTitle,Details.Mblgh as Cost,0 as Checked
                        from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails as Details
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Details.AHSGId=AnnouncementsubGroups.AnnouncementSGId 
@@ -378,8 +378,7 @@ Namespace TransportTariffsParameters
         Public Function GetTransportTariffsParameterDetail(YourTPTPDId As Int64) As R2CoreTransportationAndLoadNotificationTransportTariffsParametersDetails
             Try
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select Top 1 TransportPriceTariffsParameters.TPTPTitle,Details.* from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails as Details
                          Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Details.AHSGId=AnnouncementsubGroups.AnnouncementSGId 
                          Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters as TransportPriceTariffsParameters On Details.TPTPId=TransportPriceTariffsParameters.TPTPId 
@@ -397,8 +396,7 @@ Namespace TransportTariffsParameters
         Public Function GetTransportTariffsDetail(YourTPTPDId As Int64) As R2CoreTransportationAndLoadNotificationTPTParamsDetails
             Try
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select Details.TPTPDId,TransportPriceTariffsParameters.TPTPTitle,Details.Mblgh as Cost,0 as Checked
                       from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails as Details
                          Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Details.AHSGId=AnnouncementsubGroups.AHSGId 

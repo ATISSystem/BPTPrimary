@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -27,7 +28,16 @@ namespace APITransportation.Controllers
     public class AnnouncementsController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService = new R2DateTimeService();
+        private IR2DateTimeService _DateTimeService;
+
+        public AnnouncementsController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/GetAnnouncements")]
@@ -66,7 +76,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var RawAnnouncement = Content.RawAnnouncement;
 
@@ -97,7 +107,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var RawAnnouncement = Content.RawAnnouncement;
 
@@ -128,7 +138,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var AnnouncementId = Content.AnnouncementId;
 
@@ -191,7 +201,7 @@ namespace APITransportation.Controllers
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
-                var AnnouncementId = Content.AnnouncementId ;
+                var AnnouncementId = Content.AnnouncementId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
@@ -220,7 +230,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var RawAnnouncementSubGroup = Content.RawAnnouncementSubGroup;
 
@@ -251,7 +261,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var RawAnnouncementSubGroup = Content.RawAnnouncementSubGroup;
 
@@ -282,7 +292,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var AnnouncementSGId = Content.AnnouncementSGId;
 
@@ -314,7 +324,7 @@ namespace APITransportation.Controllers
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
-                var AnnouncementId = Content.AnnouncementId ;
+                var AnnouncementId = Content.AnnouncementId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
@@ -343,7 +353,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var AnnouncementId = Content.AnnouncementId;
                 var AnnouncementSGId = Content.AnnouncementSGId;
@@ -351,7 +361,7 @@ namespace APITransportation.Controllers
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
-                InstanceAnnouncements.AnnouncementRelationAnnouncementSubGroupDeleting(AnnouncementId,AnnouncementSGId);
+                InstanceAnnouncements.AnnouncementRelationAnnouncementSubGroupDeleting(AnnouncementId, AnnouncementSGId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
@@ -375,7 +385,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var AnnouncementId = Content.AnnouncementId;
                 var AnnouncementSGId = Content.AnnouncementSGId;
@@ -383,10 +393,10 @@ namespace APITransportation.Controllers
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
-                InstanceAnnouncements.AnnouncementRelationAnnouncementSubGroupRegistering (AnnouncementId, AnnouncementSGId);
+                InstanceAnnouncements.AnnouncementRelationAnnouncementSubGroupRegistering(AnnouncementId, AnnouncementSGId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed ).MsgContent), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }

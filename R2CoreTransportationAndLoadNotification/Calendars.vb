@@ -10,17 +10,18 @@ Namespace CalendarManagement
     Namespace SpecializedPersianCalendar
         Public Class R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager
 
-            Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+            Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
             Private _DateTimeService As IR2DateTimeService
             Public Sub New(YourDateTimeService As IR2DateTimeService)
                 _DateTimeService = YourDateTimeService
+                InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
             End Sub
 
             Public Function GetFirstDateShamsiInRangeWithoutHoliday(YourTopBaseDateShamsi As String, YourTotalDay As Int64) As String
                 Try
                     If Not _DateTimeService.CheckShamsiDateSyntax(YourTopBaseDateShamsi) Then Throw New ShamsiDateSyntaxNotValidException
                     Dim Ds As DataSet = Nothing
-                    Dim Count = InstanceSqlDataBox.GetDataBOX(New R2PrimarySqlConnection,
+                    Dim Count = InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                             "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
                              Where DateShamsi<
                                    (Select Top 1 * from 
@@ -42,7 +43,7 @@ Namespace CalendarManagement
             Public Function IsTodayIsHolidayforLoadAnnounce() As Boolean
                 Try
                     Dim Ds As DataSet = Nothing
-                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                             "Select Top 1 LoadAnnounce from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
                                Where DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "' 
                                Order By HId Desc", 3600, Ds, New Boolean)
@@ -56,7 +57,7 @@ Namespace CalendarManagement
             Public Function IsActiveTomorrowLoadAnnounce() As Boolean
                 Try
                     Dim Ds As DataSet = Nothing
-                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                             "Select Top 1 LoadAnnounce from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
                                Where DateShamsi='" & _DateTimeService.GetNextShamsiDate & "' Order By HId Desc", 32767, Ds, New Boolean)
                     Return Ds.Tables(0).Rows(0).Item("LoadAnnounce")
@@ -68,7 +69,7 @@ Namespace CalendarManagement
             Public Function IsActiveTodayLoadAnnounce() As Boolean
                 Try
                     Dim Ds As DataSet = Nothing
-                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                             "Select Top 1 LoadAnnounce from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
                                Where DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "' Order By HId Desc", 32767, Ds, New Boolean)
                     Return Ds.Tables(0).Rows(0).Item("LoadAnnounce")
@@ -81,7 +82,7 @@ Namespace CalendarManagement
             Public Function IsTodayIsHoliday() As Boolean
                 Try
                     Dim Ds As DataSet = Nothing
-                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                             "Select Top 1 PCTYpe from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
                                Where DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "' Order By HId Desc", 32767, Ds, New Boolean)
                     Return Convert.ToBoolean(Ds.Tables(0).Rows(0).Item("PCTYpe"))

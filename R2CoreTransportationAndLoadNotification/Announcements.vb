@@ -167,12 +167,12 @@ Namespace Announcements
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager
-        Private _DateTime As New R2DateTime
-        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private _DateTimeService As New R2DateTimeService
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Function GetAnnouncemenetHallLastAnnounceTime(YourAHId As Int64, YourAHSGId As Int64) As R2CoreDateAndTime
             Try
-                Dim CurrentTime As String = _DateTime.GetCurrentTime()
+                Dim CurrentTime As String = _DateTimeService.GetCurrentTime()
                 Dim AnnounceTimes As List(Of String) = GetAnnouncementHallAnnounceTimes(YourAHId, YourAHSGId)
                 If CurrentTime < AnnounceTimes(0) Then Return New R2CoreDateAndTime With {.Time = "00:00:00"}
                 If CurrentTime >= AnnounceTimes(AnnounceTimes.Count - 1) Then Return New R2CoreDateAndTime With {.Time = AnnounceTimes(AnnounceTimes.Count - 1)}
@@ -203,7 +203,7 @@ Namespace Announcements
         Public Function GetNSSAnnouncementsubGroup(YourAHSGId As Int64) As R2CoreTransportationAndLoadNotificationStandardAnnouncementsubGroupStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups Where AHSGId=" & YourAHSGId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New AnnouncementsubGroupNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups Where AHSGId=" & YourAHSGId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New AnnouncementsubGroupNotFoundException
                 Return New R2CoreTransportationAndLoadNotificationStandardAnnouncementsubGroupStructure(DS.Tables(0).Rows(0).Item("AHSGId"), DS.Tables(0).Rows(0).Item("AHSGTitle").trim, DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted"))
             Catch ex As AnnouncementsubGroupNotFoundException
                 Throw ex
@@ -215,7 +215,7 @@ Namespace Announcements
         Public Function GetNSSAnnouncementHall(YourAHId As Int64) As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements Where AHId=" & YourAHId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New AnnouncementHallNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements Where AHId=" & YourAHId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New AnnouncementHallNotFoundException
                 Return New R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure(DS.Tables(0).Rows(0).Item("AHId"), DS.Tables(0).Rows(0).Item("AHTitle").trim, DS.Tables(0).Rows(0).Item("AHColor").trim, DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted"))
             Catch exx As AnnouncementHallNotFoundException
                 Throw exx
@@ -238,7 +238,7 @@ Namespace Announcements
 
         Public Function IsAnnouncemenetHallAnnounceTimePassed(YourAHId As Int64, YourAHSGId As Int64, YourDateTime As R2CoreDateAndTime) As Boolean
             Try
-                Dim CurrentTime As String = _DateTime.GetCurrentTime()
+                Dim CurrentTime As String = _DateTimeService.GetCurrentTime()
                 Dim AnnounceTimes As List(Of String) = GetAnnouncementHallAnnounceTimes(YourAHId, YourAHSGId)
                 If YourDateTime.Time < AnnounceTimes(0) Then If CurrentTime < AnnounceTimes(0) Then Return False Else Return True
                 For Loopx As Int64 = 0 To AnnounceTimes.Count - 1
@@ -279,7 +279,7 @@ Namespace Announcements
             Try
                 Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                  Select AHs.AHId,AHSGs.AHSGId from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AHs
                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementsubGroups as AHRAHSG On AHs.AHId=AHRAHSG.AHId 
                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSGs On AHRAHSG.AHSGId=AHSGs.AHSGId 
@@ -301,7 +301,7 @@ Namespace Announcements
         Public Function GetNSSAnnouncementHallByAnnouncementsubGroup(YourAHSGId As Int64) As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBox.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                              "Select Top 1 AH.AHId,AH.AHTitle,AH.AHColor,AH.Active,AH.Deleted,AH.ViewFlag from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AH 
                                  Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementsubGroups as AHRAHSG On AH.AHId=AHRAHSG.AHId
                                  Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSG On AHRAHSG.AHSGId=AHSG.AHSGId
@@ -327,7 +327,7 @@ Namespace Announcements
         Public Function GetAnnouncements() As List(Of R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure)
             Try
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                  "Select AH.AHId,AH.AHTitle,AH.AHColor,AH.Active,AH.Deleted,AH.ViewFlag from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AH 
                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationComputers as AHRComp On AH.AHId=AHRComp.AHId
                                     Where AHRComp.ComId=" & R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId & " and AHRComp.RelationActive=1 and AH.Deleted=0 and ah.ViewFlag=1 ", 3600, DS, New Boolean)
@@ -344,7 +344,7 @@ Namespace Announcements
         Public Function GetAnnouncementsubGroups(YourAHId As Int64) As List(Of R2CoreTransportationAndLoadNotificationStandardAnnouncementsubGroupStructure)
             Try
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                   "Select AHSG.AHSGId,AHSG.AHSGTitle,AHSG.Active,AHSG.Deleted,AHSG.ViewFlag from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AH 
                                      Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementsubGroups as AHRAHSG On AH.AHId=AHRAHSG.AHId
                                      Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSG On AHRAHSG.AHSGId=AHSG.AHSGId
@@ -362,7 +362,7 @@ Namespace Announcements
         Public Function GetNSSAnnouncementsubGroupByLoaderTypeId(YourLoaderTypeId As Int64) As R2CoreTransportationAndLoadNotificationStandardAnnouncementsubGroupStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                               Select Top 1 AHSG.AHSGId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LT 
                                  inner join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroupsRelationLoaderTypes as AHSGRLT On LT.LoaderTypeId=AHSGRLT.LoaderTypeId
                                  inner join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSG On AHSGRLT.AHSGId=AHSG.AHSGId
@@ -378,7 +378,7 @@ Namespace Announcements
         Public Function GetNSSAnnouncementHallByLoaderTypeId(YourLoaderTypeId As Int64) As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                            Select Top 1 AH.AHId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LT 
                             inner join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroupsRelationLoaderTypes as AHSGRLT On LT.LoaderTypeId=AHSGRLT.LoaderTypeId
                             inner join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSG On AHSGRLT.AHSGId=AHSG.AHSGId
@@ -398,13 +398,13 @@ Namespace Announcements
 
 
     Public MustInherit Class R2CoreTransportationAndLoadNotificationMClassAnnouncementsManagement
-        Private Shared _DateTime As New R2DateTime
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function GetAnnouncementsAnnouncementsubGroupsJOINT() As List(Of R2CoreTransportationAndLoadNotificationStandardAnnouncementHallAnnouncementsubGroupJOINTStructure)
             Try
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                  Select AHs.AHId,AHSGs.AHSGId from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AHs
                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementsubGroups as AHRAHSG On AHs.AHId=AHRAHSG.AHId 
                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSGs On AHRAHSG.AHSGId=AHSGs.AHSGId 
@@ -427,7 +427,7 @@ Namespace Announcements
         Public Shared Function GetNSSAnnouncementHall(YourAHId As Int64) As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements Where AHId=" & YourAHId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New AnnouncementHallNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements Where AHId=" & YourAHId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New AnnouncementHallNotFoundException
                 Return New R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure(DS.Tables(0).Rows(0).Item("AHId"), DS.Tables(0).Rows(0).Item("AHTitle").trim, DS.Tables(0).Rows(0).Item("AHColor").trim, DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted"))
             Catch exx As AnnouncementHallNotFoundException
                 Throw exx
@@ -439,7 +439,7 @@ Namespace Announcements
         Public Shared Function GetNSSAnnouncementHallByAnnouncementsubGroup(YourAHSGId As Int64) As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                              "Select Top 1 AH.AHId,AH.AHTitle,AH.AHColor,AH.Active,AH.Deleted,AH.ViewFlag from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AH 
                                  Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementsubGroups as AHRAHSG On AH.AHId=AHRAHSG.AHId
                                  Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSG On AHRAHSG.AHSGId=AHSG.AHSGId
@@ -455,7 +455,7 @@ Namespace Announcements
         Public Shared Function GetNSSAnnouncementsubGroup(YourAHSGId As Int64) As R2CoreTransportationAndLoadNotificationStandardAnnouncementsubGroupStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups Where AHSGId=" & YourAHSGId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New AnnouncementsubGroupNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups Where AHSGId=" & YourAHSGId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New AnnouncementsubGroupNotFoundException
                 Return New R2CoreTransportationAndLoadNotificationStandardAnnouncementsubGroupStructure(DS.Tables(0).Rows(0).Item("AHSGId"), DS.Tables(0).Rows(0).Item("AHSGTitle"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted"))
             Catch exx As AnnouncementsubGroupNotFoundException
                 Throw exx
@@ -467,7 +467,7 @@ Namespace Announcements
         Public Shared Function GetNSSAnnouncementHallAnnounceTimeType(YourAHATTypeId As Int64) As R2CoreTransportationAndLoadNotificationStandardAnnouncementHallAnnounceTimeTypeStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementHallAnnounceTimeTypes Where AHATTypeId=" & YourAHATTypeId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New AnnouncementHallAnnounceTimeTypeNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementHallAnnounceTimeTypes Where AHATTypeId=" & YourAHATTypeId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New AnnouncementHallAnnounceTimeTypeNotFoundException
                 Return New R2CoreTransportationAndLoadNotificationStandardAnnouncementHallAnnounceTimeTypeStructure(DS.Tables(0).Rows(0).Item("AHATTypeId"), DS.Tables(0).Rows(0).Item("AHATTypeTitle"), DS.Tables(0).Rows(0).Item("AHATTypeColor"), DS.Tables(0).Rows(0).Item("Deleted"))
             Catch exx As AnnouncementHallAnnounceTimeTypeNotFoundException
                 Throw exx
@@ -479,7 +479,7 @@ Namespace Announcements
         Public Shared Function GetNSSAnnouncementHallByLoaderTypeId(YourLoaderTypeId As Int64) As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                            Select Top 1 AH.AHId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LT 
                             inner join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroupsRelationLoaderTypes as AHSGRLT On LT.LoaderTypeId=AHSGRLT.LoaderTypeId
                             inner join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSG On AHSGRLT.AHSGId=AHSG.AHSGId
@@ -497,7 +497,7 @@ Namespace Announcements
         Public Shared Function GetNSSAnnouncementsubGroupByLoaderTypeId(YourLoaderTypeId As Int64) As R2CoreTransportationAndLoadNotificationStandardAnnouncementsubGroupStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                               Select Top 1 AHSG.AHSGId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LT 
                                  inner join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroupsRelationLoaderTypes as AHSGRLT On LT.LoaderTypeId=AHSGRLT.LoaderTypeId
                                  inner join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSG On AHSGRLT.AHSGId=AHSG.AHSGId
@@ -562,7 +562,7 @@ Namespace Announcements
 
         Public Shared Function IsAnnouncemenetHallAnnounceTimePassed(YourAHId As Int64, YourAHSGId As Int64, YourDateTime As R2CoreDateAndTime) As Boolean
             Try
-                Dim CurrentTime As String = _DateTime.GetCurrentTime()
+                Dim CurrentTime As String = _DateTimeService.GetCurrentTime()
                 Dim AnnounceTimes As List(Of String) = GetAnnouncementHallAnnounceTimes(YourAHId, YourAHSGId)
                 If YourDateTime.Time < AnnounceTimes(0) Then If CurrentTime < AnnounceTimes(0) Then Return False Else Return True
                 For Loopx As Int64 = 0 To AnnounceTimes.Count - 1
@@ -580,7 +580,7 @@ Namespace Announcements
 
         Public Shared Function GetAnnouncemenetHallLastAnnounceTime(YourAHId As Int64, YourAHSGId As Int64) As R2CoreDateAndTime
             Try
-                Dim CurrentTime As String = _DateTime.GetCurrentTime()
+                Dim CurrentTime As String = _DateTimeService.GetCurrentTime()
                 Dim AnnounceTimes As List(Of String) = GetAnnouncementHallAnnounceTimes(YourAHId, YourAHSGId)
                 If CurrentTime < AnnounceTimes(0) Then Return New R2CoreDateAndTime With {.Time = "00:00:00"}
                 If CurrentTime >= AnnounceTimes(AnnounceTimes.Count - 1) Then Return New R2CoreDateAndTime With {.Time = AnnounceTimes(AnnounceTimes.Count - 1)}
@@ -599,7 +599,7 @@ Namespace Announcements
         Public Shared Function GetAnnouncements() As List(Of R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure)
             Try
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                  "Select AH.AHId,AH.AHTitle,AH.AHColor,AH.Active,AH.Deleted,AH.ViewFlag from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AH 
                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationComputers as AHRComp On AH.AHId=AHRComp.AHId
                                     Where AHRComp.ComId=" & R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId & " and AHRComp.RelationActive=1 and AH.Deleted=0 and ah.ViewFlag=1 ", 3600, DS, New Boolean)
@@ -616,7 +616,7 @@ Namespace Announcements
         Public Shared Function GetAnnouncementsubGroups(YourAHId As Int64) As List(Of R2CoreTransportationAndLoadNotificationStandardAnnouncementsubGroupStructure)
             Try
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                   "Select AHSG.AHSGId,AHSG.AHSGTitle,AHSG.Active,AHSG.Deleted,AHSG.ViewFlag from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AH 
                                      Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementsubGroups as AHRAHSG On AH.AHId=AHRAHSG.AHId
                                      Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSG On AHRAHSG.AHSGId=AHSG.AHSGId
@@ -634,7 +634,7 @@ Namespace Announcements
         Public Shared Function GetAnnouncementHallAnnounceTimeTypes() As List(Of R2CoreTransportationAndLoadNotificationStandardAnnouncementHallAnnounceTimeTypeStructure)
             Try
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                            "Select AHATType.AHATTypeId,AHATType.AHATTypeTitle,AHATType.AHATTypeColor,AHATType.Deleted from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementHallAnnounceTimeTypes as AHATType 
                                                Where AHATType.Deleted=0 Order By AHATType.AHATTypeId", 3600, DS, New Boolean)
                 Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardAnnouncementHallAnnounceTimeTypeStructure)
@@ -743,15 +743,16 @@ Namespace Announcements
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationAnnouncementsManager
 
+        Private InstanceSqlDataBox As R2CoreSqlDataBOXManager
         Private _DateTimeService As IR2DateTimeService
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
+            InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         'BPTChanged
         Public Function GetAnnouncements(YourSearchString As String, YourImmediately As Boolean) As String
             Try
-                Dim InstanceSqlDataBox = New R2CoreSqlDataBOXManager
                 Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
@@ -761,10 +762,10 @@ Namespace Announcements
                       from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements As Announcements  
                       Where Announcements.AnnouncementTitle Like N'%" & YourSearchString & "%' and Announcements.Deleted=0 
                       for JSON path")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
                 Else
-                    If InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Announcements.AnnouncementId,Announcements.AnnouncementTitle,Announcements.Active 
                       from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements As Announcements  
                       Where Announcements.AnnouncementTitle Like N'%" & YourSearchString & "%' and Announcements.Deleted=0 
@@ -780,7 +781,7 @@ Namespace Announcements
 
         Public Sub AnnouncementRegistering(YourRawAnnouncement As R2CoreTransportationAndLoadNotificationAnnouncement)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -805,7 +806,7 @@ Namespace Announcements
 
         Public Sub AnnouncementEditing(YourRawAnnouncement As R2CoreTransportationAndLoadNotificationAnnouncement)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements Set AnnouncementTitle='" & YourRawAnnouncement.AnnouncementTitle & "',Active=" & IIf(YourRawAnnouncement.Active, 1, 0) & "
@@ -823,7 +824,7 @@ Namespace Announcements
 
         Public Sub AnnouncementDeleting(YourAnnouncementId As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements Set Deleted=1,Active=0
@@ -840,7 +841,6 @@ Namespace Announcements
 
         Public Function GetAnnouncementSGs(YourSearchString As String, YourImmediately As Boolean) As String
             Try
-                Dim InstanceSqlDataBox = New R2CoreSqlDataBOXManager
                 Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
@@ -850,10 +850,10 @@ Namespace Announcements
                       from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSGs 
                       Where AnnouncementSGs.AnnouncementSGTitle Like N'%" & YourSearchString & "%' and AnnouncementSGs.Deleted=0 
                       for JSON path")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
                 Else
-                    If InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select AnnouncementSGs.AnnouncementSGId ,AnnouncementSGs.AnnouncementSGTitle ,AnnouncementSGs.Active 
                       from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSGs 
                       Where AnnouncementSGs.AnnouncementSGTitle Like N'%" & YourSearchString & "%' and AnnouncementSGs.Deleted=0 
@@ -869,7 +869,6 @@ Namespace Announcements
 
         Public Function GetAnnouncementSGsByAnnouncementId(YourAnnouncementId As Int64, YourImmediately As Boolean) As String
             Try
-                Dim InstanceSqlDataBox = New R2CoreSqlDataBOXManager
                 Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
@@ -881,10 +880,10 @@ Namespace Announcements
                          Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On AnnouncementsRelationAnnouncementSubGroups.AnnouncementId=Announcements.AnnouncementId 
                       Where Announcements.AnnouncementId=" & YourAnnouncementId & " and AnnouncementSGs.Deleted=0 
                       for JSON path")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
                 Else
-                    If InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select AnnouncementSGs.AnnouncementSGId ,AnnouncementSGs.AnnouncementSGTitle ,AnnouncementSGs.Active 
                       from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSGs 
                          Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as AnnouncementsRelationAnnouncementSubGroups On AnnouncementSGs.AnnouncementSGId=AnnouncementsRelationAnnouncementSubGroups.AnnouncementSGId 
@@ -912,7 +911,7 @@ Namespace Announcements
 
         Public Sub AnnouncementSGRegistering(YourRawAnnouncementSG As R2CoreTransportationAndLoadNotificationAnnouncementSubGroup)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -937,7 +936,7 @@ Namespace Announcements
 
         Public Sub AnnouncementSGEditing(YourRawAnnouncementSG As R2CoreTransportationAndLoadNotificationAnnouncementSubGroup)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups Set AnnouncementSGTitle='" & YourRawAnnouncementSG.AnnouncementSGTitle & "',Active=" & IIf(YourRawAnnouncementSG.Active, 1, 0) & "
@@ -955,7 +954,7 @@ Namespace Announcements
 
         Public Sub AnnouncementSGDeleting(YourAnnouncementSGId As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups Set Deleted=1,Active=0
@@ -973,7 +972,6 @@ Namespace Announcements
 
         Public Function GetAnnouncementRelationAnnouncementSubGroups(YourAnnouncementId As Int64, YourImmediately As Boolean) As String
             Try
-                Dim InstanceSqlDataBox = New R2CoreSqlDataBOXManager
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
@@ -985,10 +983,10 @@ Namespace Announcements
                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On ARASG.AnnouncementSGId=AnnouncementSubGroups.AnnouncementSGId 
                          Where Announcements.AnnouncementId=" & YourAnnouncementId & "
                          for JSON Auto")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
                 Else
-                    If InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Announcements.AnnouncementId,Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGId,AnnouncementSubGroups.AnnouncementSGTitle
                             from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements
                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as ARASG On Announcements.AnnouncementId=ARASG.AnnouncementId 
@@ -1006,7 +1004,7 @@ Namespace Announcements
 
         Public Sub AnnouncementRelationAnnouncementSubGroupDeleting(YourAnnouncementId As Int64, YourAnnouncementSGId As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups
@@ -1023,7 +1021,7 @@ Namespace Announcements
 
         Public Sub AnnouncementRelationAnnouncementSubGroupRegistering(YourAnnouncementId As Int64, YourAnnouncementSGId As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups(AnnouncementId,AnnouncementSGId)
@@ -1039,10 +1037,9 @@ Namespace Announcements
         End Sub
 
         Public Sub RelationBetweenProvinceAndAnnouncementsubGroupValidate(YourProvinceId As Int64, YourAnnouncementSGId As Int64)
-            Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "
+                If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                       Select ProvinceId from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroupsRelationProvinces 
                       Where ProvinceId=" & YourProvinceId & " and AnnouncementSGId=" & YourAnnouncementSGId & "", 32767, DS, New Boolean).GetRecordsCount() = 0 Then Throw New HasNotRelationBetweenProvinceAndAnnouncementsubGroup
             Catch ex As HasNotRelationBetweenProvinceAndAnnouncementsubGroup
@@ -1136,7 +1133,17 @@ Namespace AnnouncementTiming
     End Enum
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
-        Private _DateTime As New R2DateTime
+        Private _DateTimeService As R2DateTimeService
+
+        Public Sub New()
+            Try
+                _DateTimeService = New R2DateTimeService
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Sub
 
         Public Function IsTimingActive(YourAHId As Int64, YourAHSGId As Int64) As Boolean
             Try

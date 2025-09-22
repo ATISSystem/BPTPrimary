@@ -64,6 +64,7 @@ Imports R2Core.CachHelper
 Imports R2CoreTransportationAndLoadNotification.PubSubMessaging
 Imports StackExchange.Redis
 Imports R2Core.DateTimeProvider
+Imports R2Core.SQLInjectionPrevention
 
 
 
@@ -215,16 +216,16 @@ Namespace LoadPermission
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceLoadPermissionManager
-        Private _DateTime As New R2DateTime
+        Private _DateTimeService As New R2DateTimeService
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Function GetTotalLoadPermissions(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure) As Int64
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
-                Return InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                Return InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select LoadAllocations.LAId from dbtransport.dbo.tbEnterExit as Turns
                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations On Turns.nEnterExitId=LoadAllocations.TurnId 
-                       Where LoadAllocations.DateShamsi='" & _DateTime.GetCurrentShamsiDate & "' and LoadAllocations.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionSucceeded & " and Turns.strCardno=" & YourNSSTruck.NSSCar.nIdCar & "", 0, DS, New Boolean).GetRecordsCount
+                       Where LoadAllocations.DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "' and LoadAllocations.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionSucceeded & " and Turns.strCardno=" & YourNSSTruck.NSSCar.nIdCar & "", 0, DS, New Boolean).GetRecordsCount
             Catch ex As Exception
                 Throw ex
             End Try
@@ -232,8 +233,7 @@ Namespace LoadPermission
 
         Public Function ReportingInformationProviderLoadPermissionsIssuedOrderByPriorityReport(YourAHSGId As Int64) As List(Of KeyValuePair(Of String, String))
             'گزارش مجوزهای صادر شده برای نوبت ها به ترتیب زمان صدور مجوز و اولویت انتخابی
-            Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTime)
-            Dim InstanceSqlDataBox As New R2CoreSqlDataBOXManager
+            Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService)
             Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager
             Dim InstanceSequentialTurns = New R2CoreTransportationAndLoadNotificationInstanceSequentialTurnsManager
             Dim NSSAHSG = InstanceAnnouncements.GetNSSAnnouncementsubGroup(YourAHSGId)
@@ -271,12 +271,12 @@ Namespace LoadPermission
                                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocationStatuses as LoadAllocationStatuses On LoadAllocations.LAStatusId=LoadAllocationStatuses.LoadAllocationStatusId
                 Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as LoadingPlaces On Loads.LoadingPlaceId=LoadingPlaces.LADPlaceId 
                  Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as DischargingPlaces On Loads.DischargingPlaceId=DischargingPlaces.LADPlaceId 
-                                   Where LoadAllocations.DateShamsi='" & _DateTime.GetCurrentShamsiDate() & "' and Turns.TurnStatus=6 and Turns.LoadPermissionStatus=1 and  LoadAllocations.LAStatusId=2 and AnnouncementsubGroups.AHSGId=" & YourAHSGId & " 
+                                   Where LoadAllocations.DateShamsi='" & _DateTimeService.GetCurrentShamsiDate() & "' and Turns.TurnStatus=6 and Turns.LoadPermissionStatus=1 and  LoadAllocations.LAStatusId=2 and AnnouncementsubGroups.AHSGId=" & YourAHSGId & " 
                                          and Turns.nEnterExitId>(Select Top 1 nEnterExitId from dbtransport.dbo.tbEnterExit as Turns Where TurnStatus=3 and substring(OtaghdarTurnNumber,1,1)='" & NSSSeqT.SequentialTurnKeyWord & "' Order By nEnterExitId Desc)
                                    Order By LoadAllocations.TurnId,LoadAllocations.Priority"
 
                 Dim Ds As DataSet
-                InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, SqlString, 120, Ds, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, SqlString, 120, Ds, New Boolean)
                 Dim Lst = New List(Of KeyValuePair(Of String, String))
                 Dim StringB As New StringBuilder
                 For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
@@ -306,7 +306,7 @@ Namespace LoadPermission
 
         Public Sub LoadPermissionRegistering(YourNSSLoadAllocation As R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure, YourNSSLoadCapacitorLoad As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadExtendedStructure, YourCurrentDateTime As R2CoreDateAndTime, YourUserNSS As R2CoreStandardSoftwareUserStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 Dim InstanceTruck = New R2CoreTransportationAndLoadNotificationInstanceTrucksManager
@@ -322,7 +322,7 @@ Namespace LoadPermission
                 'Dim NSSTruckDriver = InstanceTruckDriver.GetNSSTruckDriver(InstanceCars.GetnIdPersonFirst(NSSTruck.NSSCar.nIdCar), False)
                 Dim NSSTurn = InstanceTurns.GetNSSTurn(YourNSSLoadAllocation.TurnId)
                 Dim InstanceTurnAttendance = New R2CoreTransportationAndLoadNotificationInstanceTurnAttendanceManager
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
 
                 'کنترل لیست سیاه
                 'Dim BlackList = InstanceBlackList.GetBlackList(New R2StandardCarStructure(NSSTruck.NSSCar.nIdCar, NSSTruck.NSSCar.snCarType, NSSTruck.NSSCar.StrCarNo, NSSTruck.NSSCar.StrCarSerialNo, NSSTruck.NSSCar.nIdCity), R2CoreParkingSystemMClassBlackList.R2CoreParkingSystemBlackListType.ActiveBlackLists)
@@ -349,7 +349,7 @@ Namespace LoadPermission
                 'Dim Da As New SqlClient.SqlDataAdapter
                 'Dim DSAllocate As New DataSet
                 'Da.SelectCommand = New SqlClient.SqlCommand("Select LAId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations Where TurnId=" & NSSTurn.nEnterExitId & " and LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionSucceeded & "")
-                'Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+                'Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 'If Da.Fill(DSAllocate) <> 0 Then Throw New ExeededNumberofLoadPermisionsWithOneTurnException
 
                 CmdSql.Connection.Open()
@@ -392,7 +392,7 @@ Namespace LoadPermission
 
         Private Sub SendingLoadPermissionSMS(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure, YourCurrentDateTime As R2CoreDateAndTime, YourNSSLoadCapacitorLoad As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadExtendedStructure, YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
             Try
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager
+                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
                 Dim LstUser = New List(Of R2CoreStandardSoftwareUserStructure) From {YourNSSSoftwareUser}
                 Dim LstCreationData = New List(Of SMSCreationData) From {New SMSCreationData With {.Data1 = YourCurrentDateTime.ShamsiDate + " " + YourCurrentDateTime.Time, .Data2 = YourNSSLoadCapacitorLoad.GoodTitle + " - " + YourNSSLoadCapacitorLoad.LoadTargetTitle, .Data3 = YourNSSLoadCapacitorLoad.TransportCompanyTitle}}
                 Dim SMSResult = InstanceSMSHandling.SendSMS(LstUser, R2CoreTransportationAndLoadNotificationSMSTypes.SendingLoadPermissionIssuedInfSMS, LstCreationData, True)
@@ -405,9 +405,8 @@ Namespace LoadPermission
 
         Public Function GetNSSLoadPermission(YournEstelamId As Int64, YourTurnId As Int64) As R2CoreTransportationAndLoadNotificationStandardLoadPermissionExtendedStructure
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                             "Select EnterExit.OtaghdarTurnNumber as SequentialTurnNumber,EnterExit.nEstelamID,EnterExit.nEnterExitId,EnterExit.strExitDate,EnterExit.strExitTime,EnterExit.strBarnameNo,EnterExit.nUserIdExit,EnterExit.LoadPermissionStatus,
                                     TransportCompany.TCTitle,Product.strGoodName,City.strCityName,Elam.strDescription,Car.strCarNo+'-'+strCarSerialNo as Truck,Person.strPersonFullName,LoadPermissionStatus.LoadPermissionStatusTitle from dbtransport.dbo.tbEnterExit as EnterExit 
                                            Inner Join dbtransport.dbo.tbElam as Elam On EnterExit.nEstelamID=Elam.nEstelamID
@@ -428,7 +427,7 @@ Namespace LoadPermission
 
         Public Sub LoadPermissionCancelling(YournEstelamId As Int64, YourTurnId As Int64, YourTurnResuscitationFlag As Boolean, YourUserNSS As R2CoreStandardSoftwareUserStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
                 Dim InstanceLoadAllocation = New R2CoreTransportationAndLoadNotificationInstanceLoadAllocationManager
@@ -448,11 +447,11 @@ Namespace LoadPermission
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 'کنسلی مجوز بار ضمن ارسال وضعیت بازگردانی بار یا کنسلی بار
-                If NSSLoadAllocation.DateShamsi < _DateTime.GetCurrentShamsiDate Then
+                If NSSLoadAllocation.DateShamsi < _DateTimeService.GetCurrentShamsiDate Then
                     'بار رسوب شده است و نیازی به عملیات خاصی نیست
                     Dim InstanceLoadCapacitorAccounting = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorAccountingManager
                     InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(YournEstelamId, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.LoadPermissionCancelling, 1, Nothing, Nothing, Nothing, YourUserNSS.UserId))
-                ElseIf NSSLoadAllocation.DateShamsi = _DateTime.GetCurrentShamsiDate Then
+                ElseIf NSSLoadAllocation.DateShamsi = _DateTimeService.GetCurrentShamsiDate Then
                     Dim InstanceLoadCapacitorLoadOtherThanManipulation = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadOtherThanManipulationManager
                     R2CoreTransportationAndLoadNotificationMClassLoadCapacitorLoadOtherThanManipulationManagement.LoadCapacitorLoadPermissionCancelling(YournEstelamId, YourTurnResuscitationFlag, YourUserNSS)
                 Else
@@ -472,9 +471,8 @@ Namespace LoadPermission
         Public Function GetTruckLastLoadWhichPermissioned(YourNSSCarTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure) As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadStructure
             Try
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select Top 1 nEstelamID from dbtransport.dbo.tbEnterExit
                        Where strCardno = " & YourNSSCarTruck.NSSCar.nIdCar & " And isnull(nestelamid,0)<>0 and TurnStatus=" & TurnStatuses.UsedLoadPermissionRegistered & " 
                        Order By nEnterExitId Desc", 0, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TruckHasNotAnyLoadPermissionException
@@ -492,13 +490,12 @@ Namespace LoadPermission
 
         Public Function HaveLoadingPermission(YourLAId As Int64, YourTCompanyId As String) As String
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourLAId)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourTCompanyId)
                 Dim SB As New StringBuilder
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                             "Select  Top 1 LAId,Persons.strNationalCode as TruckDriverNationalCode,Cars.strBodyNo as TruckSmartCardNo,SourceCities.nOCityCode as LoadSourceId,TargetCities.nOCityCode as LoadTargetId,Products.OstrGoodCode as GoodId,LoadAllocations.DateShamsi,LoadAllocations.DateTimeMilladi,TransportCompanies.TCOrganizationCode from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
                                Inner Join dbtransport.dbo.tbElam as Loads On LoadAllocations.nEstelamId=Loads.nEstelamID
 							   inner join dbtransport.dbo.tbCity as SourceCities on Loads.nBarSource=SourceCities.nCityCode
@@ -536,16 +533,15 @@ Namespace LoadPermission
 
         Public Function WriteBillofLadingId(YourLAId As Int64, YourTCompanyId As String, YourBillofLadingId As String) As String
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourLAId)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourTCompanyId)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourBillofLadingId)
                 Dim SB As New StringBuilder
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                             "Select Top 1 LAId,LoadAllocations.TurnId,LoadAllocations.DateShamsi,LoadAllocations.DateTimeMilladi,TransportCompanies.TCOrganizationCode from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
                                Inner Join dbtransport.dbo.tbElam as Loads On LoadAllocations.nEstelamId=Loads.nEstelamID
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On Loads.nCompCode=TransportCompanies.TCId  
@@ -553,7 +549,7 @@ Namespace LoadPermission
                                Inner Join dbtransport.dbo.TbCar as Cars On Turns.strCardno=Cars.nIDCar 
                                Inner Join dbtransport.dbo.TbPerson as Persons On Turns.nDriverCode=Persons.nIDPerson  
                              Where LoadAllocations.LAId=" & YourLAId & "", 0, DS, New Boolean).GetRecordsCount() <> 0 Then
-                    If DateDiff(DateInterval.Hour, DateTime.Parse(DS.Tables(0).Rows(0).Item("DateTimeMilladi").ToString), _DateTime.GetCurrentDateTimeMilladi) > 72 Then Throw New LoadingPermissionIdInvalidException
+                    If DateDiff(DateInterval.Hour, DateTime.Parse(DS.Tables(0).Rows(0).Item("DateTimeMilladi").ToString), _DateTimeService.GetCurrentDateTimeMilladi) > 72 Then Throw New LoadingPermissionIdInvalidException
                     If DS.Tables(0).Rows(0).Item("TCOrganizationCode").ToString <> YourTCompanyId Then Throw New LoadingPermissionIdIncorrectException
                     CmdSql.Connection.Open()
                     CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -595,15 +591,14 @@ Namespace LoadPermission
 
         Public Function CancellationBillofLading(YourLAId As Int64, YourTCompanyId As String) As String
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourLAId)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourTCompanyId)
                 Dim SB As New StringBuilder
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                             "Select Top 1 LAId,LoadAllocations.TurnId,LoadAllocations.DateShamsi,LoadAllocations.DateTimeMilladi,TransportCompanies.TCOrganizationCode from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
                                Inner Join dbtransport.dbo.tbElam as Loads On LoadAllocations.nEstelamId=Loads.nEstelamID
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On Loads.nCompCode=TransportCompanies.TCId  
@@ -660,13 +655,13 @@ Namespace LoadPermission
     End Class
 
     Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassLoadPermissionManagement
-        Private Shared _DateTime As New R2DateTime
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function GetNSSLoadPermission(YournEstelamId As Int64, YourTurnId As Int64) As R2CoreTransportationAndLoadNotificationStandardLoadPermissionExtendedStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                             "Select Top 1 EnterExit.OtaghdarTurnNumber as SequentialTurnNumber,EnterExit.nEstelamID,EnterExit.nEnterExitId,EnterExit.strExitDate,EnterExit.strExitTime,EnterExit.strBarnameNo,LoadAllocations.UserId,EnterExit.LoadPermissionStatus,
                                     TransportCompany.TCTitle,Product.strGoodName,City.strCityName,Elam.strDescription,Car.strCarNo+'-'+strCarSerialNo as Truck,Person.strPersonFullName,LoadPermissionStatus.LoadPermissionStatusTitle from dbtransport.dbo.tbEnterExit as EnterExit 
                                            Inner Join dbtransport.dbo.tbElam as Elam On EnterExit.nEstelamID=Elam.nEstelamID
@@ -689,7 +684,7 @@ Namespace LoadPermission
         Public Shared Function GetNSSLoadPermissionStatus(YourLoadPermissionStatusId As Int64) As R2CoreTransportationAndLoadNotificationStandardLoadPermissionStatusStructure
             Try
                 Dim DS As DataSet = Nothing
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadPermissionStatuses Where LoadPermissionStatusId=" & YourLoadPermissionStatusId & "", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New LoadPermissionStatusNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadPermissionStatuses Where LoadPermissionStatusId=" & YourLoadPermissionStatusId & "", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New LoadPermissionStatusNotFoundException
                 Dim NSS As New R2CoreTransportationAndLoadNotificationStandardLoadPermissionStatusStructure
                 NSS.LoadPermissionStatusId = YourLoadPermissionStatusId
                 NSS.LoadPermissionStatusTitle = DS.Tables(0).Rows(0).Item("LoadPermissionStatustitle").TRIM
@@ -703,11 +698,11 @@ Namespace LoadPermission
         Public Shared Function GetNSSPrimaryTurn(YournEstelamId As Int64, YourExcludedTurnId As Int64) As R2CoreTransportationAndLoadNotificationStandardTurnStructure
             Try
                 Dim DS As DataSet = Nothing
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select Top 1 LoadAllocations.TurnId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
                           Inner Join dbtransport.dbo.tbEnterExit as Turns On LoadAllocations.TurnId=Turns.nEnterExitId 
                        Inner Join dbtransport.dbo.tbElam as Loads On LoadAllocations.nEstelamId=Loads.nEstelamID 
-                       Where LoadAllocations.DateShamsi='" & _DateTime.GetCurrentShamsiDate() & "' and (LoadAllocations.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & " or LoadAllocations.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionFailed & ") and LoadAllocations.nEstelamId =" & YournEstelamId & " and  LoadAllocations.LAStatusId<>" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionCancelled & " and 
+                       Where LoadAllocations.DateShamsi='" & _DateTimeService.GetCurrentShamsiDate() & "' and (LoadAllocations.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & " or LoadAllocations.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionFailed & ") and LoadAllocations.nEstelamId =" & YournEstelamId & " and  LoadAllocations.LAStatusId<>" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionCancelled & " and 
                              (Turns.TurnStatus=" & TurnStatuses.UsedLoadAllocationRegistered & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationLoadPermissionCancelled & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationLoadAllocationCancelled & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationUser & ") and (Turns.LoadPermissionStatus=" & R2CoreTransportationAndLoadNotificationLoadPermissionStatuses.None & " or Turns.LoadPermissionStatus=" & R2CoreTransportationAndLoadNotificationLoadPermissionStatuses.Cancelled & ") and Turns.nEnterExitId > " & YourExcludedTurnId & " and
                              (Loads.LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered & " or Loads.LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.FreeLined & " or Loads.LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & ") and Loads.nCarNum>=1 and
                         	 Turns.nEnterExitId not in (Select TurnId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocationsX where LoadAllocationsX.nEstelamId =" & YournEstelamId & "  and LoadAllocationsX.LAStatusId=5)
@@ -731,7 +726,7 @@ Namespace LoadPermission
 
         Public Shared Sub LoadPermissionCancelling(YournEstelamId As Int64, YourTurnId As Int64, YourTurnResuscitationFlag As Boolean, YourLoadResuscitationFlag As Boolean, YourDescription As String, YourUserNSS As R2CoreStandardSoftwareUserStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
                 Dim NSSLoadPermission = GetNSSLoadPermission(YournEstelamId, YourTurnId)
@@ -741,7 +736,7 @@ Namespace LoadPermission
                 'کنترل زمان 
                 Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
                 If InstanceAnnouncementTiming.IsTimingActive(NSSLoadCapacitorLoad.AHId, NSSLoadCapacitorLoad.AHSGId) Then
-                    Dim Timing = InstanceAnnouncementTiming.GetTiming(NSSLoadCapacitorLoad.AHId, NSSLoadCapacitorLoad.AHSGId, _DateTime.GetCurrentTime)
+                    Dim Timing = InstanceAnnouncementTiming.GetTiming(NSSLoadCapacitorLoad.AHId, NSSLoadCapacitorLoad.AHSGId, _DateTimeService.GetCurrentTime)
                     If Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadPermissionRegistering Then
                         Throw New LoadPermisionCancellationTimePassedException
                     End If
@@ -760,10 +755,10 @@ Namespace LoadPermission
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 'کنسلی مجوز بار ضمن ارسال وضعیت بازگردانی بار یا کنسلی بار
-                If NSSLoadAllocation.DateShamsi < _DateTime.GetCurrentShamsiDate Then
+                If NSSLoadAllocation.DateShamsi < _DateTimeService.GetCurrentShamsiDate Then
                     'بار رسوب شده است و نیازی به عملیات خاصی نیست
                     R2CoreTransportationAndLoadNotificationMClassLoadCapacitorAccountingManagement.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(NSSLoadCapacitorLoad.nEstelamId, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.LoadPermissionCancelling, 1, Nothing, Nothing, Nothing, YourUserNSS.UserId))
-                ElseIf NSSLoadAllocation.DateShamsi = _DateTime.GetCurrentShamsiDate Then
+                ElseIf NSSLoadAllocation.DateShamsi = _DateTimeService.GetCurrentShamsiDate Then
                     R2CoreTransportationAndLoadNotificationMClassLoadCapacitorLoadOtherThanManipulationManagement.LoadCapacitorLoadPermissionCancelling(YournEstelamId, YourLoadResuscitationFlag, YourUserNSS)
                 Else
                     Throw New GetDataException
@@ -785,7 +780,7 @@ Namespace LoadPermission
         Public Shared Function GetLoadPermissionsIssued(YournEstelamId As Int64) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadPermissionExtended_Structure)
             Try
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select Turns.nEstelamID,Turns.nEnterExitId,Turns.strExitDate,Turns.strExitTime,Turns.strBarnameNo,Turns.nUserIdExit,Turns.LoadPermissionStatus,
                                Elam.strDescription,Car.strCarNo+'-'+strCarSerialNo as Truck,Car.StrBodyNo as TruckSmartCardNo,Person.strPersonFullName as TruckDriver,Drivers.strDrivingLicenceNo,Person.strNationalCode,
 	                           Drivers.strSmartcardNo,LPILs.LPILTitle as IssuedLocation,Person.strIDNO as Mobile,Person.strAddress as Address
@@ -815,7 +810,7 @@ Namespace LoadPermission
         Public Shared Function GetLoadPermissions(YourAHId As Int64, YourAHSGId As Int64, YourLoadPermissionStatusId As Int64, YourLoadPermissionLocation As R2CoreTransportationAndLoadNotificationLoadPermissionRegisteringLocation, Optional YourTransportCompanyId As Int64 = Int64.MinValue) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadPermissionExtendedStructure)
             Try
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select EnterExit.OtaghdarTurnNumber as SequentialTurnNumber,EnterExit.nEstelamID,EnterExit.nEnterExitId,EnterExit.strExitDate,EnterExit.strExitTime,EnterExit.strBarnameNo,EnterExit.nUserIdExit,EnterExit.LoadPermissionStatus,
                                TransportCompany.TCTitle,Product.strGoodName,City.strCityName,Elam.strDescription,Car.strCarNo+'-'+strCarSerialNo as Truck,Person.strPersonFullName,LoadPermissionStatus.LoadPermissionStatusTitle
                         from dbtransport.dbo.tbEnterExit as EnterExit 
@@ -826,7 +821,7 @@ Namespace LoadPermission
                                Inner Join dbtransport.dbo.TbCar as Car On EnterExit.strCardno=Car.nIDCar
                                Inner Join dbtransport.dbo.TbPerson as Person On EnterExit.nDriverCode=Person.nIDPerson
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadPermissionStatuses as LoadPermissionStatus On EnterExit.LoadPermissionStatus=LoadPermissionStatus.LoadPermissionStatusId
-                        Where EnterExit.strExitDate='" & _DateTime.GetCurrentShamsiDate() & "' and Elam.AHId=" & YourAHId & " and Elam.AHSGId=" & YourAHSGId & " and EnterExit.LoadPermissionStatus=" & YourLoadPermissionStatusId & " and EnterExit.strBarnameNo=" & YourLoadPermissionLocation & IIf(YourTransportCompanyId = Int64.MinValue, String.Empty, " and TransportCompany.TCId=" & YourTransportCompanyId & "") & " 
+                        Where EnterExit.strExitDate='" & _DateTimeService.GetCurrentShamsiDate() & "' and Elam.AHId=" & YourAHId & " and Elam.AHSGId=" & YourAHSGId & " and EnterExit.LoadPermissionStatus=" & YourLoadPermissionStatusId & " and EnterExit.strBarnameNo=" & YourLoadPermissionLocation & IIf(YourTransportCompanyId = Int64.MinValue, String.Empty, " and TransportCompany.TCId=" & YourTransportCompanyId & "") & " 
                         Order By EnterExit.StrExitDate Desc,EnterExit.StrExitTime Desc", 1, DS, New Boolean)
                 Dim Lst As List(Of R2CoreTransportationAndLoadNotificationStandardLoadPermissionExtendedStructure) = New List(Of R2CoreTransportationAndLoadNotificationStandardLoadPermissionExtendedStructure)
                 For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
@@ -842,7 +837,7 @@ Namespace LoadPermission
         Public Shared Function GetLoadPermissionStatuses() As List(Of R2CoreTransportationAndLoadNotificationStandardLoadPermissionStatusStructure)
             Try
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadPermissionStatuses Order By LoadPermissionStatusId", 3600, DS, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadPermissionStatuses Order By LoadPermissionStatusId", 3600, DS, New Boolean)
                 Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardLoadPermissionStatusStructure)
                 For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
                     Lst.Add(New R2CoreTransportationAndLoadNotificationStandardLoadPermissionStatusStructure(DS.Tables(0).Rows(Loopx).Item("LoadPermissionStatusId"), DS.Tables(0).Rows(Loopx).Item("LoadPermissionStatusTitle").trim, DS.Tables(0).Rows(Loopx).Item("LoadPermissionStatusColor").trim))
@@ -856,10 +851,10 @@ Namespace LoadPermission
         Public Shared Function GetNSSFinalLoadPermission(YourAHId As Int64, YourAHSGId As Int64) As R2CoreTransportationAndLoadNotificationStandardLoadPermissionExtendedStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                     "Select Top 1 LoadCapacitor.nEstelamID,Turns.nEnterExitId from dbtransport.dbo.tbElam as LoadCapacitor 
                          Inner Join dbtransport.dbo.tbEnterExit as Turns On LoadCapacitor.nEstelamID=Turns.nEstelamID 
-                     Where LoadCapacitor.dDateElam='" & _DateTime.GetCurrentShamsiDate & "' and LoadCapacitor.AHId=" & YourAHId & " and LoadCapacitor.AHSGId=" & YourAHSGId & " and Turns.LoadPermissionStatus=1
+                     Where LoadCapacitor.dDateElam='" & _DateTimeService.GetCurrentShamsiDate & "' and LoadCapacitor.AHId=" & YourAHId & " and LoadCapacitor.AHSGId=" & YourAHSGId & " and Turns.LoadPermissionStatus=1
                      Order By Turns.StrExitDate Desc,Turns.StrExitTime Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then Return Nothing
                 Return GetNSSLoadPermission(Ds.Tables(0).Rows(0).Item("nEstelamID"), Ds.Tables(0).Rows(0).Item("nEnterExitId"))
             Catch ex As Exception
@@ -901,14 +896,16 @@ Namespace LoadPermission
         Public Class R2CoreTransportationAndLoadNotificationInstanceLoadPermissionPrintingManager
             Private WithEvents _PrintDocumentPermission As PrintDocument = New PrintDocument()
             Private _PPDS As R2CoreTransportationAndLoadNotificationLoadPermissionPrintingInf
+            Private _DateTimeService = New R2DateTimeService
+            Private InstanceSqlDataBox As New R2CoreSqlDataBOXManager(_DateTimeService)
+
 
             Public Function GetLoadPermissionPrintingInf(YourLoadAllocationId As Int64, YourNSSUser As R2CoreStandardSoftwareUserStructure) As R2CoreTransportationAndLoadNotificationLoadPermissionPrintingInf
                 Try
-                    Dim InstanceSqlDataBox = New R2CoreSqlDataBOXManager
-                    Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                    Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                     Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsParametersManager
                     Dim DS As DataSet
-                    InstanceSqlDataBox.GetDataBOX(New R2PrimarySqlConnection,
+                    InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                           "Select LoadAllocation.LAId,LoadAllocation.nEstelamId,Substring(EnterExit.OtaghdarTurnNumber,7,20) as TurnId,EnterExit.strExitDate,EnterExit.strExitTime
                                   ,TransportCompany.TCTitle,LoaderType.LoaderTypeTitle,CarType.strCarName as CarType,Car.strCarNo as Truck,Car.strCarSerialNo as TruckSerial,Car.strBodyNo,Person.strPersonFullName,Person.strNationalCode
 	                              ,Driver.strDrivingLicenceNo,Person.strIDNO as MobileNo,Product.strGoodName,CityTarget.strCityName as TargetCity,CitySource.strCityName as SourceCity,Elam.nTonaj,Elam.strPriceSug,Elam.strDescription,Elam.StrAddress,Elam.strBarName,Elam.TPTParams,SoftwareUser.UserName,CityTarget.nDistance/25 as TravelLength
@@ -1337,15 +1334,16 @@ Namespace LoadPermission
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationLoadPermissionManager
 
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
         Private _DateTimeService As IR2DateTimeService
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Public Function GetTruckLastLoadWhichPermissioned(YourTruckId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationLoad
             Try
                 Dim DS As New DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(New R2DateTimeService)
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -1353,10 +1351,10 @@ Namespace LoadPermission
                       "Select Top 1 nEstelamID from dbtransport.dbo.tbEnterExit
                        Where strCardno = " & YourTruckId & " And isnull(nestelamid, 0) <> 0 And TurnStatus = " & TurnStatuses.UsedLoadPermissionRegistered & " 
                        Order By nEnterExitId Desc")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New TruckHasNotAnyLoadPermissionException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select Top 1 nEstelamID from dbtransport.dbo.tbEnterExit
                        Where strCardno = " & YourTruckId & " And isnull(nestelamid,0)<>0 and TurnStatus=" & TurnStatuses.UsedLoadPermissionRegistered & " 
                        Order By nEnterExitId Desc", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TruckHasNotAnyLoadPermissionException
@@ -1375,7 +1373,6 @@ Namespace LoadPermission
 
         Public Function GetTruckLastLoadPermission(YourTruckId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationLoadPermission
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -1385,10 +1382,10 @@ Namespace LoadPermission
                          from DBTransport.dbo.tbEnterExit as Permission
                          Where Permission.strCardno=" & YourTruckId & " and Permission.TurnStatus=" & TurnStatuses.UsedLoadPermissionRegistered & " and  and Permission.LoadPermissionStatus=" & R2CoreTransportationAndLoadNotificationLoadPermissionStatuses.Registered & " 
                          Order By nEnterExitId Desc")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New TruckHasNotAnyLoadPermissionException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select Top 1  Permission.nEstelamID as LoadId,Permission.nEnterExitId as TurnId,Permission.strExitDate as LoadPermissionDate,Permission.strExitTime as LoadPermissionTime ,
                                        Permission.strBarnameNo as LoadPermissionRegisteringLocation ,Permission.nUserIdExit as UserId,Permission.LoadPermissionStatus as LoadPermissionStatusId
                          from DBTransport.dbo.tbEnterExit as Permission
@@ -1405,11 +1402,10 @@ Namespace LoadPermission
 
         Public Function GetLoadPermissions(YourLoadId As Int64) As String
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
 
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                   "Select Loads.nEstelamID as LoadId,Products.strGoodName as GoodTitle,LoadSourceCities.StrCityName as LoadSourceCity,LoadTargetCities.StrCityName as LoadTargetCity,
                           Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGTitle,Companies.strCompName as TransportCompany,Loads.strBarName as Recipient,
 	                      Loads.strAddress as Address,Loads.strDescription as Description,LoadRegisteringSoftwareUsers.UserName as LoadRegisteringUser,LoadAllocationSoftwareUsers.UserName as LoadAllocationUser,
@@ -1442,11 +1438,10 @@ Namespace LoadPermission
 
         Public Function GetLoadPermissions(YourAnnouncementGroupId As Int64, YourAnnouncementSubGroupId As Int64) As String
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
 
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                   "Select Loads.nEstelamID as LoadId,Loads.nTonaj as Tonaj,Turns.OtaghdarTurnNumber as SequentialTurn,LoadAllocations.LAId as LoadAllocationId,LoadAllocations.Priority,LoadAllocations.DateShamsi as ShamsiDate,LoadAllocations.Time,
                           Products.strGoodName as GoodTitle,LoadSourceCities.StrCityName as LoadSourceCity,LoadTargetCities.StrCityName as LoadTargetCity
                    from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
@@ -1469,7 +1464,7 @@ Namespace LoadPermission
 
         Public Sub LoadPersmissionCancelling(YourLoadAllocationId As Int64, YourDescription As String, YourTurnResusitution As Boolean, YourLoadResusitution As Boolean, YourSoftwareUser As R2CoreSoftwareUser)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationAnnouncementTimingManager(_DateTimeService)
                 Dim InstanceLoadAllocation = New R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService)

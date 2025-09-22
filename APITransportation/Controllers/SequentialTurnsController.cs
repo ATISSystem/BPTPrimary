@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -28,6 +29,16 @@ namespace APITransportation.Controllers
     public class SequentialTurnsController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
+        private R2DateTimeService _DateTimeService;
+
+        public SequentialTurnsController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/GetSequentialTurns")]
@@ -95,7 +106,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(new R2DateTimeService());
+                var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
 
@@ -127,7 +138,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var RawSequentialTurn = Content.RawSequentialTurn;
 
@@ -158,7 +169,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var RawSequentialTurn = Content.RawSequentialTurn;
 
@@ -189,7 +200,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
 
@@ -220,7 +231,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
 
@@ -250,7 +261,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
                 var LoaderTypeId = Content.LoaderTypeId;
@@ -282,7 +293,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
                 var LoaderTypeId = Content.LoaderTypeId;
@@ -314,7 +325,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
 
@@ -344,7 +355,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
                 var AnnouncementSGId = Content.AnnouncementSGId;
@@ -376,7 +387,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var SequentialTurnId = Content.SequentialTurnId;
                 var AnnouncementSGId = Content.AnnouncementSGId;

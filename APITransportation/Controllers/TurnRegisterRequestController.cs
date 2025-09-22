@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -30,6 +31,16 @@ namespace APITransportation.Controllers
     public class TurnRegisterRequestController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
+        private R2DateTimeService _DateTimeService;
+
+        public TurnRegisterRequestController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/RealTimeTurnRegisterRequest")]
@@ -37,7 +48,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
@@ -45,9 +56,9 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTurnRegisterRequest = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
+                var InstanceTurnRegisterRequest = new PayanehClassLibraryTurnRegisterRequestManager(_DateTimeService);
                 Int64 TurnId = 0;
-                InstanceTurnRegisterRequest.RealTimeTurnRegisterRequest(SequentialTurnId, TruckId, ref TurnId, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_RealTimeTurnRegisterRequest, TurnType.Permanent, User. UserId);
+                InstanceTurnRegisterRequest.RealTimeTurnRegisterRequest(SequentialTurnId, TruckId, ref TurnId, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_RealTimeTurnRegisterRequest, TurnType.Permanent, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
@@ -76,7 +87,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
@@ -85,12 +96,12 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTurnRegisterRequest = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
+                var InstanceTurnRegisterRequest = new PayanehClassLibraryTurnRegisterRequestManager(_DateTimeService);
                 Int64 TurnId = 0;
                 InstanceTurnRegisterRequest.EmergencyTurnRegisterRequest(SequentialTurnId, TruckId, ref TurnId, Description, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_EmergencyTurnRegisterRequest, TurnType.Permanent, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent ), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
             catch (MoneyWalletNotExistException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -116,7 +127,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
@@ -126,11 +137,11 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTurnRegisterRequestTransportation = new R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(new R2DateTimeService());
-                var InstanceTurnRegisterRequestPayaneh = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
-                var TRR = InstanceTurnRegisterRequestTransportation.GetTurnRegisteringRequestWithReservedDateTime(new R2CoreDateAndTime  { DateTimeMilladi = DateTime.Now, ShamsiDate = ShamsiDate, Time = Time }, true);
+                var InstanceTurnRegisterRequestTransportation = new R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(_DateTimeService);
+                var InstanceTurnRegisterRequestPayaneh = new PayanehClassLibraryTurnRegisterRequestManager(_DateTimeService);
+                var TRR = InstanceTurnRegisterRequestTransportation.GetTurnRegisteringRequestWithReservedDateTime(new R2CoreDateAndTime { DateTimeMilladi = DateTime.Now, ShamsiDate = ShamsiDate, Time = Time }, true);
                 Int64 TurnId = 0;
-                InstanceTurnRegisterRequestPayaneh.ResuscitationReserveTurn(SequentialTurnId, TRR.TRRId, TruckId, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_ResuscitationReserveTurn, TurnType.Permanent, User. UserId);
+                InstanceTurnRegisterRequestPayaneh.ResuscitationReserveTurn(SequentialTurnId, TRR.TRRId, TruckId, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_ResuscitationReserveTurn, TurnType.Permanent, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
@@ -159,17 +170,17 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTurnRegisterRequest = new PayanehClassLibraryTurnRegisterRequestManager(new R2DateTimeService());
-                InstanceTurnRegisterRequest.ReserveTurnRegisterRequest(R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_ReserveTurnRegisterRequest,TurnType.Permanent, User.UserId);
+                var InstanceTurnRegisterRequest = new PayanehClassLibraryTurnRegisterRequestManager(_DateTimeService);
+                InstanceTurnRegisterRequest.ReserveTurnRegisterRequest(R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_ReserveTurnRegisterRequest, TurnType.Permanent, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent ), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
             catch (MoneyWalletNotExistException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }

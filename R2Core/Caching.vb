@@ -5,6 +5,7 @@ Imports Newtonsoft.Json
 Imports R2Core.CachHelper
 Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
+Imports R2Core.DateTimeProvider
 Imports StackExchange.Redis
 Imports System.Reflection
 Imports System.Web
@@ -118,11 +119,16 @@ Namespace Caching
 
     Public Class R2CoreCacheManager
 
+        Private _DateTimeService As IR2DateTimeService
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+        End Sub
+
         Public Function GetCacheType(YourCacheTypeId As Int64) As R2CoreStandardCacheTypeStructure
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
+                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 * from R2Primary.dbo.TblCacheTypes Where CacheTypeId=" & YourCacheTypeId & "", 10000, DS, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2Primary.dbo.TblCacheTypes Where CacheTypeId=" & YourCacheTypeId & "", 10000, DS, New Boolean).GetRecordsCount = 0 Then
                     Throw New CacheTypeNotFoundException
 
                 Else

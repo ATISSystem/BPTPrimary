@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -25,8 +26,16 @@ namespace APICarousels.Controllers
     public class CarouselsController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService = new R2DateTimeService();
+        private IR2DateTimeService _DateTimeService;
 
+        public CarouselsController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/GetCarousels")]
@@ -36,11 +45,11 @@ namespace APICarousels.Controllers
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
-                var AllCarouselsFlag = Content.AllCarouselsFlag;    
+                var AllCarouselsFlag = Content.AllCarouselsFlag;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceCarousels = new R2CoreCarouselsManager(_DateTimeService );
+                var InstanceCarousels = new R2CoreCarouselsManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceCarousels.GetCarousels(AllCarouselsFlag), Encoding.UTF8, "application/json");
@@ -95,14 +104,14 @@ namespace APICarousels.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var Carousel = Content.RawCarousel;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceCarousels = new R2CoreCarouselsManager(_DateTimeService);
-                InstanceCarousels.CarouselRegistering(Carousel,User);
+                InstanceCarousels.CarouselRegistering(Carousel, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -127,14 +136,14 @@ namespace APICarousels.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var Carousel = Content.RawCarousel;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceCarousels = new R2CoreCarouselsManager(_DateTimeService);
-                InstanceCarousels.CarouselEditing (Carousel, User);
+                InstanceCarousels.CarouselEditing(Carousel, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -159,9 +168,9 @@ namespace APICarousels.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
-                var CId = Content.CId ;
+                var CId = Content.CId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
@@ -169,7 +178,7 @@ namespace APICarousels.Controllers
                 InstanceCarousels.CarouselDeleting(CId, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed ).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SoapException ex)
@@ -191,15 +200,15 @@ namespace APICarousels.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var CId = Content.CId;
-                var ActiveStatus=Content.ActiveStatus;
+                var ActiveStatus = Content.ActiveStatus;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceCarousels = new R2CoreCarouselsManager(_DateTimeService);
-                InstanceCarousels.CarouselChangeActiveStatus(CId,ActiveStatus, User);
+                InstanceCarousels.CarouselChangeActiveStatus(CId, ActiveStatus, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -224,13 +233,13 @@ namespace APICarousels.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceCarousels = new R2CoreCarouselsManager(_DateTimeService);
-                
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceCarousels.GetCarouselsForViewing(), Encoding.UTF8, "application/json");
                 return response;

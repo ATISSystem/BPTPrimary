@@ -23,11 +23,13 @@ namespace TempTurnsCancellationAutomatedJob
     {
         private System.Timers.Timer _AutomatedJobsTimer = new System.Timers.Timer();
         private bool _FailStatus = true;
+        private R2DateTimeService _DateTimeService;
 
         public TempTurnsCancellationAutomatedJob()
         {
             InitializeComponent();
             _AutomatedJobsTimer.Elapsed += _AutomatedJobsTimer_Elapsed;
+            _DateTimeService = new R2DateTimeService();
         }
 
         private void _AutomatedJobsTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -42,7 +44,7 @@ namespace TempTurnsCancellationAutomatedJob
                 {
                     try
                     {
-                        var InstanceConfiguration = new R2CoreInstanceConfigurationManager();
+                        var InstanceConfiguration = new R2CoreInstanceConfigurationManager(_DateTimeService);
                         var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(1));
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(InstanceSoftwareUsers.GetSystemUser());
                         _AutomatedJobsTimer.Interval = InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting  , 9) * 1000;

@@ -92,18 +92,20 @@ Imports R2CoreTransportationAndLoadNotification.Turns.SequentialTurns
 Imports R2CoreTransportationAndLoadNotification.Turns.SequentialTurns.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TravelTime
 Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
+Imports R2Core.DateTimeProvider
+Imports R2Core.SQLInjectionPrevention
 
 
 
 Namespace TruckLoaderTypes
 
     Public NotInheritable Class R2CoreTransportationAndLoadNotificationTruckLoaderTypeManagement
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
 
         Public Shared Function GetTonajMax(YourTruckLoaderName As String) As Int64
             Try
                 Dim DS As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 nTonaj from dbtransport.dbo.tbCarType Where strCarName='" & YourTruckLoaderName.Trim() & "'", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 nTonaj from dbtransport.dbo.tbCarType Where strCarName='" & YourTruckLoaderName.Trim() & "'", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return DS.Tables(0).Rows(0).Item("nTonaj")
                 Else
                     Throw New TruckLoaderTypeNotFoundException
@@ -132,15 +134,7 @@ Namespace TruckLoaderTypes
 End Namespace
 
 Namespace BlackIPs
-    Public MustInherit Class R2CoreTransportationAndLoadNotificationBlackIPTypes
 
-    End Class
-
-    Public Class R2CoreTransportationAndLoadNotificationInstanceBlackIPsManager
-        Private _DateTime As New R2DateTime
-
-
-    End Class
 
 
 End Namespace
@@ -270,7 +264,9 @@ Namespace DriverSelfDeclaration
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceDriverSelfDeclarationManager
         Private _R2PrimaryFSWS = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
-        Private _DateTime As New R2DateTime
+        Private _DateTimeService As New R2DateTimeService
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
+
 
         Private Function GetDSDIdFull(YourDSDId As Int64) As String
             Try
@@ -283,13 +279,12 @@ Namespace DriverSelfDeclaration
 
         Public Sub ControlforExpiredDSDs(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure)
             Try
-                Dim D = _DateTime.GetCurrentDateAndTime
+                Dim D = _DateTimeService.GetCurrentDateAndTime
 
                 'بررسی منقضی شدن اعتبار مشخصات خوداظهاری
                 Dim DS As DataSet
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                           "Select Top 1 DateTimeMilladi from R2PrimaryTransportationAndLoadNotification.dbo.TblDriverSelfDeclarations 
                            Where nIdCar = " & YourNSSTruck.NSSCar.nIdCar & " Order By DateTimeMilladi desc", 3600, DS, New Boolean).GetRecordsCount = 0 Then
                 Else
@@ -305,13 +300,12 @@ Namespace DriverSelfDeclaration
 
         Public Sub ControlforDSDChangingDayLimit(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure)
             Try
-                Dim D = _DateTime.GetCurrentDateAndTime
+                Dim D = _DateTimeService.GetCurrentDateAndTime
 
                 'کنترل زمان انتظار برای تغییر مشخصات خوداظهاری  
                 Dim DS As DataSet
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                           "Select Top 1 DateTimeMilladi from R2PrimaryTransportationAndLoadNotification.dbo.TblDriverSelfDeclarations 
                            Where nIdCar = " & YourNSSTruck.NSSCar.nIdCar & " Order By DateTimeMilladi desc", 3600, DS, New Boolean).GetRecordsCount = 0 Then
                 Else
@@ -329,8 +323,7 @@ Namespace DriverSelfDeclaration
         Public Function GetNSSDriverSelfDeclarationParameter(YourDSDId As Int64) As R2CoreTransportationAndLoadNotificationInstanceDriverSelfDeclarationParameterStructure
             Try
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblDriverSelfDeclarationParameters Where DSDId=" & YourDSDId & "", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New DriverSelfDeclarationParameterNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblDriverSelfDeclarationParameters Where DSDId=" & YourDSDId & "", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New DriverSelfDeclarationParameterNotFoundException
                 Return New R2CoreTransportationAndLoadNotificationInstanceDriverSelfDeclarationParameterStructure(DS.Tables(0).Rows(0).Item("DSDId"), DS.Tables(0).Rows(0).Item("DSDName").trim, DS.Tables(0).Rows(0).Item("DSDTitle").trim, DS.Tables(0).Rows(0).Item("DefaultValue").trim, DS.Tables(0).Rows(0).Item("PersianKeyboard"), DS.Tables(0).Rows(0).Item("IsNumeric"), DS.Tables(0).Rows(0).Item("DecimalPoint"), DS.Tables(0).Rows(0).Item("HasAttachement"), DS.Tables(0).Rows(0).Item("Min").trim, DS.Tables(0).Rows(0).Item("Max").trim, DS.Tables(0).Rows(0).Item("DateTimeMilladi"), DS.Tables(0).Rows(0).Item("DateShamsi"), DS.Tables(0).Rows(0).Item("Time"), DS.Tables(0).Rows(0).Item("UserId"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Deleted"))
             Catch ex As DriverSelfDeclarationParameterNotFoundException
                 Throw ex
@@ -342,7 +335,6 @@ Namespace DriverSelfDeclaration
         Public Function GetDeclarations(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure, YourImmediately As Boolean) As List(Of R2CoreTransportationAndLoadNotificationInstanceDriverSelfDeclarationExtendedStructure)
             Try
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
                     Da.SelectCommand = New SqlClient.SqlCommand("Select DataBox.DSDId,DataBox.DSDName,DataBox.DSDTitle,DataBox.DefaultValue,DataBox.PersianKeyboard,DataBox.IsNumeric,DataBox.DecimalPoint,DataBox.HasAttachement,ISNULL(DataBox.DSDValue,'') as DSDValue from 
@@ -350,10 +342,10 @@ Namespace DriverSelfDeclaration
                                                                       left outer  Join 
                                                                     (Select * from R2PrimaryTransportationAndLoadNotification.DBO.TblDriverSelfDeclarations as DSDs Where DSDs.nIdCar=" & YourNSSTruck.NSSCar.nIdCar & " and DSDs.RelationActive=1) as DataBox On DSDParams.DSDId=DataBox.DSDId 
                                                                       Where DSDParams.Active=1) as DataBox Order By DataBox.DSDId")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     Da.Fill(DS)
                 Else
-                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                           "Select DataBox.DSDId,DataBox.DSDName,DataBox.DSDTitle,DataBox.DefaultValue,DataBox.PersianKeyboard,DataBox.IsNumeric,DataBox.DecimalPoint,DataBox.HasAttachement,ISNULL(DataBox.DSDValue,'') as DSDValue from 
                              (Select DSDParams.DSDId,DSDParams.DSDName,DSDParams.DSDTitle,DSDParams.DefaultValue,DSDParams.PersianKeyboard,DSDParams.IsNumeric,DSDParams.DecimalPoint,DSDParams.HasAttachement,DataBox.DSDValue from R2PrimaryTransportationAndLoadNotification.dbo.TblDriverSelfDeclarationParameters as DSDParams
                                 left outer  Join 
@@ -372,11 +364,11 @@ Namespace DriverSelfDeclaration
 
         Public Sub SetDeclarations(YourDSDs As String, YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure, YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
-                Dim D = _DateTime.GetCurrentDateAndTime
+                Dim D = _DateTimeService.GetCurrentDateAndTime
 
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourDSDs)
 
                 'بررسی محدودیت زمان برای تغییرات
@@ -447,8 +439,7 @@ Namespace DriverSelfDeclaration
         Public Function GetAllowedLoadingCapacity(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure) As String
             Try
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select R2PrimaryTransportationAndLoadNotification.dbo.GetAllowedLoadingCapacity(" & YourNSSTruck.NSSCar.nIdCar & ") as Allowed", 3600, DS, New Boolean).GetRecordsCount = 0 Then
                     Throw New DSDBaseInfNotFoundException
                 End If
@@ -463,7 +454,7 @@ Namespace DriverSelfDeclaration
 
         Public Sub SaveDSDImage(YourDSDId As Int64, YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure, YourBase64StringImage As String)
             Try
-                Dim InstanceConfiguration = New R2Core.ConfigurationManagement.R2CoreInstanceConfigurationManager
+                Dim InstanceConfiguration = New R2Core.ConfigurationManagement.R2CoreInstanceConfigurationManager(_DateTimeService)
                 If YourBase64StringImage.Length > InstanceConfiguration.GetConfigInt64(R2Core.ConfigurationManagement.R2CoreConfigurations.JPGBitmap, 4) Then Throw New UploadedImageSizeExeededException
                 _R2PrimaryFSWS.WebMethodSaveFile(R2CoreTransportationAndLoadNotificationRawGroups.DriverSelfDeclarations, New R2CoreFile(GetDSDIdFull(YourDSDId) + YourNSSTruck.NSSCar.nIdCar.ToString() + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 2)).FileName, Convert.FromBase64String(YourBase64StringImage), _R2PrimaryFSWS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword))
             Catch ex As UploadedImageSizeExeededException

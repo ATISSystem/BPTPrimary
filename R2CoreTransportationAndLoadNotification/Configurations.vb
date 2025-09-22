@@ -40,11 +40,12 @@ Namespace ConfigurationsManagement
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
+
         Public Function GetConfig(YourCId As Int64, YourAHId As Int64) As Object
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New ConfigurationOfAnnouncementHallNotFoundException
                 End If
                 Return Ds.Tables(0).Rows(0).Item("CValue")
@@ -56,10 +57,9 @@ Namespace ConfigurationsManagement
         End Function
 
         Public Function GetConfig(YourCId As Int64, YourAHId As Int64, YourIndex As Int64) As Object
-            Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New ConfigurationOfAnnouncementHallNotFoundException
                 End If
                 Return Split(Ds.Tables(0).Rows(0).Item("CValue"), ";")(YourIndex)
@@ -115,16 +115,17 @@ Namespace ConfigurationsManagement
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager
 
-        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
         Private _DateTimeService As IR2DateTimeService
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Public Function GetConfig(YourCId As Int64, YourAHId As Int64) As Object
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 32767, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 32767, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New ConfigurationOfAnnouncementHallNotFoundException
                 End If
                 Return Ds.Tables(0).Rows(0).Item("CValue")
@@ -138,7 +139,7 @@ Namespace ConfigurationsManagement
         Public Function GetConfig(YourCId As Int64, YourAHId As Int64, YourIndex As Int64) As Object
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 32767, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 32767, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New ConfigurationOfAnnouncementHallNotFoundException
                 End If
                 Return Split(Ds.Tables(0).Rows(0).Item("CValue"), ";")(YourIndex)
@@ -193,13 +194,13 @@ Namespace ConfigurationsManagement
 
     Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement
         'Inherits R2CoreMClassConfigurationManagement
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
 
         Public Shared Function GetConfigOnLine(YourCId As Int64, YourAHId As Int64) As Object
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "")
-                Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 If Da.Fill(Ds) = 0 Then Throw New GetDataException
                 Return Ds.Tables(0).Rows(0).Item("CValue").trim
             Catch ex As Exception
@@ -210,7 +211,7 @@ Namespace ConfigurationsManagement
         Public Shared Function GetConfig(YourCId As Int64, YourAHId As Int64, YourIndex As Int64) As Object
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New ConfigurationOfAnnouncementHallNotFoundException
                 End If
                 Return Split(Ds.Tables(0).Rows(0).Item("CValue"), ";")(YourIndex)
@@ -224,7 +225,7 @@ Namespace ConfigurationsManagement
         Public Shared Function GetConfig(YourCId As Int64, YourAHId As Int64) As Object
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Where CId=" & YourCId & " and AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New ConfigurationOfAnnouncementHallNotFoundException
                 End If
                 Return Ds.Tables(0).Rows(0).Item("CValue")
@@ -308,7 +309,7 @@ Namespace ConfigurationsManagement
 
         Public Overloads Shared Sub SetConfiguration(YourCId As Int64, YourAHId As Int64, YourCValue As String)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Set CValue = '" & YourCValue & "' Where CId=" & YourCId & " and AHId=" & YourAHId & ""

@@ -5,6 +5,7 @@ using APITransportation.Models.Products;
 using APITransportation.Models.ProvincesAndCities;
 using Newtonsoft.Json;
 using R2Core.DatabaseManagement;
+using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
@@ -15,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -26,6 +28,16 @@ namespace APITransportation.Controllers
     public class ProductsController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
+        private R2DateTimeService _DateTimeService;
+
+        public ProductsController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/GetProducts")]
@@ -65,7 +77,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdProductTypeIdProductTypeActive>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var ProductTypeId = Content.ProductTypeId;
@@ -95,7 +107,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdProductIdProductActive>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var ProductId = Content.ProductId;

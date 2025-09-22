@@ -7,6 +7,7 @@ Imports NLog
 Imports R2Core.Caching
 Imports R2Core.ConfigurationManagement
 Imports R2Core.DateAndTimeManagement
+Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.LoggingManagement
 Imports R2Core.SecurityAlgorithmsManagement.AESAlgorithms
@@ -57,14 +58,23 @@ Namespace SessionManagement
     End Class
 
     Public Class R2CoreSessionManager
-        Private _DateTime As New R2DateTime
+        Private _DateTimeService As R2DateTimeService
+
+        Public Sub New()
+            Try
+                _DateTimeService = New R2DateTimeService
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Sub
 
         Public Function GetNewSessionId() As String
             Try
                 Dim InstanceAESAlgorithms = New AESAlgorithmsManager
                 Dim InstanceMD5Hasher = New MD5Hasher
-                Dim Instance = New R2Core.DateAndTimeManagement.R2DateTime
-                Dim SessionId = InstanceMD5Hasher.GenerateMD5String(_DateTime.GetCurrentDateTimeMilladi) + InstanceAESAlgorithms.GetSalt(12)
+                Dim SessionId = InstanceMD5Hasher.GenerateMD5String(_DateTimeService.GetCurrentDateTimeMilladi) + InstanceAESAlgorithms.GetSalt(12)
                 Return SessionId
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -74,11 +84,15 @@ Namespace SessionManagement
         Public Function StartSession() As R2CoreStandardSessionCaptchaBitMapStructure
             Try
                 Dim InstanceCaptcha = New R2CoreInstanceCaptchaManager
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                Dim InstanceCache = New R2CoreCacheManager
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                Dim InstanceCache = New R2CoreCacheManager(_DateTimeService)
+
                 Dim CaptchaWord = InstanceCaptcha.GenerateFakeWordNumeric(InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 6))
+
                 Dim CaptchaBitMap = InstanceCaptcha.GetCaptcha(CaptchaWord)
+
                 Dim SessionId = GetNewSessionId()
+
                 InstanceCache.SetCache(InstanceCache.GetCacheType(R2CoreCacheTypes.Session).CacheTypeName + SessionId, New R2CoreStandardSessionCaptchaWordStructure(SessionId, CaptchaWord), R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions, False)
                 Return New R2CoreStandardSessionCaptchaBitMapStructure(SessionId, CaptchaBitMap)
             Catch ex As Exception
@@ -89,7 +103,7 @@ Namespace SessionManagement
 
         Public Function ConfirmSession(YourSessionId As String) As R2CoreSoftwareUser
             Try
-                Dim InstanceCache = New Caching.R2CoreCacheManager
+                Dim InstanceCache = New Caching.R2CoreCacheManager(_DateTimeService)
                 Dim CachKey = InstanceCache.GetCacheType(Caching.R2CoreCacheTypes.Session).CacheTypeName + YourSessionId
                 Dim Value = InstanceCache.GetCache(CachKey, R2CoreCatchDataBases.SoftwareUserSessions).ToString
                 If Value Is Nothing Then Throw New SessionOverException

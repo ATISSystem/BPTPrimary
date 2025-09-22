@@ -10,6 +10,7 @@ Imports R2Core.ExceptionManagement
 Imports R2Core.PublicProc
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
+Imports R2Core.SQLInjectionPrevention
 Imports R2CoreTransportationAndLoadNotification.LoaderTypes.Exceptions
 Imports R2CoreTransportationAndLoadNotification.Trucks
 Imports R2CoreTransportationAndLoadNotification.Trucks.Exceptions
@@ -55,15 +56,16 @@ Namespace LoaderTypes
     End Class
 
     Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassLoaderTypesManagement
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function GetLoaderTypes_SearchforLeftCharacters(YourSearchString As String) As List(Of R2CoreTransportationAndLoadNotificationStandardLoaderTypeStructure)
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
                 Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardLoaderTypeStructure)
                 Dim DS As DataSet = Nothing
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes Where Left(LoaderTypeTitle," & YourSearchString.Length & ")='" & YourSearchString.Replace("ی", "ي").Replace("ک", "ك") & "' and Deleted=0 and Active=1 Order By LoaderTypeTitle", 3600, DS, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes Where Left(LoaderTypeTitle," & YourSearchString.Length & ")='" & YourSearchString.Replace("ی", "ي").Replace("ک", "ك") & "' and Deleted=0 and Active=1 Order By LoaderTypeTitle", 3600, DS, New Boolean)
                 For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
                     Lst.Add(New R2CoreTransportationAndLoadNotificationStandardLoaderTypeStructure(DS.Tables(0).Rows(Loopx).Item("LoaderTypeId"), DS.Tables(0).Rows(Loopx).Item("LoaderTypeTitle"), DS.Tables(0).Rows(Loopx).Item("LoaderTypeOrgnizationId"), DS.Tables(0).Rows(Loopx).Item("LoaderTypeFixStatusId"), DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
                 Next
@@ -77,11 +79,11 @@ Namespace LoaderTypes
 
         Public Shared Function GetLoaderTypes_SearchIntroCharacters(YourSearchString As String) As List(Of R2CoreTransportationAndLoadNotificationStandardLoaderTypeStructure)
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
                 Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardLoaderTypeStructure)
                 Dim DS As DataSet = Nothing
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes Where LoaderTypeTitle Like '%" & YourSearchString.Replace("ی", "ي").Replace("ک", "ك") & "%' and Deleted=0 and Active=1 and ViewFlag=1 Order By LoaderTypeTitle", 3600, DS, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes Where LoaderTypeTitle Like '%" & YourSearchString.Replace("ی", "ي").Replace("ک", "ك") & "%' and Deleted=0 and Active=1 and ViewFlag=1 Order By LoaderTypeTitle", 3600, DS, New Boolean)
                 For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
                     Lst.Add(New R2CoreTransportationAndLoadNotificationStandardLoaderTypeStructure(DS.Tables(0).Rows(Loopx).Item("LoaderTypeId"), DS.Tables(0).Rows(Loopx).Item("LoaderTypeTitle"), DS.Tables(0).Rows(Loopx).Item("LoaderTypeOrgnizationId"), DS.Tables(0).Rows(Loopx).Item("LoaderTypeFixStatusId"), DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
                 Next
@@ -96,7 +98,7 @@ Namespace LoaderTypes
         Public Shared Function GetNSSLoaderType(YourLoaderTypeId As Int64) As R2CoreTransportationAndLoadNotificationStandardLoaderTypeStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes Where LoaderTypeId=" & YourLoaderTypeId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New LoadTypeNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes Where LoaderTypeId=" & YourLoaderTypeId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New LoadTypeNotFoundException
                 Return New R2CoreTransportationAndLoadNotificationStandardLoaderTypeStructure(DS.Tables(0).Rows(0).Item("LoaderTypeId"), DS.Tables(0).Rows(0).Item("LoaderTypeTitle").trim, DS.Tables(0).Rows(0).Item("LoaderTypeOrgnizationId"), DS.Tables(0).Rows(0).Item("LoaderTypeFixStatusId"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted"))
             Catch exx As LoadTypeNotFoundException
                 Throw exx
@@ -121,15 +123,16 @@ Namespace LoaderTypes
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationLoaderTypesManager
 
-        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
         Private _DateTimeService As IR2DateTimeService
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Public Function GetLoaderTypes_SearchIntroCharacters(YourSearchString As String, YourImmediately As Boolean) As String
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim DS As New DataSet
@@ -140,10 +143,10 @@ Namespace LoaderTypes
                      from R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes
                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypeFixStatuses as LoaderTypeFixStatuses On LoaderTypes.LoaderTypeFixStatusId=LoaderTypeFixStatuses.LoaderTypeFixStatusId 
                      Where LoaderTypes.LoaderTypeTitle Like N'%" & YourSearchString & "%' and LoaderTypes.Deleted=0 for json path")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                     "Select LoaderTypes.LoaderTypeId,LoaderTypes.LoaderTypeTitle,LoaderTypes.LoaderTypeOrganizationId,LoaderTypes.LoaderTypeFixStatusId,LoaderTypeFixStatuses.LoaderTypeFixStatusTitle,LoaderTypes.Active
                      from R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes
                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypeFixStatuses as LoaderTypeFixStatuses On LoaderTypes.LoaderTypeFixStatusId=LoaderTypeFixStatuses.LoaderTypeFixStatusId 
@@ -171,10 +174,10 @@ Namespace LoaderTypes
                      from R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes
                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypeFixStatuses as LoaderTypeFixStatuses On LoaderTypes.LoaderTypeFixStatusId=LoaderTypeFixStatuses.LoaderTypeFixStatusId 
                      Where LoaderTypes.LoaderTypeId = " & YourLoaderTypeId & " and LoaderTypes.Deleted=0")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                      Select LoaderTypes.LoaderTypeId,LoaderTypes.LoaderTypeTitle,LoaderTypes.LoaderTypeOrganizationId,LoaderTypes.LoaderTypeFixStatusId,LoaderTypeFixStatuses.LoaderTypeFixStatusTitle,LoaderTypes.Active
                      from R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes
                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypeFixStatuses as LoaderTypeFixStatuses On LoaderTypes.LoaderTypeFixStatusId=LoaderTypeFixStatuses.LoaderTypeFixStatusId 
@@ -190,7 +193,7 @@ Namespace LoaderTypes
 
         Public Sub LoaderTypeChangeActivate(YourLoaderTypeId As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Dim LoaderType = GetLoaderType(YourLoaderTypeId, True)
                 CmdSql.Connection.Open()
@@ -224,7 +227,7 @@ Namespace LoaderTypes
         Public Function GetLoaderTypeIdfromAnnouncementSGId(YourAnnouncementSGId As Int64) As Int64
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                   "Select Top 1 LoaderTypeId from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroupsRelationLoaderTypes as AnnouncementSubGroupsRelationLoaderTypes
                    Where AnnouncementSGId=" & YourAnnouncementSGId & "", 32767, DS, New Boolean).GetRecordsCount = 0 Then Throw New LoadTypeIdfromAnnouncementSGIdNotFoundException
                 Return DS.Tables(0).Rows(0).Item("LoaderTypeId")

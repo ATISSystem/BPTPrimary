@@ -103,14 +103,15 @@ Namespace TurnRegisterRequest
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationMClassTurnRegisterRequestManager
-        Private _DateTime As New R2DateTime
+        Private _DateTimeService As New R2DateTimeService
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
+
         Private _R2PrimaryFSWS = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
 
         Public Function GetNSSTurnRegisterRequestType(YourTurnRegisterRequestTypeId As Int64) As R2CoreTransportationAndLoadNotificationStandardTurnRegisterRequestTypeStructure
             Try
                 Dim Ds As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequestTypes as TRRTypes Where TRRTypes.TRRTypeId=" & YourTurnRegisterRequestTypeId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnRegisterRequestTypeNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequestTypes as TRRTypes Where TRRTypes.TRRTypeId=" & YourTurnRegisterRequestTypeId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnRegisterRequestTypeNotFoundException
                 Dim NSS = New R2CoreTransportationAndLoadNotificationStandardTurnRegisterRequestTypeStructure
                 NSS.TRRTypeId = Ds.Tables(0).Rows(0).Item("TRRTypeId")
                 NSS.TRRTypeName = Ds.Tables(0).Rows(0).Item("TRRTypeName").trim
@@ -130,16 +131,16 @@ Namespace TurnRegisterRequest
 
         Public Function TurnRegisterRequestRegistering(YourNSSTRR As R2CoreTransportationAndLoadNotificationStandardTurnRegisterRequestStructure, YourAttachement As R2CoreImage, YourUserNSS As R2CoreStandardSoftwareUserStructure) As Int64
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
-                Dim InstanceComputers = New R2CoreMClassComputersManager
+                Dim InstanceComputers = New R2CoreMClassComputersManager(_DateTimeService)
                 'تراکنش ثبت درخواست صدور نوبت
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
                 CmdSql.CommandText = "Select Top 1 TRRId From R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests With (tablockx) Order By TRRId Desc"
                 CmdSql.ExecuteNonQuery()
                 Dim TRRIdNew As Int64 = CmdSql.ExecuteScalar() + 1
-                CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests(TRRId,TRRTypeId,TruckId,Description,UserId,ComputerId,DateTimeMilladi,DateShamsi) Values(" & TRRIdNew & "," & YourNSSTRR.TRRTypeId & "," & YourNSSTRR.TruckId & ",'" & YourNSSTRR.Description & "'," & YourUserNSS.UserId & "," & InstanceComputers.GetNSSCurrentComputer.MId & ",'" & _DateTime.GetCurrentDateTimeMilladi() & "','" & _DateTime.GetCurrentShamsiDate() & "')"
+                CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests(TRRId,TRRTypeId,TruckId,Description,UserId,ComputerId,DateTimeMilladi,DateShamsi) Values(" & TRRIdNew & "," & YourNSSTRR.TRRTypeId & "," & YourNSSTRR.TruckId & ",'" & YourNSSTRR.Description & "'," & YourUserNSS.UserId & "," & InstanceComputers.GetNSSCurrentComputer.MId & ",'" & _DateTimeService.GetCurrentDateTimeMilladi() & "','" & _DateTimeService.GetCurrentShamsiDate() & "')"
                 CmdSql.ExecuteNonQuery()
                 If YourAttachement IsNot Nothing Then SaveTurnRegisterRequestAttachement(YourAttachement, TRRIdNew, YourUserNSS)
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
@@ -155,7 +156,7 @@ Namespace TurnRegisterRequest
 
         Private Sub SaveTurnRegisterRequestAttachement(YourAttachement As R2CoreImage, YourTRRId As Int64, YourNSSUser As R2CoreStandardSoftwareUserStructure)
             Try
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 Dim FileInf = New R2CoreFile(YourTRRId.ToString() + InstanceConfiguration.GetConfigString(R2CoreConfigurations.JPGBitmap, 2))
                 _R2PrimaryFSWS.WebMethodSaveFile(FileShareRawGroupsManagement.R2CoreTransportationAndLoadNotificationRawGroups.TurnRegisterRequestAttachements, FileInf.FileName, YourAttachement.GetImageByte(), _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword))
             Catch ex As Exception
@@ -166,8 +167,7 @@ Namespace TurnRegisterRequest
         Public Function GetNSSTurnRegisterRequest(YourTurnRegisterRequestId As Int64) As R2CoreTransportationAndLoadNotificationStandardTurnRegisterRequestStructure
             Try
                 Dim Ds As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests as TRRs Where TRRs.TRRId=" & YourTurnRegisterRequestId & "", 1, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnRegisterRequestNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests as TRRs Where TRRs.TRRId=" & YourTurnRegisterRequestId & "", 1, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnRegisterRequestNotFoundException
                 Dim NSS = New R2CoreTransportationAndLoadNotificationStandardTurnRegisterRequestStructure
                 NSS.TRRId = Ds.Tables(0).Rows(0).Item("TRRId")
                 NSS.TRRTypeId = Ds.Tables(0).Rows(0).Item("TRRTypeId")
@@ -189,8 +189,7 @@ Namespace TurnRegisterRequest
             Try
                 Dim InstanceSequentialTurns = New R2CoreTransportationAndLoadNotificationInstanceSequentialTurnsManager
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                            "Select Top 1 Turns.strEnterDate,Turns.strEnterTime,Turns.nEnterExitId,TurnRegisterRequests.* from dbtransport.dbo.tbEnterExit as Turns
                              Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On Turns.nEnterExitId=EntityRelations.E1 
                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests as TurnRegisterRequests On TurnRegisterRequests.TRRId=EntityRelations.E2 
@@ -211,14 +210,14 @@ Namespace TurnRegisterRequest
     End Class
 
     Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassTurnRegisterRequestManagement
-        Private Shared _DateTime As New R2DateTime
+        Private Shared _DateTimeService As New R2DateTimeService
         Private Shared _R2PrimaryFSWS = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function GetNSSTurnRegisterRequestType(YourTurnRegisterRequestTypeId As Int64) As R2CoreTransportationAndLoadNotificationStandardTurnRegisterRequestTypeStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequestTypes as TRRTypes Where TRRTypes.TRRTypeId=" & YourTurnRegisterRequestTypeId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnRegisterRequestTypeNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequestTypes as TRRTypes Where TRRTypes.TRRTypeId=" & YourTurnRegisterRequestTypeId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnRegisterRequestTypeNotFoundException
                 Dim NSS = New R2CoreTransportationAndLoadNotificationStandardTurnRegisterRequestTypeStructure
                 NSS.TRRTypeId = Ds.Tables(0).Rows(0).Item("TRRTypeId")
                 NSS.TRRTypeName = Ds.Tables(0).Rows(0).Item("TRRTypeName").trim
@@ -239,7 +238,7 @@ Namespace TurnRegisterRequest
         Public Shared Function GetNSSTurnRegisterRequest(YourTurnRegisterRequestId As Int64) As R2CoreTransportationAndLoadNotificationStandardTurnRegisterRequestStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests as TRRs Where TRRs.TRRId=" & YourTurnRegisterRequestId & "", 1, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnRegisterRequestNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests as TRRs Where TRRs.TRRId=" & YourTurnRegisterRequestId & "", 1, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnRegisterRequestNotFoundException
                 Dim NSS = New R2CoreTransportationAndLoadNotificationStandardTurnRegisterRequestStructure
                 NSS.TRRId = Ds.Tables(0).Rows(0).Item("TRRId")
                 NSS.TRRTypeId = Ds.Tables(0).Rows(0).Item("TRRTypeId")
@@ -268,7 +267,7 @@ Namespace TurnRegisterRequest
 
         Public Shared Function TurnRegisterRequestRegistering(YourNSSTRR As R2CoreTransportationAndLoadNotificationStandardTurnRegisterRequestStructure, YourAttachement As R2CoreImage, YourUserNSS As R2CoreStandardSoftwareUserStructure) As Int64
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 'تراکنش ثبت درخواست صدور نوبت
                 CmdSql.Connection.Open()
@@ -276,7 +275,7 @@ Namespace TurnRegisterRequest
                 CmdSql.CommandText = "Select Top 1 TRRId From R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests With (tablockx) Order By TRRId Desc"
                 CmdSql.ExecuteNonQuery()
                 Dim TRRIdNew As Int64 = CmdSql.ExecuteScalar() + 1
-                CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests(TRRId,TRRTypeId,TruckId,Description,UserId,ComputerId,DateTimeMilladi,DateShamsi) Values(" & TRRIdNew & "," & YourNSSTRR.TRRTypeId & "," & YourNSSTRR.TruckId & ",'" & YourNSSTRR.Description & "'," & YourUserNSS.UserId & "," & R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId & ",'" & _DateTime.GetCurrentDateTimeMilladi() & "','" & _DateTime.GetCurrentShamsiDate() & "')"
+                CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests(TRRId,TRRTypeId,TruckId,Description,UserId,ComputerId,DateTimeMilladi,DateShamsi) Values(" & TRRIdNew & "," & YourNSSTRR.TRRTypeId & "," & YourNSSTRR.TruckId & ",'" & YourNSSTRR.Description & "'," & YourUserNSS.UserId & "," & R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId & ",'" & _DateTimeService.GetCurrentDateTimeMilladi() & "','" & _DateTimeService.GetCurrentShamsiDate() & "')"
                 CmdSql.ExecuteNonQuery()
                 If YourAttachement IsNot Nothing Then SaveTurnRegisterRequestAttachement(YourAttachement, TRRIdNew, YourUserNSS)
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
@@ -319,25 +318,27 @@ Namespace TurnRegisterRequest
 
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager
-        Private _R2DateTimeService As IR2DateTimeService
-        Private _R2PrimaryFSWS = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
 
-        Public Sub New(YourR2DateTimeService As IR2DateTimeService)
-            _R2DateTimeService = YourR2DateTimeService
+
+        Private _R2PrimaryFSWS = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+        Private _DateTimeService As IR2DateTimeService
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Public Function GetTurnRegisterRequest(YourTurnRegisterRequestId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTurnRegisterRequest
             Try
                 Dim Ds As New DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
 
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
                     Da.SelectCommand = New SqlCommand("Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests as TRRs Where TRRs.TRRId=" & YourTurnRegisterRequestId & "")
-                    Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                     If Da.Fill(Ds) <= 0 Then Throw New TurnRegisterRequestNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests as TRRs Where TRRs.TRRId=" & YourTurnRegisterRequestId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnRegisterRequestNotFoundException
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests as TRRs Where TRRs.TRRId=" & YourTurnRegisterRequestId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnRegisterRequestNotFoundException
                 End If
                 Dim NSS = New R2CoreTransportationAndLoadNotificationStandardTurnRegisterRequestStructure
                 Return New R2CoreTransportationAndLoadNotificationTurnRegisterRequest With {.TRRId = Ds.Tables(0).Rows(0).Item("TRRId"), .TRRTypeId = Ds.Tables(0).Rows(0).Item("TRRTypeId"), .TruckId = Ds.Tables(0).Rows(0).Item("TruckId"), .UserId = Ds.Tables(0).Rows(0).Item("UserId"), .Description = Ds.Tables(0).Rows(0).Item("Description").trim, .RequesterId = Ds.Tables(0).Rows(0).Item("RequesterId"), .DateShamsi = Ds.Tables(0).Rows(0).Item("DateShamsi"), .DateTimeMilladi = Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), .Time = Ds.Tables(0).Rows(0).Item("Time")}
@@ -351,7 +352,6 @@ Namespace TurnRegisterRequest
         Public Function GetTurnRegisteringRequestWithReservedDateTime(YourDateTime As R2CoreDateAndTime, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTurnRegisterRequest
             Try
                 Dim InstanceSequentialTurns = New R2CoreTransportationAndLoadNotificationSequentialTurnsManager
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As New DataSet
 
                 If YourImmediately Then
@@ -363,10 +363,10 @@ Namespace TurnRegisterRequest
                             Where Turns.strEnterDate>='" & YourDateTime.ShamsiDate & "' and Turns.strEnterTime>='" & YourDateTime.Time & "' and EntityRelations.ERTypeId=" & R2CoreTransportationAndLoadNotificationEntityRelationTypes.Turn_TurnRegisterRequest & " 
                                   and EntityRelations.RelationActive=1 and TurnRegisterRequests.TRRTypeId=" & TurnRegisterRequestTypes.Reserve & " and Substring(Turns.OtaghdarTurnNumber,1,1)='" & InstanceSequentialTurns.GetSequentialTurn(Turns.SequentialTurns.SequentialTurns.None, False).SeqTurnKeyWord & "'
                             Order By Turns.nEnterExitId Asc")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(Ds) <= 0 Then Throw New TurnRegisterRequestNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                "Select Top 1 Turns.strEnterDate,Turns.strEnterTime,Turns.nEnterExitId,TurnRegisterRequests.* from dbtransport.dbo.tbEnterExit as Turns
                              Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On Turns.nEnterExitId=EntityRelations.E1 
                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests as TurnRegisterRequests On TurnRegisterRequests.TRRId=EntityRelations.E2 
@@ -395,8 +395,8 @@ Namespace TurnRegisterRequest
 
         Private Sub SaveTurnRegisterRequestAttachement(YourAttachement As R2CoreImage, YourTRRId As Int64)
             Try
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(_R2DateTimeService, Nothing)
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(_DateTimeService, Nothing)
                 Dim FileInf = New R2CoreFile(YourTRRId.ToString() + InstanceConfiguration.GetConfigString(R2CoreConfigurations.JPGBitmap, 2))
                 _R2PrimaryFSWS.WebMethodSaveFile(FileShareRawGroupsManagement.R2CoreTransportationAndLoadNotificationRawGroups.TurnRegisterRequestAttachements, FileInf.FileName, YourAttachement.GetImageByte(), _R2PrimaryFSWS.WebMethodLogin(InstanceSoftwareUsers.GetSystemUser.UserShenaseh, InstanceSoftwareUsers.GetSystemUser.UserPassword))
             Catch ex As Exception
@@ -406,7 +406,7 @@ Namespace TurnRegisterRequest
 
         Public Function TurnRegisterRequestRegistering(YourTRR As R2CoreTransportationAndLoadNotificationTurnRegisterRequest, YourAttachement As R2CoreImage, YourSoftwaeUserId As Int64, YourRequesterId As Int64) As Int64
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 'تراکنش ثبت درخواست صدور نوبت
                 CmdSql.Connection.Open()
@@ -415,7 +415,7 @@ Namespace TurnRegisterRequest
                 CmdSql.ExecuteNonQuery()
                 Dim TRRIdNew As Int64 = CmdSql.ExecuteScalar() + 1
                 CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests(TRRId,TRRTypeId,TruckId,Description,UserId,RequesterId,DateTimeMilladi,DateShamsi,Time) 
-                                      Values(" & TRRIdNew & "," & YourTRR.TRRTypeId & "," & YourTRR.TruckId & ",'" & YourTRR.Description & "'," & YourTRR.UserId & "," & YourRequesterId & ",'" & _R2DateTimeService.GetCurrentDateTimeMilladi() & "','" & _R2DateTimeService.GetCurrentShamsiDate() & "','" & _R2DateTimeService.GetCurrentTime & "')"
+                                      Values(" & TRRIdNew & "," & YourTRR.TRRTypeId & "," & YourTRR.TruckId & ",'" & YourTRR.Description & "'," & YourTRR.UserId & "," & YourRequesterId & ",'" & _DateTimeService.GetCurrentDateTimeMilladi() & "','" & _DateTimeService.GetCurrentShamsiDate() & "','" & _DateTimeService.GetCurrentTime & "')"
                 CmdSql.ExecuteNonQuery()
                 If YourAttachement IsNot Nothing Then SaveTurnRegisterRequestAttachement(YourAttachement, TRRIdNew)
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
@@ -432,8 +432,7 @@ Namespace TurnRegisterRequest
         Public Function GetTurnRegisterRequestType(YourTurnRegisterRequestTypeId As Int64) As R2CoreTransportationAndLoadNotificationTurnRegisterRequestType
             Try
                 Dim Ds As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequestTypes as TRRTypes Where TRRTypes.TRRTypeId=" & YourTurnRegisterRequestTypeId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnRegisterRequestTypeNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequestTypes as TRRTypes Where TRRTypes.TRRTypeId=" & YourTurnRegisterRequestTypeId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnRegisterRequestTypeNotFoundException
                 Return New R2CoreTransportationAndLoadNotificationTurnRegisterRequestType With {.TRRTypeId = Ds.Tables(0).Rows(0).Item("TRRTypeId"), .TRRTypeName = Ds.Tables(0).Rows(0).Item("TRRTypeName").trim, .TRRTypeColor = Color.FromName(Ds.Tables(0).Rows(0).Item("TRRTypeColor").trim), .TRRTypeTitle = Ds.Tables(0).Rows(0).Item("TRRTypeTitle").trim, .TurnExpirationHours = Ds.Tables(0).Rows(0).Item("TurnExpirationHours"), .ViewFlag = Ds.Tables(0).Rows(0).Item("ViewFlag"), .Acitve = Ds.Tables(0).Rows(0).Item("Active"), .Deleted = Ds.Tables(0).Rows(0).Item("Deleted")}
             Catch ex As TurnRegisterRequestTypeNotFoundException
                 Throw ex

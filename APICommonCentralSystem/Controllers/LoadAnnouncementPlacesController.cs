@@ -17,6 +17,8 @@ using System.Web.Services.Protocols;
 using R2Core.ExceptionManagement;
 using R2Core.DatabaseManagement;
 using R2CoreTransportationAndLoadNotification.Exceptions;
+using R2Core.DateTimeProvider;
+using System.Reflection;
 
 
 
@@ -26,6 +28,16 @@ namespace APICommonCentralSystem.Controllers
     public class LoadAnnouncementPlacesController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
+        private R2DateTimeService _DateTimeService;
+
+        public LoadAnnouncementPlacesController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/GetLoadAnnouncementPlaces")]
@@ -34,7 +46,7 @@ namespace APICommonCentralSystem.Controllers
             try
             {
                 var InstanceLoadAnnouncementPlaces = new R2CoreTransportationAndLoadNotificationLoadAnnouncementPlacesManager();
-                var LoadAnnouncementPlaces = InstanceLoadAnnouncementPlaces.GetLoadAnnouncementPlaces(ProvinceId );
+                var LoadAnnouncementPlaces = InstanceLoadAnnouncementPlaces.GetLoadAnnouncementPlaces(ProvinceId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(LoadAnnouncementPlaces, Encoding.UTF8, "application/json");

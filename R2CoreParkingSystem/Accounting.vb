@@ -4,75 +4,14 @@ Imports System
 Imports System.Drawing
 Imports System.Globalization
 Imports System.Reflection
-Imports System.Data.SqlClient
-Imports System.Drawing.Imaging
-Imports System.IO
-Imports System.Text
-
-Imports AForge.Video.DirectShow
-Imports AForge.Vision.Motion
-
-Imports R2Core
-Imports R2Core.SoftwareUserManagement
 Imports R2Core.ConfigurationManagement
-Imports R2Core.BaseStandardClass
-Imports R2Core.ComputersManagement
 Imports R2Core.DatabaseManagement
-Imports R2Core.DateAndTimeManagement
 Imports R2Core.ExceptionManagement
-Imports R2Core.FileShareRawGroupsManagement
-Imports R2Core.LoggingManagement
-Imports R2Core.DesktopProcessesManagement
-Imports R2Core.R2PrimaryFileSharingWS
-Imports R2Core.MonetarySettingTools
-Imports R2CoreGUI
-Imports R2CoreLPR.ConfigurationManagement
 Imports R2CoreLPR.LicensePlateManagement
-Imports R2CoreLPR.LicensePlateRecognizer
-Imports R2CoreParkingSystem
-Imports R2CoreParkingSystem.AccountingManagement
-Imports R2CoreParkingSystem.BlackList
-Imports R2CoreParkingSystem.CamerasManagement
 Imports R2CoreParkingSystem.Cars
 Imports R2CoreParkingSystem.ProvincesAndCities
-Imports R2CoreParkingSystem.ConfigurationManagement
-Imports R2CoreParkingSystem.DataBaseManagement
-Imports R2CoreParkingSystem.ExceptionManagement
-Imports R2CoreParkingSystem.FileShareRawGroupsManagement
-Imports R2CoreParkingSystem.MoneyWalletManagement
 Imports R2CoreParkingSystem.TrafficCardsManagement
-Imports R2CoreParkingSystem.EnterExitManagement
-Imports R2CoreParkingSystem.SoftwareUsersManagement
-Imports R2Core.EntityRelationManagement
-Imports R2CoreParkingSystem.EntityRelations
-Imports R2Core.PermissionManagement
-Imports R2CoreParkingSystem.SoftwareUsersManagement.Exceptions
-Imports R2Core.RequesterManagement
-Imports R2Core.PredefinedMessagesManagement
-Imports R2CoreParkingSystem.PredefinedMessagesManagement
 Imports R2CoreParkingSystem.AccountingManagement.ExceptionManagement
-Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
-Imports R2Core.SecurityAlgorithmsManagement.Exceptions
-Imports R2CoreParkingSystem.TrafficCardsManagement.ExceptionManagement
-Imports R2Core.MoneyWallet.MoneyWallet
-Imports R2Core.MoneyWallet.Exceptions
-Imports R2Core.SMS
-Imports R2Core.SMS.Exceptions
-Imports R2Core.SoftwareUserManagement.Exceptions
-Imports R2Core.SMS.SMSTypes
-Imports R2Core.DateAndTimeManagement.CalendarManagement.PersianCalendar
-Imports R2CoreParkingSystem.SMS.SMSControllingMoneyWallet.Exceptions
-Imports R2Core.SMS.SMSOwners
-Imports R2Core.SMS.SMSOwners.Exceptions
-Imports R2Core.SMS.SMSHandling
-Imports R2CoreParkingSystem.SMS.SMSOwners
-Imports R2Core.SMS.SMSOwners.R2CoreMClassSMSOwnersManager
-Imports R2CoreParkingSystem.BlackList.Exceptions
-Imports R2CoreParkingSystem.SMS.SMSTypes
-Imports R2Core.SMS.SMSHandling.Exceptions
-Imports R2CoreParkingSystem.CarsNativeness.Exceptions
-Imports R2CoreParkingSystem.CarsNativeness
-Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
 Imports R2Core.DateTimeProvider
 
 
@@ -263,12 +202,14 @@ Namespace AccountingManagement
     End Class
 
     Public Class R2CoreParkingSystemInstanceAccountingManager
+
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
+
         Public Function GetAccountingCollection(YourTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourTotalNumberofAccounts As Int64) As List(Of R2StandardEnterExitAccountingExtendedStructure)
             Try
                 Dim Lst = New List(Of R2StandardEnterExitAccountingExtendedStructure)
                 Dim Ds As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Top " & YourTotalNumberofAccounts & " Accounting.EEAccountingProcessType,Accountings.AColor,Accountings.AName,Accounting.TimeA,Accounting.DateShamsiA,Accounting.CurrentChargeA,Accounting.MblghA,Accounting.ReminderChargeA,Computers.MDisplayTitle,SoftwareUsers.UserName,Accounting.DateMilladiA,Accounting.maabarcode,Accounting.userida from R2Primary.dbo.TblAccounting as Accounting
                          Inner Join  R2Primary.dbo.TblAccountingCodingTypes as Accountings On Accounting.EEAccountingProcessType=Accountings.ACode
                          Inner Join R2Primary.dbo.TblComputers as Computers On Accounting.MaabarCode=Computers.MId
@@ -295,7 +236,7 @@ Namespace AccountingManagement
 
         Public Sub InsertAccounting(ByVal YourEEAcounting As R2StandardEnterExitAccountingStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -316,13 +257,13 @@ Namespace AccountingManagement
 
     Public Class R2CoreParkingSystemMClassAccountingManagement
 
-        Private Shared _DateTime As R2DateTime = New R2DateTime()
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared _DateTimeService = New R2DateTimeService()
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function GetAccountingNamebyAccountingCode(ByVal YourAccountingCode As R2CoreParkingSystemAccountings) As String
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select AName from R2Primary.dbo.TblAccountingCodingTypes Where ACode=" & YourAccountingCode & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select AName from R2Primary.dbo.TblAccountingCodingTypes Where ACode=" & YourAccountingCode & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
                 Return Ds.Tables(0).Rows(0).Item("AName").trim
@@ -333,7 +274,7 @@ Namespace AccountingManagement
 
         Public Shared Sub InsertAccounting(ByVal YourEEAcounting As R2StandardEnterExitAccountingStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -353,7 +294,7 @@ Namespace AccountingManagement
         Public Shared Function GetAccountingColorbyAccountingCode(ByVal YourAccountingCode As R2CoreParkingSystemAccountings) As String
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select AColor from R2Primary.dbo.TblAccountingCodingTypes Where ACode=" & YourAccountingCode & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select AColor from R2Primary.dbo.TblAccountingCodingTypes Where ACode=" & YourAccountingCode & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
                 Return Ds.Tables(0).Rows(0).Item("AColor").trim
@@ -366,7 +307,7 @@ Namespace AccountingManagement
             Try
                 Dim Lst As List(Of R2StandardEnterExitAccountingExtendedStructure) = New List(Of R2StandardEnterExitAccountingExtendedStructure)
                 Dim Ds As DataSet = New DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Top " & YourTotalNumberofAccounts & " Accounting.EEAccountingProcessType,Accountings.AColor,Accountings.AName,Accounting.TimeA,Accounting.DateShamsiA,Accounting.CurrentChargeA,Accounting.MblghA,Accounting.ReminderChargeA,Computers.MName,SoftwareUsers.UserName,Accounting.DateMilladiA,Accounting.maabarcode,Accounting.userida from R2Primary.dbo.TblAccounting as Accounting
                          Inner Join  R2Primary.dbo.TblAccountingCodingTypes as Accountings On Accounting.EEAccountingProcessType=Accountings.ACode
                          Inner Join R2Primary.dbo.TblComputers as Computers On Accounting.MaabarCode=Computers.MId
@@ -393,17 +334,16 @@ Namespace AccountingManagement
 
         Public Shared Function GetNSSLastAccounting(YourAccountingCodeType As Int64) As R2StandardEnterExitAccountingStructure
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Top 1 * from R2Primary.dbo.TblAccounting as Accounting
                       Where Accounting.EEAccountingProcessType=" & YourAccountingCodeType & "
                       Order By Accounting.DateMilladiA Desc", 0, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return New R2StandardEnterExitAccountingStructure(R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(Convert.ToInt64(DS.Tables(0).Rows(0).Item("CardId"))), DS.Tables(0).Rows(0).Item("EEAccountingProcessType"), DS.Tables(0).Rows(0).Item("DateShamsiA"), DS.Tables(0).Rows(0).Item("TimeA"), DS.Tables(0).Rows(0).Item("DateMilladiA"), Nothing, DS.Tables(0).Rows(0).Item("MaabarCode"), DS.Tables(0).Rows(0).Item("MblghA"), DS.Tables(0).Rows(0).Item("UserIdA"), DS.Tables(0).Rows(0).Item("CurrentChargeA"), DS.Tables(0).Rows(0).Item("ReminderChargeA"))
                 Else
-                    Throw New LastAccountingRecordforAccountingCodeTypeNotFoundException
+                    Throw New LastAccountingRecordforAccountingTypeIdNotFoundException
                 End If
-            Catch ex As LastAccountingRecordforAccountingCodeTypeNotFoundException
+            Catch ex As LastAccountingRecordforAccountingTypeIdNotFoundException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -411,19 +351,6 @@ Namespace AccountingManagement
         End Function
 
     End Class
-
-    Namespace ExceptionManagement
-
-        Public Class LastAccountingRecordforAccountingCodeTypeNotFoundException
-            Inherits ApplicationException
-            Public Overrides ReadOnly Property Message As String
-                Get
-                    Return "رکوردی برای نوع اکانتینگ مورد نظر یافت نشد"
-                End Get
-            End Property
-        End Class
-
-    End Namespace
 
     'BPTChanged
     Public Class R2CoreParkingSystemAccounting
@@ -439,18 +366,20 @@ Namespace AccountingManagement
     'BPTChanged
     Public Class R2CoreParkingSystemAccountingManager
 
-        Private _R2DateTimeService As IR2DateTimeService
-        Public Sub New(YourR2DateTimeService As IR2DateTimeService)
-            _R2DateTimeService = YourR2DateTimeService
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+        Private _DateTimeService As IR2DateTimeService
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Public Sub InsertAccounting(ByVal YourAccounting As R2CoreParkingSystemAccounting)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "insert into R2Primary.dbo.TblAccounting(CardId,EEAccountingProcessType,DateShamsiA,TimeA,DateMilladiA,PelakA,SerialA,CityA,PelakTypeA,MaabarCode,MblghA,UseridA,CurrentChargeA,ReminderChargeA) values(" & YourAccounting.MoneyWalletId & "," & YourAccounting.AccountingTypeId & ",'" & _R2DateTimeService.GetCurrentShamsiDate & "','" & _R2DateTimeService.GetCurrentTime & "','" & _R2DateTimeService.GetCurrentDateTimeMilladi & "','','','',0,0," & YourAccounting.Mblgh & "," & YourAccounting.SoftwareUserId & ",0,0)"
+                CmdSql.CommandText = "insert into R2Primary.dbo.TblAccounting(CardId,EEAccountingProcessType,DateShamsiA,TimeA,DateMilladiA,PelakA,SerialA,CityA,PelakTypeA,MaabarCode,MblghA,UseridA,CurrentChargeA,ReminderChargeA) values(" & YourAccounting.MoneyWalletId & "," & YourAccounting.AccountingTypeId & ",'" & _DateTimeService.GetCurrentShamsiDate & "','" & _DateTimeService.GetCurrentTime & "','" & _DateTimeService.GetCurrentDateTimeMilladi & "','','','',0,0," & YourAccounting.Mblgh & "," & YourAccounting.SoftwareUserId & ",0,0)"
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
             Catch ex As Exception
@@ -464,9 +393,8 @@ Namespace AccountingManagement
         Public Function GetMoneyWalletTransactions(YourMoneyWalletIdCard As Int64) As String
             Try
                 Dim Ds As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Top 100 Accountings.AName as TransactionTitle,Accountings.AColor as TransactionColor,Accounting.DateShamsiA as ShamsiDate,Accounting.TimeA as Time,Accounting.CurrentChargeA as CurrentBalance,Accounting.MblghA as Amount,Accounting.ReminderChargeA as Reminder,SoftwareUsers.UserName as UserName
                       from R2Primary.dbo.TblAccounting as Accounting
                         Inner Join  R2Primary.dbo.TblAccountingCodingTypes as Accountings On Accounting.EEAccountingProcessType=Accountings.ACode
@@ -484,6 +412,39 @@ Namespace AccountingManagement
             End Try
         End Function
 
+        Public Function GetLastAccounting(YourAccountingTypeId As Int64) As R2CoreParkingSystemAccounting
+            Try
+                Dim DS As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                     "Select Top 1 * from R2Primary.dbo.TblAccounting as Accounting
+                      Where Accounting.EEAccountingProcessType=" & YourAccountingTypeId & "
+                      Order By Accounting.DateMilladiA Desc", 0, DS, New Boolean).GetRecordsCount <> 0 Then
+                    Return New R2CoreParkingSystemAccounting With {.AccountingTypeId = DS.Tables(0).Rows(0).Item("EEAccountingProcessType"), .MoneyWalletId = DS.Tables(0).Rows(0).Item("CardId"), .Mblgh = DS.Tables(0).Rows(0).Item("MblghA"), .SoftwareUserId = DS.Tables(0).Rows(0).Item("UserIdA"), .DateTimeMilladi = DS.Tables(0).Rows(0).Item("DateMilladiA"), .DateShamsi = DS.Tables(0).Rows(0).Item("DateShamsiA"), .Time = DS.Tables(0).Rows(0).Item("TimeA")}
+                Else
+                    Throw New LastAccountingRecordforAccountingTypeIdNotFoundException
+                End If
+            Catch ex As LastAccountingRecordforAccountingTypeIdNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
     End Class
 
+    Namespace ExceptionManagement
+
+        Public Class LastAccountingRecordforAccountingTypeIdNotFoundException
+            Inherits BPTException
+            Public Overrides ReadOnly Property Message As String
+                Get
+                    Return "رکوردی برای نوع اکانتینگ مورد نظر یافت نشد"
+                End Get
+            End Property
+        End Class
+
+    End Namespace
+
 End Namespace
+
+

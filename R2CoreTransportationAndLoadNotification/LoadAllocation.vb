@@ -355,16 +355,16 @@ Namespace LoadAllocation
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceLoadAllocationManager
-        Private _DateTime As New R2DateTime
+        Private _DateTimeService As New R2DateTimeService
         'Private InstanceLogging As New R2CoreInstanceLoggingManager
         Private InstanceSiteIsBusy = New R2CoreSiteIsBusyManager
-        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Function GetLoadAllocationsforTruckDriver(Optional YourSoftwareUserId As Int64 = Int64.MinValue, Optional YourTurnId As Int64 = Int64.MinValue) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationExtendedforTruckDriverStructure)
             Try
                 Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsParametersManager
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
    "Declare @LastTurnId int
     Select Top 1 @LastTurnId=Turns.nEnterExitId 
 	from  R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
@@ -401,7 +401,7 @@ Namespace LoadAllocation
        Inner Join dbtransport.dbo.TbDriver as Drivers On Persons.nIDPerson=Drivers.nIDDriver 
        Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On LoadCapacitor.nCompCode=TransportCompanies.TCId 
        Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadPermissionStatuses as LoadPermissionStatuses On Turns.LoadPermissionStatus=LoadPermissionStatuses.LoadPermissionStatusId 
-    Where Turns.nEnterExitId=" & IIf(YourTurnId = Int64.MinValue, "@LastTurnId", YourTurnId) & " and (LoadAllocations.LAStatusId=1 or LoadAllocations.LAStatusId=2 or LoadAllocations.LAStatusId=3 or LoadAllocations.LAStatusId=5) and CarAndPersons.snRelation=2 and AHs.ViewFlag=1 and AHs.Deleted=0 and AHSGs.ViewFlag=1 and AHSGs.Deleted=0 and LoadAllocations.DateShamsi='" & _DateTime.GetCurrentShamsiDate & "'  
+    Where Turns.nEnterExitId=" & IIf(YourTurnId = Int64.MinValue, "@LastTurnId", YourTurnId) & " and (LoadAllocations.LAStatusId=1 or LoadAllocations.LAStatusId=2 or LoadAllocations.LAStatusId=3 or LoadAllocations.LAStatusId=5) and CarAndPersons.snRelation=2 and AHs.ViewFlag=1 and AHs.Deleted=0 and AHSGs.ViewFlag=1 and AHSGs.Deleted=0 and LoadAllocations.DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "'  
           and ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000')) 
     Order By CarAndPersons.nIDCarAndPerson Desc,LoadAllocations.LAStatusId Asc,LoadAllocations.Priority Asc", 0, DS, New Boolean)
                 Dim Lst As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationExtendedforTruckDriverStructure) = New List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationExtendedforTruckDriverStructure)
@@ -485,7 +485,7 @@ Namespace LoadAllocation
                 NSSDirtyTruck = InstanceTrucks.GetNSSTruckWithLicensePlate(NSSDirtyTruck)
 
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select Top 100 LoadCapacitor.nEstelamID as LoadCapacitorLoadnEstelamId,Targets.strCityName as LoadCapacitorLoadTargetTitle,Products.strGoodName as  LoadCapacitorLoadGoodTitle,LoadCapacitor.nCarNumKol as LoadCapacitorLoadnCarNumKol,LoadCapacitor.nTonaj as LoadCapacitorLoadnTonaj,LoadCapacitor.strPriceSug as LoadCapacitorLoadStrPriceSug,LoadCapacitor.strDescription as LoadCapacitorLoadStrDescription,LoaderTypes.LoaderTypeTitle as LoadCapacitorLoadLoaderTypeTitle,
                         	      LoadCapacitor.strAddress as LoadCapacitorLoadStrAddress,LoadCapacitor.strBarName as LoadCapacitorLoadstrBarName,LoadCapacitor.dTimeElam as LoadCapacitorLoaddTimeElam,LoadCapacitor.dDateElam  as  LoadCapacitorLoaddDateElam,LoadCapacitorLoadStatuses.LoadStatusName as LoadCapacitorLoadStatusTitle,AHs.AHTitle as LoadCapacitorLoadAHTitle,AHSGs.AHSGTitle as LoadCapacitorLoadAHSGTitle,TransportCompanies.TCTitle as  TransportCompanyTitle,TransportCompanies.TCTel as  TransportCompanyTel,Turns.nEnterExitId as  TurnnEnterExitId,
 	                              Turns.OtaghdarTurnNumber as TurnOtaghdarTurnNumber,Turns.strEnterDate as TurnEnterDate,Turns.strEnterTime as TurnEnterTime,Turns.strDesc as TurnStrDesc,TurnStatuses.TurnStatusTitle as TurnStatusTitle,Turns.strDriverName as TruckDriver,Drivers.strSmartcardNo  as TruckDriverSmartCardNo,Persons.strIDNO as TruckDriverMobileNumber,Cars.strCarNo+'-'+Cars.strCarSerialNo as TruckLPString,Cars.strBodyNo as TruckSmartCardNo,Turns.strExitDate as LoadPermissionDate,
@@ -587,7 +587,7 @@ Namespace LoadAllocation
 
         'Public Function LoadAllocationRegistering(YournEstelamId As Int64, YourNSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure, YourUserNSS As R2CoreStandardSoftwareUserStructure, YourRequesterId As Int64, YourLoadAllocationIdRequested As Boolean, YourImmediately As Boolean) As Int64
         '    Dim CmdSql As New SqlClient.SqlCommand
-        '    CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+        '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
         '    Try
         '        Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
         '        Dim InstanceAnnouncementHall = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager
@@ -647,7 +647,7 @@ Namespace LoadAllocation
         '            'کنترل و جلوگیری از تخصیص بار اگر برای نوبت مجوز صادر شده
         '            Dim Da As New SqlClient.SqlDataAdapter : Dim DSAllocate As New DataSet
         '            Da.SelectCommand = New SqlClient.SqlCommand("Select LAId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations Where TurnId=" & YourNSSTurn.nEnterExitId & " and LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionSucceeded & "")
-        '            Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+        '            Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
         '            If Da.Fill(DSAllocate) <> 0 Then Throw New LastLoadPermissionIssuedforThisTurnException
         '        End If
 
@@ -762,7 +762,7 @@ Namespace LoadAllocation
 
         Public Sub LoadAllocationCancelling(YourLoadAllocationId As Int64, YourCancellingStatus As Int64, YourUserNSS As R2CoreStandardSoftwareUserStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceLoadAllocation = New R2CoreTransportationAndLoadNotificationInstanceLoadAllocationManager
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
@@ -776,7 +776,7 @@ Namespace LoadAllocation
                 'آیا زمان تخصیص بار و کنسلی تخصیص بار برای زیرگروه سالن مورد نظر فرارسیده است
                 If YourCancellingStatus = R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.CancelledUser Then
                     If InstanceAnnouncementTiming.IsTimingActive(NSSLoadCapacitorLoad.AHId, NSSLoadCapacitorLoad.AHSGId) Then
-                        If InstanceAnnouncementTiming.GetTiming(NSSLoadCapacitorLoad.AHId, NSSLoadCapacitorLoad.AHSGId, _DateTime.GetCurrentTime) <> R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
+                        If InstanceAnnouncementTiming.GetTiming(NSSLoadCapacitorLoad.AHId, NSSLoadCapacitorLoad.AHSGId, _DateTimeService.GetCurrentTime) <> R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
                             Throw New TimingNotReachedException
                         End If
                     End If
@@ -786,9 +786,9 @@ Namespace LoadAllocation
                 'محدودیت نوبت در کنسلی تخصیص
                 If Not InstanceTurns.IsTurnReadyforLoadAllocationCancelling(NSSTurn) Then Throw New LoadAllocationCancellingNotAllowedBecauseTurnStatusException
                 Dim NSSLoadAllocationStatus = GetNSSLoadAllocationStatus(YourCancellingStatus)
-                Dim DMilladiFormated = _DateTime.GetCurrentDateTimeMilladi()
-                Dim DShamsiFull = _DateTime.ConvertToShamsiDate(DMilladiFormated)
-                Dim TimeofDate = _DateTime.GetTimeOfDate(DMilladiFormated)
+                Dim DMilladiFormated = _DateTimeService.GetCurrentDateTimeMilladi()
+                Dim DShamsiFull = _DateTimeService.ConvertToShamsiDate(DMilladiFormated)
+                Dim TimeofDate = _DateTimeService.GetTimeOfDate(DMilladiFormated)
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations 
                                         Set LAStatusId=" & YourCancellingStatus & ",LANote='" & NSSLoadAllocationStatus.LoadAllocationStatusTitle & "',
@@ -817,7 +817,7 @@ Namespace LoadAllocation
         Public Function GetNSSLoadAllocationStatus(YourLoadAllocationStatusId As Int64) As R2CoreTransportationAndLoadNotificationStandardLoadAllocationStatusStructure
             Try
                 Dim DS As DataSet = Nothing
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocationStatuses Where LoadAllocationStatusId=" & YourLoadAllocationStatusId & "", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New LoadAllocationStatusNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocationStatuses Where LoadAllocationStatusId=" & YourLoadAllocationStatusId & "", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New LoadAllocationStatusNotFoundException
                 Dim NSS As New R2CoreTransportationAndLoadNotificationStandardLoadAllocationStatusStructure
                 NSS.LoadAllocationStatusId = YourLoadAllocationStatusId
                 NSS.LoadAllocationStatusTitle = DS.Tables(0).Rows(0).Item("LoadAllocationStatustitle").TRIM
@@ -845,15 +845,14 @@ Namespace LoadAllocation
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT On AHRSeqT.SeqTId=SeqT.SeqTId
                             Inner Join dbtransport.dbo.tbEnterExit as Turns On SeqT.SeqTKeyWord Collate Arabic_CI_AI_WS=Substring(Turns.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS
                         Where AHRAHSG.RelationActive=1 and AHRSeqT.RelationActive=1 and Turns.nEnterExitId=" & YournEnterExitId & " and LoadCapacitor.nEstelamID=" & YournEstelamId & "")
-                    Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                     If Da.Fill(Ds) = 0 Then
                         Return False
                     Else
                         Return True
                     End If
                 Else
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select * from dbtransport.dbo.tbElam as LoadCapacitor
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSG On LoadCapacitor.AHSGId=AHSG.AHSGId
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementsubGroups as AHRAHSG On AHSG.AHSGId=AHRAHSG.AHSGId
@@ -875,11 +874,11 @@ Namespace LoadAllocation
         Public Function ExistRegisteredLoadAllocation(YournEstelamId As Int64, YourTurnId As Int64) As Boolean
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
                       Where LoadAllocations.nEstelamId=" & YournEstelamId & " and LoadAllocations.TurnId=" & YourTurnId & " and 
                             LoadAllocations.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & " and 
-                            LoadAllocations.DateShamsi='" & _DateTime.GetCurrentShamsiDate & "'", 0, DS, New Boolean).GetRecordsCount() = 0 Then
+                            LoadAllocations.DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "'", 0, DS, New Boolean).GetRecordsCount() = 0 Then
                     Return False
                 Else
                     Return True
@@ -892,9 +891,9 @@ Namespace LoadAllocation
         Public Function GetTotalNumberOfRegisteredLoadAllocations(YourTurnId As Int64) As Int64
             Try
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Count(*) As Counting from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
-                      Where LoadAllocations.TurnId=" & YourTurnId & " and LoadAllocations.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & " and LoadAllocations.DateShamsi='" & _DateTime.GetCurrentShamsiDate & "'", 0, DS, New Boolean)
+                      Where LoadAllocations.TurnId=" & YourTurnId & " and LoadAllocations.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & " and LoadAllocations.DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "'", 0, DS, New Boolean)
                 Return DS.Tables(0).Rows(0).Item("Counting")
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -904,7 +903,7 @@ Namespace LoadAllocation
         Public Function GetTurnIdfromLoadAllocationId(YourLoadAllocationId As Int64) As Int64
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                         "Select LoadAllocations.TurnId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations 
                                          Where LoadAllocations.LAId=" & YourLoadAllocationId & "", 0, DS, New Boolean).GetRecordsCount() = 0 Then Throw New LoadAllocationNotFoundException
                 Return DS.Tables(0).Rows(0).Item("TurnId")
@@ -918,7 +917,7 @@ Namespace LoadAllocation
         Public Function GetNSSLoadAllocation(YourLoadAllocationId As Int64) As R2CoreTransportationAndLoadNotificationStandardLoadAllocationExtendedStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                         "Select LoadAllocation.Priority,LoadAllocation.LAId,LoadAllocation.nEstelamId,LoadAllocation.TurnId,LoadAllocation.LAStatusId,LoadAllocation.LANote,LoadAllocation.DateTimeMilladi,LoadAllocation.DateShamsi,LoadAllocation.Time,LoadAllocation.UserId,TransportCompanies.TCTitle,Product.strGoodName,City.strCityName,Car.strCarNo+'-'+Car.strCarSerialNo as Truck,Person.strPersonFullName,LoadAllocationStatus.LoadAllocationStatusTitle,LoadAllocationStatus.LoadAllocationStatusColor,ELAM.strDescription
                                          From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations  as LoadAllocation 
                                            Inner Join dbtransport.dbo.tbElam as Elam On LoadAllocation.nEstelamId=Elam.nEstelamID
@@ -940,7 +939,7 @@ Namespace LoadAllocation
 
         Public Sub IncreasePriority(YourLAId As Int64)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
@@ -951,7 +950,7 @@ Namespace LoadAllocation
                 Dim NSSTurn = InstanceTurns.GetNSSTurn(NSSThisLoadAllocation.TurnId)
                 'آیا زمان تخصیص بار برای زیرگروه سالن مورد نظر فرارسیده است
                 If InstanceTiming.IsTimingActive(NSSLoadCapacitorLoad.AHId, NSSLoadCapacitorLoad.AHSGId) Then
-                    If InstanceTiming.GetTiming(NSSLoadCapacitorLoad.AHId, NSSLoadCapacitorLoad.AHSGId, _DateTime.GetCurrentTime) <> R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
+                    If InstanceTiming.GetTiming(NSSLoadCapacitorLoad.AHId, NSSLoadCapacitorLoad.AHSGId, _DateTimeService.GetCurrentTime) <> R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
                         Throw New TimingNotReachedException
                     End If
                 End If
@@ -959,9 +958,9 @@ Namespace LoadAllocation
                 If Not NSSThisLoadAllocation.LAStatusId = R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered Then Throw New LoadAllocationChangePriorityNotAllowedBecauseLoadAllocationStatusException
                 'محدودیت نوبت در تغییر اولویت تخصیص
                 If Not InstanceTurns.IsTurnReadyforLoadAllocationChangePriority(NSSTurn) Then Throw New LoadAllocationChangePriorityNotAllowedBecuaseTurnStatusException
-                Dim DShamsifull = _DateTime.GetCurrentShamsiDate
+                Dim DShamsifull = _DateTimeService.GetCurrentShamsiDate
                 Dim DS As DataSet
-                If InstanceSqlDataBox.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
                         Where LoadAllocations.TurnId=" & NSSThisLoadAllocation.TurnId & " and LoadAllocations.LAStatusId=1 and 
                               LoadAllocations.Priority<" & NSSThisLoadAllocation.Priority & "  and LoadAllocations.DateShamsi='" & DShamsifull & "'  
@@ -999,7 +998,7 @@ Namespace LoadAllocation
 
         Public Sub DecreasePriority(YourLAId As Int64)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
@@ -1010,7 +1009,7 @@ Namespace LoadAllocation
                 Dim NSSTurn = InstanceTurns.GetNSSTurn(NSSThisLoadAllocation.TurnId)
                 'آیا زمان تخصیص بار برای زیرگروه سالن مورد نظر فرارسیده است
                 If InstanceTiming.IsTimingActive(NSSLoadCapacitorLoad.AHId, NSSLoadCapacitorLoad.AHSGId) Then
-                    If InstanceTiming.GetTiming(NSSLoadCapacitorLoad.AHId, NSSLoadCapacitorLoad.AHSGId, _DateTime.GetCurrentTime) <> R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
+                    If InstanceTiming.GetTiming(NSSLoadCapacitorLoad.AHId, NSSLoadCapacitorLoad.AHSGId, _DateTimeService.GetCurrentTime) <> R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
                         Throw New TimingNotReachedException
                     End If
                 End If
@@ -1018,9 +1017,9 @@ Namespace LoadAllocation
                 If Not NSSThisLoadAllocation.LAStatusId = R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered Then Throw New LoadAllocationChangePriorityNotAllowedBecauseLoadAllocationStatusException
                 'محدودیت نوبت در تغییر اولویت تخصیص
                 If Not InstanceTurns.IsTurnReadyforLoadAllocationChangePriority(NSSTurn) Then Throw New LoadAllocationChangePriorityNotAllowedBecuaseTurnStatusException
-                Dim DShamsifull = _DateTime.GetCurrentShamsiDate
+                Dim DShamsifull = _DateTimeService.GetCurrentShamsiDate
                 Dim DS As DataSet
-                If InstanceSqlDataBox.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
                         Where LoadAllocations.TurnId=" & NSSThisLoadAllocation.TurnId & " and LoadAllocations.LAStatusId=1 and 
                               LoadAllocations.Priority>" & NSSThisLoadAllocation.Priority & " and LoadAllocations.DateShamsi='" & DShamsifull & "'
@@ -1058,10 +1057,10 @@ Namespace LoadAllocation
 
         Public Sub RePrioritize(YourNSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure, YourShamsiDate As String)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select LoadAllocations.LAId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
                         Where LoadAllocations.TurnId=" & YourNSSTurn.nEnterExitId & " and LoadAllocations.LAStatusId=1 and 
                               LoadAllocations.DateShamsi='" & YourShamsiDate & "' 
@@ -1086,14 +1085,14 @@ Namespace LoadAllocation
                 Dim ComposeQueryAHId = IIf(YourAHId = Int64.MinValue, String.Empty, " And Elam.AHId=" & YourAHId & "")
                 Dim ComposeQueryAHSGId = IIf(YourAHSGId = Int64.MinValue, String.Empty, " And Elam.AHSGId=" & YourAHSGId & "")
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                     Select * from (Select Top 1000000 LoadAllocation.Priority, LoadAllocation.LAId, LoadAllocation.nEstelamId, LoadAllocation.TurnId, LoadAllocation.LAStatusId, LoadAllocation.LANote, LoadAllocation.DateTimeMilladi, LoadAllocation.DateShamsi, LoadAllocation.Time, LoadAllocation.UserId
                                   From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations  as LoadAllocation 
                                     Inner Join dbtransport.dbo.tbElam as Elam On LoadAllocation.nEstelamId=Elam.nEstelamID
                                     Inner Join dbtransport.dbo.tbEnterExit as EnterExit On LoadAllocation.TurnId=EnterExit.nEnterExitId
                                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AHs On Elam.AHId=AHs.AHId 
                                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSGs On Elam.AHSGId =AHSGs.AHSGId  
-                                  Where LoadAllocation.DateShamsi ='" & _DateTime.GetCurrentShamsiDate() & "' and LoadAllocation.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & "" + ComposeQueryAHId + ComposeQueryAHSGId + " and Elam.LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " Order By LoadAllocation.TurnId Asc, LoadAllocation.Priority Asc) as DataBox1
+                                  Where LoadAllocation.DateShamsi ='" & _DateTimeService.GetCurrentShamsiDate() & "' and LoadAllocation.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & "" + ComposeQueryAHId + ComposeQueryAHSGId + " and Elam.LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " Order By LoadAllocation.TurnId Asc, LoadAllocation.Priority Asc) as DataBox1
                     Union all
                     Select * from (Select Top 1000000 LoadAllocation.Priority, LoadAllocation.LAId, LoadAllocation.nEstelamId, LoadAllocation.TurnId, LoadAllocation.LAStatusId, LoadAllocation.LANote, LoadAllocation.DateTimeMilladi, LoadAllocation.DateShamsi, LoadAllocation.Time, LoadAllocation.UserId
                                    From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations  as LoadAllocation 
@@ -1101,7 +1100,7 @@ Namespace LoadAllocation
                                      Inner Join dbtransport.dbo.tbEnterExit as EnterExit On LoadAllocation.TurnId=EnterExit.nEnterExitId
                                      Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AHs On Elam.AHId=AHs.AHId 
                                      Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSGs On Elam.AHSGId =AHSGs.AHSGId  
-                                  Where LoadAllocation.DateShamsi ='" & _DateTime.GetCurrentShamsiDate() & "' and LoadAllocation.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & "" + ComposeQueryAHId + ComposeQueryAHSGId + " and Elam.LoadStatus<>" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " Order By LoadAllocation.TurnId Asc, LoadAllocation.Priority Asc) as DataBox2", 0, DS, New Boolean)
+                                  Where LoadAllocation.DateShamsi ='" & _DateTimeService.GetCurrentShamsiDate() & "' and LoadAllocation.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & "" + ComposeQueryAHId + ComposeQueryAHSGId + " and Elam.LoadStatus<>" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " Order By LoadAllocation.TurnId Asc, LoadAllocation.Priority Asc) as DataBox2", 0, DS, New Boolean)
                 Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure)
                 For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
                     Lst.Add(New R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure(DS.Tables(0).Rows(Loopx).Item("LAId"), DS.Tables(0).Rows(Loopx).Item("nEstelamId"), DS.Tables(0).Rows(Loopx).Item("TurnId"), DS.Tables(0).Rows(Loopx).Item("LAStatusId"), DS.Tables(0).Rows(Loopx).Item("LANote").trim, DS.Tables(0).Rows(Loopx).Item("Priority"), DS.Tables(0).Rows(Loopx).Item("DateTimeMilladi"), DS.Tables(0).Rows(Loopx).Item("DateShamsi"), DS.Tables(0).Rows(Loopx).Item("Time"), DS.Tables(0).Rows(Loopx).Item("UserId")))
@@ -1114,7 +1113,7 @@ Namespace LoadAllocation
 
         Public Sub LoadAllocationLoadPermissionRegistering(YourNSSLoadAllocation As R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure, YourNSSLoadCapacitorLoad As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadExtendedStructure, YourCurrentDateTime As R2CoreDateAndTime, YourUserNSS As R2CoreStandardSoftwareUserStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceLoadPermission = New R2CoreTransportationAndLoadNotificationInstanceLoadPermissionManager
                 'کنترل وضعیت تخصیص بار
@@ -1194,7 +1193,7 @@ Namespace LoadAllocation
                 Dim InstanceTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
                 Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
                 Dim InstanceLoadPermissionPrinting = New R2CoreTransportationAndLoadNotificationInstanceLoadPermissionPrintingManager
-                Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager
+                Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 Dim InstancePermissions = New R2CoreInstansePermissionsManager
                 Dim FailedResultLst As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure) = New List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure)()
 
@@ -1207,7 +1206,7 @@ Namespace LoadAllocation
                     InstanceSiteIsBusy.ActivateSiteIsBusy()
                 End If
 
-                Dim CurrentDateTime = New R2CoreDateAndTime With {.DateTimeMilladi = _DateTime.GetCurrentDateTimeMilladi, .ShamsiDate = _DateTime.GetCurrentShamsiDate, .Time = _DateTime.GetCurrentTime}
+                Dim CurrentDateTime = New R2CoreDateAndTime With {.DateTimeMilladi = _DateTimeService.GetCurrentDateTimeMilladi, .ShamsiDate = _DateTimeService.GetCurrentShamsiDate, .Time = _DateTimeService.GetCurrentTime}
                 For Loopx As Int64 = 0 To Lst.Count - 1
                     Dim NSSLoadCapacitorLoad = InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(Lst(Loopx).nEstelamId, True)
                     Dim AHId As Int64 = NSSLoadCapacitorLoad.AHId
@@ -1280,8 +1279,8 @@ Namespace LoadAllocation
 
         Public Sub SendLoadAllocationsLoadPermissionRegisteringFailedSMS()
             Try
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 Dim LstUser = New List(Of R2CoreStandardSoftwareUserStructure) From {InstanceSoftwareUsers.GetNSSUserUnChangeable(New R2CoreSoftwareUserMobile(InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 1)))}
                 Dim LstCreationData = New List(Of SMSCreationData) From {New SMSCreationData With {.Data1 = String.Empty}}
@@ -1299,7 +1298,7 @@ Namespace LoadAllocation
         Public Function GetNSSLoadAllocation(YournEstelamId As Int64, YourTurnId As Int64) As R2CoreTransportationAndLoadNotificationStandardLoadAllocationExtendedStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                                           "Select LoadAllocation.Priority,LoadAllocation.LAId,LoadAllocation.nEstelamId,LoadAllocation.TurnId,LoadAllocation.LAStatusId,LoadAllocation.LANote,LoadAllocation.DateTimeMilladi,LoadAllocation.DateShamsi,LoadAllocation.Time,LoadAllocation.UserId,TransportCompanies.TCTitle,Product.strGoodName,City.strCityName,Car.strCarNo+'-'+Car.strCarSerialNo as Truck,Person.strPersonFullName,LoadAllocationStatus.LoadAllocationStatusTitle,LoadAllocationStatus.LoadAllocationStatusColor,ELAM.strDescription
                                          From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations  as LoadAllocation 
                                            Inner Join dbtransport.dbo.tbElam as Elam On LoadAllocation.nEstelamId=Elam.nEstelamID
@@ -1321,11 +1320,11 @@ Namespace LoadAllocation
 
         Public Sub ChangeLoadAllocationStatus(YourLoadAllocationId As Int64, YourLoadAllocationStatusId As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
-                Dim DMilladiFormated = _DateTime.GetCurrentDateTimeMilladi()
-                Dim DShamsiFull = _DateTime.ConvertToShamsiDate(DMilladiFormated)
-                Dim TimeofDate = _DateTime.GetTimeOfDate(DMilladiFormated)
+                Dim DMilladiFormated = _DateTimeService.GetCurrentDateTimeMilladi()
+                Dim DShamsiFull = _DateTimeService.ConvertToShamsiDate(DMilladiFormated)
+                Dim TimeofDate = _DateTimeService.GetTimeOfDate(DMilladiFormated)
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations
                                         Set LAStatusId=" & YourLoadAllocationStatusId & ",DateTimeMilladi='" & DMilladiFormated & "',DateShamsi='" & DShamsiFull & "',Time='" & TimeofDate & "'
@@ -1343,13 +1342,13 @@ Namespace LoadAllocation
     End Class
 
     Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassLoadAllocationManagement
-        Private Shared _DateTime As New R2DateTime
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function GetLoadAllocationsforTruckDriver(Optional YourSoftwareUserId As Int64 = Int64.MinValue, Optional YourTurnId As Int64 = Int64.MinValue) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationExtendedforTruckDriverStructure)
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
    "Declare @LastTurnId int
     Select Top 1 @LastTurnId=Turns.nEnterExitId 
 	from  R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
@@ -1383,7 +1382,7 @@ Namespace LoadAllocation
        Inner Join dbtransport.dbo.TbDriver as Drivers On Persons.nIDPerson=Drivers.nIDDriver 
        Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On LoadCapacitor.nCompCode=TransportCompanies.TCId 
        Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadPermissionStatuses as LoadPermissionStatuses On Turns.LoadPermissionStatus=LoadPermissionStatuses.LoadPermissionStatusId 
-    Where Turns.nEnterExitId=" & IIf(YourTurnId = Int64.MinValue, "@LastTurnId", YourTurnId) & " and (LoadAllocations.LAStatusId=1 or LoadAllocations.LAStatusId=2 or LoadAllocations.LAStatusId=3 or LoadAllocations.LAStatusId=5) and CarAndPersons.snRelation=2 and AHs.ViewFlag=1 and AHs.Deleted=0 and AHSGs.ViewFlag=1 and AHSGs.Deleted=0 and LoadAllocations.DateShamsi='" & _DateTime.GetCurrentShamsiDate & "' 
+    Where Turns.nEnterExitId=" & IIf(YourTurnId = Int64.MinValue, "@LastTurnId", YourTurnId) & " and (LoadAllocations.LAStatusId=1 or LoadAllocations.LAStatusId=2 or LoadAllocations.LAStatusId=3 or LoadAllocations.LAStatusId=5) and CarAndPersons.snRelation=2 and AHs.ViewFlag=1 and AHs.Deleted=0 and AHSGs.ViewFlag=1 and AHSGs.Deleted=0 and LoadAllocations.DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "' 
           and ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000')) 
     Order By CarAndPersons.nIDCarAndPerson Desc,LoadAllocations.LAStatusId Asc,LoadAllocations.Priority Asc", 0, DS, New Boolean).GetRecordsCount() = 0 Then Throw New LoadAllocationsNotFoundException
                 Dim Lst As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationExtendedforTruckDriverStructure) = New List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationExtendedforTruckDriverStructure)
@@ -1473,7 +1472,7 @@ Namespace LoadAllocation
         Public Shared Function GetNSSLoadAllocation(YourLoadAllocationId As Int64) As R2CoreTransportationAndLoadNotificationStandardLoadAllocationExtendedStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                         "Select LoadAllocation.Priority,LoadAllocation.LAId,LoadAllocation.nEstelamId,LoadAllocation.TurnId,LoadAllocation.LAStatusId,LoadAllocation.LANote,LoadAllocation.DateTimeMilladi,LoadAllocation.DateShamsi,LoadAllocation.Time,LoadAllocation.UserId,TransportCompanies.TCTitle,Product.strGoodName,City.strCityName,Car.strCarNo+'-'+Car.strCarSerialNo as Truck,Person.strPersonFullName,LoadAllocationStatus.LoadAllocationStatusTitle,LoadAllocationStatus.LoadAllocationStatusColor,ELAM.strDescription
                                          From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations  as LoadAllocation 
                                            Inner Join dbtransport.dbo.tbElam as Elam On LoadAllocation.nEstelamId=Elam.nEstelamID
@@ -1496,7 +1495,7 @@ Namespace LoadAllocation
         Public Shared Function GetNSSLoadAllocation(YournEstelamId As Int64, YourTurnId As Int64) As R2CoreTransportationAndLoadNotificationStandardLoadAllocationExtendedStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                                           "Select LoadAllocation.Priority,LoadAllocation.LAId,LoadAllocation.nEstelamId,LoadAllocation.TurnId,LoadAllocation.LAStatusId,LoadAllocation.LANote,LoadAllocation.DateTimeMilladi,LoadAllocation.DateShamsi,LoadAllocation.Time,LoadAllocation.UserId,TransportCompanies.TCTitle,Product.strGoodName,City.strCityName,Car.strCarNo+'-'+Car.strCarSerialNo as Truck,Person.strPersonFullName,LoadAllocationStatus.LoadAllocationStatusTitle,LoadAllocationStatus.LoadAllocationStatusColor,ELAM.strDescription
                                          From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations  as LoadAllocation 
                                            Inner Join dbtransport.dbo.tbElam as Elam On LoadAllocation.nEstelamId=Elam.nEstelamID
@@ -1519,7 +1518,7 @@ Namespace LoadAllocation
         Public Shared Function GetNSSLoadAllocationStatus(YourLoadAllocationStatusId As Int64) As R2CoreTransportationAndLoadNotificationStandardLoadAllocationStatusStructure
             Try
                 Dim DS As DataSet = Nothing
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocationStatuses Where LoadAllocationStatusId=" & YourLoadAllocationStatusId & "", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New LoadAllocationStatusNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocationStatuses Where LoadAllocationStatusId=" & YourLoadAllocationStatusId & "", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New LoadAllocationStatusNotFoundException
                 Dim NSS As New R2CoreTransportationAndLoadNotificationStandardLoadAllocationStatusStructure
                 NSS.LoadAllocationStatusId = YourLoadAllocationStatusId
                 NSS.LoadAllocationStatusTitle = DS.Tables(0).Rows(0).Item("LoadAllocationStatustitle").TRIM
@@ -1534,11 +1533,11 @@ Namespace LoadAllocation
         Public Shared Function ExistRegisteredLoadAllocation(YournEstelamId As Int64, YourTurnId As Int64) As Boolean
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
                       Where LoadAllocations.nEstelamId=" & YournEstelamId & " and LoadAllocations.TurnId=" & YourTurnId & " and 
                             LoadAllocations.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & " and 
-                            LoadAllocations.DateShamsi='" & _DateTime.GetCurrentShamsiDate & "'", 0, DS, New Boolean).GetRecordsCount() = 0 Then
+                            LoadAllocations.DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "'", 0, DS, New Boolean).GetRecordsCount() = 0 Then
                     Return False
                 Else
                     Return True
@@ -1551,7 +1550,7 @@ Namespace LoadAllocation
         Public Shared Function GetTotalNumberOfRegisteredLoadAllocations(YourTurnId As Int64) As Int64
             Try
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Count(*) As Counting from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
                       Where LoadAllocations.TurnId=" & YourTurnId & " and LoadAllocations.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & "", 0, DS, New Boolean)
                 Return DS.Tables(0).Rows(0).Item("Counting")
@@ -1562,11 +1561,11 @@ Namespace LoadAllocation
 
         Public Shared Sub ChangeLoadAllocationStatus(YourLoadAllocationId As Int64, YourLoadAllocationStatusId As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations
-                                        Set LAStatusId=" & YourLoadAllocationStatusId & ",DateTimeMilladi='" & _DateTime.GetCurrentDateTimeMilladi & "',DateShamsi='" & _DateTime.GetCurrentShamsiDate & "',Time='" & _DateTime.GetCurrentTime & "'
+                                        Set LAStatusId=" & YourLoadAllocationStatusId & ",DateTimeMilladi='" & _DateTimeService.GetCurrentDateTimeMilladi & "',DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "',Time='" & _DateTimeService.GetCurrentTime & "'
                                       Where LAId=" & YourLoadAllocationId & ""
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
@@ -1580,7 +1579,7 @@ Namespace LoadAllocation
         Public Shared Function GetTotalNumberOfLoadAllocationWhichBlindfold(YournEstelamId As Int64) As Int64 'تخصیص بلاتکلیف
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select Count(*) as Count from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations 
                          Where nEstelamId=" & YournEstelamId & " and LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & "", 0, DS, New Boolean).GetRecordsCount() = 0 Then Return 0
                 Return DS.Tables(0).Rows(0).Item(("Count"))
@@ -1592,7 +1591,7 @@ Namespace LoadAllocation
         Public Shared Function IsLoadCapacitorLoadAHSGMatchWithSequentialTurnOfTurn(YournEstelamId As Int64, YournEnterExitId As Int64)
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select * from dbtransport.dbo.tbElam as LoadCapacitor
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSG On LoadCapacitor.AHSGId=AHSG.AHSGId
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementsubGroups as AHRAHSG On AHSG.AHSGId=AHRAHSG.AHSGId
@@ -1614,7 +1613,7 @@ Namespace LoadAllocation
             Try
                 Dim DS As DataSet
                 If YournEstelamId = Int64.MinValue Then
-                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select LoadAllocation.Priority,LoadAllocation.LAId,LoadAllocation.nEstelamId,LoadAllocation.TurnId,LoadAllocation.LAStatusId,LoadAllocation.LANote,LoadAllocation.DateTimeMilladi,LoadAllocation.DateShamsi,LoadAllocation.Time,LoadAllocation.UserId,TransportCompanies.TCTitle,Product.strGoodName,City.strCityName,Car.strCarNo+'-'+Car.strCarSerialNo as Truck,Person.strPersonFullName,LoadAllocationStatus.LoadAllocationStatusTitle,LoadAllocationStatus.LoadAllocationStatusColor,ELAM.strDescription
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select LoadAllocation.Priority,LoadAllocation.LAId,LoadAllocation.nEstelamId,LoadAllocation.TurnId,LoadAllocation.LAStatusId,LoadAllocation.LANote,LoadAllocation.DateTimeMilladi,LoadAllocation.DateShamsi,LoadAllocation.Time,LoadAllocation.UserId,TransportCompanies.TCTitle,Product.strGoodName,City.strCityName,Car.strCarNo+'-'+Car.strCarSerialNo as Truck,Person.strPersonFullName,LoadAllocationStatus.LoadAllocationStatusTitle,LoadAllocationStatus.LoadAllocationStatusColor,ELAM.strDescription
                                          From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations  as LoadAllocation 
                                            Inner Join dbtransport.dbo.tbElam as Elam On LoadAllocation.nEstelamId=Elam.nEstelamID
                                            Inner Join dbtransport.dbo.tbEnterExit as EnterExit On LoadAllocation.TurnId=EnterExit.nEnterExitId
@@ -1624,10 +1623,10 @@ Namespace LoadAllocation
                                            Inner Join dbtransport.dbo.TbCar as Car On EnterExit.strCardno=Car.nIDCar
                                            Inner Join dbtransport.dbo.TbPerson as Person On EnterExit.nDriverCode=Person.nIDPerson
                                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocationStatuses as LoadAllocationStatus On LoadAllocation.LAStatusId=LoadAllocationStatus.LoadAllocationStatusId
-                                         Where LoadAllocation.DateShamsi='" & _DateTime.GetCurrentShamsiDate() & "' and LoadAllocation.LAStatusId=" & YourLoadAllocationStatusId & " and Elam.AHId=" & YourAHId & " and Elam.AHSGId=" & YourAHSGId & "" & IIf(YourTransportCompanyId = Int64.MinValue, String.Empty, " and TransportCompanies.TCId=" & YourTransportCompanyId & "") & " 
+                                         Where LoadAllocation.DateShamsi='" & _DateTimeService.GetCurrentShamsiDate() & "' and LoadAllocation.LAStatusId=" & YourLoadAllocationStatusId & " and Elam.AHId=" & YourAHId & " and Elam.AHSGId=" & YourAHSGId & "" & IIf(YourTransportCompanyId = Int64.MinValue, String.Empty, " and TransportCompanies.TCId=" & YourTransportCompanyId & "") & " 
                                          Order By EnterExit.nEnterExitId Desc", 1, DS, New Boolean)
                 Else
-                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select LoadAllocation.Priority,LoadAllocation.LAId,LoadAllocation.nEstelamId,LoadAllocation.TurnId,LoadAllocation.LAStatusId,LoadAllocation.LANote,LoadAllocation.DateTimeMilladi,LoadAllocation.DateShamsi,LoadAllocation.Time,LoadAllocation.UserId,TransportCompanies.TCTitle,Product.strGoodName,City.strCityName,Car.strCarNo+'-'+Car.strCarSerialNo as Truck,Person.strPersonFullName,LoadAllocationStatus.LoadAllocationStatusTitle,LoadAllocationStatus.LoadAllocationStatusColor,ELAM.strDescription
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select LoadAllocation.Priority,LoadAllocation.LAId,LoadAllocation.nEstelamId,LoadAllocation.TurnId,LoadAllocation.LAStatusId,LoadAllocation.LANote,LoadAllocation.DateTimeMilladi,LoadAllocation.DateShamsi,LoadAllocation.Time,LoadAllocation.UserId,TransportCompanies.TCTitle,Product.strGoodName,City.strCityName,Car.strCarNo+'-'+Car.strCarSerialNo as Truck,Person.strPersonFullName,LoadAllocationStatus.LoadAllocationStatusTitle,LoadAllocationStatus.LoadAllocationStatusColor,ELAM.strDescription
                                          From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations  as LoadAllocation 
                                            Inner Join dbtransport.dbo.tbElam as Elam On LoadAllocation.nEstelamId=Elam.nEstelamID
                                            Inner Join dbtransport.dbo.tbEnterExit as EnterExit On LoadAllocation.TurnId=EnterExit.nEnterExitId
@@ -1652,14 +1651,14 @@ Namespace LoadAllocation
         Public Shared Function GetLoadAllocationsforLoadPermissionRegistering(YourAHId As Int64, YourAHSGId As Int64) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure)
             Try
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                       Select LoadAllocation.Priority,LoadAllocation.LAId,LoadAllocation.nEstelamId,LoadAllocation.TurnId,LoadAllocation.LAStatusId,LoadAllocation.LANote,LoadAllocation.DateTimeMilladi,LoadAllocation.DateShamsi,LoadAllocation.Time,LoadAllocation.UserId
                              From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations  as LoadAllocation 
                                Inner Join dbtransport.dbo.tbElam as Elam On LoadAllocation.nEstelamId=Elam.nEstelamID
                                Inner Join dbtransport.dbo.tbEnterExit as EnterExit On LoadAllocation.TurnId=EnterExit.nEnterExitId
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AHs On Elam.AHId=AHs.AHId 
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSGs On Elam.AHSGId =AHSGs.AHSGId  
-                             Where LoadAllocation.DateShamsi='" & _DateTime.GetCurrentShamsiDate() & "' and LoadAllocation.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & " and (AHs.AHId=" & YourAHId & ") and (AHSGs.AHSGId=" & YourAHSGId & ") 
+                             Where LoadAllocation.DateShamsi='" & _DateTimeService.GetCurrentShamsiDate() & "' and LoadAllocation.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & " and (AHs.AHId=" & YourAHId & ") and (AHSGs.AHSGId=" & YourAHSGId & ") 
                              Order By TurnId Asc,LoadAllocation.Priority Asc", 0, DS, New Boolean)
                 Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure)
                 For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
@@ -1674,7 +1673,7 @@ Namespace LoadAllocation
         Public Shared Function GetLoadAllocationStatuses() As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStatusStructure)
             Try
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocationStatuses Where ViewFlag=1 Order By LoadAllocationStatusId", 3600, DS, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocationStatuses Where ViewFlag=1 Order By LoadAllocationStatusId", 3600, DS, New Boolean)
                 Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStatusStructure)
                 For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
                     Lst.Add(New R2CoreTransportationAndLoadNotificationStandardLoadAllocationStatusStructure(DS.Tables(0).Rows(Loopx).Item("LoadAllocationStatusId"), DS.Tables(0).Rows(Loopx).Item("LoadAllocationStatusTitle").trim, DS.Tables(0).Rows(Loopx).Item("LoadAllocationStatusColor").trim, DS.Tables(0).Rows(Loopx).Item("ViewFlag")))
@@ -1687,13 +1686,13 @@ Namespace LoadAllocation
 
         Public Shared Sub RePrioritize(YourNSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select LoadAllocations.LAId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
                         Where LoadAllocations.TurnId=" & YourNSSTurn.nEnterExitId & " and LoadAllocations.LAStatusId=1 and 
-                              LoadAllocations.DateShamsi='" & _DateTime.GetCurrentShamsiDate & "' 
+                              LoadAllocations.DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "' 
                         Order By LoadAllocations.Priority Asc", 0, DS, New Boolean)
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -1743,12 +1742,12 @@ Namespace LoadAllocation
         Public Class R2CoreTransportationAndLoadNotificationInstanceFailedLoadAllocationAnnouncePrintingManager
             Private WithEvents _PrintDocumentFailedLoadAllocation As PrintDocument = New PrintDocument()
             Private _PPDS As R2CoreTransportationAndLoadNotificationFailedLoadAllocationPrintingInf
+            Private InstanceSqlDataBox = New R2CoreSqlDataBOXManager(New R2DateTimeService)
 
             Private Function GetFailedLoadAllocationPrintingInf(YourLoadAllocationId As Int64) As R2CoreTransportationAndLoadNotificationFailedLoadAllocationPrintingInf
                 Try
-                    Dim InstanceSqlDataBox = New R2CoreSqlDataBOXManager
                     Dim DS As DataSet
-                    InstanceSqlDataBox.GetDataBOX(New R2PrimarySqlConnection,
+                    InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                           "Select LoadAllocation.LAId,LoadAllocation.nEstelamId,Substring(EnterExit.OtaghdarTurnNumber,7,20) as TurnId,TransportCompany.TCTitle,Car.strCarNo as Truck,Car.strCarSerialNo as TruckSerial,Person.strPersonFullName,Product.strGoodName,CityTarget.strCityName as TargetCity,LoadAllocation.LANote
                            from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocation
                                 Inner Join dbtransport.dbo.tbEnterExit as EnterExit On LoadAllocation.TurnId=EnterExit.nEnterExitId
@@ -2102,12 +2101,12 @@ Namespace LoadAllocation
         End Class
 
         Public Class LoadAllocationIdNotPairWithDriverException
-            Inherits ApplicationException
+            Inherits BPTException
 
             Public Overrides ReadOnly Property Message As String
                 Get
                     'عدم مطابقت شماره تخصیص ارسالی با حساب کاربر مرتبط با راننده
-                    Return (New R2CoreMClassPredefinedMessagesManager).GetNSS(R2CoreTransportationAndLoadNotificationPredefinedMessages.LoadAllocationIdNotPairWithDriver).MsgContent
+                    Return InstancePredefinedMessages.GetNSS(R2CoreTransportationAndLoadNotificationPredefinedMessages.LoadAllocationIdNotPairWithDriver).MsgContent
                 End Get
             End Property
         End Class
@@ -2187,16 +2186,17 @@ Namespace LoadAllocation
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationLoadAllocationManager
 
-        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
         Private _DateTimeService As IR2DateTimeService
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Private Sub LoadAllocationConditionControl(YourAHSGId As Int64, YourSeqTId As Int64, YourNativenessTypeId As Int64, YourLoadStatusId As Int64, YourRequesterId As Int64, YourTurnStatusId As Int64)
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select OId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadsAllocationConditions as LoadsAllocationConditions
                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On LoadsAllocationConditions.AHSGId=AnnouncementSubGroups.AnnouncementSGId 
                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SequentialTurns On LoadsAllocationConditions.SeqTId=SequentialTurns.SeqTId 
@@ -2215,7 +2215,7 @@ Namespace LoadAllocation
 
         Public Sub LoadAllocationRegistering(YourLoadId As Int64, YourTurnId As Int64, YourSeqTId As Int64, YourNativenessTypeId As Int64, YourTurnStatusId As Int64, YourRequesterId As Int64, YourSoftwareUser As R2CoreSoftwareUser)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstancePermissions = New R2CoreInstansePermissionsManager
                 Dim InstanceTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
@@ -2281,7 +2281,7 @@ Namespace LoadAllocation
 
         Public Sub LoadAllocationRegisteringForTruckDriver(YourSoftwareUser As R2CoreSoftwareUser, YourLoadId As Int64, YourRequesterId As Int64)
             Try
-                Dim InstanceCache = New R2Core.Caching.R2CoreCacheManager
+                Dim InstanceCache = New R2Core.Caching.R2CoreCacheManager(_DateTimeService)
                 Dim Value = DirectCast(InstanceCache.GetCache(InstanceCache.GetCacheType(R2CoreTransportationAndLoadNotificationCacheTypes.TurnInfo).CacheTypeName + YourSoftwareUser.UserId.ToString, R2CoreTransportationAndLoadNotificationCatchDataBases.TruckDriverInformation), StackExchange.Redis.RedisValue)
                 If Value.IsNullOrEmpty Then Throw New BaseInfFailedException
                 Dim TurnInfo = JsonConvert.DeserializeObject(Of R2CoreTransportationAndLoadNotificationTurnInfo)(Value)
@@ -2336,7 +2336,7 @@ Namespace LoadAllocation
             Try
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                   "Declare @LastTurnId int
                    Select Top 1 @LastTurnId=Turns.nEnterExitId 
                    from  R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
@@ -2375,7 +2375,7 @@ Namespace LoadAllocation
             Try
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                   "Declare @LastTurnId int
                    Select Top 1 @LastTurnId=Turns.nEnterExitId 
                    from  R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
@@ -2420,10 +2420,10 @@ Namespace LoadAllocation
                              LoadAllocations.DateTimeMilladi,LoadAllocations.DateShamsi,LoadAllocations.Time,LoadAllocations.UserId 
                       from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
                       Where LoadAllocations.LAId=" & YourLAId & "")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New LoadAllocationNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select LoadAllocations.LAId,LoadAllocations.nEstelamId as LoadId,LoadAllocations.TurnId,LoadAllocations.LAStatusId,LoadAllocations.LANote,LoadAllocations.Priority,
                              LoadAllocations.DateTimeMilladi,LoadAllocations.DateShamsi,LoadAllocations.Time,LoadAllocations.UserId 
                       from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
@@ -2461,7 +2461,7 @@ Namespace LoadAllocation
 
         Public Sub IncreasePriority(YourLAId As Int64, YourLoadId As Int64)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Dim InstanceTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
                 Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(New R2DateTimeService)
@@ -2496,7 +2496,7 @@ Namespace LoadAllocation
 
         Public Sub DecreasePriority(YourLAId As Int64, YourLoadId As Int64)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Dim InstanceTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
                 Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(New R2DateTimeService)
@@ -2530,7 +2530,7 @@ Namespace LoadAllocation
 
         Public Sub LoadAllocationCancelling(YourLAId As Int64, YourLoadId As Int64, YourCancellStatusId As Int64, YourSoftwareUser As R2CoreSoftwareUser)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
                 Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(New R2DateTimeService)
@@ -2584,7 +2584,7 @@ Namespace LoadAllocation
         Public Function GetLoadIdfromLoadAllocationId(YourLoadAllocationId As Int64) As Int64
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select nEstelamId as LoadId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations Where LAId=" & YourLoadAllocationId & "", 3600, DS, New Boolean).GetRecordsCount = 0 Then
                     Throw New LoadAllocationsNotFoundException
                 End If
@@ -2599,7 +2599,7 @@ Namespace LoadAllocation
         Public Function GetTurnIdfromLoadAllocationId(YourLoadAllocationId As Int64) As Int64
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select TurnId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations Where LAId=" & YourLoadAllocationId & "", 3600, DS, New Boolean).GetRecordsCount = 0 Then
                     Throw New LoadAllocationsNotFoundException
                 End If
@@ -2614,7 +2614,7 @@ Namespace LoadAllocation
         Public Function GetPrimaryTurn(YourLoadId As Int64, YourExcludedTurnId As Int64) As R2CoreTransportationAndLoadNotificationTurn
             Try
                 Dim DS As DataSet = Nothing
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select Top 1 LoadAllocations.TurnId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
                           Inner Join dbtransport.dbo.tbEnterExit as Turns On LoadAllocations.TurnId=Turns.nEnterExitId 
                           Inner Join dbtransport.dbo.tbElam as Loads On LoadAllocations.nEstelamId=Loads.nEstelamID 

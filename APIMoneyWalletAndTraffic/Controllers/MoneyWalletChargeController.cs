@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -33,7 +34,16 @@ namespace APIMoneyWalletAndTraffic.Controllers
     public class MoneyWalletChargeController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService = new R2DateTimeService();
+        private IR2DateTimeService _DateTimeService;
+
+        public MoneyWalletChargeController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/PaymentRequest")]
@@ -47,7 +57,7 @@ namespace APIMoneyWalletAndTraffic.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceMoneyWalletCharge = new R2CoreParkingSystemMoneyWalletChargeManager(new R2DateTimeService());
+                var InstanceMoneyWalletCharge = new R2CoreParkingSystemMoneyWalletChargeManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceMoneyWalletCharge.PaymentRequest(Amount, User.UserId), Encoding.UTF8, "application/json");
@@ -78,7 +88,7 @@ namespace APIMoneyWalletAndTraffic.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceMoneyWalletCharge = new R2CoreParkingSystemMoneyWalletChargeManager(new R2DateTimeService());
+                var InstanceMoneyWalletCharge = new R2CoreParkingSystemMoneyWalletChargeManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceMoneyWalletCharge.GetDefaultAmounts(), Encoding.UTF8, "application/json");
@@ -110,7 +120,7 @@ namespace APIMoneyWalletAndTraffic.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceMoneyWalletCharge = new R2CoreParkingSystemMoneyWalletChargeManager(new R2DateTimeService());
+                var InstanceMoneyWalletCharge = new R2CoreParkingSystemMoneyWalletChargeManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceMoneyWalletCharge.GetMoneyWalletChargeRecords(MoneyWalletId), Encoding.UTF8, "application/json");
@@ -138,17 +148,17 @@ namespace APIMoneyWalletAndTraffic.Controllers
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
-                var ShamsiDate1 = Content.StartDate ;
-                var ShamsiDate2 = Content.EndDate ;
-                var Time1 = Content.StartTime ;
-                var Time2 = Content.EndTime ;
+                var ShamsiDate1 = Content.StartDate;
+                var ShamsiDate2 = Content.EndDate;
+                var Time1 = Content.StartTime;
+                var Time2 = Content.EndTime;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceMoneyWalletCharge = new R2CoreParkingSystemMoneyWalletChargeManager(new R2DateTimeService());
+                var InstanceMoneyWalletCharge = new R2CoreParkingSystemMoneyWalletChargeManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { Total = InstanceMoneyWalletCharge.GetTotalAmountofUserFunction(User.UserId , ShamsiDate1, ShamsiDate2, Time1, Time2) }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Total = InstanceMoneyWalletCharge.GetTotalAmountofUserFunction(User.UserId, ShamsiDate1, ShamsiDate2, Time1, Time2) }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (PaymentWebServiceConnectingException ex)
@@ -173,17 +183,17 @@ namespace APIMoneyWalletAndTraffic.Controllers
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
-                var ShamsiDate1 = Content.StartDate ;
-                var ShamsiDate2 = Content.EndDate ;
-                var Time1 = Content.StartTime ;
-                var Time2 = Content.EndTime ;
+                var ShamsiDate1 = Content.StartDate;
+                var ShamsiDate2 = Content.EndDate;
+                var Time1 = Content.StartTime;
+                var Time2 = Content.EndTime;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceMoneyWalletCharge = new R2CoreParkingSystemMoneyWalletChargeManager(new R2DateTimeService());
+                var InstanceMoneyWalletCharge = new R2CoreParkingSystemMoneyWalletChargeManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceMoneyWalletCharge.GetUserChargeFunction(User.UserId , ShamsiDate1, ShamsiDate2, Time1, Time2), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(InstanceMoneyWalletCharge.GetUserChargeFunction(User.UserId, ShamsiDate1, ShamsiDate2, Time1, Time2), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (PaymentWebServiceConnectingException ex)
@@ -200,9 +210,6 @@ namespace APIMoneyWalletAndTraffic.Controllers
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
 
-
-
-
         //این متد مخصوص آقای پرداخت است
         public async Task OnGetCallbackasync(string transid, string cardnumber, string tracking_number)
         {
@@ -213,8 +220,8 @@ namespace APIMoneyWalletAndTraffic.Controllers
 
                 var InstanceTrafficCards = new R2CoreTransportationAndLoadNotificationInstanceTerraficCardsManager();
                 var InstanceMoneyWallets = new R2CoreParkingSystemInstanceMoneyWalletManager();
-                var InstanceMoneyWalletCharge = new R2CoreParkingSystemInstanceMoneyWalletChargeManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceMoneyWalletCharge = new R2CoreParkingSystemInstanceMoneyWalletChargeManager(_DateTimeService);
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
 
                 if (Authority != "" && Authority != null)
                 {
@@ -222,14 +229,14 @@ namespace APIMoneyWalletAndTraffic.Controllers
                     long PayId = long.MinValue;
                     PayId = WS.WebMethodVerificationRequest(R2CoreMonetaryCreditSupplySources.AqayepardakhtPaymentGate, Authority, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword));
 
-                    var InstancePaymentRequests = new R2CoreInstansePaymentRequestsManager();
+                    var InstancePaymentRequests = new R2CoreInstansePaymentRequestsManager(_DateTimeService);
                     var NSSPaymentRequest = InstancePaymentRequests.GetNSSPayment(PayId);
                     while ((NSSPaymentRequest.RefId == string.Empty) & (NSSPaymentRequest.VerificationErrors == string.Empty))
                     { System.Threading.Thread.Sleep(500); NSSPaymentRequest = InstancePaymentRequests.GetNSSPayment(PayId); }
                     if (NSSPaymentRequest.RefId != string.Empty)
                     {
                         var InstanceAES = new AESAlgorithmsManager();
-                        var InstanceConfiguration = new R2CoreInstanceConfigurationManager();
+                        var InstanceConfiguration = new R2CoreInstanceConfigurationManager(_DateTimeService);
                         var NSSSoftwareUser = InstanceSoftwareUsers.GetNSSUser(NSSPaymentRequest.SoftwareUserId);
                         var NSSTrafficCard = InstanceTrafficCards.GetNSSTerafficCard(NSSSoftwareUser);
                         Int64 CurrentCharge = InstanceMoneyWallets.GetMoneyWalletCharge(NSSTrafficCard);

@@ -195,12 +195,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_73DC3B58AB2D4FCDB14C25252D03866A"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_818C5808DC78C184E25F49CEBB880386"
         "OwnerKey" = "8:_3EEABCA884EFCC340F0B59AF0A1428EE"
         "MsmSig" = "8:_UNDEFINED"
@@ -227,6 +221,18 @@
         {
         "MsmKey" = "8:_838326B617C09FE593ECA32A82935ADA"
         "OwnerKey" = "8:_A415D62A1AE84A959320F717399ECDF9"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_838326B617C09FE593ECA32A82935ADA"
+        "OwnerKey" = "8:_B3D781292C89713A8F5F7B4D51314227"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_838326B617C09FE593ECA32A82935ADA"
+        "OwnerKey" = "8:_818C5808DC78C184E25F49CEBB880386"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -394,12 +400,6 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_23C9A16062D00BD2B9DC1846F05C45D2"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_A415D62A1AE84A959320F717399ECDF9"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -539,6 +539,12 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_7382FD0095C27B425270E5CD56A1FE7C"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_23C9A16062D00BD2B9DC1846F05C45D2"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -989,26 +995,6 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_73DC3B58AB2D4FCDB14C25252D03866A"
-            {
-            "SourcePath" = "8:C:\\Users\\BPT\\Desktop\\APIs.Config"
-            "TargetName" = "8:APIs.Config"
-            "Tag" = "8:"
-            "Folder" = "8:_1A4E56D8D3A64BA5BBC661FFC388742F"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_818C5808DC78C184E25F49CEBB880386"

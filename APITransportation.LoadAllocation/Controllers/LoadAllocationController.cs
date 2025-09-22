@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -30,7 +31,16 @@ namespace APITransportation.LoadAllocation.Controllers
     public class LoadAllocationController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService=new R2DateTimeService();
+        private IR2DateTimeService _DateTimeService;
+
+        public LoadAllocationController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/LoadAllocationRegisteringforTruckDriver")]
@@ -38,7 +48,7 @@ namespace APITransportation.LoadAllocation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var LoadId = Content.LoadId;
@@ -46,7 +56,7 @@ namespace APITransportation.LoadAllocation.Controllers
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService);
-                InstanceLoadAllocation.LoadAllocationRegisteringForTruckDriver(User, LoadId,R2CoreTransportationAndLoadNotificationRequesters. LoadAllocationController_LoadAllocationRegisteringforTruckDriver);
+                InstanceLoadAllocation.LoadAllocationRegisteringForTruckDriver(User, LoadId, R2CoreTransportationAndLoadNotificationRequesters.LoadAllocationController_LoadAllocationRegisteringforTruckDriver);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -74,7 +84,7 @@ namespace APITransportation.LoadAllocation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
@@ -83,8 +93,8 @@ namespace APITransportation.LoadAllocation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadAllocations = new PayanehClassLibraryLoadAllocationsManager (_DateTimeService);
-                InstanceLoadAllocations.LoadAllocationRegisteringforTransportCompany(TruckId,TruckDriverId,LoadId,User ,R2CoreTransportationAndLoadNotificationRequesters.LoadAllocationController_LoadAllocationRegisteringforTransportCompany );
+                var InstanceLoadAllocations = new PayanehClassLibraryLoadAllocationsManager(_DateTimeService);
+                InstanceLoadAllocations.LoadAllocationRegisteringforTransportCompany(TruckId, TruckDriverId, LoadId, User, R2CoreTransportationAndLoadNotificationRequesters.LoadAllocationController_LoadAllocationRegisteringforTransportCompany);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -112,7 +122,7 @@ namespace APITransportation.LoadAllocation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var LAId = Content.LAId;
@@ -120,7 +130,7 @@ namespace APITransportation.LoadAllocation.Controllers
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService);
-                var Turn=InstanceLoadAllocation.LoadAllocateToOther(LAId,R2CoreTransportationAndLoadNotificationRequesters.LoadAllocationController_LoadAllocateToOther,User );
+                var Turn = InstanceLoadAllocation.LoadAllocateToOther(LAId, R2CoreTransportationAndLoadNotificationRequesters.LoadAllocationController_LoadAllocateToOther, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(Turn), Encoding.UTF8, "application/json");
@@ -148,7 +158,7 @@ namespace APITransportation.LoadAllocation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
@@ -158,7 +168,7 @@ namespace APITransportation.LoadAllocation.Controllers
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotification.LoadAllocation.R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService);
-                InstanceLoadAllocation.LoadAllocationRegisteringforAdministrator(TruckId, TruckDriverId, LoadId, User, R2CoreTransportationAndLoadNotificationRequesters.LoadAllocationController_LoadAllocationRegisteringforAdministrator  );
+                InstanceLoadAllocation.LoadAllocationRegisteringforAdministrator(TruckId, TruckDriverId, LoadId, User, R2CoreTransportationAndLoadNotificationRequesters.LoadAllocationController_LoadAllocationRegisteringforAdministrator);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -182,17 +192,17 @@ namespace APITransportation.LoadAllocation.Controllers
 
         [HttpPost]
         [Route("api/GetTruckDriverLoadAllocations")]
-        public HttpResponseMessage GetTruckDriverLoadAllocations([FromBody] APICommonSessionId  Content)
+        public HttpResponseMessage GetTruckDriverLoadAllocations([FromBody] APICommonSessionId Content)
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotificationLoadAllocationManager(new R2DateTimeService());
+                var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceLoadAllocation.GetTruckDriverLoadAllocationsForRepriority(User), Encoding.UTF8, "application/json");
@@ -220,22 +230,22 @@ namespace APITransportation.LoadAllocation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var LAId = Content.LAId;
-                var LoadId= Content.LoadId;
+                var LoadId = Content.LoadId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotificationLoadAllocationManager(new R2DateTimeService());
-                InstanceLoadAllocation.LoadAllocationCancelling(LAId,LoadId ,R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.CancelledUser ,User);
+                var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService);
+                InstanceLoadAllocation.LoadAllocationCancelling(LAId, LoadId, R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.CancelledUser, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
-            catch (RedisException  ex)
+            catch (RedisException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -257,16 +267,16 @@ namespace APITransportation.LoadAllocation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var LAId = Content.LAId;
-                var LoadId= Content.LoadId;
+                var LoadId = Content.LoadId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotificationLoadAllocationManager(new R2DateTimeService());
-                InstanceLoadAllocation.DecreasePriority(LAId,LoadId );
+                var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService);
+                InstanceLoadAllocation.DecreasePriority(LAId, LoadId);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -293,16 +303,16 @@ namespace APITransportation.LoadAllocation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var LAId = Content.LAId;
-                var LoadId= Content.LoadId;
+                var LoadId = Content.LoadId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotificationLoadAllocationManager(new R2DateTimeService());
-                InstanceLoadAllocation.IncreasePriority (LAId,LoadId );
+                var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService);
+                InstanceLoadAllocation.IncreasePriority(LAId, LoadId);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -329,7 +339,7 @@ namespace APITransportation.LoadAllocation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var LAId = Content.LAId;
@@ -338,7 +348,7 @@ namespace APITransportation.LoadAllocation.Controllers
 
                 var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { TravelTime = InstanceLoadAllocation.GetTravelTimeforLoadAllocation(User.UserId, LAId) } ), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { TravelTime = InstanceLoadAllocation.GetTravelTimeforLoadAllocation(User.UserId, LAId) }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)

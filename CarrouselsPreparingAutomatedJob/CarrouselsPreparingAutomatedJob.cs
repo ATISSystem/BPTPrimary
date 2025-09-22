@@ -19,14 +19,16 @@ namespace CarouselsPreparingAutomatedJob
     {
         private System.Timers.Timer _AutomatedJobsTimer = new System.Timers.Timer();
         private bool _FailStatus = true;
-        private R2CoreSoftwareUser _User; 
+        private R2CoreSoftwareUser _User;
+        private R2DateTimeService _DateTimeService;
 
         public CarouselsPreparingAutomatedJob()
         {
             InitializeComponent();
+            _DateTimeService = new R2DateTimeService();
             _AutomatedJobsTimer.Elapsed += _AutomatedJobsTimer_Elapsed;
-            var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(),new SoftwareUserService(1));
-            _User = InstanceSoftwareUsers.GetSystemUser(); 
+            var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService,new SoftwareUserService(1));
+            _User = InstanceSoftwareUsers.GetSystemUser();
         }
 
         private void _AutomatedJobsTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -41,8 +43,8 @@ namespace CarouselsPreparingAutomatedJob
                 {
                     try
                     {
-                        var InstanceConfiguration = new R2CoreConfigurationsManager();
-                        var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(1));
+                        var InstanceConfiguration = new R2CoreConfigurationsManager(_DateTimeService);
+                        var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(1));
 
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(_User);
                         _AutomatedJobsTimer.Interval = InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.Carousels , 0) * 1000;
@@ -59,8 +61,8 @@ namespace CarouselsPreparingAutomatedJob
 
                 try
                 {
-                    var InstanceCarousels = new R2Core.Carousels.R2CoreCarouselsManager(new R2DateTimeService());
-                    var Instance = new R2Core.SoftwareUserManagement.R2CoreSoftwareUsersManager(new R2DateTimeService(),new SoftwareUserService(1));
+                    var InstanceCarousels = new R2Core.Carousels.R2CoreCarouselsManager(_DateTimeService );
+                    var Instance = new R2Core.SoftwareUserManagement.R2CoreSoftwareUsersManager(_DateTimeService ,new SoftwareUserService(1));
                     InstanceCarousels.CarouselsCachePreparing(_User );
                 }
                 catch (Exception ex)

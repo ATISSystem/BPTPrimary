@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -21,7 +22,16 @@ namespace APIReports.Controllers
     public class LoadAccountingController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService = new R2DateTimeService();
+        private IR2DateTimeService _DateTimeService;
+
+        public LoadAccountingController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/GetLoadAccountingRecords")]
@@ -31,14 +41,14 @@ namespace APIReports.Controllers
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
-                var LoadId = Content.LoadId ;
+                var LoadId = Content.LoadId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceLoadAccounting = new R2CoreTransportationAndLoadNotificationLoadAccountingManager(_DateTimeService); 
+                var InstanceLoadAccounting = new R2CoreTransportationAndLoadNotificationLoadAccountingManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceLoadAccounting.GetLoadAccountingRecords(LoadId ,true ), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(InstanceLoadAccounting.GetLoadAccountingRecords(LoadId, true), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)

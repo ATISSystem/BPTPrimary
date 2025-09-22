@@ -3,6 +3,7 @@
 
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
+Imports R2Core.DateTimeProvider
 Imports R2Core.LoggingManagement
 Imports R2Core.SoftwareUserManagement
 Imports R2CoreTransportationAndLoadNotification.Announcements
@@ -43,16 +44,17 @@ Namespace LoadSedimentation
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationMClassLoadSedimentationManager
-        Private Shared _DateTime As New R2DateTime
+        Private _DateTimeService As New R2DateTimeService
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Sub SedimentingProcess()
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager
                 Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
                 Dim Lst = InstanceAnnouncements.GetAnnouncementsAnnouncementsubGroupsJOINT()
-                Dim CurrentTime As String = _DateTime.GetCurrentTime()
+                Dim CurrentTime As String = _DateTimeService.GetCurrentTime()
                 Dim AHId, AHSGId As Int64
                 For Each C In Lst
                     Try
@@ -80,7 +82,7 @@ Namespace LoadSedimentation
                         Dim LastAnnounceTime = InstanceAnnouncements.GetAnnouncemenetHallLastAnnounceTime(AHId, AHSGId).Time
                         CmdSql.Connection.Open()
                         CmdSql.CommandText = "Update dbtransport.dbo.tbElam Set bFlag=1,LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " 
-                                              Where (dDateElam='" & _DateTime.GetCurrentShamsiDate & "') and (LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered & " or LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.FreeLined & ") and AHId=" & AHId & " and AHSGId=" & AHSGId & " and (dTimeElam<='" & LastAnnounceTime & "') and nCarNum>0"
+                                              Where (dDateElam='" & _DateTimeService.GetCurrentShamsiDate & "') and (LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered & " or LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.FreeLined & ") and AHId=" & AHId & " and AHSGId=" & AHSGId & " and (dTimeElam<='" & LastAnnounceTime & "') and nCarNum>0"
                         CmdSql.ExecuteNonQuery()
                         CmdSql.Connection.Close()
                         'ثبت اکانتینگ
@@ -111,7 +113,7 @@ Namespace LoadSedimentation
 
         Public Sub SedimentingLoadCapacitorLoad(YournEstelamId As Int64, YourUserNSS As R2CoreStandardSoftwareUserStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
                 Dim NSSLoadCapacitorLoad = InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(YournEstelamId, True)
@@ -134,14 +136,13 @@ Namespace LoadSedimentation
 
         Public Function HowManyMinutesPassedfromSedimentation(YourNSS As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadStructure) As Int64
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorAccounting as LoadCapacitorAccounting
                       Where LoadCapacitorAccounting.nEstelamId=" & YourNSS.nEstelamId & " and LoadCapacitorAccounting.AccountType=" & R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Sedimenting & " Order By LoadCapacitorAccounting.DateTimeMilladi desc", 360, DS, New Boolean).GetRecordsCount = 0 Then
                     Throw New LoadIsNotSedimentedException
                 Else
-                    Return DateDiff(DateInterval.Minute, DS.Tables(0).Rows(0).Item("DateTimeMilladi"), _DateTime.GetCurrentDateTimeMilladi())
+                    Return DateDiff(DateInterval.Minute, DS.Tables(0).Rows(0).Item("DateTimeMilladi"), _DateTimeService.GetCurrentDateTimeMilladi())
                 End If
             Catch ex As LoadIsNotSedimentedException
                 Throw ex
@@ -163,12 +164,6 @@ Namespace LoadSedimentation
 
     End Class
 
-    Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassLoadSedimentationManagement
-        Private Shared _DateTime As New R2DateTime
-
-
-
-    End Class
 
     Namespace Exceptions
         Public Class LoadIsNotSedimentedException

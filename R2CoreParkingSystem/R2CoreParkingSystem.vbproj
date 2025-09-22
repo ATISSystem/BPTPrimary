@@ -160,10 +160,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\R2CoreGUI\R2CoreGUI.vbproj">
-      <Project>{d9aef791-83e7-4238-bb9c-de0c57e0ed37}</Project>
-      <Name>R2CoreGUI</Name>
-    </ProjectReference>
     <ProjectReference Include="..\R2CoreLPR\R2CoreLPR.vbproj">
       <Project>{d3413023-d590-432c-8a6a-6bf2038624cf}</Project>
       <Name>R2CoreLPR</Name>

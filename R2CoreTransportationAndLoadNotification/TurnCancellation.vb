@@ -6,7 +6,6 @@ Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
-Imports R2CoreGUI
 Imports R2CoreTransportationAndLoadNotification.ConfigurationsManagement
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad
 Imports System.Reflection
@@ -14,9 +13,11 @@ Imports System.Reflection
 Namespace TurnCancellation
     Public Class R2CoreTransportationAndLoadNotificationTurnCancellationManager
 
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
         Private _DateTimeService As IR2DateTimeService
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Private Const TurnCancellationLoadColor = "OrangeRed"
@@ -25,8 +26,7 @@ Namespace TurnCancellation
         Private Function IsLoadTargetforTurnCancellation(YourLoadTargetId As Int64) As Boolean
             Try
                 Dim DS As New DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select Top 1 LoadTargetId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadTargetsforTurnCancellation 
                         Where LoadTargetId=" & YourLoadTargetId & " and Active=1", 3600, DS, New Boolean).GetRecordsCount = 0 Then
                     Return False
@@ -41,7 +41,7 @@ Namespace TurnCancellation
         'BPTChanged
         Public Function IsLoadforTurnCancellation(YourLoadTargetCityId As Int64, YourTonaj As Double) As Boolean
             Try
-                Dim InstanceConfigurations As New R2CoreInstanceConfigurationManager
+                Dim InstanceConfigurations As New R2CoreInstanceConfigurationManager(_DateTimeService)
                 If IsLoadTargetforTurnCancellation(YourLoadTargetCityId) Then
                     If YourTonaj <= InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 8) Then
                         Return True
@@ -58,7 +58,7 @@ Namespace TurnCancellation
 
         Public Sub LoadforTurnCancellationRegistering(YourLoadId As Int64, YourCancellationFlag As Boolean)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Dim myDescription As String = String.Empty
                 If YourCancellationFlag Then
@@ -77,7 +77,7 @@ Namespace TurnCancellation
 
         Public Sub LoadforTurnCancellationActiving(nEstelamId As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadsforTurnCancellation Set Active=1,Description='" & TurnCancellationLoadColor & "' Where nEstelamId=" & nEstelamId & ""
@@ -90,7 +90,7 @@ Namespace TurnCancellation
 
         Public Sub LoadforTurnCancellationUnActiving(nEstelamId As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadsforTurnCancellation Set Active=0,Description='" & NonTurnCancellationLoadColor & "' Where nEstelamId=" & nEstelamId & ""

@@ -117,6 +117,7 @@ Imports System.Net
 Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
 Imports R2CoreTransportationAndLoadNotification.PredefinedMessages
 Imports R2Core.DateTimeProvider
+Imports R2Core.SQLInjectionPrevention
 
 Namespace Logging
 
@@ -142,20 +143,6 @@ Namespace ComputerMessages
 End Namespace
 
 Namespace DataBaseManagement
-    Public Class R2ClassSqlConnectionSepas
-        Inherits R2ClassSqlConnection
-
-        Public Sub New()
-            MyBase.New()
-            Try
-                _Connection = New SqlClient.SqlConnection(DefaultConnectionString.Replace("@IC", "Dbtransport"))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-    End Class
-
 End Namespace
 
 Namespace ConfigurationManagement
@@ -180,13 +167,13 @@ Namespace ConfigurationManagement
 
     Public NotInheritable Class PayanehClassLibraryMClassConfigurationOfAnnouncementsManagement
         'Inherits R2CoreMClassConfigurationManagement
-
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function GetConfig(YourCId As Int64, YourAHId As Int64, YourIndex As Int64) As Object
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 CValue from TblConfigurationsOfAnnouncements Where CId=" & YourCId & " And AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from TblConfigurationsOfAnnouncements Where CId=" & YourCId & " And AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
                 Return Split(Ds.Tables(0).Rows(0).Item("CValue"), ";")(YourIndex)
@@ -200,7 +187,7 @@ Namespace ConfigurationManagement
         Public Shared Function GetConfig(YourCId As Int64, YourAHId As Int64) As Object
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 CValue from TblConfigurationsOfAnnouncements Where CId=" & YourCId & " And AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from TblConfigurationsOfAnnouncements Where CId=" & YourCId & " And AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
                 Return Ds.Tables(0).Rows(0).Item("CValue")
@@ -330,9 +317,12 @@ Namespace DriverTrucksManagement
     End Class
 
     Public Class PayanehClassLibraryMClassDriverTrucksManager
+        Private _DateTimeService As New R2DateTimeService
+
         Public Sub SendTruckDriverChangeRequestMessage(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure, YourTruckDriverNationalCode As String, YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
+
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourTruckDriverNationalCode)
 
                 Dim InstancePermissions = New R2CoreInstansePermissionsManager
@@ -373,7 +363,7 @@ Namespace DriverTrucksManagement
                 Dim InstanceDrivers = New R2CoreParkingSystemInstanceDriversManager
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select * from TbPerson as P inner join dbtransport.dbo.TbDriver as D On P.nIDPerson=D.nIDDriver Where P.nIdPerson=" & YournIdPerson & "")
-                Da.SelectCommand.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Dim NSS As R2StandardDriverTruckStructure = New R2StandardDriverTruckStructure
@@ -393,7 +383,9 @@ Namespace DriverTrucksManagement
     End Class
 
     Public Class PayanehClassLibraryMClassDriverTrucksManagement
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function GetNSSTruckDriver(YourNSSTruckDriver As R2CoreTransportationAndLoadNotificationStandardTruckDriverStructure) As R2StandardDriverTruckStructure
             Try
@@ -405,12 +397,12 @@ Namespace DriverTrucksManagement
 
         Public Shared Function IsExistDriverTruck(YourNSS As R2StandardDriverTruckStructure) As Boolean
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourNSS.StrSmartCardNo)
 
                 Dim DS As New DataSet
-                ''If R2ClassSqlDataBOXManagement.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas, "Select P.StrPersonFullName from dbtransport.dbo.TbPerson as P inner join dbtransport.dbo.TbDriver as D On P.nIdPerson=D.nIdDriver Where D.StrSmartCardNo='" & YourNSS.StrSmartCardNo & "' and P.NIdPerson<>" & YourNSS.NSSDriver.nIdPerson & "", 1, DS).GetRecordsCount <> 0 Then
-                If InstanceSqlDataBOX.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas, "Select P.StrPersonFullName from dbtransport.dbo.TbPerson as P inner join dbtransport.dbo.TbDriver as D On P.nIdPerson=D.nIdDriver Where D.StrSmartCardNo='" & YourNSS.StrSmartCardNo & "'", 1, DS, New Boolean).GetRecordsCount <> 0 Then
+                ''If R2ClassSqlDataBOXManagement.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select P.StrPersonFullName from dbtransport.dbo.TbPerson as P inner join dbtransport.dbo.TbDriver as D On P.nIdPerson=D.nIdDriver Where D.StrSmartCardNo='" & YourNSS.StrSmartCardNo & "' and P.NIdPerson<>" & YourNSS.NSSDriver.nIdPerson & "", 1, DS).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select P.StrPersonFullName from dbtransport.dbo.TbPerson as P inner join dbtransport.dbo.TbDriver as D On P.nIdPerson=D.nIdDriver Where D.StrSmartCardNo='" & YourNSS.StrSmartCardNo & "'", 1, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return True
                 Else
                     Return False
@@ -423,7 +415,7 @@ Namespace DriverTrucksManagement
         Public Shared Function IsExistDriverTruck(YourMobileNumber As String) As Boolean
             Try
                 Dim DS As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas, "Select nIDPerson from dbtransport.dbo.TbPerson Where strAddress='" & YourMobileNumber.Trim & "'", 1, DS, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select nIDPerson from dbtransport.dbo.TbPerson Where strAddress='" & YourMobileNumber.Trim & "'", 1, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return True
                 Else
                     Return False
@@ -436,7 +428,7 @@ Namespace DriverTrucksManagement
         Public Shared Function IsExistDriverTruckByNationalCode(YourNationalCode As String) As Boolean
             Try
                 Dim DS As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas, "Select nIDPerson from dbtransport.dbo.TbPerson Where strNationalCode='" & YourNationalCode.Trim & "'", 0, DS, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select nIDPerson from dbtransport.dbo.TbPerson Where strNationalCode='" & YourNationalCode.Trim & "'", 0, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return True
                 Else
                     Return False
@@ -451,7 +443,7 @@ Namespace DriverTrucksManagement
 
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select * from TbPerson as P inner join dbtransport.dbo.TbDriver as D On P.nIDPerson=D.nIDDriver Where P.nIdPerson=" & YournIdPerson & "")
-                Da.SelectCommand.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Dim NSS As R2StandardDriverTruckStructure = New R2StandardDriverTruckStructure
@@ -470,7 +462,7 @@ Namespace DriverTrucksManagement
 
         Public Shared Sub UpdateDriverTruck(YourNSS As R2StandardDriverTruckStructure)
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 'If IsExistDriverTruck(YourNSS) = True Then Throw New DriverTruckSmartCardNoAlreadyAvailabletException
                 CmdSql.Connection.Open()
@@ -491,12 +483,12 @@ Namespace DriverTrucksManagement
 
         Public Shared Function GetNSSDriverTruckbySmartCardNo(YournSamrtCardNo As String) As R2StandardDriverTruckStructure
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YournSamrtCardNo)
 
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 * from dbtransport.dbo.TbPerson as P inner join dbtransport.dbo.TbDriver as D On P.nIDPerson=D.nIDDriver Where D.StrSmartCardNo='" & YournSamrtCardNo & "' Order By P.nIDPerson Desc")
-                Da.SelectCommand.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
 
                 If Da.Fill(Ds) <> 0 Then
@@ -524,12 +516,12 @@ Namespace DriverTrucksManagement
 
         Public Shared Function GetNSSDriverTruckbyNationalCode(YourNationalCode As String) As R2StandardDriverTruckStructure
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourNationalCode)
 
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 * from dbtransport.dbo.TbPerson as P inner join dbtransport.dbo.TbDriver as D On P.nIDPerson=D.nIDDriver Where P.StrNationalCode='" & YourNationalCode & "' Order By P.nIDPerson Desc")
-                Da.SelectCommand.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Dim NSSDriver As R2StandardDriverStructure = New R2StandardDriverStructure
@@ -694,12 +686,12 @@ Namespace CarTrucksManagement
     Public Class PayanehClassLibraryMClassCarTrucksManager
 
         Private _DateTimeService As New R2DateTimeService
-        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Function IsExistCarTruckWithLicensePlate(YourNSS As R2StandardCarTruckStructure, ByRef TruckId As Int64) As Boolean
             Try
                 Dim DS As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                     "Select Top 1 nIdCar,StrCarNo,StrCarSerialNo from dbtransport.dbo.TbCar Where strCarNo='" & YourNSS.NSSCar.StrCarNo & "' and strCarSerialNo='" & YourNSS.NSSCar.StrCarSerialNo & "'  and ViewFlag=1 Order By nIDCar Desc", 0, DS, New Boolean).GetRecordsCount <> 0 Then
                     TruckId = DS.Tables(0).Rows(0).Item("nIdCar")
                     Return True
@@ -713,7 +705,7 @@ Namespace CarTrucksManagement
 
         Public Sub SendTruckChangeRequestMessage(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure, YourNewTruckLicensePlate As String, YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourNewTruckLicensePlate)
 
                 Dim InstancePermissions = New R2CoreInstansePermissionsManager
@@ -753,7 +745,7 @@ Namespace CarTrucksManagement
                 Dim InstanceCars = New R2CoreParkingSystemInstanceCarsManager
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select * from dbtransport.dbo.TbCar Where nIdCar=" & YournIdCar & "")
-                Da.SelectCommand.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Dim NSS As R2StandardCarTruckStructure = New R2StandardCarTruckStructure
@@ -773,11 +765,11 @@ Namespace CarTrucksManagement
         'BPTChanged
         Public Function GetNSSCarTruckBySmartCardNo(YourSmartCardNo As String) As R2StandardCarTruckStructure
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSmartCardNo)
 
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                "Select Top 1 * from dbtransport.dbo.TbCar Where StrBodyNo='" & YourSmartCardNo.Trim() & "' and ViewFlag=1 Order By nIdCar Desc",
                                                           3600, Ds, New Boolean).GetRecordsCount() <> 0 Then
                     Dim NSSCarTruck As R2StandardCarTruckStructure = Nothing
@@ -806,7 +798,9 @@ Namespace CarTrucksManagement
     End Class
 
     Public Class PayanehClassLibraryMClassCarTrucksManagement
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function GetNSSTruck(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure) As R2StandardCarTruckStructure
             Try
@@ -819,7 +813,7 @@ Namespace CarTrucksManagement
         Public Shared Function IsExistCarTruckBySmartCardNo(YourNSS As R2StandardCarTruckStructure) As Boolean
             Try
                 Dim DS As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas, "Select StrCarNo,StrCarSerialNo from dbtransport.dbo.TbCar Where StrBodyNo='" & YourNSS.StrBodyNo & "'", 1, DS, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select StrCarNo,StrCarSerialNo from dbtransport.dbo.TbCar Where StrBodyNo='" & YourNSS.StrBodyNo & "'", 1, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return True
                 Else
                     Return False
@@ -833,7 +827,7 @@ Namespace CarTrucksManagement
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select * from dbtransport.dbo.TbCar Where nIdCar=" & YournIdCar & "")
-                Da.SelectCommand.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Dim NSS As R2StandardCarTruckStructure = New R2StandardCarTruckStructure
@@ -854,7 +848,7 @@ Namespace CarTrucksManagement
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 nIdCar,StrBodyNo from dbtransport.dbo.TbCar Where ltrim(rtrim(strCarNo))='" & YourLP.Pelak & "' and ltrim(rtrim(strCarSerialNo))='" & YourLP.Serial & "' and Viewflag=1 Order By nIdCar Desc")
-                Da.SelectCommand.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Dim NSS As R2StandardCarTruckStructure = New R2StandardCarTruckStructure
@@ -874,7 +868,7 @@ Namespace CarTrucksManagement
         'BPTChanged
         Public Shared Sub UpdateTruck(YourNSS As R2StandardCarTruckStructure)
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -898,7 +892,7 @@ Namespace CarTrucksManagement
         Public Shared Function IsExistTruckByLP(YourNSS As R2StandardCarTruckStructure) As Boolean
             Try
                 Dim DS As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select StrCarNo,StrCarSerialNo from dbtransport.dbo.TbCar Where ltrim(rtrim(strCarNo))='" & YourNSS.NSSCar.StrCarNo & "' and ltrim(rtrim(strCarSerialNo))='" & YourNSS.NSSCar.StrCarSerialNo & "' ", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return True
                 Else
@@ -912,7 +906,7 @@ Namespace CarTrucksManagement
         Public Shared Function IsExistTruckBySmartCardNo(YourSmartCardNo As String) As Boolean
             Try
                 Dim DS As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select Top 1 * from dbtransport.dbo.TbCar Where StrBodyNo='" & YourSmartCardNo.Trim() & "' and ViewFlag=1 Order By nIdCar Desc", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return True
                 Else
@@ -926,7 +920,7 @@ Namespace CarTrucksManagement
         Public Shared Function GetNSSTruckBySmartCardNoWithUpdatingfromRMTO(YourSmartCardNo As String) As R2CoreTransportationAndLoadNotificationTruck
             Dim NSSCarTruck As R2StandardCarTruckStructure = Nothing
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSmartCardNo)
                 Dim InstanceTrucks = New PayanehClassLibraryMClassCarTrucksManager
                 Dim InstanceCars = New R2CoreParkingSystemCarsManager(New R2DateTimeService)
@@ -1054,14 +1048,14 @@ Namespace DriverTruckPresentManagement
 
     Public MustInherit Class PayanehClassLibraryMClassDriverTruckSalonPresentManagement
 
-        Private Shared _DateTime As New R2DateTime
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function GetCountOfFPSSabted() As UInt64
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlClient.SqlCommand("Select Count(*) as CCount from R2PrimaryTransportationAndLoadNotification.dbo.TblFingerPrints")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item("CCount")
@@ -1076,14 +1070,14 @@ Namespace DriverTruckPresentManagement
         'Public Shared Sub SaveDriverTruckFPs(YourNSSDriverTruck As R2StandardDriverTruckStructure, YourListOfFPs As Generic.List(Of Dermalog.Afis.FourprintSegmentation.SegmentedFingerprint), YourDriverImage As R2CoreImage, YourUserNSS As R2CoreStandardSoftwareUserStructure)
         'Public Shared Sub SaveDriverTruckFPs(YourNSSDriverTruck As R2StandardDriverTruckStructure, YourListOfFPs As Generic.List(Of Object), YourDriverImage As R2CoreImage, YourUserNSS As R2CoreStandardSoftwareUserStructure)
         '    Dim CmdSql As New SqlClient.SqlCommand
-        '    CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+        '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
         '    Try
         '        If YourDriverImage.GetImage() Is Nothing Then
         '            Throw New DriverImageNothingException
         '        End If
 
         '        Dim DS As DataSet
-        '        If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "Select DriverId from R2PrimaryTransportationAndLoadNotification.dbo.TblFingerPrints where DriverId=" & YourNSSDriverTruck.NSSDriver.nIdPerson & "", 1, DS).GetRecordsCount = 0 Then
+        '        If R2ClassSqlDataBOXManagement.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select DriverId from R2PrimaryTransportationAndLoadNotification.dbo.TblFingerPrints where DriverId=" & YourNSSDriverTruck.NSSDriver.nIdPerson & "", 1, DS).GetRecordsCount = 0 Then
         '        Else
         '            Throw New DriverTruckFPsExistException
         '        End If
@@ -1308,7 +1302,7 @@ Namespace DriverTruckPresentManagement
 
         Public Shared Sub DeleteDriverTruckFPs(YourNSSDriverTruck As R2StandardDriverTruckStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblFingerPrints where DriverId=" & YourNSSDriverTruck.NSSDriver.nIdPerson & ""
@@ -1323,7 +1317,7 @@ Namespace DriverTruckPresentManagement
 
         Public Shared Function GetSalonStartDateForPresentControlDifrenceToNobatDate(YournEnterExitId As Int64) As Int64
             Try
-                Dim SalonStartDateForPresentControl As Date = _DateTime.GetMilladiDateTimeFromShamsiDate(R2CoreMClassConfigurationManagement.GetConfigString(PayanehClassLibraryConfigurations.SalonFingerPrint, 1), "00:00:00")
+                Dim SalonStartDateForPresentControl As Date = _DateTimeService.GetMilladiDateTimeFromShamsiDate(R2CoreMClassConfigurationManagement.GetConfigString(PayanehClassLibraryConfigurations.SalonFingerPrint, 1), "00:00:00")
                 Return R2CoreMClassPublicProcedures.GetDateDiff(DateInterval.Day, SalonStartDateForPresentControl, PayanehClassLibraryMClassCarTruckNobatManagement.GetNobatDateMilladi(YournEnterExitId))
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -1334,7 +1328,7 @@ Namespace DriverTruckPresentManagement
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlClient.SqlCommand("Select Count(*) as M from (Select Distinct DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YournEnterExitId & ") AND (DateShamsi<>'" & PayanehClassLibraryMClassCarTruckNobatManagement.GetNobatDateShamsi(YournEnterExitId) & "')) as Counting")
-                Da.SelectCommand.Connection = (New R2Core.DatabaseManagement.R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item("M")
@@ -1350,13 +1344,13 @@ Namespace DriverTruckPresentManagement
         Public Shared Function Is30MinutePresentSabted(ByVal YournEnterExitId As UInt64) As Boolean
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
-                Da.SelectCommand = New SqlClient.SqlCommand("Select Top 1 DateTimeMilladi From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YournEnterExitId & ") and (DateShamsi='" & _DateTime.GetCurrentShamsiDate & "') Order By DateTimeMilladi Desc")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand = New SqlClient.SqlCommand("Select Top 1 DateTimeMilladi From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YournEnterExitId & ") and (DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "') Order By DateTimeMilladi Desc")
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) = 0 Then
                     Return False
                 Else
-                    If DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), _DateTime.GetCurrentDateTimeMilladi) <= R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.SalonFingerPrint, 5) Then
+                    If DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), _DateTimeService.GetCurrentDateTimeMilladi) <= R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.SalonFingerPrint, 5) Then
                         Return True
                     Else
                         Return False
@@ -1370,8 +1364,8 @@ Namespace DriverTruckPresentManagement
         Public Shared Function ExistIndigenousTrucksWithUNNativeLP(ByVal YourPelak As String, ByVal YourSerial As String) As Boolean
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
-                Da.SelectCommand = New SqlClient.SqlCommand("Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblIndigenousTrucksWithUNNativeLP Where (Pelak='" & YourPelak & "') and (Serial='" & YourSerial & "') and (EnghezaDate='' or EnghezaDate>='" & _DateTime.GetCurrentShamsiDate() & "')")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand = New SqlClient.SqlCommand("Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblIndigenousTrucksWithUNNativeLP Where (Pelak='" & YourPelak & "') and (Serial='" & YourSerial & "') and (EnghezaDate='' or EnghezaDate>='" & _DateTimeService.GetCurrentShamsiDate() & "')")
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) = 0 Then
                     Return False
@@ -1385,7 +1379,7 @@ Namespace DriverTruckPresentManagement
 
         Public Shared Function IsDriverTruckPresentsContinuous(ByVal YournEnterExitId As UInt64) As Boolean
             Try
-                If GetPresentSabted(YournEnterExitId) >= PayanehClassLibraryMClassCarTruckNobatManagement.GetNobatDifrenceDayToToday(YournEnterExitId) - R2CoreDateAndTimePersianCalendarManagement.GetHoliDayNumber(PayanehClassLibraryMClassCarTruckNobatManagement.GetNobatDateShamsi(YournEnterExitId), _DateTime.GetCurrentShamsiDate) - 1 Then
+                If GetPresentSabted(YournEnterExitId) >= PayanehClassLibraryMClassCarTruckNobatManagement.GetNobatDifrenceDayToToday(YournEnterExitId) - R2CoreDateAndTimePersianCalendarManagement.GetHoliDayNumber(PayanehClassLibraryMClassCarTruckNobatManagement.GetNobatDateShamsi(YournEnterExitId), _DateTimeService.GetCurrentShamsiDate) - 1 Then
                     Return True
                 Else
                     Return False
@@ -1416,7 +1410,7 @@ Namespace DriverTruckPresentManagement
                         If GetSalonStartDateForPresentControlDifrenceToNobatDate(YournEnterExitId) >= 0 Then
                             Return True
                         Else
-                            If GetPresentSabted(YournEnterExitId) >= PayanehClassLibraryMClassCarTruckNobatManagement.GetNobatDifrenceDayToToday(YournEnterExitId) - R2CoreDateAndTimePersianCalendarManagement.GetHoliDayNumber(PayanehClassLibraryMClassCarTruckNobatManagement.GetNobatDateShamsi(YournEnterExitId), _DateTime.GetCurrentShamsiDate) Then
+                            If GetPresentSabted(YournEnterExitId) >= PayanehClassLibraryMClassCarTruckNobatManagement.GetNobatDifrenceDayToToday(YournEnterExitId) - R2CoreDateAndTimePersianCalendarManagement.GetHoliDayNumber(PayanehClassLibraryMClassCarTruckNobatManagement.GetNobatDateShamsi(YournEnterExitId), _DateTimeService.GetCurrentShamsiDate) Then
                                 Return True
                             Else
                                 Throw New IsDriverTruckPresentOkException("حاضري برای نوبت به تعداد کافی وجود ندارد")
@@ -1458,7 +1452,7 @@ Namespace DriverTruckPresentManagement
                 ''''        'تردد در محدوده 72 ساعت نیست و بیشتر است و بنابراین باید کیف پول مبلغ 7000 موجودی داشته باشد
                 ''''        'کنترل این که هزینه سالن در 72 ساعت دو مرتبه کم نشود
                 ''''        Dim DsControl As New DataSet
-                ''''        If R2ClassSqlDataBOXManagement.GetDataBOX(New R2PrimarySqlConnection, "select top 1 DateMilladiA from R2Primary.dbo.TblAccounting where CardId=" & YourNSSTerafficCard.CardId & " and EEAccountingProcessType=" & R2CoreParkingSystemAccountings.SherkatHazinehSodoorMojavezUpTo72Saat & "  order by DateMilladiA desc", 1, DsControl).GetRecordsCount <> 0 Then
+                ''''        If R2ClassSqlDataBOXManagement.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "select top 1 DateMilladiA from R2Primary.dbo.TblAccounting where CardId=" & YourNSSTerafficCard.CardId & " and EEAccountingProcessType=" & R2CoreParkingSystemAccountings.SherkatHazinehSodoorMojavezUpTo72Saat & "  order by DateMilladiA desc", 1, DsControl).GetRecordsCount <> 0 Then
                 ''''            Dim SherkatHazinehSodoorMojavezUpTo72SaatDateDiff As Long = DateDiff(DateInterval.Minute, DsControl.Tables(0).Rows(0).Item("DateMilladiA"), _DateTime.GetCurrentDateTimeMilladi)
                 ''''            If SherkatHazinehSodoorMojavezUpTo72SaatDateDiff < RangePayehTavaghof Then
                 ''''                'از پرداخت 7000 هنوز 72 ساعت نگذشته است
@@ -1506,7 +1500,7 @@ Namespace DriverTruckPresentManagement
                 Dim DriverCount As UInt16 = R2CoreParkingSystemMClassDrivers.GetCountOfDriversAttachedCar(YourNSSCar)
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand()
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
                 If DriverCount = 0 Then
                     Return False
                 End If
@@ -1532,7 +1526,7 @@ Namespace DriverTruckPresentManagement
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand()
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
                 Dim FirstnIdPerson As Int64 = R2CoreParkingSystemMClassCars.GetnIdPersonFirst(YourNSSCar.nIdCar)
                 Da.SelectCommand.CommandText = "Select DriverId From R2PrimaryTransportationAndLoadNotification.dbo.TblFingerPrints Where (DriverId=" & FirstnIdPerson & ")"
                 Ds.Tables.Clear()
@@ -1547,7 +1541,7 @@ Namespace DriverTruckPresentManagement
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand()
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
                 Dim SecondnIdPerson As Int64 = R2CoreParkingSystemMClassCars.GetnIdPersonSecond(YourNSSCar.nIdCar)
                 Da.SelectCommand.CommandText = "Select DriverId From R2PrimaryTransportationAndLoadNotification.dbo.TblFingerPrints Where (DriverId=" & SecondnIdPerson & ")"
                 Ds.Tables.Clear()
@@ -1561,7 +1555,7 @@ Namespace DriverTruckPresentManagement
         Public Shared Function IsDriverTruckFingerPrintActive(YourNSSDriverTruck As R2StandardDriverTruckStructure) As Boolean
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 FPActive from R2PrimaryTransportationAndLoadNotification.dbo.TblFingerPrints Where DriverId=" & YourNSSDriverTruck.NSSDriver.nIdPerson & "", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 FPActive from R2PrimaryTransportationAndLoadNotification.dbo.TblFingerPrints Where DriverId=" & YourNSSDriverTruck.NSSDriver.nIdPerson & "", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New Exception("راننده " + YourNSSDriverTruck.NSSDriver.StrPersonFullName + " یافت نشد")
                 Else
                     Return Ds.Tables(0).Rows(0).Item("FPActive")
@@ -1593,7 +1587,7 @@ Namespace DriverTruckPresentManagement
                             Return 1
                         Else
                             'تاريخ راه اندازي قبل از صدور نوبت است
-                            Return PayanehClassLibraryMClassCarTruckNobatManagement.GetNobatDifrenceDayToToday(YournEnterExitId) - R2CoreDateAndTimePersianCalendarManagement.GetHoliDayNumber(PayanehClassLibraryMClassCarTruckNobatManagement.GetNobatDateShamsi(YournEnterExitId), _DateTime.GetCurrentShamsiDate)
+                            Return PayanehClassLibraryMClassCarTruckNobatManagement.GetNobatDifrenceDayToToday(YournEnterExitId) - R2CoreDateAndTimePersianCalendarManagement.GetHoliDayNumber(PayanehClassLibraryMClassCarTruckNobatManagement.GetNobatDateShamsi(YournEnterExitId), _DateTimeService.GetCurrentShamsiDate)
                         End If
                     End If
                 End If
@@ -1605,8 +1599,8 @@ Namespace DriverTruckPresentManagement
         Public Function IsThisDayTruckDriverPresentSabted(ByVal YournEnterExitId As UInt64) As Boolean
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
-                Da.SelectCommand = New SqlClient.SqlCommand("Select Top 1 * From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YournEnterExitId & ") and (DateShamsi='" & _DateTime.GetCurrentShamsiDate & "')")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand = New SqlClient.SqlCommand("Select Top 1 * From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YournEnterExitId & ") and (DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "')")
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) = 0 Then
                     Return False
@@ -1634,7 +1628,7 @@ Namespace DriverTruckPresentManagement
 
         'Public Sub OneFPTemplateSabt(ByVal YourDriverId As Integer, ByVal YourTemplate1 As Byte(), ByVal YourTemplate2 As Byte(), ByRef YourDriverPicture As Drawing.Bitmap)
         '    Dim CmdSql As New SqlClient.SqlCommand
-        '    CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+        '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
         '    Try
         '        CmdSql.Parameters.AddWithValue("@DriverId", YourDriverId)
         '        CmdSql.Parameters.AddWithValue("@DriverNameFamily", SepasDriverName + ";" + SepasDriverFamily)
@@ -1663,7 +1657,7 @@ Namespace DriverTruckPresentManagement
 
         Public Sub OneFPTemplateUpdate(ByVal YourDriverId As Integer, ByVal YourTemplate As Byte(), ByVal YourOneFingerType As OneFingerType)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Parameters.AddWithValue("@DriverId", YourDriverId)
@@ -1690,7 +1684,7 @@ Namespace DriverTruckPresentManagement
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlClient.SqlCommand("Select DriverId From TblFingerPrintsOneFP Where DriverId=" & YourDriverId & "")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Ds.Tables.Clear()
                 Da.Fill(Ds)
                 If Ds.Tables(0).Rows.Count = 0 Then
@@ -1707,7 +1701,7 @@ Namespace DriverTruckPresentManagement
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlClient.SqlCommand("Select OneFPActive From TblFingerPrintsOneFP Where DriverId=" & YourDriverId & "")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Ds.Tables.Clear()
                 Da.Fill(Ds)
                 If Ds.Tables(0).Rows.Count = 0 Then
@@ -1772,60 +1766,6 @@ Namespace KioskManagement
         SodoorMojavezCreateNewPelakSerial = 1
     End Enum
 
-    Public MustInherit Class PayanehClassLibraryMClassKioskManagement
-
-        Private _DateTime As New R2DateTime
-        Private _MblghSodoorLoadingLicenseKioskAnjoman As Int64 = 10000
-        Private _MblghSodoorLoadingLicenseKioskSherkat As Int64 = 60000
-        'Public Sub SodoorLoadingLicense(ByVal YourCompany As Company, ByVal YourBar As Bar, ByVal YourUserId As Int64)
-        '    Dim CmdSqlSepas As New SqlClient.SqlCommand
-        '    CmdSqlSepas.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
-        '    Dim CmdSqlR2 As New SqlClient.SqlCommand
-        '    CmdSqlR2.Connection = (New R2PrimarySqlConnection).GetConnection()
-        '    Dim NSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure = R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(RFIDCardNo)
-        '    Dim NSSCar As R2StandardCarStructure = R2CoreParkingSystemMClassCars.GetNSSCar(SepasCarId)
-        '    Try
-        '        'ثبت تغییرات صدور مجوز در سپاس
-        '        If YourBar.CarNum = 1 Then
-        '            'بار با کم شدن یک بار کلا تمام می شود
-        '            CmdSqlSepas.CommandText = "Update tbelam set bflag=1,ncarnum=ncarnum-1,bflagcarnum=1,dDateExit='" & _DateTime.GetCurrentShamsiDate & "',dTimeExit='" & _DateTime.GetCurrentTime & "' where nestelamid=" & YourBar.EstelamId & ""
-        '        Else
-        '            'بار باز هم مانده دارد و تمام نمی شود
-        '            CmdSqlSepas.CommandText = "Update tbelam set bflag=0,ncarnum=ncarnum-1,bflagcarnum=1,dDateExit='" & _DateTime.GetCurrentShamsiDate & "',dTimeExit='" & _DateTime.GetCurrentTime & "' where nestelamid=" & YourBar.EstelamId & ""
-        '        End If
-        '        CmdSqlSepas.Connection.Open()
-        '        CmdSqlSepas.ExecuteNonQuery()
-        '        CmdSqlSepas.Connection.Close()
-        '        'ثبت اکانتینگ و سابقه شارژ در اتوماسیون
-        '        Dim myCurrentCharge As Int64 = R2CoreParkingSystemMClassMoneyWalletManagement.GetMoneyWalletCharge(NSSTrafficCard)
-        '        Dim myTash As Int64 = myCurrentCharge + _MblghSodoorLoadingLicenseKioskAnjoman + _MblghSodoorLoadingLicenseKioskSherkat
-        '        R2CoreParkingSystemMClassMoneyWalletChargeManagement.SabtCharge(New R2StandardMoneyWalletChargeStructure(NSSTrafficCard, _MblghSodoorLoadingLicenseKioskAnjoman + _MblghSodoorLoadingLicenseKioskSherkat, YourUserId, "", _DateTime.GetCurrentDateTimeMilladi, _DateTime.GetCurrentShamsiDate, myTash, 0, _DateTime.GetCurrentTime))
-        '        R2CoreParkingSystem.AccountingManagement.R2CoreParkingSystemMClassAccountingManagement.InsertAccounting(New R2CoreParkingSystem.AccountingManagement.R2StandardEnterExitAccountingStructure(NSSTrafficCard, R2CoreParkingSystem.AccountingManagement.R2CoreParkingSystemAccountings.ChargeType, _DateTime.GetCurrentShamsiDate, _DateTime.GetCurrentTime, _DateTime.GetCurrentDateTimeMilladi, NSSCar, R2CoreMClassConfigurationManagement.GetComputerCode, _MblghSodoorLoadingLicenseKioskAnjoman + _MblghSodoorLoadingLicenseKioskSherkat, YourUserId, myCurrentCharge, myTash))
-        '        'اکانت 1000 انجمن
-        '        myCurrentCharge = R2CoreParkingSystemMClassMoneyWalletManagement.GetMoneyWalletCharge(NSSTrafficCard)
-        '        myTash = myCurrentCharge - _MblghSodoorLoadingLicenseKioskAnjoman
-        '        CmdSqlR2.Connection.Open()
-        '        CmdSqlR2.CommandText = "update tblrfidcards set charge=charge-" & _MblghSodoorLoadingLicenseKioskAnjoman & " where cardid=" & NSSTrafficCard.CardId & ""
-        '        CmdSqlR2.ExecuteNonQuery()
-        '        CmdSqlR2.Connection.Close()
-        '        R2CoreParkingSystem.AccountingManagement.R2CoreParkingSystemMClassAccountingManagement.InsertAccounting(New R2CoreParkingSystem.AccountingManagement.R2StandardEnterExitAccountingStructure(NSSTrafficCard, R2CoreParkingSystem.AccountingManagement.R2CoreParkingSystemAccountings.AnjomanHazinehSodorMojavezKiosk, _DateTime.GetCurrentShamsiDate, _DateTime.GetCurrentTime, _DateTime.GetCurrentDateTimeMilladi, NSSCar, R2CoreMClassConfigurationManagement.GetComputerCode, _MblghSodoorLoadingLicenseKioskAnjoman, YourUserId, myCurrentCharge, myTash))
-        '        'اکانت 6000 شرکت
-        '        myCurrentCharge = R2CoreParkingSystemMClassMoneyWalletManagement.GetMoneyWalletCharge(NSSTrafficCard)
-        '        myTash = myCurrentCharge - _MblghSodoorLoadingLicenseKioskSherkat
-        '        CmdSqlR2.Connection.Open()
-        '        CmdSqlR2.CommandText = "update tblrfidcards set charge=charge-" & _MblghSodoorLoadingLicenseKioskSherkat & " where cardid=" & NSSTrafficCard.CardId & ""
-        '        CmdSqlR2.ExecuteNonQuery()
-        '        CmdSqlR2.Connection.Close()
-        '        R2CoreParkingSystem.AccountingManagement.R2CoreParkingSystemMClassAccountingManagement.InsertAccounting(New R2CoreParkingSystem.AccountingManagement.R2StandardEnterExitAccountingStructure(NSSTrafficCard, R2CoreParkingSystem.AccountingManagement.R2CoreParkingSystemAccountings.SherkatHazinehSodoorMojavezKiosk, _DateTime.GetCurrentShamsiDate, _DateTime.GetCurrentTime, _DateTime.GetCurrentDateTimeMilladi, NSSCar, R2CoreMClassConfigurationManagement.GetComputerCode, _MblghSodoorLoadingLicenseKioskSherkat, YourUserId, myCurrentCharge, myTash))
-        '    Catch ex As Exception
-        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-        '    End Try
-        'End Sub
-
-    End Class
-
-
-
 End Namespace
 
 Namespace ReportsManagement
@@ -1858,15 +1798,14 @@ Namespace ReportsManagement
 
     Public Class PayanehClassLibraryMClassReportsManagement
 
-        Private Shared _DateTime As New R2DateTime
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Sub ReportingInformationProviderContractorCompanyFinancialReport(YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime, YourVatStatus As Boolean)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
-                Dim _DateTime As R2DateTime = New R2DateTime
-                Dim myMahName As String = _DateTime.GetPersianMonthName(YourDateTime2.ShamsiDate)
+                Dim myMahName As String = _DateTimeService.GetPersianMonthName(YourDateTime2.ShamsiDate)
                 Dim myDateShamsi1 As String = YourDateTime1.ShamsiDate
                 Dim myDateShamsi2 As String = YourDateTime2.ShamsiDate
                 Dim myConcat1 As String = myDateShamsi1.Replace("/", "") + YourDateTime1.Time.Replace(":", "")
@@ -1874,7 +1813,7 @@ Namespace ReportsManagement
 
                 Dim Da As New SqlClient.SqlDataAdapter
                 Da.SelectCommand = New SqlClient.SqlCommand
-                Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 Dim DSSixCharkh As New DataSet
                 Dim DSSavari As New DataSet
                 Dim DSTereiliTenCharkh As New DataSet
@@ -1940,7 +1879,7 @@ Namespace ReportsManagement
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
                 CmdSql.CommandText = "Delete R2PrimaryReports.dbo.TblEnterExitByMblghReport" : CmdSql.ExecuteNonQuery()
                 Do
-                    CmdSql.CommandText = "insert into R2PrimaryReports.dbo.TblEnterExitByMblghReport(DateShamsi1,DateShamsi2,Time1,Time2,ReportDateShamsi,ReportTime,DateShamsi,SixCharkhEnterTotal,SixCharkhEnterJam,SavariEnterTotal,SavariEnterJam,TereiliTenCharkhEnterTotal,TereiliTenCharkhEnterJam,ExitJamSixCharkh,ExitJamSavari,ExitJamTereiliTenCharkh,JamKol,MahName,ReturnAmount) values('" & YourDateTime1.ShamsiDate & "','" & YourDateTime2.ShamsiDate & "','" & YourDateTime1.Time & "','" & YourDateTime2.Time & "','" & _DateTime.GetCurrentShamsiDate & "','" & _DateTime.GetCurrentTime & "','" & myCurrentDate & "',0,0,0,0,0,0,0,0,0,0" & ",'" & myMahName & "',0)"
+                    CmdSql.CommandText = "insert into R2PrimaryReports.dbo.TblEnterExitByMblghReport(DateShamsi1,DateShamsi2,Time1,Time2,ReportDateShamsi,ReportTime,DateShamsi,SixCharkhEnterTotal,SixCharkhEnterJam,SavariEnterTotal,SavariEnterJam,TereiliTenCharkhEnterTotal,TereiliTenCharkhEnterJam,ExitJamSixCharkh,ExitJamSavari,ExitJamTereiliTenCharkh,JamKol,MahName,ReturnAmount) values('" & YourDateTime1.ShamsiDate & "','" & YourDateTime2.ShamsiDate & "','" & YourDateTime1.Time & "','" & YourDateTime2.Time & "','" & _DateTimeService.GetCurrentShamsiDate & "','" & _DateTimeService.GetCurrentTime & "','" & myCurrentDate & "',0,0,0,0,0,0,0,0,0,0" & ",'" & myMahName & "',0)"
                     CmdSql.ExecuteNonQuery()
                     myCurrentDate = R2Core.PublicProc.R2CoreMClassPublicProcedures.GetNextShamsiDate(myCurrentDate)
                 Loop While myCurrentDate.Replace("/", "") <= YourDateTime2.ShamsiDate.Replace("/", "")
@@ -2055,34 +1994,14 @@ Namespace ReportsManagement
 
         End Sub
 
-        Public Shared Function GetAmountforTruckersAssociationControllingMoneyWallet() As Int64
-            Try
-                Dim NSSLast = R2CoreParkingSystemMClassAccountingManagement.GetNSSLastAccounting(R2CoreParkingSystemAccountings.TruckersAssociationControllingMoneyWallet)
-                Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
-                                  "Select Sum(MblghA) as Amount from R2Primary.dbo.TblAccounting 
-                                   Where DateMilladiA Between '" & _DateTime.GetMilladiDateTimeFromShamsiDate(NSSLast.DateShamsiA, NSSLast.TimeA) & "' and '" & _DateTime.GetCurrentDateTimeMilladi() & "'
-                                         And (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanHazinehNobat & " Or EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanHazinehSodorMojavezUpTo72Saat & " Or EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanHazinehSodorMojavezKiosk & " Or EEAccountingProcessType=" & R2CoreParkingSystemAccountings.PrintCopyOfTurn & " Or EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanChangeCarTruckNumberPlate & " Or EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanChangeDriverTruck & ")
-	                                     And ISNULl(Deleted,0)<>1", 0, Ds, New Boolean).GetRecordsCount = 0 Then
-                    Return 0
-                Else
-                    Return IIf(Ds.Tables(0).Rows(0).Item("Amount").Equals(System.DBNull.Value), 0, Ds.Tables(0).Rows(0).Item("Amount"))
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
         Public Shared Sub ReportingInformationProviderTruckersAssociationFinancialReport(YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
-                Dim _DateTime As R2DateTime = New R2DateTime
-
                 Dim _JamMblgh As Int64 = 0
                 Dim _JamTeadad As Int64 = 0
                 Dim DSRFIDCards As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select * from R2Primary.dbo.TblRFIDCards", 1, DSRFIDCards, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblRFIDCards", 1, DSRFIDCards, New Boolean)
 
                 Dim Concat1 As String = YourDateTime1.ShamsiDate.Replace("/", "") + YourDateTime1.Time.Replace(":", "")
                 Dim Concat2 As String = YourDateTime2.ShamsiDate.Replace("/", "") + YourDateTime2.Time.Replace(":", "")
@@ -2092,7 +2011,7 @@ Namespace ReportsManagement
                 CmdSql.ExecuteNonQuery()
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlClient.SqlCommand("select e.cardid,E.DateShamsiA,E.TimeA ,E.EEAccountingProcessType ,E.PelakA,E.SerialA ,E.MblghA  from R2Primary.dbo.TblAccounting as E WHERE (((Replace(E.DateShamsiA,'/','')+Replace(E.TimeA,':',''))>='" & Concat1 & "') And ((Replace(E.DateShamsiA,'/','')+Replace(E.TimeA,'/',''))<='" & Concat2 & "')) And (E.EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanHazinehNobat & " OR E.EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanHazinehSodorMojavezUpTo72Saat & "  OR E.EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanHazinehSodorMojavezKiosk & "  OR E.EEAccountingProcessType=" & R2CoreParkingSystemAccountings.PrintCopyOfTurn & " OR E.EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanChangeCarTruckNumberPlate & " OR E.EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanChangeDriverTruck & ") and ISNULl(Deleted,0)<>1   ORDER BY E.DateMilladiA")
-                Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 Ds.Tables.Clear()
                 Da.Fill(Ds)
                 For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
@@ -2112,7 +2031,7 @@ Namespace ReportsManagement
                     _JamMblgh = _JamMblgh + Mblgh
                     _JamTeadad = _JamTeadad + 1
                 Next
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 Dim Vat = InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.GovernmentVat, 0)
                 _JamMblgh = _JamMblgh * 100 / (100 + Vat)
                 CmdSql.CommandText = "Update R2PrimaryReports.dbo.TblTruckersAssociationFinancialReport Set JamMblgh= " & _JamMblgh & ",JamTeadad= " & _JamTeadad & ""
@@ -2128,7 +2047,7 @@ Namespace ReportsManagement
 
         Public Shared Sub ReportingInformationProviderDriverTruckLoadsReport(YourDriverId As Int64, YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlClient.SqlCommand("
@@ -2142,7 +2061,7 @@ Namespace ReportsManagement
 	                 Inner Join Dbtransport.dbo.tbcar as C on Turns.strCardno=C.nIDCar 
                   where Turns.nDriverCode='" & YourDriverId & "' and Turns.strExitDate>='" & YourDateTime1.ShamsiDate & "' and Turns.strExitDate<='" & YourDateTime2.ShamsiDate & " ' and (LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionSucceeded & " or LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionCancelled & ")
                   Order By  Turns.nEnterExitId desc ,LoadAllocations.LAId Desc")
-                Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 Da.Fill(Ds)
 
                 CmdSql.Connection.Open()
@@ -2177,7 +2096,7 @@ Namespace ReportsManagement
 
         Public Shared Sub ReportingInformationProviderCapacitorLoadsforAnnounceReport(YourAnnouncementHallId As Int64, YourAnnouncementsubGroupId As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 If YourAnnouncementsubGroupId = Announcements.None Then
@@ -2190,7 +2109,7 @@ Namespace ReportsManagement
                                inner join DBTransport.dbo.tbCarType as CT On E.nTruckType=CT.snCarType 
                                inner join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationLoaderTypes as AHRCarType On CT.snCarType=AHRCarType.LoaderTypeId 
                                inner join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AH On AHRCarType.AHId=AH.AHId	
-                             Where  E.dDateElam='" & _DateTime.GetCurrentShamsiDate & "' and AHRCarType.RelationActive=1 and AH.AHId=" & YourAnnouncementHallId & " and E.bFlag=0 and (E.LoadStatus=1 or E.LoadStatus=2) and E.nCarNum>0 
+                             Where  E.dDateElam='" & _DateTimeService.GetCurrentShamsiDate & "' and AHRCarType.RelationActive=1 and AH.AHId=" & YourAnnouncementHallId & " and E.bFlag=0 and (E.LoadStatus=1 or E.LoadStatus=2) and E.nCarNum>0 
                              Order By C.nProvince,strCityName,nTruckType")
                 Else
                     Da.SelectCommand = New SqlClient.SqlCommand("
@@ -2204,11 +2123,11 @@ Namespace ReportsManagement
 	                           inner join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSG On AHSGRCarType.AHSGId=AHSG.AHSGId 
 	                           inner join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementsubGroups as AHRAHSG On AHSG.AHSGId=AHRAHSG.AHSGId 
 	                           inner join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AH On AHRAHSG.AHId=AH.AHId 
-                             Where  E.dDateElam='" & _DateTime.GetCurrentShamsiDate & "' and AHSGRCarType.RelationActive=1 and AHRAHSG.RelationActive=1 and AH.AHId=" & YourAnnouncementHallId & " and AHSG.AHSGId=" & YourAnnouncementsubGroupId & " and E.bFlag=0 and (E.LoadStatus=1 or E.LoadStatus=2) and E.nCarNum>0 
+                             Where  E.dDateElam='" & _DateTimeService.GetCurrentShamsiDate & "' and AHSGRCarType.RelationActive=1 and AHRAHSG.RelationActive=1 and AH.AHId=" & YourAnnouncementHallId & " and AHSG.AHSGId=" & YourAnnouncementsubGroupId & " and E.bFlag=0 and (E.LoadStatus=1 or E.LoadStatus=2) and E.nCarNum>0 
                              Order By C.nProvince,strCityName,nTruckType")
                 End If
 
-                Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 Da.Fill(Ds)
 
                 CmdSql.Connection.Open()
@@ -2305,14 +2224,14 @@ Namespace ReportsManagement
 
         Public Shared Function PayanehClassLibraryRegisteredAndReleasedLoads(YourAHId As Int64, YourAHSGId As Int64, YourCompanyCode As Int64, YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime, YourTargetCityId As Int64, YourSoftwareUserId As Int64) As List(Of PayanehClassLibraryStructRegisteredAndReleasedLoads)
             Try
-                Dim Date1 As Date = _DateTime.GetMilladiDateTimeFromShamsiDate(YourDateTime1.ShamsiDate, YourDateTime1.Time)
-                Dim Date2 As Date = _DateTime.GetMilladiDateTimeFromShamsiDate(YourDateTime2.ShamsiDate, YourDateTime2.Time)
+                Dim Date1 As Date = _DateTimeService.GetMilladiDateTimeFromShamsiDate(YourDateTime1.ShamsiDate, YourDateTime1.Time)
+                Dim Date2 As Date = _DateTimeService.GetMilladiDateTimeFromShamsiDate(YourDateTime2.ShamsiDate, YourDateTime2.Time)
                 If DateDiff(DateInterval.Day, Date1, Date2) > 7 Then Throw New Exception("بازه هفته رعایت نشده است")
 
                 Dim Concat1 As String = YourDateTime1.ShamsiDate.Replace("/", "") + YourDateTime1.Time.Replace(":", "")
                 Dim Concat2 As String = YourDateTime2.ShamsiDate.Replace("/", "") + YourDateTime2.Time.Replace(":", "")
 
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(Concat1)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(Concat2)
 
@@ -2386,7 +2305,7 @@ Namespace ReportsManagement
                             " Order By e.nEstelamID")
                     End If
                 End If
-                Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 If Da.Fill(Ds) <> 0 Then
                     'لیست کلیه مجوزهای صادرشده برای کلیه بارهای فوق
                     Dim nEstelamIds = "'" + Ds.Tables(0).Rows(0).Item("nEstelamId").ToString + "'"
@@ -2401,7 +2320,7 @@ Namespace ReportsManagement
                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadPermissionStatuses as LoadPermissionStatuses On LoadPermissionStatuses.LoadPermissionStatusId=LoadPermissions.LoadPermissionStatus 
 							 Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations On LoadPermissions.nEstelamID=LoadAllocations.nEstelamId  and LoadPermissions.nEnterExitId=LoadAllocations.TurnId 
                          Where LoadPermissions.nEstelamId In (" & nEstelamIds & ")")
-                    DaLoadPermission.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                    DaLoadPermission.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                     DaLoadPermission.Fill(DsLoadPermission)
 
                     Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsParametersManager
@@ -2452,7 +2371,7 @@ Namespace ReportsManagement
 
         Public Shared Sub ReportingInformationProviderCapacitorLoadsCompanyRegisteredLoadsReport(YourAHId As Int64, YourAHSGId As Int64, YourCompanyCode As Int64, YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime, YourTargetCityId As Int64, YourSoftwareUserId As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim Concat1 As String = YourDateTime1.ShamsiDate.Replace("/", "") + YourDateTime1.Time.Replace(":", "")
                 Dim Concat2 As String = YourDateTime2.ShamsiDate.Replace("/", "") + YourDateTime2.Time.Replace(":", "")
@@ -2536,7 +2455,7 @@ Namespace ReportsManagement
                             " Order By e.nEstelamID")
                     End If
                 End If
-                Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 If Da.Fill(Ds) <> 0 Then
                     'لیست کلیه مجوزهای صادرشده برای کلیه بارهای فوق
                     Dim nEstelamIds = "'" + Ds.Tables(0).Rows(0).Item("nEstelamId").ToString + "'"
@@ -2552,7 +2471,7 @@ Namespace ReportsManagement
                              Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadPermissionStatuses as LoadPermissionStatuses On LoadPermissionStatuses.LoadPermissionStatusId=LoadPermissions.LoadPermissionStatus 
 							 Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations On LoadPermissions.nEstelamID=LoadAllocations.nEstelamId  and LoadPermissions.nEnterExitId=LoadAllocations.TurnId 
                          Where LoadPermissions.nEstelamId In (" & nEstelamIds & ")")
-                    DaLoadPermission.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                    DaLoadPermission.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                     DaLoadPermission.Fill(DsLoadPermission)
 
                     Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsParametersManager
@@ -2699,7 +2618,7 @@ Namespace ReportsManagement
 
         Public Shared Sub ReportingInformationProviderAnnouncementHallPerformanceReport(YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime, YourNSSAnnouncementHall As PayanehClassLibraryStandardAnnouncementstructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 'آماده سازی اطلاعات مورد نیاز
                 Dim DaRegisteredLoad As New SqlClient.SqlDataAdapter : Dim DsRegisteredLoad As New DataSet
@@ -2713,7 +2632,7 @@ Namespace ReportsManagement
                                                     inner join dbtransport.dbo.tbCompany as Comp On ElamInf.nCompCode=Comp.nCompCode
                                                             Order By ElamInf.nCompCode,ElamInf.AHId,ElamInf.AHSGId")
 
-                DaRegisteredLoad.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                DaRegisteredLoad.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 DsRegisteredLoad.Tables.Clear()
                 DaRegisteredLoad.Fill(DsRegisteredLoad)
                 Dim DaReleasedLoad As New SqlClient.SqlDataAdapter : Dim DsReleasedLoad As New DataSet
@@ -2726,7 +2645,7 @@ Namespace ReportsManagement
                                                              Where  EnterExit.LoadPermissionStatus=1 and Elam.dDateElam>='" & YourDateTime1.ShamsiDate & "'  and Elam.dDateElam<='" & YourDateTime2.ShamsiDate & "' and EnterExit.bFlag=1 and EnterExit.bFlagDriver=1 and AH.AHId=" & YourNSSAnnouncementHall.AHId & " 
                                                              Group By Elam.nCompCode,AH.AHId,AHSG.AHSGId,EnterExit.strBarnameNo")
 
-                DaReleasedLoad.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                DaReleasedLoad.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 DsReleasedLoad.Tables.Clear()
                 DaReleasedLoad.Fill(DsReleasedLoad)
 
@@ -2744,7 +2663,7 @@ Namespace ReportsManagement
                     CmdSql.CommandText = "Insert Into R2PrimaryReports.dbo.TblAnnouncementHallPerformanceReport(TransportCompanyId,TransportCompanyName,
                                            OtaghdarKhavarAnnounced,Otaghdar6CharkhAnnounced,Otaghdar10CharkhAnnounced,AnbariAnbariAnnounced,AnbariShemshAnnounced,AnbariSaderatiAnnounced,AnbariCoilAnnounced,ZobiZobiAnnounced,ZobiShemshAnnounced,ZobiSaderatiAnnounced,ZobiCoilAnnounced,ShahriShahriAnnounced,ShahriCoilAnnounced,
                                            OtaghdarKhavarReleasedInAnnouncementHall,OtaghdarKhavarReleasedInTransportCompany,Otaghdar6CharkhReleasedInAnnouncementHall,Otaghdar6CharkhReleasedInTransportCompany,Otaghdar10CharkhReleasedInAnnouncementHall,Otaghdar10CharkhReleasedInTransportCompany,AnbariAnbariReleasedInAnnouncementHall,	AnbariAnbariReleasedInTransportCompany,AnbariShemshReleasedInAnnouncementHall,AnbariShemshReleasedInTransportCompany,AnbariSaderatiReleasedInAnnouncementHall,AnbariSaderatiReleasedInTransportCompany,AnbariCoilReleasedInAnnouncementHall,AnbariCoilReleasedInTransportCompany,ZobiZobiReleasedInAnnouncementHall,ZobiZobiReleasedInTransportCompany,ZobiShemshReleasedInAnnouncementHall,ZobiShemshReleasedInTransportCompany,ZobiSaderatiReleasedInAnnouncementHall,ZobiSaderatiReleasedInTransportCompany,ZobiCoilReleasedInAnnouncementHall,ZobiCoilReleasedInTransportCompany,ShahriShahriReleasedInAnnouncementHall,ShahriShahriReleasedInTransportCompany,ShahriCoilReleasedInAnnouncemetHall,ShahriCoilReleasedInTransportCompany,
-                                           Date1,Date2,CurrentDateShamsi,CurrentTime,Note) Values(" & TransportCompanyId & ",'" & TransportCompanyName & "',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'" & YourDateTime1.ShamsiDate & "','" & YourDateTime2.ShamsiDate & "','" & _DateTime.GetCurrentShamsiDate() & "','" & _DateTime.GetCurrentTime() & "','" & YourNSSAnnouncementHall.AHName & "')"
+                                           Date1,Date2,CurrentDateShamsi,CurrentTime,Note) Values(" & TransportCompanyId & ",'" & TransportCompanyName & "',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'" & YourDateTime1.ShamsiDate & "','" & YourDateTime2.ShamsiDate & "','" & _DateTimeService.GetCurrentShamsiDate() & "','" & _DateTimeService.GetCurrentTime() & "','" & YourNSSAnnouncementHall.AHName & "')"
                     CmdSql.ExecuteNonQuery()
                 Next
                 'مرحله دوم ایجاد تعداد بار ثبت شده یا اعلام شده
@@ -2871,7 +2790,7 @@ Namespace ReportsManagement
 
         Public Shared Sub ReportingInformationProviderAnnouncementHallPerformanceGeneralStatisticsReport(YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 'آماده سازی اطلاعات مورد نیاز
                 Dim DaRegisteredLoad As New SqlClient.SqlDataAdapter : Dim DsRegisteredLoad As New DataSet
@@ -2883,7 +2802,7 @@ Namespace ReportsManagement
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AH On AHRAHSG.AHId=AH.AHId
                      Where Elam.dDateElam>='" & YourDateTime1.ShamsiDate & "' and Elam.dDateElam<='" & YourDateTime2.ShamsiDate & "' and Elam.LoadStatus<>3 and Elam.LoadStatus<>4 and Elam.LoadStatus<>6
                      Group By AH.AHId,AHSG.AHSGId")
-                DaRegisteredLoad.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                DaRegisteredLoad.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 DsRegisteredLoad.Tables.Clear()
                 DaRegisteredLoad.Fill(DsRegisteredLoad)
                 Dim DaReleasedLoad As New SqlClient.SqlDataAdapter : Dim DsReleasedLoad As New DataSet
@@ -2896,7 +2815,7 @@ Namespace ReportsManagement
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AH On AHRAHSG.AHId=AH.AHId
                      Where EnterExit.LoadPermissionStatus=1 and Elam.dDateElam>='" & YourDateTime1.ShamsiDate & "'  and Elam.dDateElam<='" & YourDateTime2.ShamsiDate & "' and EnterExit.bFlag=1 and EnterExit.bFlagDriver=1
                      Group By AH.AHId,AHSG.AHSGId,EnterExit.strBarnameNo")
-                DaReleasedLoad.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                DaReleasedLoad.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 DsReleasedLoad.Tables.Clear()
                 DaReleasedLoad.Fill(DsReleasedLoad)
 
@@ -2913,7 +2832,7 @@ Namespace ReportsManagement
                                         AnbariAnbariReleasedInAnnouncementHall,AnbariAnbariReleasedInTransportCompany,AnbariShemshReleasedInAnnouncementHall,AnbariShemshReleasedInTransportCompany,AnbariSaderatiReleasedInAnnouncementHall,AnbariSaderatiReleasedInTransportCompany,AnbariCoilReleasedInAnnouncementHall,AnbariCoilReleasedInTransportCompany,
                                         ZobiZobiReleasedInAnnouncementHall,ZobiZobiReleasedInTransportCompany,ZobiShemshReleasedInAnnouncementHall,ZobiShemshReleasedInTransportCompany,ZobiSaderatiReleasedInAnnouncementHall,ZobiSaderatiReleasedInTransportCompany,ZobiCoilReleasedInAnnouncementHall,ZobiCoilReleasedInTransportCompany,
                                         ShahriShahriReleasedInAnnouncementHall,ShahriShahriReleasedInTransportCompany,ShahriCoilReleasedInAnnouncemetHall,ShahriCoilReleasedInTransportCompany,
-                                        Date1,Date2,CurrentDateShamsi,CurrentTime,Note) Values(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'" & YourDateTime1.ShamsiDate & "','" & YourDateTime2.ShamsiDate & "','" & _DateTime.GetCurrentShamsiDate() & "','" & _DateTime.GetCurrentTime() & "','')"
+                                        Date1,Date2,CurrentDateShamsi,CurrentTime,Note) Values(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'" & YourDateTime1.ShamsiDate & "','" & YourDateTime2.ShamsiDate & "','" & _DateTimeService.GetCurrentShamsiDate() & "','" & _DateTimeService.GetCurrentTime() & "','')"
                 CmdSql.ExecuteNonQuery()
 
                 'مرحله دوم ایجاد تعداد بار ثبت شده یا اعلام شده
@@ -3038,7 +2957,7 @@ Namespace ReportsManagement
         Public Shared Sub ReportingInformationProviderTruckDriversWaitingToGetLoadPermissionByAHSGs(YourNSSAnnouncementsubGroup As R2CoreTransportationAndLoadNotificationStandardAnnouncementsubGroupStructure)
             'گزارش رانندگان منتظر دریافت مجوز بارگیری
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("
@@ -3051,7 +2970,7 @@ Namespace ReportsManagement
                    Where (Turns.TurnStatus=1 or Turns.TurnStatus=7 or Turns.TurnStatus=8 or Turns.TurnStatus=9 or Turns.TurnStatus=10) and 
                          AHSGRCars.AHSGId=" & YourNSSAnnouncementsubGroup.AHSGId & " and AHSGRCars.RelationActive=1 and ((DATEDIFF(SECOND,AHSGRCars.RelationTimeStamp,getdate())<240) or (AHSGRCars.RelationTimeStamp='2015-01-01 00:00:00.000'))  
                    Order By Turns.strEnterDate,Turns.strEnterTime,AHSGRCars.RelationId Desc")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
                 Ds.Tables.Clear()
                 Da.Fill(Ds)
 
@@ -3075,7 +2994,7 @@ Namespace ReportsManagement
         Public Shared Sub ReportingInformationProviderTruckDriversWaitingToGetLoadPermissionBySeqTs(YourNSSSeqT As R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure)
             'گزارش رانندگان منتظر دریافت مجوز بارگیری
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("
@@ -3087,7 +3006,7 @@ Namespace ReportsManagement
                    Where (Turns.TurnStatus=1 or Turns.TurnStatus=7 or Turns.TurnStatus=8 or Turns.TurnStatus=9 or Turns.TurnStatus=10) and 
                          SeqT.SeqTKeyWord='" & YourNSSSeqT.SequentialTurnKeyWord & "'
                    Order By Turns.strEnterDate,Turns.strEnterTime")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
                 Ds.Tables.Clear()
                 Da.Fill(Ds)
 
@@ -3111,7 +3030,7 @@ Namespace ReportsManagement
         Public Shared Sub ReportingInformationProviderTrucksAverageOfSleepDaysToGetLoadPermissionReport(YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime, YourAnnouncementHallId As Int64)
             'گزارش میانگین خواب ناوگان باری برای دریافت مجوز بارگیری
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("
@@ -3123,7 +3042,7 @@ Namespace ReportsManagement
 			                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationSequentialTurns as AHRSeqT On AH.AHId=AHRSeqT.AHId
 			                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT On AHRSeqT.SeqTId=SeqT.SeqTId 
 			                       Where AH.AHId=" & YourAnnouncementHallId & " and AH.Deleted=0 and AHRSeqT.RelationActive=1)")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
                 Ds.Tables.Clear()
                 Da.Fill(Ds)
 
@@ -3147,13 +3066,13 @@ Namespace ReportsManagement
         Public Shared Sub ReportingInformationProviderTravelLengthOfLoadTargetsReport()
             'گزارش میانگین خواب ناوگان باری برای دریافت مجوز بارگیری
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Citys.nCityCode,Citys.strCityName,Cast(Citys.nDistance/25 as bigint) as TravelLength,Provinces.ProvinceName from dbtransport.dbo.tbCity as Citys
                                                      Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces On Citys.nProvince=Provinces.ProvinceId
                                                     Where Citys.Deleted=0 and Provinces.Deleted=0 and Citys.ViewFlag=1 Order By Provinces.ProvinceName")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
                 Ds.Tables.Clear()
                 Da.Fill(Ds)
 
@@ -3177,7 +3096,7 @@ Namespace ReportsManagement
         Public Shared Sub ReportingInformationProviderTransportPriceTariffsReport(YourAnnouncementHallId As Int64, YourAnnouncementsubGroupId As Int64, YourOActiveStatus As Boolean)
             'گزارش تعرفه های حمل بار
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim OActiveSqlString As String = IIf(YourOActiveStatus = True, " Tariffs.OActive=1 and ", "")
                 CmdSql.Connection.Open()
@@ -3204,7 +3123,7 @@ Namespace ReportsManagement
         Public Shared Sub ReportingInformationProviderIndigenousTrucksWithUNNativeLPReport()
             'گزارش ناوگان باری بومی با پلاک غیربومی
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -3212,7 +3131,7 @@ Namespace ReportsManagement
                 CmdSql.CommandText = "Insert Into R2PrimaryReports.dbo.TblIndigenousTrucksWithUNNativeLPReport 
                            Select IndigenousTrucksWithUNNativeLP.Pelak,IndigenousTrucksWithUNNativeLP.Serial,SoftwareUsers.UserName,IndigenousTrucksWithUNNativeLP.DateShamsi,IndigenousTrucksWithUNNativeLP.EnghezaDate from R2PrimaryTransportationAndLoadNotification.dbo.TblIndigenousTrucksWithUNNativeLP as IndigenousTrucksWithUNNativeLP
                              Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On IndigenousTrucksWithUNNativeLP.UserId=SoftwareUsers.UserId
-                           Where IndigenousTrucksWithUNNativeLP.EnghezaDate='' or IndigenousTrucksWithUNNativeLP.EnghezaDate>='" & _DateTime.GetCurrentShamsiDate() & "'
+                           Where IndigenousTrucksWithUNNativeLP.EnghezaDate='' or IndigenousTrucksWithUNNativeLP.EnghezaDate>='" & _DateTimeService.GetCurrentShamsiDate() & "'
                            Order By IndigenousTrucksWithUNNativeLP.DateTimeMilladi"
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
@@ -3233,7 +3152,7 @@ Namespace ReportsManagement
         Public Shared Sub ReportingInformationProviderSedimentedLoadsReport(YourDate1 As R2CoreDateAndTime, YourDate2 As R2CoreDateAndTime, YourAHId As Int64, YourSedimentedLoadReportType As SedimentedLoadsReportType)
             'گزارش بار رسوبی سالن های اعلام بار
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim AnnouncementHall As String = R2CoreTransportationAndLoadNotificationMClassAnnouncementsManagement.GetNSSAnnouncementHall(YourAHId).AHTitle
                 CmdSql.Connection.Open()
@@ -3280,7 +3199,7 @@ Namespace ReportsManagement
         Public Shared Sub ReportingInformationProviderLoadPermissionIssuedByAHSGs(YourDate1 As R2CoreDateAndTime, YourDate2 As R2CoreDateAndTime, YourAHId As Int64, YourAHSGId As Int64)
             'گزارش مجوزهای صادر شده برای نوبت ها به ترتیب زمان صدور مجوز و اولویت انتخابی
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim Concat1 As String = YourDate1.ShamsiDate.Replace("/", "") + YourDate1.Time.Replace(":", "")
                 Dim Concat2 As String = YourDate2.ShamsiDate.Replace("/", "") + YourDate2.Time.Replace(":", "")
@@ -3323,17 +3242,16 @@ Namespace ReportsManagement
         Public Shared Sub ReportingInformationProviderLoadPermissionIssuedBySeqTs(YourDate1 As R2CoreDateAndTime, YourDate2 As R2CoreDateAndTime, YourSeqTId As Int64)
             'گزارش مجوزهای صادر شده برای نوبت ها به ترتیب زمان صدور مجوز و اولویت انتخابی
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceSequentialTurns = New R2CoreTransportationAndLoadNotificationInstanceSequentialTurnsManager
                 Dim NSSSeqT = InstanceSequentialTurns.GetNSSSequentialTurn(YourSeqTId)
                 Dim Concat1 As String = YourDate1.ShamsiDate.Replace("/", "") + YourDate1.Time.Replace(":", "")
                 Dim Concat2 As String = YourDate2.ShamsiDate.Replace("/", "") + YourDate2.Time.Replace(":", "")
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationInstanceTransportTariffsParametersManager
 
                 Dim DS As New DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                          "Select Turns.OtaghdarTurnNumber,ltrim(rtrim(Replace(Persons.strPersonFullName ,';',' '))) as PersonFullName,Trucks.strCarNo+'-'+Trucks.strCarSerialNo as Truck,LoadAllocations.LAId,LoadAllocations.Priority,Loads.nEstelamID,Loads.nTonaj,Loads.TPTParams, 
                                  Products.strGoodName,LoadTargets.strCityName,Turns.strExitDate+'-'+strExitTime as LoadPermissionDateTime,TransportCompanies.TCTitle,AnnouncementsubGroups.AHSGTitle,Loads.strDescription,Loads.strBarName,Loads.strAddress,
 								 LoadingPlaces.LADPlaceTitle as LoadingPlace,DischargingPlaces.LADPlaceTitle as DischargingPlace
@@ -3402,7 +3320,7 @@ Namespace ReportsManagement
         Public Shared Sub ReportingInformationProviderClearanceLoadsReport(YourDate1 As R2CoreDateAndTime, YourDate2 As R2CoreDateAndTime, YourAHId As Int64, YourAHSGId As Int64)
             'گزارش بار آزاد شده
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -3435,7 +3353,7 @@ Namespace ReportsManagement
         Public Shared Sub ReportingInformationProviderAnnouncedLoadsReport(YourDate1 As R2CoreDateAndTime, YourDate2 As R2CoreDateAndTime, YourAHId As Int64, YourAHSGId As Int64)
             'گزارش بار اعلام شده
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -3467,17 +3385,17 @@ Namespace ReportsManagement
 
         Public Shared Sub ReportingInformationProviderSaleOfCommissionSMSReport(YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
                 CmdSql.CommandText = "Delete R2PrimaryReports.dbo.TblSaleOfCommissionSMSReport"
                 CmdSql.ExecuteNonQuery()
                 CmdSql.CommandText = "Insert Into R2PrimaryReports.dbo.TblSaleOfCommissionSMSReport
-                                      Select '" & _DateTime.GetCurrentShamsiDate & "','" & _DateTime.GetCurrentTime & "','" & YourDateTime1.Time & "','" & YourDateTime1.ShamsiDate & "','" & YourDateTime2.Time & "','" & YourDateTime2.ShamsiDate & "',Sum(SMSOwnerTypes.Price)-Sum(SMSOwnerTypes.PriceMinusCommission),Count(*)
+                                      Select '" & _DateTimeService.GetCurrentShamsiDate & "','" & _DateTimeService.GetCurrentTime & "','" & YourDateTime1.Time & "','" & YourDateTime1.ShamsiDate & "','" & YourDateTime2.Time & "','" & YourDateTime2.ShamsiDate & "',Sum(SMSOwnerTypes.Price)-Sum(SMSOwnerTypes.PriceMinusCommission),Count(*)
                                       From R2PrimarySMSSystem.dbo.TblSMSOwners as SMSOwners
                                           Inner Join R2PrimarySMSSystem.dbo.TblSMSOwnerTypes as SMSOwnerTypes On SMSOwners.SMSOTypeId=SMSOwnerTypes.SMSOTypeId 
-                                      Where SMSOwners.DateTimeMilladi Between '" & _DateTime.GetMilladiDateTimeFromShamsiDate(YourDateTime1.ShamsiDate, YourDateTime1.Time) & "' and '" & _DateTime.GetMilladiDateTimeFromShamsiDate(YourDateTime2.ShamsiDate, YourDateTime2.Time) & "'"
+                                      Where SMSOwners.DateTimeMilladi Between '" & _DateTimeService.GetMilladiDateTimeFromShamsiDate(YourDateTime1.ShamsiDate, YourDateTime1.Time) & "' and '" & _DateTimeService.GetMilladiDateTimeFromShamsiDate(YourDateTime2.ShamsiDate, YourDateTime2.Time) & "'"
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
             Catch ex As Exception
@@ -3563,12 +3481,13 @@ Namespace AnnouncementsManagement
         End Class
 
         Public MustInherit Class PayanehClassLibraryAnnouncementsManagement
-            Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+            Private Shared _DateTimeService As New R2DateTimeService
+            Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
             Public Shared Function GetNSSAnnouncementHall(YourAHId As Int64) As PayanehClassLibraryStandardAnnouncementstructure
                 Try
                     Dim DS As DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements Where AHId=" & YourAHId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New AnnouncementHallNotFoundException
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements Where AHId=" & YourAHId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New AnnouncementHallNotFoundException
                     Return New PayanehClassLibraryStandardAnnouncementstructure(DS.Tables(0).Rows(0).Item("AHId"), DS.Tables(0).Rows(0).Item("AHTitle"))
                 Catch exx As AnnouncementHallNotFoundException
                     Throw exx
@@ -3580,7 +3499,7 @@ Namespace AnnouncementsManagement
             Public Shared Function GetNSSAnnouncementHallByCarTruckTypeId(YourCarTruckTypeId As Int64) As PayanehClassLibraryStandardAnnouncementstructure
                 Try
                     Dim DS As DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 AHId from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationLoaderTypes Where LoaderTypeId=" & YourCarTruckTypeId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New AnnouncementHallNotFoundException
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 AHId from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationLoaderTypes Where LoaderTypeId=" & YourCarTruckTypeId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New AnnouncementHallNotFoundException
                     Return GetNSSAnnouncementHall(DS.Tables(0).Rows(0).Item("AHId"))
                 Catch exx As AnnouncementHallNotFoundException
                     Throw exx
@@ -3642,7 +3561,7 @@ Namespace AnnouncementsManagement
                 Try
                     Dim DaSepas As New SqlClient.SqlDataAdapter : Dim DsSepas As New DataSet
                     DaSepas.SelectCommand = New SqlClient.SqlCommand("select C.strCompName ,P.strGoodName ,CI.strCityName ,E.strDescription  from TbElam as E inner join tbCompany as C on E.nCompCode=C.nCompCode INNER JOIN tbProducts as P on E.nBarcode=P.strGoodCode INNER JOIN tbcity as CI on E.nCitycode=CI.nCityCode where E.nEstelamID=" & YourSepastbElamnEstelamId & "")
-                    DaSepas.SelectCommand.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+                    DaSepas.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     DsSepas.Tables.Clear()
                     If DaSepas.Fill(DsSepas) = 0 Then
                         Return False
@@ -3663,7 +3582,7 @@ Namespace AnnouncementsManagement
                 Try
                     Dim DaSepas As New SqlClient.SqlDataAdapter : Dim DsSepas As New DataSet
                     DaSepas.SelectCommand = New SqlClient.SqlCommand("select top 1 nenterexitid from dbtransport.dbo.tbEnterExit where bFlagDriver =0 order by strEnterDate asc,strEnterTime asc")
-                    DaSepas.SelectCommand.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+                    DaSepas.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     DsSepas.Tables.Clear()
                     If DaSepas.Fill(DsSepas) = 0 Then
                         Return False
@@ -3681,7 +3600,7 @@ Namespace AnnouncementsManagement
                 Try
                     Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                     Da.SelectCommand = New SqlClient.SqlCommand("select top 1 mid from TblElamBarMonitoring order by MId desc")
-                    Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                     Ds.Tables.Clear()
                     If Da.Fill(Ds) = 0 Then
                         Return False
@@ -3699,13 +3618,13 @@ Namespace AnnouncementsManagement
 
         Public Class PayanehClassLibraryMClassAnnouncementHallMonitoringManagement
 
-            Private Shared _DateTime As New R2DateTime
-            Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+            Private Shared _DateTimeService As New R2DateTimeService
+            Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
             Public Shared Function GetMonitoringPersianTextMessage() As String
                 Try
                     Dim Ds As DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from TblAnnouncementHallMonitoringBulletin Order By DateTimeMilladi Desc", 1, Ds, New Boolean).GetRecordsCount <> 0 Then
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from TblAnnouncementHallMonitoringBulletin Order By DateTimeMilladi Desc", 1, Ds, New Boolean).GetRecordsCount <> 0 Then
                         Return Ds.Tables(0).Rows(0).Item("TMessage").trim
                     End If
                     Return String.Empty
@@ -3716,10 +3635,10 @@ Namespace AnnouncementsManagement
 
             Public Shared Sub SabtMonitoringPersianTextMessage(YourMonitoringPersianTextMessage As String)
                 Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
                 Try
                     CmdSql.Connection.Open()
-                    CmdSql.CommandText = "Insert Into TblAnnouncementHallMonitoringBulletin(TMessage,DateTimeMilladi,DateShamsi,Time) Values('" & YourMonitoringPersianTextMessage & "','" & _DateTime.GetCurrentDateTimeMilladi() & "','" & _DateTime.GetCurrentShamsiDate() & "','" & _DateTime.GetCurrentTime() & "')"
+                    CmdSql.CommandText = "Insert Into TblAnnouncementHallMonitoringBulletin(TMessage,DateTimeMilladi,DateShamsi,Time) Values('" & YourMonitoringPersianTextMessage & "','" & _DateTimeService.GetCurrentDateTimeMilladi() & "','" & _DateTimeService.GetCurrentShamsiDate() & "','" & _DateTimeService.GetCurrentTime() & "')"
                     CmdSql.ExecuteNonQuery()
                     CmdSql.Connection.Close()
                 Catch ex As Exception
@@ -3740,11 +3659,11 @@ Namespace CarTruckLoad
 
     Public Class PayanehClassLibraryMClassCarTruckLoadManagement
 
-        Private Shared _DateTime As New R2DateTime
+        Private Shared _DateTimeService As New R2DateTimeService
 
         Public Shared Sub ActivateSedimentalZobi()
             Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Cmdsql.Connection.Open()
                 Cmdsql.CommandText = "exec msdb..sp_update_job  @job_name = 'SedimentZobi', @enabled = 1"
@@ -3758,7 +3677,7 @@ Namespace CarTruckLoad
 
         Public Shared Sub DeActivateSedimentalZobi()
             Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Cmdsql.Connection.Open()
                 Cmdsql.CommandText = "exec msdb..sp_update_job  @job_name = 'SedimentZobi', @enabled = 0"
@@ -3772,9 +3691,9 @@ Namespace CarTruckLoad
 
         Public Shared Sub ChangeSedimentalTimeZobi(YourTime As R2CoreDateAndTime)
             Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
-                If _DateTime.CheckTimeSyntax(YourTime.Time) = False Then
+                If _DateTimeService.CheckTimeSyntax(YourTime.Time) = False Then
                     Throw New Exception("زمان رسوب بار وارد شده نادرست است")
                 End If
                 Cmdsql.Connection.Open()
@@ -3789,7 +3708,7 @@ Namespace CarTruckLoad
 
         Public Shared Sub ActivateSedimentalAnbari_Otaghdar()
             Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Cmdsql.Connection.Open()
                 Cmdsql.CommandText = "exec msdb..sp_update_job  @job_name = 'Sediment_Anbari09-30', @enabled = 1" : Cmdsql.ExecuteNonQuery()
@@ -3820,7 +3739,7 @@ Namespace CarTruckLoad
 
         Public Shared Sub DeActivateSedimentalAnbari_Otaghdar()
             Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Cmdsql.Connection.Open()
                 Cmdsql.CommandText = "exec msdb..sp_update_job  @job_name = 'Sediment_Anbari09-30', @enabled = 0" : Cmdsql.ExecuteNonQuery()
@@ -3865,13 +3784,14 @@ Namespace HumanManagement
     Namespace Personnel
         Public Class PayanehClassLibraryMClassPersonnelAttendanceManagement
 
-            Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+            Private Shared _DateTimeService As New R2DateTimeService
+            Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
             Public Shared Function GetDSPersonelFingerPrints(YourSalFull As String, YourMonthCode As String, YourComputerId As Int64) As DataSet
                 Try
                     Dim myMahString As String = YourSalFull.Trim + "/" + YourMonthCode
                     Dim DS As New DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                           "Select  I.PIdOther,A.DateShamsi,A.Time from R2Primary.dbo.TblPersonelAttendance as A 
                              Inner Join R2Primary.dbo.TblPersonelInf as I on A.PId=I.PId 
                              Inner Join R2Primary.dbo.TblEntityRelations as ER1 On I.PId=ER1.E2 
@@ -4025,13 +3945,15 @@ Namespace TransportCompanies
     End Class
 
     Public Class PayanehClassLibraryTransportCompaniesManager
-        Private _DateTime As New R2DateTime
+
+        Private _DateTimeService As New R2DateTimeService
+        Private InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
+
 
         Public Function GetNSSTransportCompanyLoadCapacitorLoad(YournEstelamId As Int64) As TransportCompaniesStandardLoadCapacitorLoadStructure
             Try
                 Dim DS As DataSet = Nothing
-                Dim InstanceSqlData = New R2CoreSqlDataBOXManager
-                If InstanceSqlData.GetDataBOX(New R2ClassSqlConnectionSepas, "Select * From dbtransport.dbo.TbElam Where nEstelamId=" & YournEstelamId & "", 1, DS, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * From dbtransport.dbo.TbElam Where nEstelamId=" & YournEstelamId & "", 1, DS, New Boolean).GetRecordsCount <> 0 Then
                     Dim NSS As New TransportCompaniesStandardLoadCapacitorLoadStructure
                     NSS.nEstelamId = YournEstelamId
                     NSS.nTruckType = DS.Tables(0).Rows(0).Item("nTruckType")
@@ -4060,8 +3982,7 @@ Namespace TransportCompanies
         Public Function GetTransportCompanyName(YourCompanyCode As Int64) As String
             Try
                 Dim DS As DataSet = Nothing
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select Top 1 StrCompName From dbtransport.dbo.TbCompany Where nCompCode=" & YourCompanyCode & "", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 StrCompName From dbtransport.dbo.TbCompany Where nCompCode=" & YourCompanyCode & "", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return DS.Tables(0).Rows(0).Item("StrCompName")
                 Else
                     Throw New TransportCompanyNotFoundException
@@ -4074,8 +3995,7 @@ Namespace TransportCompanies
         Public Function GetProductName(YourProductCode As Int64) As String
             Try
                 Dim DS As DataSet = Nothing
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select Top 1 StrGoodName From dbtransport.dbo.TbProducts Where StrGoodCode=" & YourProductCode & "", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 StrGoodName From dbtransport.dbo.TbProducts Where StrGoodCode=" & YourProductCode & "", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return DS.Tables(0).Rows(0).Item("StrGoodName")
                 Else
                     Throw New ProductNotFoundException
@@ -4089,8 +4009,8 @@ Namespace TransportCompanies
 
     Public NotInheritable Class TransportCompaniesLoadCapacitorLoadManipulation
 
-        Private Shared _DateTime As New R2DateTime
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Enum LoadCapacitorLoadStatus
             None = 0
@@ -4107,7 +4027,7 @@ Namespace TransportCompanies
             Try
                 Dim NSSAH As PayanehClassLibraryStandardAnnouncementstructure = PayanehClassLibraryAnnouncementsManagement.GetNSSAnnouncementHallByCarTruckTypeId(YourNSS.nTruckType)
                 Dim ConfigV As String() = Split(PayanehClassLibraryMClassConfigurationOfAnnouncementsManagement.GetConfigString(PayanehClassLibraryConfigurations.AnnouncementHallAnnounceTime, NSSAH.AHId, 0), "-")
-                Dim CurrentTime As String = _DateTime.GetCurrentTime()
+                Dim CurrentTime As String = _DateTimeService.GetCurrentTime()
                 Dim NSSLoadCapacitorLoad As TransportCompaniesStandardLoadCapacitorLoadStructure = GetNSSTransportCompanyLoadCapacitorLoad(YourNSS.nEstelamId)
                 If NSSLoadCapacitorLoad.dTimeElam < ConfigV(0) Then If CurrentTime < ConfigV(0) Then Return False Else Return True
                 For Loopx As Int64 = 0 To ConfigV.Length - 1
@@ -4126,7 +4046,7 @@ Namespace TransportCompanies
         Public Shared Function ISCompanyActive(YourCompanyCode As Int64) As Boolean
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select ViewFlag from DBTransport.dbo.tbcompany Where nCompCode = " & YourCompanyCode & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select ViewFlag from DBTransport.dbo.tbcompany Where nCompCode = " & YourCompanyCode & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
                 Return DS.Tables(0).Rows(0).Item("ViewFlag")
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -4137,7 +4057,7 @@ Namespace TransportCompanies
             Try
                 Dim DS As DataSet = Nothing
                 Dim Lst As New List(Of R2StandardStructure)
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select nCompCode,StrCompName From dbtransport.dbo.TbCompany Where StrCompName Like '%" & YourSearchString & "%' and ViewFlag=1 Order By StrCompName", 3600, DS, New Boolean).GetRecordsCount() <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select nCompCode,StrCompName From dbtransport.dbo.TbCompany Where StrCompName Like '%" & YourSearchString & "%' and ViewFlag=1 Order By StrCompName", 3600, DS, New Boolean).GetRecordsCount() <> 0 Then
                     For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
                         Lst.Add(New R2StandardStructure(DS.Tables(0).Rows(Loopx).Item("nCompCode"), DS.Tables(0).Rows(Loopx).Item("StrCompName")))
                     Next
@@ -4153,7 +4073,7 @@ Namespace TransportCompanies
         Public Shared Function GetLoads() As DataSet
             Try
                 Dim DS As DataSet = Nothing
-                InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select StrGoodCode,StrGoodName From dbtransport.dbo.TbProducts Order By StrGoodName", 3600, DS, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select StrGoodCode,StrGoodName From dbtransport.dbo.TbProducts Order By StrGoodName", 3600, DS, New Boolean)
                 Return DS
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -4163,7 +4083,7 @@ Namespace TransportCompanies
         Public Shared Function GetCities() As DataSet
             Try
                 Dim DS As DataSet = Nothing
-                InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select nCityCode,StrCityName From dbtransport.dbo.TbCity Where Deleted=0 and ViewFlag=1 Order By StrCityName", 3600, DS, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select nCityCode,StrCityName From dbtransport.dbo.TbCity Where Deleted=0 and ViewFlag=1 Order By StrCityName", 3600, DS, New Boolean)
                 Return DS
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -4173,7 +4093,7 @@ Namespace TransportCompanies
         Public Shared Function GetCarTypes() As DataSet
             Try
                 Dim DS As DataSet = Nothing
-                InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select snCarType,StrCarName From dbtransport.dbo.TbCarType Where ViewFlag=1 Order By StrCarName", 3600, DS, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select snCarType,StrCarName From dbtransport.dbo.TbCarType Where ViewFlag=1 Order By StrCarName", 3600, DS, New Boolean)
                 Return DS
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -4183,7 +4103,7 @@ Namespace TransportCompanies
         Public Shared Function GetTransportCompanyLoadCapacitorLoads(YourCompanyCode As Int64) As DataSet
             Try
                 Dim DS As DataSet = Nothing
-                InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select nEstelamId,StrBarName,nCityCode,nBarCode,nTruckType,StrAddress,nCarNumKol,StrPriceSug,StrDescription,dDateElam,dTimeElam,nCarNum From dbtransport.dbo.TbElam Where nCompCode=" & YourCompanyCode & " and bFlag=0 and (LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered & "  or LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.FreeLined & ") Order By nEstelamId ", 1, DS, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select nEstelamId,StrBarName,nCityCode,nBarCode,nTruckType,StrAddress,nCarNumKol,StrPriceSug,StrDescription,dDateElam,dTimeElam,nCarNum From dbtransport.dbo.TbElam Where nCompCode=" & YourCompanyCode & " and bFlag=0 and (LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered & "  or LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.FreeLined & ") Order By nEstelamId ", 1, DS, New Boolean)
                 Return DS
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -4193,7 +4113,7 @@ Namespace TransportCompanies
         Public Shared Function GetTransportCompanyName(YourCompanyCode As Int64) As String
             Try
                 Dim DS As DataSet = Nothing
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select Top 1 StrCompName From dbtransport.dbo.TbCompany Where nCompCode=" & YourCompanyCode & "", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 StrCompName From dbtransport.dbo.TbCompany Where nCompCode=" & YourCompanyCode & "", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return DS.Tables(0).Rows(0).Item("StrCompName")
                 Else
                     Throw New TransportCompanyNotFoundException
@@ -4206,7 +4126,7 @@ Namespace TransportCompanies
         Public Shared Function GetProductName(YourProductCode As Int64) As String
             Try
                 Dim DS As DataSet = Nothing
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select Top 1 StrGoodName From dbtransport.dbo.TbProducts Where StrGoodCode=" & YourProductCode & "", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 StrGoodName From dbtransport.dbo.TbProducts Where StrGoodCode=" & YourProductCode & "", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return DS.Tables(0).Rows(0).Item("StrGoodName")
                 Else
                     Throw New ProductNotFoundException
@@ -4219,7 +4139,7 @@ Namespace TransportCompanies
         Public Shared Function GetNSSTransportCompanyLoadCapacitorLoad(YournEstelamId As Int64) As TransportCompaniesStandardLoadCapacitorLoadStructure
             Try
                 Dim DS As DataSet = Nothing
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select * From dbtransport.dbo.TbElam Where nEstelamId=" & YournEstelamId & "", 1, DS, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * From dbtransport.dbo.TbElam Where nEstelamId=" & YournEstelamId & "", 1, DS, New Boolean).GetRecordsCount <> 0 Then
                     Dim NSS As New TransportCompaniesStandardLoadCapacitorLoadStructure
                     NSS.nEstelamId = YournEstelamId
                     NSS.nTruckType = DS.Tables(0).Rows(0).Item("nTruckType")
@@ -4249,7 +4169,7 @@ Namespace TransportCompanies
             Try
                 Dim DS As DataSet = Nothing
                 Dim NSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select CardId From R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationMoneyWallets Where TransportCompanyId=" & YourTransportCompanyCode & " and RelationActive=1", 1, DS, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select CardId From R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationMoneyWallets Where TransportCompanyId=" & YourTransportCompanyCode & " and RelationActive=1", 1, DS, New Boolean).GetRecordsCount <> 0 Then
                     NSSTerafficCard = R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(DS.Tables(0).Rows(0).Item("CardId"))
                     Return NSSTerafficCard
                 Else
@@ -4386,13 +4306,23 @@ End Namespace
 Namespace LoadNotification.LoadPermission
 
     Public Class PayanehClassLibraryLoadPermissionManager
-        Private _DateTime As New R2DateTime
+        Private _DateTimeService As R2DateTimeService
+
+        Public Sub New()
+            Try
+                _DateTimeService = New R2DateTimeService
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Sub
 
         Public Function GetLoadPermissionInf(YournEstelamId As Int64, YourTurnId As Int64) As DataStruct
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 StrExitDate,StrExitTime,nUserIdExit From DBTransport.dbo.TbEnterExit Where nEnterExitId=" & YourTurnId & " and nEstelamId=" & YournEstelamId & "")
-                Da.SelectCommand.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) = 0 Then Throw New LoadPermissionNotExistException
                 Dim LoadPermissionDataStruct As New DataStruct
@@ -4409,8 +4339,9 @@ Namespace LoadNotification.LoadPermission
     End Class
 
     Public NotInheritable Class LoadNotificationLoadPermissionManagement
-        Private Shared _DateTime As New R2DateTime
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function GetHazinehSedimentLoadPermission(YournEstelamId As Int64) As Int64
             Try
@@ -4491,7 +4422,7 @@ Namespace LoadNotification.LoadPermission
 
         Public Shared Sub TransportCompanyLoadCapacitorSedimentLoadPermisiion(YourTurnId As Int64, YournEstelamId As Int64, YourNSSDriverTruck As R2StandardDriverTruckStructure, YourUserNSS As R2CoreStandardSoftwareUserStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Dim NSS As TransportCompaniesStandardLoadCapacitorLoadStructure = TransportCompaniesLoadCapacitorLoadManipulation.GetNSSTransportCompanyLoadCapacitorLoad(YournEstelamId)
 
@@ -4500,9 +4431,9 @@ Namespace LoadNotification.LoadPermission
                 CmdSql.CommandText = "Select nCarNum from DBTransport.dbo.TbElam  with (tablockx) Where nEstelamId=" & YournEstelamId & ""
                 Dim nCarNum As Int64 = CmdSql.ExecuteScalar()
                 If nCarNum < 1 Then Throw New TransportCompanyCapacitorLoadnCarNumIslowException
-                CmdSql.CommandText = "Update DBTransport.dbo.TbElam Set nCarNum=nCarNum-1,dDateExit='" & _DateTime.GetCurrentShamsiDate() & "',dTimeExit='" & _DateTime.GetCurrentTime() & "' Where nEstelamId=" & YournEstelamId & ""
+                CmdSql.CommandText = "Update DBTransport.dbo.TbElam Set nCarNum=nCarNum-1,dDateExit='" & _DateTimeService.GetCurrentShamsiDate() & "',dTimeExit='" & _DateTimeService.GetCurrentTime() & "' Where nEstelamId=" & YournEstelamId & ""
                 CmdSql.ExecuteNonQuery()
-                CmdSql.CommandText = "Update DBTransport.dbo.TbEnterExit Set StrBarnameNo=1,StrExitDate='" & _DateTime.GetCurrentShamsiDate() & "',StrExitTime='" & _DateTime.GetCurrentTime() & "',nCityCode=" & NSS.nCityCode & ",nBarCode=" & NSS.nBarCode & ",bEnterExit=1,nUserIdExit=" & YourUserNSS.UserId & ",nCompCode=" & NSS.nCompCode & ",StrDriverName='" & YourNSSDriverTruck.NSSDriver.StrPersonFullName & "',nDriverCode=" & YourNSSDriverTruck.NSSDriver.nIdPerson & ",bflag=1,bflagDriver=1,TurnStatus=" & R2CoreTransportationAndLoadNotification.Turns.TurnStatuses.UsedLoadPermissionRegistered & ",nEstelamId=" & NSS.nEstelamId & ",nCarNum=" & NSS.nCarNum - 1 & ",LoadPermissionStatus=" & R2CoreTransportationAndLoadNotificationLoadPermissionStatuses.Registered & " Where nEnterExitId=" & YourTurnId & ""
+                CmdSql.CommandText = "Update DBTransport.dbo.TbEnterExit Set StrBarnameNo=1,StrExitDate='" & _DateTimeService.GetCurrentShamsiDate() & "',StrExitTime='" & _DateTimeService.GetCurrentTime() & "',nCityCode=" & NSS.nCityCode & ",nBarCode=" & NSS.nBarCode & ",bEnterExit=1,nUserIdExit=" & YourUserNSS.UserId & ",nCompCode=" & NSS.nCompCode & ",StrDriverName='" & YourNSSDriverTruck.NSSDriver.StrPersonFullName & "',nDriverCode=" & YourNSSDriverTruck.NSSDriver.nIdPerson & ",bflag=1,bflagDriver=1,TurnStatus=" & R2CoreTransportationAndLoadNotification.Turns.TurnStatuses.UsedLoadPermissionRegistered & ",nEstelamId=" & NSS.nEstelamId & ",nCarNum=" & NSS.nCarNum - 1 & ",LoadPermissionStatus=" & R2CoreTransportationAndLoadNotificationLoadPermissionStatuses.Registered & " Where nEnterExitId=" & YourTurnId & ""
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
             Catch ex As Exception
@@ -4517,7 +4448,7 @@ Namespace LoadNotification.LoadPermission
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 StrExitDate,StrExitTime,nUserIdExit From DBTransport.dbo.TbEnterExit Where nEnterExitId=" & YourTurnId & " and nEstelamId=" & YournEstelamId & "")
-                Da.SelectCommand.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) = 0 Then Throw New LoadPermissionNotExistException
                 Dim LoadPermissionDataStruct As New DataStruct
@@ -4564,10 +4495,10 @@ Namespace LoadNotification.LoadPermission
 
         Public Shared Sub ResuscitationSedimentedLoadbynEstelamId(YournEstelamId As Int64)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select nCarNum from DBTransport.dbo.tbelam  Where nEstelamId=" & YournEstelamId & " and nCarNum>0", 1, DS, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select nCarNum from DBTransport.dbo.tbelam  Where nEstelamId=" & YournEstelamId & " and nCarNum>0", 1, DS, New Boolean).GetRecordsCount() = 0 Then
                     Throw New ResuscitationSedimentedLoadException
                 End If
 
@@ -4584,7 +4515,7 @@ Namespace LoadNotification.LoadPermission
         Public Shared Function GetCapacitorLoadLoadByCarTruckLastLoadPermissionByCarTruck(YourNSSCarTruck As R2StandardCarTruckStructure) As TransportCompaniesStandardLoadCapacitorLoadStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "select Top 1 nEstelamID  from dbtransport.dbo.tbEnterExit Where (strCardno = " & YourNSSCarTruck.NSSCar.nIdCar & ")  and isnull(nestelamid,0)<>0 Order By nEnterExitId Desc", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New CarTruckHasNotAnyLoadPermissionException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "select Top 1 nEstelamID  from dbtransport.dbo.tbEnterExit Where (strCardno = " & YourNSSCarTruck.NSSCar.nIdCar & ")  and isnull(nestelamid,0)<>0 Order By nEnterExitId Desc", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New CarTruckHasNotAnyLoadPermissionException
                 Return TransportCompaniesLoadCapacitorLoadManipulation.GetNSSTransportCompanyLoadCapacitorLoad(DS.Tables(0).Rows(0).Item("nEstelamID"))
             Catch ex As CarTruckHasNotAnyLoadPermissionException
                 Throw ex
@@ -4686,150 +4617,6 @@ Namespace LoadNotification.LoadPermission
 
 End Namespace
 
-Namespace TruckersAssociationControllingMoneyWallet
-
-    Public MustInherit Class TruckersAssociationControllingMoneyWalletManagement
-
-        Private Shared _DateTime As New R2DateTime
-
-        Public Shared Function GetNSSMoneyWallet() As R2CoreParkingSystemStandardTrafficCardStructure
-            Try
-
-                Return R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(R2CoreMClassConfigurationManagement.GetConfigString(PayanehClassLibraryConfigurations.TruckersAssociationControllingMoneyWallet, 4))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Private Shared _ControllingMoneyWalletAccountingExcecutedFlag As Boolean = False
-        Public Shared Sub ControllingMoneyWalletAccounting(YourNSSUser As R2CoreStandardSoftwareUserStructure)
-            Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager
-                Dim InstancePersianCallendar = New R2CoreInstanceDateAndTimePersianCalendarManager
-                'کنترل زمان اجرای فرآیند بر اساس کانفیگ
-                Dim myCurrentDateTime = _DateTime.GetCurrentDateAndTime
-                Dim TimeOfDay = _DateTime.GetTickofTime(myCurrentDateTime.DateTimeMilladi)
-                Dim StTime = TimeSpan.Parse("00:00:00")
-                Dim EndTime = TimeSpan.Parse("00:05:00")
-                Dim ConfigTime = TimeSpan.Parse(InstanceConfigurations.GetConfigString(PayanehClassLibraryConfigurations.TruckersAssociationControllingMoneyWallet, 6))
-                If TimeOfDay >= StTime And TimeOfDay <= EndTime Then
-                    _ControllingMoneyWalletAccountingExcecutedFlag = False
-                    Return
-                ElseIf TimeOfDay <= ConfigTime Then
-                    Return
-                Else
-                End If
-                'این فرآیند در روز فقط باید یکبار اجرا گردد و نه بیشتر
-                'خط کد زیر یعنی فرآیند امروز قبلا در بازه معین اجرا یکبار اجرا شده است
-                If _ControllingMoneyWalletAccountingExcecutedFlag Then Return
-                'طبق کانفیگ سیستم کلا اکانتینگ فعال باشد یا نه
-                If Not InstanceConfigurations.GetConfigBoolean(PayanehClassLibraryConfigurations.TruckersAssociationControllingMoneyWallet, 1) Then Return
-                'آغاز فرآیند اکانتینگ
-                'آخرین اکانت ثبت شده
-                Dim NSSLastAccounting = R2CoreParkingSystemMClassAccountingManagement.GetNSSLastAccounting(R2CoreParkingSystemAccountings.TruckersAssociationControllingMoneyWallet)
-                'امروز یک مرتبه اکانت ثبت شده پس نیازی به ثبت مجدد نیست
-                If NSSLastAccounting.DateShamsiA = myCurrentDateTime.ShamsiDate Then Return
-                Dim Amount As Int64 = PayanehClassLibraryMClassReportsManagement.GetAmountforTruckersAssociationControllingMoneyWallet()
-                'کسر هزینه شرکت خودگردان
-                If R2CoreMClassConfigurationManagement.GetConfigBoolean(PayanehClassLibraryConfigurations.TruckersAssociationControllingMoneyWallet, 2) Then
-                    Dim CostofSelfGoverning = R2CoreMClassConfigurationManagement.GetConfigInt32(PayanehClassLibraryConfigurations.TruckersAssociationControllingMoneyWallet, 3)
-                    Amount = Amount * (100 / (100 + CostofSelfGoverning))
-                End If
-                'ثبت اکانت
-                Dim NSSControllingMoneyWallet = R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(R2CoreMClassConfigurationManagement.GetConfigString(PayanehClassLibraryConfigurations.TruckersAssociationControllingMoneyWallet, 4))
-                R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSControllingMoneyWallet, BagPayType.MinusMoney, Amount, R2CoreParkingSystemAccountings.TruckersAssociationControllingMoneyWallet, YourNSSUser)
-
-                _ControllingMoneyWalletAccountingExcecutedFlag = True
-
-                'ارسال اس ام اس موجودی کیف پول
-                SendSMSTruckersAssociationControllingMoneyWallet()
-
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-        Private Shared Sub SendSMSTruckersAssociationControllingMoneyWallet()
-            Try
-                Dim InstanceMoneyWallet = New R2CoreParkingSystemInstanceMoneyWalletManager
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager()
-                'کنترل فعال بودن سرویس اس ام اس
-                If Not InstanceConfiguration.GetConfigBoolean(R2CoreConfigurations.SmsSystemSetting, 0) Then Throw New SmsSystemIsDisabledException
-                'لیست مقاصد و کاربران
-                Dim TargetUsers = InstanceConfiguration.GetConfigString(PayanehClassLibraryConfigurations.TruckersAssociationControllingMoneyWallet, 7).Split("-")
-                Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
-                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
-                For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
-                    LstSoftwareUsers.Add(InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(TargetUsers(LoopxUsers))))
-                Next
-                'موجودی کیف پول
-                Dim myData = New SMSCreationData
-                Dim NSSControllingMoneyWallet = R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(R2CoreMClassConfigurationManagement.GetConfigString(PayanehClassLibraryConfigurations.TruckersAssociationControllingMoneyWallet, 4))
-                myData.Data1 = InstanceMoneyWallet.GetMoneyWalletCharge(NSSControllingMoneyWallet)
-                'ارسال اس ام اس
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager
-                Dim SMSResult = InstanceSMSHandling.SendSMS(LstSoftwareUsers, PayanehClassLibrarySMSTypes.TruckersAssociationControllingMoneyWallet, InstanceSMSHandling.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
-                Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
-                If Not SMSResultAnalyze = String.Empty Then Throw New TruckersAssociationControllingMoneyWalletSendSMSFailedException(SMSResultAnalyze)
-            Catch ex As TruckersAssociationControllingMoneyWalletSendSMSFailedException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-
-        Public Shared Sub DoControlforControllingMoneyWallet()
-            Try
-                Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager
-                Dim NSS = TruckersAssociationControllingMoneyWalletManagement.GetNSSMoneyWallet()
-                Dim Amount = R2CoreParkingSystemMClassMoneyWalletManagement.GetMoneyWalletCharge(NSS)
-                If Amount < R2CoreMClassConfigurationManagement.GetConfigInt64(PayanehClassLibraryConfigurations.TruckersAssociationControllingMoneyWallet, 5) Then
-                    Throw New TruckersAssociationControllingMoneyWalletCriticalAmountReachedException
-                End If
-            Catch ex As TruckersAssociationControllingMoneyWalletCriticalAmountReachedException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-    End Class
-
-    Namespace Exceptions
-        Public Class TruckersAssociationControllingMoneyWalletCriticalAmountReachedException
-            Inherits ApplicationException
-
-            Public Overrides ReadOnly Property Message As String
-                Get
-                    Return "کیف پول کنترلی کامیونداران نیاز به شارژ دارد"
-                End Get
-            End Property
-        End Class
-
-        Public Class TruckersAssociationControllingMoneyWalletSendSMSFailedException
-            Inherits ApplicationException
-
-            Private _Message As String
-            Public Sub New(YourMessage As String)
-                _Message = vbCrLf + YourMessage
-            End Sub
-
-            Public Overrides ReadOnly Property Message As String
-                Get
-                    Return "ارسال اس ام اس کیف پول کنترلی کامیونداران با مشکل مواجه شد" + _Message
-                End Get
-            End Property
-        End Class
-
-    End Namespace
-
-
-
-
-End Namespace
-
 Namespace RequesterManagement
 
     Public MustInherit Class PayanehClassLibraryRequesters
@@ -4852,51 +4639,6 @@ Namespace SoftwareUsers
 
 
     End Class
-
-End Namespace
-
-Namespace SMS
-
-    Namespace SMSTypes
-        Public MustInherit Class PayanehClassLibrarySMSTypes
-            Inherits R2CoreTransportationAndLoadNotificationSMSTypes
-
-            Public Shared ReadOnly Property TruckersAssociationControllingMoneyWallet = 6
-            Public Shared ReadOnly Property ResuscitationNonCreditTurn = 15
-
-
-        End Class
-
-    End Namespace
-
-    Namespace RecivedSMSCodes
-        Public MustInherit Class RecivedSMSCodes
-            Public Shared ReadOnly Property ResuscitationNonCreditTurn = 3
-        End Class
-    End Namespace
-
-    Namespace SMSHandling
-
-        Public Class PayanehClassLibraryResuscitationNonCreditTurn
-            Inherits RecievedSMSHandler
-
-            Public Sub New()
-                MyBase.New()
-            End Sub
-
-            Private Sub HandlingEvent_Handler() Handles MyBase.HandlingEvent
-                Try
-                    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
-                    Dim InstanceCarTruckNobat = New PayanehClassLibraryMClassCarTruckNobatManager
-                    InstanceCarTruckNobat.ResuscitationNonCreditTurn(InstanceSoftwareUsers.GetNSSUserUnChangeable(New R2CoreSoftwareUserMobile(_MobileNumber)), _UserId)
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Sub
-
-        End Class
-
-    End Namespace
 
 End Namespace
 

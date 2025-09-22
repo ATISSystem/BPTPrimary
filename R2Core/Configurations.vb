@@ -1,13 +1,19 @@
 ﻿
 
 Imports R2Core.DatabaseManagement
+Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.RawGroups
 Imports R2Core.SoftwareUserManagement
 Imports System.Data.SqlClient
+Imports System.IO
+Imports System.Net
+Imports System.Net.Http
+Imports System.Net.Http.Headers
 Imports System.Reflection
 Imports System.Text
 Imports System.Web.Services.Protocols
+Imports System.Xml
 
 Namespace ConfigurationManagement
 
@@ -97,7 +103,13 @@ Namespace ConfigurationManagement
 
     Public Class R2CoreInstanceConfigurationManager
 
-        Private InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+        Private _DateTimeService As IR2DateTimeService
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+        End Sub
+
 
         Public Function GetConfigInt64(YourCId As Int64, YourIndex As Int64) As Int64
             Try
@@ -110,7 +122,7 @@ Namespace ConfigurationManagement
         Public Function GetConfig(YourCId As Int64, YourIndex As Int64) As Object
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
                 Return Split(Ds.Tables(0).Rows(0).Item("CValue"), ";")(YourIndex)
@@ -122,7 +134,7 @@ Namespace ConfigurationManagement
         Public Function GetConfig(YourCId As Int64) As Object
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
                 Return Ds.Tables(0).Rows(0).Item("CValue")
@@ -158,7 +170,7 @@ Namespace ConfigurationManagement
         Public Function GetConfig(YourCId As Int64, YourIndex As Int64, YourDisposeCounter As Int64) As Object
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", YourDisposeCounter, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", YourDisposeCounter, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
                 Return Split(Ds.Tables(0).Rows(0).Item("CValue"), ";")(YourIndex)
@@ -170,13 +182,13 @@ Namespace ConfigurationManagement
     End Class
 
     Public MustInherit Class R2CoreMClassConfigurationManagement
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
 
         Public Shared Function GetConfigOnLine(YourCId As Int64) As Object
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 If Da.Fill(Ds) = 0 Then Throw New GetDataException
                 Return Ds.Tables(0).Rows(0).Item("CValue").trim
             Catch ex As Exception
@@ -188,7 +200,7 @@ Namespace ConfigurationManagement
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) = 0 Then Throw New GetDataException
                 Return Split(Ds.Tables(0).Rows(0).Item("CValue"), ";")(YourIndex)
@@ -200,7 +212,7 @@ Namespace ConfigurationManagement
         Public Shared Function GetConfig(YourCId As Int64, YourIndex As Int64) As Object
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 2000, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 2000, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
                 Return Split(Ds.Tables(0).Rows(0).Item("CValue"), ";")(YourIndex)
@@ -212,7 +224,7 @@ Namespace ConfigurationManagement
         Public Shared Function GetConfig(YourCId As Int64) As Object
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
                 Return Ds.Tables(0).Rows(0).Item("CValue")
@@ -340,7 +352,7 @@ Namespace ConfigurationManagement
         Public Shared Function GetConfigurations() As List(Of R2CoreStandardConfigurationStructure)
             Try
                 Dim Ds As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblConfigurations Order by CId", 1, Ds, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblConfigurations Order by CId", 1, Ds, New Boolean)
                 Dim Lst As List(Of R2CoreStandardConfigurationStructure) = New List(Of R2CoreStandardConfigurationStructure)
                 For Loopx As Int64 = Ds.Tables(0).Rows.Count - 1 To 0 Step -1
                     Lst.Add(New R2CoreStandardConfigurationStructure(Ds.Tables(0).Rows(Loopx).Item("CId"), Ds.Tables(0).Rows(Loopx).Item("CName").trim, Ds.Tables(0).Rows(Loopx).Item("CValue").trim, Ds.Tables(0).Rows(Loopx).Item("Orientation").trim, Ds.Tables(0).Rows(Loopx).Item("Description").trim))
@@ -353,7 +365,7 @@ Namespace ConfigurationManagement
 
         Public Shared Sub SetConfiguration(YourNSS As R2CoreStandardConfigurationStructure)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2Primary.dbo.TblConfigurations Set CValue = '" & YourNSS.CValue & "' Where CId=" & YourNSS.CId & ""
@@ -390,6 +402,20 @@ Namespace ConfigurationManagement
 
 
         Private R2PrimaryFSWS = New R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+        Private _DateTimeService As IR2DateTimeService
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+        End Sub
+
+        Public Function GetConfigBoolean(YourCId As Int64, YourIndex As Int64) As Boolean
+            Try
+                Return GetConfig(YourCId, YourIndex)
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
 
         Public Function GetConfigInt64(YourCId As Int64, YourIndex As Int64) As Int64
             Try
@@ -416,10 +442,9 @@ Namespace ConfigurationManagement
         End Function
 
         Public Function GetConfig(YourCId As Int64, YourIndex As Int64) As Object
-            Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 32767, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 32767, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
                 Return Split(Ds.Tables(0).Rows(0).Item("CValue"), ";")(YourIndex)
@@ -429,10 +454,9 @@ Namespace ConfigurationManagement
         End Function
 
         Public Function GetConfig(YourCId As Int64) As Object
-            Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 32767, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 32767, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
                 Return Ds.Tables(0).Rows(0).Item("CValue")
@@ -444,10 +468,9 @@ Namespace ConfigurationManagement
         Public Function GetConfigurations() As String
             Try
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
 
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select CId,ltrim(rtrim(CTitle)) as CTitle,ltrim(rtrim(CValue)) as CValue,ltrim(rtrim(Description)) as Description from R2Primary.dbo.TblConfigurations as [Configurations] Order By CId for JSON Path", 0, DS, New Boolean)
                 Return InstancePublicProcedures.GetIntegratedJson(DS)
             Catch ex As Exception
@@ -458,10 +481,9 @@ Namespace ConfigurationManagement
         Public Function GetConfigurationOfMachines() As String
             Try
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
 
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select ConfigurationsOfComputers.CId,ltrim(rtrim([Configurations].CTitle)) as CTitle,ConfigurationsOfComputers.MId as MId,ltrim(rtrim(Computers.[MName])) as MTitle,ltrim(rtrim(ConfigurationsOfComputers.CValue)) as CValue,ltrim(rtrim([Configurations].Description)) as Description 
                     from R2Primary.dbo.TblConfigurationsOfComputers as ConfigurationsOfComputers
                         Inner Join R2Primary.dbo.TblConfigurations as [Configurations] On ConfigurationsOfComputers.CId=[Configurations].CId 
@@ -477,10 +499,9 @@ Namespace ConfigurationManagement
         Public Function GetConfigurationOfAnnouncementGroups() As String
             Try
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
 
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select ConfigurationsOfAnnouncements.CId,ltrim(rtrim([Configurations].CTitle)) as CTitle,ConfigurationsOfAnnouncements.AHId as AnnouncementGroupId,ltrim(rtrim(Announcements.AnnouncementTitle)) as AnnouncementTitle,ltrim(rtrim(ConfigurationsOfAnnouncements.CValue)) as CValue,ltrim(rtrim([Configurations].Description)) as Description 
                     from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements as ConfigurationsOfAnnouncements
                          Inner Join R2Primary.dbo.TblConfigurations as [Configurations] On ConfigurationsOfAnnouncements.CId=[Configurations].CId 
@@ -505,11 +526,10 @@ Namespace ConfigurationManagement
 
         Public Sub SetConfigurations(YourCId As Int64, YourCValue As String)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
 
                 CmdSql.CommandText = "Update R2Primary.dbo.TblConfigurations Set CValue='" & YourCValue & "' Where CId=" & YourCId & ""
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
                 CmdSql.Connection.Open()
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
@@ -521,11 +541,10 @@ Namespace ConfigurationManagement
 
         Public Sub SetConfigurationOfMachines(YourCId As Int64, YourMachineId As Int64, YourCValue As String)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
 
                 CmdSql.CommandText = "Update R2Primary.dbo.TblConfigurationsOfComputers Set CValue='" & YourCValue & "' Where CId=" & YourCId & " and MId=" & YourMachineId & ""
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
                 CmdSql.Connection.Open()
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
@@ -538,11 +557,9 @@ Namespace ConfigurationManagement
 
         Public Sub SetConfigurationOfAnnouncementGroups(YourCId As Int64, YourAnnouncementId As Int64, YourCValue As String)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
-
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationsOfAnnouncements Set CValue='" & YourCValue & "' Where CId=" & YourCId & " and AHId=" & YourAnnouncementId & ""
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
                 CmdSql.Connection.Open()
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
@@ -558,11 +575,13 @@ Namespace ConfigurationManagement
     'BPTChanged
     Public MustInherit Class R2CoreConfigurationManagement
 
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
+
         Public Shared Function GetConfig(YourCId As Int64, YourIndex As Int64) As Object
-            Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 32767, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from R2Primary.dbo.TblConfigurations Where CId=" & YourCId & "", 32767, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 End If
                 Return Split(Ds.Tables(0).Rows(0).Item("CValue"), ";")(YourIndex)
@@ -582,5 +601,216 @@ Namespace ConfigurationManagement
         End Function
 
     End Class
+
+    'BPTChanged
+    Public Class R2CoreAPIHelperManager
+
+        Public Shared APIDateTime As HttpClient = Nothing
+
+        Public Function GetAPIDateTime() As HttpClient
+            Try
+                If APIDateTime IsNot Nothing Then Return APIDateTime
+                Return GetHttpClient("APIDateTime")
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Function
+
+        Private Function GetHttpClient(YourTargetAPIName As String) As HttpClient
+            Try
+                'XML Config File
+                Dim Doc = New XmlDocument()
+                Dim APPFolder = AppDomain.CurrentDomain.BaseDirectory
+                Dim FileName = "Configuration.Config"
+                Dim FilePath = Path.Combine(APPFolder, FileName)
+                If File.Exists(FilePath) Then
+                    Doc.Load(FilePath)
+                Else
+                    Throw New FileNotExistException(FilePath)
+                End If
+                Dim TargetAPI As XmlNode = Doc.SelectSingleNode("/Configurations/APIs/" + YourTargetAPIName)
+                Dim Uri = TargetAPI("URI").InnerText
+
+                'Http Client
+                Dim baseUri = New Uri(Uri)
+                Dim HttpClient = New HttpClient()
+                HttpClient.BaseAddress = baseUri
+                HttpClient.DefaultRequestHeaders.Clear()
+                HttpClient.DefaultRequestHeaders.ConnectionClose = False
+                HttpClient.DefaultRequestHeaders.Accept.Add(New MediaTypeWithQualityHeaderValue("application/json"))
+                Try
+                    ServicePointManager.FindServicePoint(baseUri).ConnectionLeaseTimeout = 60 * 1000
+                Catch ex As Exception
+                End Try
+                Return HttpClient
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Function
+
+
+    End Class
+
+    'BPTChanged
+    Public Class R2CoreConectionStringsManager
+
+        Private Function GetTransactionDBConnectionString(YourDBName As String) As String
+            Try
+                'XML Config File
+                Dim Doc = New XmlDocument()
+                Dim APPFolder = AppDomain.CurrentDomain.BaseDirectory
+                Dim FileName = "Configuration.Config"
+                Dim FilePath = Path.Combine(APPFolder, FileName)
+                If File.Exists(FilePath) Then
+                    Doc.Load(FilePath)
+                Else
+                    Throw New FileNotExistException(FilePath)
+                End If
+                Dim SMS As XmlNode = Doc.SelectSingleNode("/Configurations/ConnectionStrings/" + YourDBName)
+                Dim ConnectionString = SMS("TransactionConnectionString").InnerText
+                Return ConnectionString
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Function
+
+        Private Function GetSubscriptionDBConnectionString(YourDBName As String) As String
+            Try
+                'XML Config File
+                Dim Doc = New XmlDocument()
+                Dim APPFolder = AppDomain.CurrentDomain.BaseDirectory
+                Dim FileName = "Configuration.Config"
+                Dim FilePath = Path.Combine(APPFolder, FileName)
+                If File.Exists(FilePath) Then
+                    Doc.Load(FilePath)
+                Else
+                    Throw New FileNotExistException(FilePath)
+                End If
+                Dim SMS As XmlNode = Doc.SelectSingleNode("/Configurations/ConnectionStrings/" + YourDBName)
+                Dim ConnectionString = SMS("SubscriptionConnectionString").InnerText
+                Return ConnectionString
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetR2PrimarySMSSystemDBConnectionString(YourDBType As R2PrimaryDBType) As String
+            Try
+                If YourDBType = R2PrimaryDBType.TransactionDB Then
+                    Return GetTransactionDBConnectionString("R2PrimarySMSSystem")
+                ElseIf YourDBType = R2PrimaryDBType.SubscriptionDB Then
+                    Return GetSubscriptionDBConnectionString("R2PrimarySMSSystem")
+                ElseIf YourDBType = R2PrimaryDBType.None Then
+                    Throw New Exception("DBType Invalid")
+                Else
+                    Throw New Exception("DBType Invalid")
+                End If
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetR2PrimaryConnectionString(YourDBType As R2PrimaryDBType) As String
+            Try
+                If YourDBType = R2PrimaryDBType.TransactionDB Then
+                    Return GetTransactionDBConnectionString("R2Primary")
+                ElseIf YourDBType = R2PrimaryDBType.SubscriptionDB Then
+                    Return GetSubscriptionDBConnectionString("R2Primary")
+                ElseIf YourDBType = R2PrimaryDBType.None Then
+                    Throw New Exception("DBType Invalid")
+                Else
+                    Throw New Exception("DBType Invalid")
+                End If
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetDBTransportConnectionString(YourDBType As R2PrimaryDBType) As String
+            Try
+                If YourDBType = R2PrimaryDBType.TransactionDB Then
+                    Return GetTransactionDBConnectionString("DBTransport")
+                ElseIf YourDBType = R2PrimaryDBType.SubscriptionDB Then
+                    Return GetSubscriptionDBConnectionString("DBTransport")
+                ElseIf YourDBType = R2PrimaryDBType.None Then
+                    Throw New Exception("DBType Invalid")
+                Else
+                    Throw New Exception("DBType Invalid")
+                End If
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetR2PrimaryParkingSystemConnectionString(YourDBType As R2PrimaryDBType) As String
+            Try
+                If YourDBType = R2PrimaryDBType.TransactionDB Then
+                    Return GetTransactionDBConnectionString("R2PrimaryParkingSystem")
+                ElseIf YourDBType = R2PrimaryDBType.SubscriptionDB Then
+                    Return GetSubscriptionDBConnectionString("R2PrimaryParkingSystem")
+                ElseIf YourDBType = R2PrimaryDBType.None Then
+                    Throw New Exception("DBType Invalid")
+                Else
+                    Throw New Exception("DBType Invalid")
+                End If
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetR2PrimaryTransportationAndLoadNotificationConnectionString(YourDBType As R2PrimaryDBType) As String
+            Try
+                If YourDBType = R2PrimaryDBType.TransactionDB Then
+                    Return GetTransactionDBConnectionString("R2PrimaryTransportationAndLoadNotification")
+                ElseIf YourDBType = R2PrimaryDBType.SubscriptionDB Then
+                    Return GetSubscriptionDBConnectionString("R2PrimaryTransportationAndLoadNotification")
+                ElseIf YourDBType = R2PrimaryDBType.None Then
+                    Throw New Exception("DBType Invalid")
+                Else
+                    Throw New Exception("DBType Invalid")
+                End If
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetTDBClientConnectionString(YourDBType As R2PrimaryDBType) As String
+            Try
+                If YourDBType = R2PrimaryDBType.TransactionDB Then
+                    Return GetTransactionDBConnectionString("TDBClient")
+                ElseIf YourDBType = R2PrimaryDBType.SubscriptionDB Then
+                    Return GetSubscriptionDBConnectionString("TDBClient")
+                ElseIf YourDBType = R2PrimaryDBType.None Then
+                    Throw New Exception("DBType Invalid")
+                Else
+                    Throw New Exception("DBType Invalid")
+                End If
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Function
+
+    End Class
+
 
 End Namespace

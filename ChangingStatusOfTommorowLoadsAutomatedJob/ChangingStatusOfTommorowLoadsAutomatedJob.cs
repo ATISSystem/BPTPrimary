@@ -22,12 +22,14 @@ namespace ChangingStatusOfTommorowLoadsAutomatedJob
         private System.Timers.Timer _AutomatedJobsTimer = new System.Timers.Timer();
         private bool _FailStatus = true;
         private R2CoreSoftwareUser _User;
+        private R2DateTimeService  _DateTimeService ;
 
         public ChangingStatusOfTommorowLoadsAutomatedJob()
         {
             InitializeComponent();
+            _DateTimeService = new R2DateTimeService();
             _AutomatedJobsTimer.Elapsed += _AutomatedJobsTimer_Elapsed;
-            var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(1));
+            var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(1));
             _User = InstanceSoftwareUsers.GetSystemUser();
         }
 
@@ -43,8 +45,8 @@ namespace ChangingStatusOfTommorowLoadsAutomatedJob
                 {
                     try
                     {
-                        var InstanceConfiguration = new R2CoreConfigurationsManager();
-                        var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(1));
+                        var InstanceConfiguration = new R2CoreConfigurationsManager(_DateTimeService);
+                        var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(1));
 
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(_User);
                         _AutomatedJobsTimer.Interval = InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TommorowLoads, 3) * 1000;

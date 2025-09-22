@@ -29,10 +29,12 @@ namespace LoadListsPreparingAutomatedJob
         private System.Timers.Timer _AutomatedJobsTimer = new System.Timers.Timer();
         private bool _FailStatus = true;
         private ISubscriber _Subscriber = null;
+        private R2DateTimeService  _DateTimeService;
 
         public LoadListsPreparingAutomatedJob()
         {
             InitializeComponent();
+            _DateTimeService = new R2DateTimeService();
             _AutomatedJobsTimer.Elapsed += _AutomatedJobsTimer_Elapsed;
         }
 
@@ -48,8 +50,8 @@ namespace LoadListsPreparingAutomatedJob
                 {
                     try
                     {
-                        var InstanceConfiguration = new R2CoreInstanceConfigurationManager();
-                        var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(1));
+                        var InstanceConfiguration = new R2CoreInstanceConfigurationManager(_DateTimeService);
+                        var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(1));
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(InstanceSoftwareUsers.GetSystemUser());
                         _AutomatedJobsTimer.Interval = InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.LoadListsPreparingAutomatedJob, 0) * 1000;
                         _FailStatus = false;
@@ -65,7 +67,7 @@ namespace LoadListsPreparingAutomatedJob
 
                 try
                 {
-                    var InstanceLoad = new R2CoreTransportationAndLoadNotificationLoadManager(new R2DateTimeService() );
+                    var InstanceLoad = new R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService);
                     InstanceLoad.UpdateLoadLists();
                 }
                 catch (Exception ex)
@@ -83,7 +85,7 @@ namespace LoadListsPreparingAutomatedJob
         {
             try
             {
-                var InstanceLoads = new R2CoreTransportationAndLoadNotificationLoadManager(new R2DateTimeService ());
+                var InstanceLoads = new R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService);
                 InstanceLoads.CacheLoads(value);
                 EventLog.WriteEntry("LoadListsPreparingAutomatedJob", " InstanceLoads.CacheLoads(value)" , EventLogEntryType.Error);
             

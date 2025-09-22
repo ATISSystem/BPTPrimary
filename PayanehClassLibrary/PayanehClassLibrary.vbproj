@@ -115,6 +115,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="PayanehClassLibrary.vb" />
+    <Compile Include="SMS.vb" />
+    <Compile Include="TruckersAssociationControllingMoneyWallet.vb" />
     <Compile Include="TurnRegisterRequest.vb" />
     <Compile Include="Turns.vb" />
     <Compile Include="TWS.vb" />

@@ -24,6 +24,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -35,6 +36,16 @@ namespace APITransportation.Controllers
     public class TurnController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
+        private R2DateTimeService _DateTimeService;
+
+        public TurnController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/GetTop10TruckTurns")]
@@ -48,7 +59,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnsManager(new R2DateTimeService());
+                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceTurns.GetTop10TruckTurns(TruckId, true), Encoding.UTF8, "application/json");
@@ -70,7 +81,7 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetTop5TruckTurns")]
-        public HttpResponseMessage GetTop5TruckTurns([FromBody] APICommonSessionId  Content)
+        public HttpResponseMessage GetTop5TruckTurns([FromBody] APICommonSessionId Content)
         {
             try
             {
@@ -79,7 +90,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnsManager(new R2DateTimeService());
+                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceTurns.GetTop5TruckTurns(User.UserId), Encoding.UTF8, "application/json");
@@ -111,7 +122,7 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTurnAccounting = new R2CoreTransportationAndLoadNotificationTurnAccountingManager(new R2DateTimeService());
+                var InstanceTurnAccounting = new R2CoreTransportationAndLoadNotificationTurnAccountingManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceTurnAccounting.GetTurnAccounting(TurnId, true), Encoding.UTF8, "application/json");
@@ -137,14 +148,14 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TurnId = Content.TurnId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnsManager(new R2DateTimeService());
+                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService);
                 InstanceTurns.TurnCancellationByUser(TurnId, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -170,14 +181,14 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TurnId = Content.TurnId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnsManager(new R2DateTimeService());
+                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService);
                 InstanceTurns.TurnResuscitationByUser(TurnId, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -197,7 +208,7 @@ namespace APITransportation.Controllers
 
         }
 
-     
+
 
 
     }

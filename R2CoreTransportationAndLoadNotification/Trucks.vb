@@ -13,6 +13,7 @@ Imports R2Core.PublicProc
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
 Imports R2Core.SoftwareUserManagement
+Imports R2Core.SQLInjectionPrevention
 Imports R2CoreParkingSystem.Cars
 Imports R2CoreParkingSystem.Drivers
 Imports R2CoreParkingSystem.EntityRelations
@@ -53,13 +54,13 @@ Namespace Trucks
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceTrucksManager
 
-        Dim _DateTimeService As New R2DateTimeService
+        Private _DateTimeService As New R2DateTimeService
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Function GetNSSTruck(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure) As R2CoreTransportationAndLoadNotificationStandardTruckStructure
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select Top 1 Cars.nIDCar,CarTypes.LoaderTypeName,strCarName,Cars.StrBodyNo
                           from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
                            Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
@@ -87,9 +88,8 @@ Namespace Trucks
 
         Public Function GetAnnouncementsubGroupsTitle(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure) As List(Of String)
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select AHSGs.AHSGTitle from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroupsRelationCars AS AHSGsCars
                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSGs On AHSGsCars.AHSGId=AHSGs.AHSGId 
                          Where AHSGsCars.CarId=" & YourNSSTruck.NSSCar.nIdCar & " and AHSGsCars.RelationActive=1 and AHSGs.Deleted=0
@@ -119,11 +119,10 @@ Namespace Trucks
                     Da.SelectCommand = New SqlCommand("Select Trucks.* from dbtransport.dbo.tbEnterExit as Turns 
                                                          Inner Join dbtransport.dbo.TbCar as Trucks On Turns.strCardno=Trucks.nIDCar 
                                                        Where Turns.nEnterExitId=" & YourNSSTurn.nEnterExitId & "")
-                    Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                     If Da.Fill(DS) = 0 Then Throw New TruckNotFoundException
                 Else
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                          "Select Trucks.* from dbtransport.dbo.tbEnterExit as Turns 
                              Inner Join dbtransport.dbo.TbCar as Trucks On Turns.strCardno=Trucks.nIDCar 
                           Where Turns.nEnterExitId=" & YourNSSTurn.nEnterExitId & "", 300, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TruckNotFoundException
@@ -142,8 +141,7 @@ Namespace Trucks
         Public Function GetNSSTruck(YourNSSLoadAllocation As R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure) As R2CoreTransportationAndLoadNotificationStandardTruckStructure
             Try
                 Dim DS As New DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                          "Select Cars.* from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
                             Inner Join dbtransport.dbo.tbEnterExit as Turns On LoadAllocations.TurnId=Turns.nEnterExitId
                             Inner Join dbtransport.dbo.TbCar as Cars On Turns.strCardno=Cars.nIDCar
@@ -171,11 +169,10 @@ Namespace Trucks
                          Where CarId=" & YourNSSTruck.NSSCar.nIdCar & " and RelationActive=1
                                and ((DATEDIFF(SECOND,AHSGsCars.RelationTimeStamp,getdate())<240) or (AHSGsCars.RelationTimeStamp='2015-01-01 00:00:00.000')) 
                          Order By Priority Asc,AHSGsCars.RelationId Desc")
-                    Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                     If Da.Fill(Ds) = 0 Then Throw New AnnouncementsubGroupRelationTruckNotExistException
                 Else
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select AHSGId from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroupsRelationCars as AHSGsCars 
                          Where CarId=" & YourNSSTruck.NSSCar.nIdCar & " and RelationActive=1
                                and ((DATEDIFF(SECOND,AHSGsCars.RelationTimeStamp,getdate())<240) or (AHSGsCars.RelationTimeStamp='2015-01-01 00:00:00.000')) 
@@ -199,10 +196,9 @@ Namespace Trucks
 
         Public Function GetNSSAnnouncementsubGroup(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure) As List(Of R2CoreTransportationAndLoadNotificationStandardAnnouncementsubGroupStructure)
             Try
-                Dim InstanceSqlDataBox = New R2CoreSqlDataBOXManager
                 Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager
                 Dim Ds As New DataSet
-                If InstanceSqlDataBox.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select Top 1 AHSGId from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroupsRelationCars as AHSGsCars  
                     Where CarId=" & YourNSSTruck.NSSCar.nIdCar & " and RelationActive=1 and ((DATEDIFF(SECOND,AHSGsCars.RelationTimeStamp,getdate())<240) or (AHSGsCars.RelationTimeStamp='2015-01-01 00:00:00.000'))
                     Order By Priority Asc,AHSGsCars.RelationId Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
@@ -224,9 +220,8 @@ Namespace Trucks
 
         Public Function IsExistCarTruckWithLicensePlate(YourDirtyTruckNSS As R2CoreTransportationAndLoadNotificationStandardTruckStructure, ByRef TruckId As Int64) As Boolean
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                     "Select Top 1 nIdCar,StrCarNo,StrCarSerialNo from dbtransport.dbo.TbCar Where strCarNo='" & YourDirtyTruckNSS.NSSCar.StrCarNo & "' and strCarSerialNo='" & YourDirtyTruckNSS.NSSCar.StrCarSerialNo & "' and ViewFlag=1 Order By nIDCar Desc", 0, DS, New Boolean).GetRecordsCount <> 0 Then
                     TruckId = DS.Tables(0).Rows(0).Item("nIdCar")
                     Return True
@@ -240,9 +235,8 @@ Namespace Trucks
 
         Public Function GetNSSTruckWithLicensePlate(YourDirtyTruckNSS As R2CoreTransportationAndLoadNotificationStandardTruckStructure) As R2CoreTransportationAndLoadNotificationStandardTruckStructure
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 nIdCar,StrCarNo,StrCarSerialNo from dbtransport.dbo.TbCar Where strCarNo='" & YourDirtyTruckNSS.NSSCar.StrCarNo & "' and strCarSerialNo='" & YourDirtyTruckNSS.NSSCar.StrCarSerialNo & "' and ViewFlag=1 Order By nIDCar Desc", 0, DS, New Boolean).GetRecordsCount = 0 Then Throw New TruckNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 nIdCar,StrCarNo,StrCarSerialNo from dbtransport.dbo.TbCar Where strCarNo='" & YourDirtyTruckNSS.NSSCar.StrCarNo & "' and strCarSerialNo='" & YourDirtyTruckNSS.NSSCar.StrCarSerialNo & "' and ViewFlag=1 Order By nIDCar Desc", 0, DS, New Boolean).GetRecordsCount = 0 Then Throw New TruckNotFoundException
                 Return GetNSSTruck(Convert.ToInt64(DS.Tables(0).Rows(0).Item("nIdCar")))
             Catch ex As TruckNotFoundException
                 Throw ex
@@ -253,7 +247,7 @@ Namespace Trucks
 
         Public Function GetNSSDefaultTruck() As R2CoreTransportationAndLoadNotificationStandardTruckStructure
             Try
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 Return GetNSSTruck(InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 1))
             Catch exx As TruckNotFoundException
                 Throw exx
@@ -264,10 +258,9 @@ Namespace Trucks
 
         Public Function GetNSSTruck(YourTruckId As Int64) As R2CoreTransportationAndLoadNotificationStandardTruckStructure
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim InstanceCars = New R2CoreParkingSystemInstanceCarsManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from dbtransport.dbo.TbCar Where nIdCar=" & YourTruckId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TruckNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from dbtransport.dbo.TbCar Where nIdCar=" & YourTruckId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TruckNotFoundException
                 Dim NSS = New R2CoreTransportationAndLoadNotificationStandardTruckStructure
                 NSS.NSSCar = InstanceCars.GetNSSCar(Convert.ToInt64(DS.Tables(0).Rows(0).Item("nIdCar")))
                 NSS.SmartCardNo = DS.Tables(0).Rows(0).Item("StrBodyNo")
@@ -282,7 +275,9 @@ Namespace Trucks
     End Class
 
     Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassTrucksManagement
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function GetNSSDefaultTruck() As R2CoreTransportationAndLoadNotificationStandardTruckStructure
             Try
@@ -297,7 +292,7 @@ Namespace Trucks
         Public Shared Function GetNSSTruck(YourTruckId As Int64) As R2CoreTransportationAndLoadNotificationStandardTruckStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from dbtransport.dbo.TbCar Where nIdCar=" & YourTruckId & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TruckNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from dbtransport.dbo.TbCar Where nIdCar=" & YourTruckId & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TruckNotFoundException
                 Dim NSS As R2CoreTransportationAndLoadNotificationStandardTruckStructure = New R2CoreTransportationAndLoadNotificationStandardTruckStructure
                 NSS.NSSCar = R2CoreParkingSystemMClassCars.GetNSSCar(DS.Tables(0).Rows(0).Item("nIdCar"))
                 NSS.SmartCardNo = DS.Tables(0).Rows(0).Item("StrBodyNo")
@@ -312,7 +307,7 @@ Namespace Trucks
         Public Shared Function GetNSSTruck(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure) As R2CoreTransportationAndLoadNotificationStandardTruckStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select Top 1 Cars.nIDCar,CarTypes.LoaderTypeName,strCarName,Cars.StrBodyNo
                           from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
                            Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
@@ -338,7 +333,7 @@ Namespace Trucks
         Public Shared Function GetNSSAnnouncementsubGroup(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure) As List(Of R2CoreTransportationAndLoadNotificationStandardAnnouncementsubGroupStructure)
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select Top 1 AHSGId from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroupsRelationCars as AHSGsCars  
                     Where CarId=" & YourNSSTruck.NSSCar.nIdCar & " and RelationActive=1 and ((DATEDIFF(SECOND,AHSGsCars.RelationTimeStamp,getdate())<240) or (AHSGsCars.RelationTimeStamp='2015-01-01 00:00:00.000'))  
                     Order By Priority Asc,AHSGsCars.RelationId Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
@@ -361,7 +356,7 @@ Namespace Trucks
         Public Shared Function GetAnnouncementsubGroupsTitle(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure) As List(Of String)
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select AHSGs.AHSGTitle from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroupsRelationCars AS AHSGsCars
                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSGs On AHSGsCars.AHSGId=AHSGs.AHSGId 
                          Where AHSGsCars.CarId=" & YourNSSTruck.NSSCar.nIdCar & " and AHSGsCars.RelationActive=1 and AHSGs.Deleted=0
@@ -386,7 +381,7 @@ Namespace Trucks
         Public Shared Function GetAnnouncementsubGroups(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure) As List(Of Int64)
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select AHSGId from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroupsRelationCars as AHSGsCars
                          Where CarId=" & YourNSSTruck.NSSCar.nIdCar & " and RelationActive=1
                                and ((DATEDIFF(SECOND,AHSGsCars.RelationTimeStamp,getdate())<240) or (AHSGsCars.RelationTimeStamp='2015-01-01 00:00:00.000')) 
@@ -410,7 +405,7 @@ Namespace Trucks
         Public Shared Function GetNSSTruck(YourNSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure) As R2CoreTransportationAndLoadNotificationStandardTruckStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                  Select Trucks.nIDCar,Trucks.StrBodyNo from dbtransport.dbo.tbEnterExit as Turns Inner Join dbtransport.dbo.TbCar as Trucks On Turns.strCardno=Trucks.nIDCar 
                   Where Turns.nEnterExitId=" & YourNSSTurn.nEnterExitId & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TruckNotFoundException
                 Dim NSS As R2CoreTransportationAndLoadNotificationStandardTruckStructure = New R2CoreTransportationAndLoadNotificationStandardTruckStructure
@@ -438,7 +433,7 @@ Namespace Trucks
 
         Public Shared Sub DisabledAllTruckRelationAnnouncementsubGroups(YourTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroupsRelationCars Set RelationActive=0 Where CarId=" & YourTruck.NSSCar.nIdCar & ""
@@ -452,7 +447,7 @@ Namespace Trucks
 
         Public Shared Sub SetTruckRelationAnnouncementsubGroup(YourTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure, YourNSSAnnouncementsubGroup As R2CoreTransportationAndLoadNotificationStandardAnnouncementsubGroupStructure)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Try
                     If GetAnnouncementsubGroups(YourTruck).Where(Function(x) x = YourNSSAnnouncementsubGroup.AHSGId).Count <> 0 Then Exit Sub
@@ -484,7 +479,7 @@ Namespace Trucks
 
         'Public Shared Sub SetTruckRelationAnnouncementHall(YourTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure, YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure)
         '    Dim CmdSql As New SqlCommand
-        '    CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+        '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
         '    Try
         '        Dim Lst = R2CoreTransportationAndLoadNotificationMClassAnnouncementsManagement.GetAnnouncementsAnnouncementsubGroupsJOINT().Where(Function(x) x.NSSAnnounementHall.AHId = YourNSSAnnouncementHall.AHId)
         '        CmdSql.Connection.Open()
@@ -557,10 +552,11 @@ Namespace Trucks
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationTrucksManager
 
-        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
         Private _DateTimeService As IR2DateTimeService
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Public Function GetTruck(YourTruckId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTruck
@@ -569,10 +565,10 @@ Namespace Trucks
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
                     Da.SelectCommand = New SqlCommand("Select * from dbtransport.dbo.TbCar Where nIdCar=" & YourTruckId & "")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New TruckNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                           "Select * from dbtransport.dbo.TbCar Where nIdCar=" & YourTruckId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TruckNotFoundException
                 End If
                 Return New R2CoreTransportationAndLoadNotificationTruck With {.TruckId = DS.Tables(0).Rows(0).Item("nIdCar"), .LoaderTypeId = DS.Tables(0).Rows(0).Item("snCarType"), .SmartCardNo = DS.Tables(0).Rows(0).Item("StrBodyNo").trim, .Pelak = DS.Tables(0).Rows(0).Item("strCarNo").trim, .Serial = DS.Tables(0).Rows(0).Item("strCarSerialNo").trim}
@@ -585,11 +581,11 @@ Namespace Trucks
 
         Public Function GetTruckBySmartCardNo(YourSmartCardNo As String) As R2CoreTransportationAndLoadNotificationTruck
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSmartCardNo)
 
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                "Select Top 1 * from dbtransport.dbo.TbCar Where StrBodyNo='" & YourSmartCardNo.Trim() & "' and ViewFlag=1 Order By nIdCar Desc",
                                                           3600, Ds, New Boolean).GetRecordsCount() <> 0 Then
                     Return New R2CoreTransportationAndLoadNotificationTruck With {.TruckId = Ds.Tables(0).Rows(0).Item("nIdCar"), .Pelak = Ds.Tables(0).Rows(0).Item("StrCarNo").trim, .Serial = Ds.Tables(0).Rows(0).Item("StrCarSerialNo").trim, .LoaderTypeId = Ds.Tables(0).Rows(0).Item("snCarType"), .SmartCardNo = Ds.Tables(0).Rows(0).Item("StrBodyNo").trim}
@@ -621,10 +617,10 @@ Namespace Trucks
 	                      Cars.ViewFlag=1 and 
 	                      CarAndPersons.snRelation=2 and ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000'))  
                           Order By CarAndPersons.nIDCarAndPerson Desc")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New TruckNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select Top 1 Cars.*
                     from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
                       Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
@@ -704,7 +700,7 @@ Namespace Trucks
 
         Public Sub SetComposedTruckInf(YourTruckId As Int64, YourTruckDriverId As Int64, YourCardId As Int64, Optional YourTurnId As Int64 = Int64.MinValue)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim InstanceMoneyWallet = New R2CoreParkingSystemInstanceTrafficCardsManager
@@ -764,7 +760,7 @@ Namespace Trucks
 
         Public Function GetDefaultTruck() As R2CoreTransportationAndLoadNotificationTruck
             Try
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 Return GetTruck(InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 1), False)
             Catch ex As TruckNotFoundException
                 Throw ex

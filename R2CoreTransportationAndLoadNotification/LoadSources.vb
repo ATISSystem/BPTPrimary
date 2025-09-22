@@ -7,6 +7,7 @@ Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2CoreParkingSystem.ProvincesAndCities
+Imports R2CoreParkingSystem.ProvincesAndCities.Execption
 Imports R2CoreTransportationAndLoadNotification.LoadSources.Exceptions
 Imports System.Reflection
 
@@ -88,6 +89,7 @@ Namespace LoadSources
 
     End Class
 
+    'BPTChanged
     Namespace Exceptions
 
         Public Class LoadSourceIdNotFoundException
@@ -109,27 +111,59 @@ Namespace LoadSources
             End Property
         End Class
 
+        'BPTChanged
+        Public Class LoadSourceNotFoundException
+            Inherits ApplicationException
+            Public Overrides ReadOnly Property Message As String
+                Get
+                    Return "شهر مبدا با کدشاخص مورد نظر یافت نشد"
+                End Get
+            End Property
+        End Class
+
+
 
     End Namespace
 
     'BPTChanged
+    Public Class R2CoreTransportationAndLoadNotificationLoadSource
+        Public LoadSourceId As Int64
+        Public LoadSourceTitle As String
+        Public ProvinceId As Int64
+    End Class
+
+    'BPTChanged
     Public NotInheritable Class R2CoreTransportationAndLoadNotificationLoadSourcesManager
 
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
         Private _DateTimeService As IR2DateTimeService
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Public Function IsActiveLoadSource(YourLoadSourceId As Int64) As Boolean
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Active from DBTransport.dbo.tbCity Where nCityCode=" & YourLoadSourceId & "", 32767, DS, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Active from DBTransport.dbo.tbCity Where nCityCode=" & YourLoadSourceId & "", 32767, DS, New Boolean)
                 Return Convert.ToBoolean(DS.Tables(0).Rows(0).Item("Active"))
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Function
+
+        Public Function GetLoadSource(YourLoadSourceId As Int64) As R2CoreTransportationAndLoadNotificationLoadSource
+            Try
+                Dim InstanceProvincesAndCities = New R2CoreParkingSystemProvincesAndCitiesManager(_DateTimeService)
+                Dim LoadSource = InstanceProvincesAndCities.GetCity(YourLoadSourceId)
+                Return New R2CoreTransportationAndLoadNotificationLoadSource With {.LoadSourceId = LoadSource.CityId, .LoadSourceTitle = LoadSource.CityTitle, .ProvinceId = LoadSource.ProvinceId}
+            Catch exx As CityNotFoundException
+                Throw New LoadSourceNotFoundException
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
 
     End Class
 

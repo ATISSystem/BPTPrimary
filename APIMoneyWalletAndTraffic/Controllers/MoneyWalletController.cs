@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -27,7 +28,16 @@ namespace APIMoneyWalletAndTraffic.Controllers
     public class MoneyWalletController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService = new R2DateTimeService();
+        private IR2DateTimeService _DateTimeService;
+
+        public MoneyWalletController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/GetUserMoneyWallet")]
@@ -40,7 +50,7 @@ namespace APIMoneyWalletAndTraffic.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceMoneyWallet = new R2CoreParkingSystemMoneyWalletManager(new R2DateTimeService());
+                var InstanceMoneyWallet = new R2CoreParkingSystemMoneyWalletManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceMoneyWallet.GetMoneyWallet(User)), Encoding.UTF8, "application/json");
@@ -70,7 +80,7 @@ namespace APIMoneyWalletAndTraffic.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceMoneyWallet = new R2CoreParkingSystemMoneyWalletManager(new R2DateTimeService());
+                var InstanceMoneyWallet = new R2CoreParkingSystemMoneyWalletManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { Balance = InstanceMoneyWallet.GetMoneyWalletCharge(MoneyWalletId) }), Encoding.UTF8, "application/json");
@@ -100,7 +110,7 @@ namespace APIMoneyWalletAndTraffic.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceAccounting = new R2CoreParkingSystemAccountingManager(new R2DateTimeService());
+                var InstanceAccounting = new R2CoreParkingSystemAccountingManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceAccounting.GetMoneyWalletTransactions(MoneyWalletId), Encoding.UTF8, "application/json");
@@ -124,7 +134,7 @@ namespace APIMoneyWalletAndTraffic.Controllers
         {
             try
             {
-                var InstanceMoneyWallet = new R2CoreParkingSystemMoneyWalletManager(new R2DateTimeService());
+                var InstanceMoneyWallet = new R2CoreParkingSystemMoneyWalletManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
@@ -153,7 +163,7 @@ namespace APIMoneyWalletAndTraffic.Controllers
         {
             try
             {
-                var InstanceMoneyWallet = new R2CoreParkingSystemMoneyWalletManager(new R2DateTimeService());
+                var InstanceMoneyWallet = new R2CoreParkingSystemMoneyWalletManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TransportCompanyId;
@@ -182,8 +192,8 @@ namespace APIMoneyWalletAndTraffic.Controllers
         {
             try
             {
-                var InstanceConfiguration = new R2CoreInstanceConfigurationManager();
-                var InstanceMoneyWallet = new R2CoreMoneyWalletManager();
+                var InstanceConfiguration = new R2CoreInstanceConfigurationManager(_DateTimeService);
+                var InstanceMoneyWallet = new R2CoreMoneyWalletManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
 
@@ -213,8 +223,8 @@ namespace APIMoneyWalletAndTraffic.Controllers
         {
             try
             {
-                var InstanceConfiguration = new R2CoreInstanceConfigurationManager();
-                var InstanceMoneyWallet = new R2CoreMoneyWalletManager();
+                var InstanceConfiguration = new R2CoreInstanceConfigurationManager(_DateTimeService);
+                var InstanceMoneyWallet = new R2CoreMoneyWalletManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
 

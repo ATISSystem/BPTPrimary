@@ -3,6 +3,7 @@
 
 Imports R2Core.BaseStandardClass
 Imports R2Core.DatabaseManagement
+Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.Exceptions
 Imports R2Core.SoftwareUserManagement
@@ -45,11 +46,17 @@ Namespace RawGroups
 
     Public Class R2CoreRawGroupsManager
 
+        Private Shared InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+        Private _DateTimeService As IR2DateTimeService
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+        End Sub
+
         Public Shared Function GetRawGroup(YourRawGroupId As Int64) As R2CoreRawGroup
             Try
                 Dim Ds As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblRawGroups Where RGId=" & YourRawGroupId & "", 32767, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblRawGroups Where RGId=" & YourRawGroupId & "", 32767, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New R2CoreRawGroupNotFoundException
                 Else
                     Return New R2CoreRawGroup With {.RGId = Ds.Tables(0).Rows(0).Item("RGId"), .RGName = Ds.Tables(0).Rows(0).Item("RGName").trim, .RGFullPath = Ds.Tables(0).Rows(0).Item("RGFullPath").trim,

@@ -181,6 +181,7 @@
     <Compile Include="Sessions.vb" />
     <Compile Include="SMS.vb" />
     <Compile Include="SoftwareUsers.vb" />
+    <Compile Include="SQLInjectionPrevention.vb" />
     <Compile Include="Web References\net.sepahansms\Reference.vb">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

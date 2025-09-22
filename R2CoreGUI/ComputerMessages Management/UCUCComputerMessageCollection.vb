@@ -5,13 +5,14 @@ Imports R2Core.ComputerMessagesManagement
 Imports R2Core.ComputersManagement
 Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
+Imports R2Core.DateTimeProvider
 Imports R2Core.SoftwareUserManagement
 
 Public Class UCUCComputerMessageCollection
     Inherits UCGeneral
 
     Private WithEvents _SweepTimer As Windows.Forms.Timer = New Timer()
-    Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+    Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
 
 #Region "General Properties"
 #End Region
@@ -62,7 +63,7 @@ Public Class UCUCComputerMessageCollection
         Try
             Cursor.Current = Cursors.WaitCursor
             Dim Ds As DataSet = New DataSet
-            InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+            InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                   "Select Top " & R2CoreMClassConfigurationOfComputersManagement.GetConfigInt64(R2CoreConfigurations.UCUCComputerMessageCollection, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, 0) & " * From R2Primary.dbo.TblComputerMessages as CM 
                     Where CM.CMType in 
                       (Select Distinct CMTypeId From R2Primary.dbo.TblComputerMessageTypes

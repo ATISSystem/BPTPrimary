@@ -1,6 +1,7 @@
 ﻿
 
 Imports R2Core.DatabaseManagement
+Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.PublicProc
 Imports R2Core.WebProcessesManagement.Exceptions
@@ -9,7 +10,7 @@ Imports System.Reflection
 
 Namespace LoadAnnouncementPlaces
     Public Class R2CoreTransportationAndLoadNotificationLoadAnnouncementPlacesManager
-        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
 
         Public Function GetLoadAnnouncementPlaces(YourProvinceId As Int64) As String
             Try
@@ -20,7 +21,7 @@ Namespace LoadAnnouncementPlaces
                 '  from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAnnouncementPlaces as LoadAnnouncementPlaces 
                 '  Where Active=1 and ProvinceId=" & YourProvinceId & " Order By LAPId for JSON Auto"
 
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                  "Select * 
                   from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAnnouncementPlaces as LoadAnnouncementPlaces 
                   Where Active=1 Order By LAPId for JSON Auto", 32767, Ds, New Boolean).GetRecordsCount <> 0 Then

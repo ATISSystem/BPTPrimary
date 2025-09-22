@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -28,6 +29,16 @@ namespace APITransportation.Controllers
     public class LoadingAndDischargingPlacesController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
+        private R2DateTimeService _DateTimeService;
+
+        public LoadingAndDischargingPlacesController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/GetLADPlaces")]
@@ -36,7 +47,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var Content = JsonConvert.DeserializeObject<APICommonSessionIdSearchString>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
@@ -46,7 +57,7 @@ namespace APITransportation.Controllers
                 var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager();
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceLoadingAndDischargingPlaces.GetLoadingAndDischargingPlaces_SearchIntroCharacters(SearchString,true ), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(InstanceLoadingAndDischargingPlaces.GetLoadingAndDischargingPlaces_SearchIntroCharacters(SearchString, true), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -68,7 +79,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLADPlaceId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var LADPlaceId = Content.LADPlaceId;
@@ -100,7 +111,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdRawLADPlaceInf>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var RawLADPlaceInf = Content.RawLADPlaceInf;
@@ -130,9 +141,9 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdRawLADPlaceInf>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var RawLADPlaceInf = Content.RawLADPlaceInf;
@@ -161,9 +172,9 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLADPlaceId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var LADPlaceId = Content.LADPlaceId;
@@ -192,9 +203,9 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLADPlaceId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var LADPlaceId = Content.LADPlaceId;
@@ -223,9 +234,9 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(new R2DateTimeService());
+                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLADPlaceId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var LADPlaceId = Content.LADPlaceId;

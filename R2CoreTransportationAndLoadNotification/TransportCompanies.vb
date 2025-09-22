@@ -159,13 +159,13 @@ Namespace TransportCompanies
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager
 
-        Private _R2DateTimeService As New R2DateTimeService
+        Private _DateTimeService As New R2DateTimeService
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Function ISTransportCompanyActive(YourNSSTransportCompany As R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure) As Boolean
-            Dim InstanceqlDataBOX = New R2CoreSqlDataBOXManager
             Try
                 Dim DS As DataSet
-                If InstanceqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Active from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies Where TCId = " & YourNSSTransportCompany.TCId & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Active from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies Where TCId = " & YourNSSTransportCompany.TCId & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
                 Return DS.Tables(0).Rows(0).Item("Active")
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -174,15 +174,14 @@ Namespace TransportCompanies
 
         Public Function GetNSSTransportCompany(YourTransportCompanyId As Int64, YourImmediate As Boolean) As R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As New DataSet
                 If YourImmediate Then
                     Dim Da As New SqlClient.SqlDataAdapter
                     Da.SelectCommand = New SqlCommand("Select Top 1 * From R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies Where TCId=" & YourTransportCompanyId & "")
-                    Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New TransportCompanyNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * From R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies Where TCId=" & YourTransportCompanyId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * From R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies Where TCId=" & YourTransportCompanyId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
                 End If
                 Return New R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure(DS.Tables(0).Rows(0).Item("TCId"), DS.Tables(0).Rows(0).Item("TCTitle"), DS.Tables(0).Rows(0).Item("TCOrganizationCode"), DS.Tables(0).Rows(0).Item("TCCityId"), DS.Tables(0).Rows(0).Item("TCColor").trim, DS.Tables(0).Rows(0).Item("TCTel").trim, DS.Tables(0).Rows(0).Item("TCManagerNameFamily").trim, DS.Tables(0).Rows(0).Item("TCManagerMobileNumber").trim, DS.Tables(0).Rows(0).Item("EmailAddress").trim, DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted"))
             Catch ex As TransportCompanyNotFoundException
@@ -194,9 +193,8 @@ Namespace TransportCompanies
 
         Public Function GetNSSTransportCompany(YourNSSMoneyWallet As R2CoreParkingSystemStandardTrafficCardStructure) As R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select Top 1 TransportCompanies.TCId,TransportCompanies.TCTitle,TransportCompanies.TCOrganizationCode,TransportCompanies.TCCityId,TransportCompanies.TCColor,TransportCompanies.TCTel,
                                      TransportCompanies.TCManagerNameFamily,TransportCompanies.TCManagerMobileNumber,TransportCompanies.ViewFlag,TransportCompanies.Active,TransportCompanies.Deleted,TransportCompanies.EmailAddress 
                         from R2Primary.dbo.TblRFIDCards as MoneyWallets 
@@ -215,9 +213,8 @@ Namespace TransportCompanies
         Public Function GetNSSMoneyWalletforTransportCompany(YourNSSTransportCompany As R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure) As R2CoreParkingSystemStandardTrafficCardStructure
             Try
                 Dim InstanceTrafficCards = New R2CoreParkingSystemInstanceTrafficCardsManager
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select Top 1 MoneyWallets.CardId from R2Primary.dbo.TblRFIDCards as MoneyWallets 
                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationMoneyWallets as TCRMoneyWallets On MoneyWallets.CardId=TCRMoneyWallets.CardId 
                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On TCRMoneyWallets.TransportCompanyId=TransportCompanies.TCId 
@@ -232,7 +229,7 @@ Namespace TransportCompanies
 
         Public Sub RegisteringTransportCompanyMoneyWalletRelation(YourNSSTransportCompany As R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure, YourMoneyWallet As R2CoreParkingSystemStandardTrafficCardStructure, YourNSSUser As R2CoreStandardSoftwareUserStructure)
             Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Try
                     Cmdsql.Connection.Open()
@@ -274,9 +271,8 @@ Namespace TransportCompanies
 
         Public Function GetNSSTransportCompnay(YourNSSUser As R2CoreStandardSoftwareUserStructure) As R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                  "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers as TCRUser On TransportCompanies.TCId=TCRUser.TCId
                             Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On TCRUser.UserId=SoftwareUsers.UserId
@@ -291,9 +287,8 @@ Namespace TransportCompanies
 
         Public Function GetNSSTransportCompany(YourNSSLoadCapacitorLoad As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadStructure) As R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select Top 1 TransportCompanies.*  From dbtransport.dbo.tbElam as Loads
                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On Loads.nCompCode=TransportCompanies.TCId 
                          Where Loads.nEstelamID=" & YourNSSLoadCapacitorLoad.nEstelamId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
@@ -307,7 +302,7 @@ Namespace TransportCompanies
 
         Public Sub TransportCompanyChangeActiveStatus(YourNSS As R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure)
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager
                 Dim TCSoftwareusers = InstanceTransportCompanies.GetNSSTCSoftwareusers(YourNSS.TCId, True)
@@ -343,10 +338,10 @@ Namespace TransportCompanies
             End Try
         End Sub
 
-        Private Shared Sub SendSMSTransportCompanyChangeActiveStatus(YourTCTitle As String, YourStatus As String)
+        Private Sub SendSMSTransportCompanyChangeActiveStatus(YourTCTitle As String, YourStatus As String)
             Try
                 Dim InstanceMoneyWallet = New R2CoreParkingSystemInstanceMoneyWalletManager
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager()
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 'کنترل فعال بودن سرویس اس ام اس
                 If Not InstanceConfiguration.GetConfigBoolean(R2CoreConfigurations.SmsSystemSetting, 0) Then Throw New SmsSystemIsDisabledException
                 'کاربران
@@ -361,7 +356,7 @@ Namespace TransportCompanies
                 myData.Data1 = YourTCTitle
                 myData.Data2 = YourStatus
                 'ارسال اس ام اس
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager
+                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
                 Dim SMSResult = InstanceSMSHandling.SendSMS(LstSoftwareUsers, R2CoreTransportationAndLoadNotificationSMSTypes.TransportCompanyChangeActiveStatus, InstanceSMSHandling.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
                 Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
                 If Not SMSResultAnalyze = String.Empty Then Throw New LoadingAndDischargingSendSMSFailedException
@@ -374,7 +369,6 @@ Namespace TransportCompanies
 
         Public Function GetNSSTCSoftwareuser(YourTransportCompanyId As Int64, YourImmediate As Boolean) As R2CoreStandardSoftwareUserStructure
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As New DataSet
                 If YourImmediate Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -382,10 +376,10 @@ Namespace TransportCompanies
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers as TCRelationSoftwareUsers on SoftwareUsers.UserId=TCRelationSoftwareUsers.UserId 
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies on TCRelationSoftwareUsers.TCId=TransportCompanies.TCId 
                         where TCRelationSoftwareUsers.TCId=" & YourTransportCompanyId & " and TCRelationSoftwareUsers.RelationActive=1")
-                    Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New TransportCompanyNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "select Top 1 SoftwareUsers.UserId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "select Top 1 SoftwareUsers.UserId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers as TCRelationSoftwareUsers on SoftwareUsers.UserId=TCRelationSoftwareUsers.UserId 
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies on TCRelationSoftwareUsers.TCId=TransportCompanies.TCId 
                         where TCRelationSoftwareUsers.TCId=" & YourTransportCompanyId & " and TCRelationSoftwareUsers.RelationActive=1", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
@@ -401,7 +395,6 @@ Namespace TransportCompanies
 
         Public Function GetNSSTCSoftwareusers(YourTransportCompanyId As Int64, YourImmediate As Boolean) As List(Of R2CoreStandardSoftwareUserStructure)
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As New DataSet
                 If YourImmediate Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -409,10 +402,10 @@ Namespace TransportCompanies
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers as TCRelationSoftwareUsers on SoftwareUsers.UserId=TCRelationSoftwareUsers.UserId 
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies on TCRelationSoftwareUsers.TCId=TransportCompanies.TCId 
                         where TCRelationSoftwareUsers.TCId=" & YourTransportCompanyId & " and TCRelationSoftwareUsers.RelationActive=1")
-                    Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New TransportCompanyNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "select SoftwareUsers.UserId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "select SoftwareUsers.UserId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers as TCRelationSoftwareUsers on SoftwareUsers.UserId=TCRelationSoftwareUsers.UserId 
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies on TCRelationSoftwareUsers.TCId=TransportCompanies.TCId 
                         where TCRelationSoftwareUsers.TCId=" & YourTransportCompanyId & " and TCRelationSoftwareUsers.RelationActive=1", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
@@ -434,11 +427,13 @@ Namespace TransportCompanies
     End Class
 
     Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassTransportCompaniesManagement
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function RegisteringTransportCompany(YourNSS As R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure, YourUserNSS As R2CoreStandardSoftwareUserStructure) As Int64
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 If YourNSS.TCTitle.Trim = String.Empty Or YourNSS.TCOrganizationCode.Trim = String.Empty Or YourNSS.TCTel.Trim = String.Empty Or YourNSS.TCManagerNameFamily.Trim = String.Empty Or YourNSS.TCManagerMobileNumber.Trim = String.Empty Then
                     Throw New DataEntryException
@@ -501,7 +496,7 @@ Namespace TransportCompanies
 
         Public Shared Sub UpdatingTransportCompany(YourNSS As R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure, YourNSSUser As R2CoreStandardSoftwareUserStructure)
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 If YourNSS.TCTitle.Trim = String.Empty Or YourNSS.TCOrganizationCode.Trim = String.Empty Or YourNSS.TCTel.Trim = String.Empty Or YourNSS.TCManagerNameFamily.Trim = String.Empty Or YourNSS.TCManagerMobileNumber.Trim = String.Empty Then
                     Throw New DataEntryException
@@ -574,7 +569,7 @@ Namespace TransportCompanies
 
         Public Shared Sub DeletingTransportCompany(YourTCId As Int64)
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -595,7 +590,7 @@ Namespace TransportCompanies
             Try
                 Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure)
                 Dim DS As DataSet = Nothing
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies Where Left(TCTitle," & YourSearchString.Length & ")='" & YourSearchString & "' and Deleted=0 and ViewFlag=1 Order By TCTitle", 3600, DS, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies Where Left(TCTitle," & YourSearchString.Length & ")='" & YourSearchString & "' and Deleted=0 and ViewFlag=1 Order By TCTitle", 3600, DS, New Boolean)
                 For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
                     Lst.Add(New R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure(DS.Tables(0).Rows(Loopx).Item("TCId"), DS.Tables(0).Rows(Loopx).Item("TCTitle"), DS.Tables(0).Rows(Loopx).Item("TCOrganizationCode"), DS.Tables(0).Rows(Loopx).Item("TCCityId"), DS.Tables(0).Rows(Loopx).Item("TCColor").trim, DS.Tables(0).Rows(Loopx).Item("TCTel").trim, DS.Tables(0).Rows(Loopx).Item("TCManagerNameFamily").trim, DS.Tables(0).Rows(Loopx).Item("TCManagerMobileNumber").trim, DS.Tables(0).Rows(Loopx).Item("EmailAddress").trim, DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
                 Next
@@ -609,7 +604,7 @@ Namespace TransportCompanies
             Try
                 Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure)
                 Dim DS As DataSet = Nothing
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies Where TCTitle Like '%" & YourSearchString & "%' and Deleted=0 and ViewFlag=1 Order By TCTitle", 3600, DS, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies Where TCTitle Like '%" & YourSearchString & "%' and Deleted=0 and ViewFlag=1 Order By TCTitle", 3600, DS, New Boolean)
                 For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
                     Lst.Add(New R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure(DS.Tables(0).Rows(Loopx).Item("TCId"), DS.Tables(0).Rows(Loopx).Item("TCTitle"), DS.Tables(0).Rows(Loopx).Item("TCOrganizationCode"), DS.Tables(0).Rows(Loopx).Item("TCCityId"), DS.Tables(0).Rows(Loopx).Item("TCColor").trim, DS.Tables(0).Rows(Loopx).Item("TCTel").trim, DS.Tables(0).Rows(Loopx).Item("TCManagerNameFamily").trim, DS.Tables(0).Rows(Loopx).Item("TCManagerMobileNumber").trim, DS.Tables(0).Rows(Loopx).Item("EmailAddress").trim, DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
                 Next
@@ -629,7 +624,7 @@ Namespace TransportCompanies
                 If YourActiveControlStatus Then SqlString = SqlString + " and Active=1"
                 SqlString = SqlString + " Order By Companies.Suming Desc"
                 Dim DS As DataSet = Nothing
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, SqlString, 1, DS, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, SqlString, 1, DS, New Boolean)
                 For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
                     Lst.Add(New R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure(DS.Tables(0).Rows(Loopx).Item("TCId"), DS.Tables(0).Rows(Loopx).Item("TCTitle"), DS.Tables(0).Rows(Loopx).Item("TCOrganizationCode"), DS.Tables(0).Rows(Loopx).Item("TCCityId"), DS.Tables(0).Rows(Loopx).Item("TCColor").trim, DS.Tables(0).Rows(Loopx).Item("TCTel").trim, DS.Tables(0).Rows(Loopx).Item("TCManagerNameFamily").trim, DS.Tables(0).Rows(Loopx).Item("TCManagerMobileNumber").trim, DS.Tables(0).Rows(Loopx).Item("EmailAddress").trim, DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
                 Next
@@ -642,7 +637,7 @@ Namespace TransportCompanies
         Public Shared Function GetNSSTransportCompanyByOrganizationId(YourTransportCompanyOrganizationId As Int64) As R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * From R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies Where TCOrganizationCode=" & YourTransportCompanyOrganizationId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * From R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies Where TCOrganizationCode=" & YourTransportCompanyOrganizationId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
                 Return New R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure(DS.Tables(0).Rows(0).Item("TCId"), DS.Tables(0).Rows(0).Item("TCTitle"), DS.Tables(0).Rows(0).Item("TCOrganizationCode"), DS.Tables(0).Rows(0).Item("TCCityId"), DS.Tables(0).Rows(0).Item("TCColor").trim, DS.Tables(0).Rows(0).Item("TCTel").trim, DS.Tables(0).Rows(0).Item("TCManagerNameFamily").trim, DS.Tables(0).Rows(0).Item("TCManagerMobileNumber").trim, DS.Tables(0).Rows(0).Item("EmailAddress").trim, DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted"))
             Catch ex As TransportCompanyNotFoundException
                 Throw ex
@@ -654,7 +649,7 @@ Namespace TransportCompanies
         Public Shared Function ISTransportCompanyActive(YourNSSTransportCompany As R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure) As Boolean
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Active from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies Where TCId = " & YourNSSTransportCompany.TCId & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Active from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies Where TCId = " & YourNSSTransportCompany.TCId & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
                 Return DS.Tables(0).Rows(0).Item("Active")
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -664,7 +659,7 @@ Namespace TransportCompanies
         Public Shared Function ExistComputerInTranportCompanies(YourComputerId As Int64) As Boolean
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select ComId from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationComputers Where ComId=" & YourComputerId & " and RelationActive=1", 1, DS, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select ComId from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationComputers Where ComId=" & YourComputerId & " and RelationActive=1", 1, DS, New Boolean).GetRecordsCount = 0 Then
                     Return False
                 Else
                     Return True
@@ -678,7 +673,7 @@ Namespace TransportCompanies
             Try
                 Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationInstanceTransportCompaniesManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 nCompCode from (Select nCompCode,Sum(nCarNumKol) as Suming from dbtransport.dbo.tbElam Where (dDateElam>='" & YourWorkDate1.ShamsiDate & "') and (dDateElam<='" & YourWorkDate2.ShamsiDate & "') and AHId=" & YourAHId & " and AHSGId=" & YourAHSGId & " and LoadStatus<>" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Deleted & " and LoadStatus<>" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Cancelled & " and LoadStatus<>" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " and LoadStatus<>" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.RegisteredforTommorow & " Group By nCompCode) as Companies  Order By Companies.Suming Desc", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 nCompCode from (Select nCompCode,Sum(nCarNumKol) as Suming from dbtransport.dbo.tbElam Where (dDateElam>='" & YourWorkDate1.ShamsiDate & "') and (dDateElam<='" & YourWorkDate2.ShamsiDate & "') and AHId=" & YourAHId & " and AHSGId=" & YourAHSGId & " and LoadStatus<>" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Deleted & " and LoadStatus<>" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Cancelled & " and LoadStatus<>" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " and LoadStatus<>" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.RegisteredforTommorow & " Group By nCompCode) as Companies  Order By Companies.Suming Desc", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
                 Return InstanceTransportCompanies.GetNSSTransportCompany(DS.Tables(0).Rows(0).Item("nCompCode"))
             Catch ex As TransportCompanyNotFoundException
                 Throw ex
@@ -731,17 +726,18 @@ Namespace TransportCompanies
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationTransportCompaniesManager
 
-        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
         Private _DateTimeService As New R2DateTimeService
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         'BPTChanged
         Public Function HasTransportCompanyMoneyWallet(YourTransportCompanyId As Int64) As Boolean
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select Top 1 MoneyWallets.CardId from R2Primary.dbo.TblRFIDCards as MoneyWallets 
                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationMoneyWallets as TCRMoneyWallets On MoneyWallets.CardId=TCRMoneyWallets.CardId 
                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On TCRMoneyWallets.TCId=TransportCompanies.TCId 
@@ -771,10 +767,10 @@ Namespace TransportCompanies
                         Where TCTitle Like N'%" & YourSearchString & "%' and TransportCompanies.Deleted=0
                         Order By TCTitle
                         for json path")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select TransportCompanies.TCId as TCId,TransportCompanies.TCTitle as TCTitle,TransportCompanies.TCOrganizationCode as TCOrganizationCode,Cities.StrCityName as TCCityTitle,
                                TransportCompanies.TCTel as TCTel,TransportCompanies.TCManagerMobileNumber as TCManagerMobileNumber,TransportCompanies.TCManagerNameFamily,TransportCompanies.EmailAddress as EmailAddress,
             	               TransportCompanies.Active as Active
@@ -807,10 +803,10 @@ Namespace TransportCompanies
                                                        Where TCId=" & YourTCId & " and TransportCompanies.Deleted=0
                                                        Order By TCTitle
                                                        for json path")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New TransportCompanyNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select TransportCompanies.TCId as TCId,TransportCompanies.TCTitle as TCTitle,TransportCompanies.TCOrganizationCode as TCOrganizationCode,Cities.StrCityName as TCCityTitle,
                                TransportCompanies.TCTel as TCTel,TransportCompanies.TCManagerMobileNumber as TCManagerMobileNumber,TransportCompanies.TCManagerNameFamily,TransportCompanies.EmailAddress as EmailAddress,
             	               TransportCompanies.Active as Active
@@ -844,10 +840,10 @@ Namespace TransportCompanies
                                                                  Inner Join DBTransport.dbo.tbCity as Cities On TransportCompanies.TCCityId=Cities.nCityCode 
                                                        Where TCId=" & YourTransportCompanyId & " and TransportCompanies.Deleted=0
                                                        Order By TCTitle")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New TransportCompanyNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                                      "Select TransportCompanies.TCId as TCId,TransportCompanies.TCTitle as TCTitle,TransportCompanies.TCOrganizationCode as TCOrganizationCode,Cities.StrCityName as TCCityTitle,
                                                            TransportCompanies.TCTel as TCTel,TransportCompanies.TCManagerMobileNumber as TCManagerMobileNumber,TransportCompanies.TCManagerNameFamily,TransportCompanies.EmailAddress as EmailAddress,
             	                                           TransportCompanies.Active as Active
@@ -866,7 +862,7 @@ Namespace TransportCompanies
 
         Public Sub EditTransportCompany(YourTransportCompany As RawTransportCompany)
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(New R2DateTimeService, Nothing)
                 CmdSql.Connection.Open()
@@ -913,7 +909,7 @@ Namespace TransportCompanies
                     Dim HasMoneyWallet = HasTransportCompanyMoneyWallet(YourTransportCompany.TCId)
                     If Not HasMoneyWallet Then
                         'ایجاد کیف پول کاربر
-                        Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager
+                        Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager(_DateTimeService)
                         Dim MoneyWalletId = InstanceMoneyWallet.CreateNewMoneyWallet()
                         CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationMoneyWallets Where CardId=" & MoneyWalletId & " or TCId=" & YourTransportCompany.TCId & ""
                         CmdSql.ExecuteNonQuery()
@@ -969,10 +965,10 @@ Namespace TransportCompanies
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers as TCRelationSoftwareUsers on SoftwareUsers.UserId=TCRelationSoftwareUsers.UserId 
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies on TCRelationSoftwareUsers.TCId=TransportCompanies.TCId 
                         where TCRelationSoftwareUsers.TCId=" & YourTransportCompanyId & "")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New TransportCompanyNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "select Top 1 SoftwareUsers.UserId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "select Top 1 SoftwareUsers.UserId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers as TCRelationSoftwareUsers on SoftwareUsers.UserId=TCRelationSoftwareUsers.UserId 
                         inner join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies on TCRelationSoftwareUsers.TCId=TransportCompanies.TCId 
                         where TCRelationSoftwareUsers.TCId=" & YourTransportCompanyId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
@@ -999,10 +995,10 @@ Namespace TransportCompanies
                             Inner join R2Primary.DBO.TblSoftwareUsers as SoftwareUsers on TCRelationSoftwareUsers.UserId =SoftwareUsers.UserId 
                             Inner Join DBTransport.dbo.tbCity as Cities On TransportCompanies.TCCityId=Cities.nCityCode 
                          Where SoftwareUsers.UserId=" & YourSoftWareUser.UserId & "")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New TransportCompanyNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select TransportCompanies.TCId as TCId,TransportCompanies.TCTitle as TCTitle,TransportCompanies.TCOrganizationCode as TCOrganizationCode,Cities.StrCityName as TCCityTitle,
                                 TransportCompanies.TCTel as TCTel,TransportCompanies.TCManagerMobileNumber as TCManagerMobileNumber,TransportCompanies.TCManagerNameFamily,TransportCompanies.EmailAddress as EmailAddress,
                                 TransportCompanies.Active as Active
@@ -1023,7 +1019,7 @@ Namespace TransportCompanies
         Public Function ISTransportCompanyActive(YourTransportCompanyId As Int64) As Boolean
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Active from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies Where TCId = " & YourTransportCompanyId & "", 300, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Active from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies Where TCId = " & YourTransportCompanyId & "", 300, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TransportCompanyNotFoundException
                 Return DS.Tables(0).Rows(0).Item("Active")
             Catch ex As TransportCompanyNotFoundException
                 Throw ex
@@ -1034,7 +1030,7 @@ Namespace TransportCompanies
 
         Public Sub TransportCompanyChangeActiveStatus(YourTransportCompanyId As Int64, YourActive As Boolean)
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationTransportCompaniesManager(_DateTimeService)
                 Dim SoftwareUserId = GetSoftwareUserIdfromTransportCompanyId(YourTransportCompanyId, True)
@@ -1070,7 +1066,7 @@ Namespace TransportCompanies
 
         Public Sub SendTransportCompanyChangeActiveStatusSMS(YourTCTitle As String, YourStatus As String)
             Try
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager()
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 'کاربران
                 Dim TargetUsers = InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 6).Split("-")
                 Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
@@ -1080,7 +1076,7 @@ Namespace TransportCompanies
                 Next
                 'ارسال اس ام اس
                 Dim myData = New SMSCreationData With {.Data1 = YourTCTitle, .Data2 = YourStatus}
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager
+                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
                 Dim SMSResult = InstanceSMSHandling.SendSMS(LstSoftwareUsers, R2CoreTransportationAndLoadNotificationSMSTypes.TransportCompanyChangeActiveStatus, InstanceSMSHandling.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
                 Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
             Catch ex As Exception

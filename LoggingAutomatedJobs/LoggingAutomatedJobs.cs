@@ -26,11 +26,12 @@ namespace LoggingAutomatedJobs
         private System.Timers.Timer _AutomatedJobsTimer = new System.Timers.Timer();
         private bool _FailStatus = true;
         private ISubscriber _Subscriber = null;
-
+        private R2DateTimeService  _DateTimeService;
 
         public LoggingAutomatedJobs()
         {
             InitializeComponent();
+            _DateTimeService = new R2DateTimeService();
             _AutomatedJobsTimer.Elapsed += _AutomatedJobsTimer_Elapsed;
         }
 
@@ -46,8 +47,8 @@ namespace LoggingAutomatedJobs
                 {
                     try
                     {
-                        var InstanceConfiguration = new R2CoreInstanceConfigurationManager();
-                        var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(1));
+                        var InstanceConfiguration = new R2CoreInstanceConfigurationManager(_DateTimeService);
+                        var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(1));
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(InstanceSoftwareUsers.GetSystemUser());
                         _AutomatedJobsTimer.Interval = InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.LoggingAutomatedJobsSetting, 0) * 1000;
                         _FailStatus = false;

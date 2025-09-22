@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -27,6 +28,16 @@ namespace APITransportation.Controllers
     public class TWSController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
+        private R2DateTimeService _DateTimeService;
+
+        public TWSController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/GetTWSTruckTrace")]
@@ -34,19 +45,19 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckPelakTruckSerial>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
-                var TruckPelak = Content.TruckPelak ;
-                var TruckSerial = Content.TruckSerial ;
+                var TruckPelak = Content.TruckPelak;
+                var TruckSerial = Content.TruckSerial;
 
                 var UserId = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTWS = new PayanehClassLibraryTWSManager(new R2DateTimeService());
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTWS.GetTruckTrace(TruckPelak ,TruckSerial)), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTWS.GetTruckTrace(TruckPelak, TruckSerial)), Encoding.UTF8, "application/json"); return response;
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }

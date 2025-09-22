@@ -21,6 +21,7 @@ using R2Core.ExceptionManagement;
 using R2Core.DatabaseManagement;
 using APICommon.Models;
 using R2Core.DateTimeProvider;
+using System.Reflection;
 
 
 namespace APITransportation.Controllers
@@ -29,7 +30,16 @@ namespace APITransportation.Controllers
     public class ProvincesAndCitiesController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService = new R2DateTimeService();
+        private IR2DateTimeService _DateTimeService;
+
+        public ProvincesAndCitiesController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/GetCities")]
@@ -69,7 +79,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdProvinceIdProvinceActive>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var ProvinceId = Content.ProvinceId;
@@ -99,7 +109,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdCityIdCityActive>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var CityId = Content.CityId;

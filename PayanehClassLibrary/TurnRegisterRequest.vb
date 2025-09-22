@@ -34,7 +34,17 @@ Imports R2Core.DateTimeProvider
 Namespace TurnRegisterRequest
 
     Public NotInheritable Class PayanehClassLibraryMClassTurnRegisterRequestManager
-        Private _DateTime As New R2DateTime
+        Private _DateTimeService As R2DateTimeService
+
+        Public Sub New()
+            Try
+                _DateTimeService = New R2DateTimeService
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Sub
 
         'Public Sub RealTimeTurnRegisterRequestWithLicensePlate(YourLPPelak As String, YourLPSerial As String, YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure, YourRequesterId As Int64, YourTurnType As TurnType)
         '    Try
@@ -367,15 +377,15 @@ Namespace TurnRegisterRequest
     'BPTChanged
     Public Class PayanehClassLibraryTurnRegisterRequestManager
 
-        Private _R2DateTimeService As IR2DateTimeService
-        Public Sub New(YourR2DateTimeService As IR2DateTimeService)
-            _R2DateTimeService = YourR2DateTimeService
+        Private _DateTimeService As IR2DateTimeService
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
         End Sub
 
         Public Function IsMoneyWalletInventoryIsEnoughForTurnRegistering(YourTruckId As Int64, YourSequentialTurnId As Int64) As Boolean
             Try
-                Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(_R2DateTimeService)
-                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_R2DateTimeService)
+                Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(_DateTimeService)
+                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService)
                 Dim TurnCost = InstanceTurns.GetTurnCost(YourSequentialTurnId, False)
                 If InstanceMoneyWallet.GetMoneyWalletCharge(InstanceMoneyWallet.GetMoneyWalletfromCarId(YourTruckId, False).MoneyWalletId) < TurnCost.TotalCost Then
                     Return False
@@ -391,7 +401,7 @@ Namespace TurnRegisterRequest
 
         Public Function RealTimeTurnRegisterRequest(YourSeqTId As Int64, YourTruckId As Int64, ByRef YourTurnId As Int64, YourRequesterId As Int64, YourTurnType As TurnType, YourSoftwareUserId As Int64) As Int64
             Try
-                Dim InstanceTurnRegisterRequest = New R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(_R2DateTimeService)
+                Dim InstanceTurnRegisterRequest = New R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(_DateTimeService)
                 'کنترل موجودی کیف پول برای هزینه صدور نوبت - درصورتی که موجودی کافی نباشداکسپشن پرتاب می گردد 
                 If Not IsMoneyWalletInventoryIsEnoughForTurnRegistering(YourTruckId, YourSeqTId) Then Throw New MoneyWalletCurrentChargeNotEnoughException
                 'ثبت درخواست صدور نوبت بلادرنگ
@@ -440,14 +450,14 @@ Namespace TurnRegisterRequest
 
         Public Function ReserveTurnRegisterRequest(YourRequesterId As Int64, YourTurnType As TurnType, YourSoftwareUserId As Int64) As Int64
             Try
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_R2DateTimeService)
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService)
                 'کنترل مجوز
                 Dim InstancePermissions = New R2CoreInstansePermissionsManager
                 If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanRequestReserveTurnRegistering, YourSoftwareUserId, 0) Then Throw New UserCanNotRequestReserveTurnRegisteringException
                 If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.RequesterCanRequestReserveTurnRegistering, YourRequesterId, 0) Then Throw New RequesterCanNotRequestReserveTurnRegisteringException
                 'ثبت درخواست صدور نوبت رزرو
-                Dim InstanceTurnRegisterRequest = New R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(_R2DateTimeService)
+                Dim InstanceTurnRegisterRequest = New R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(_DateTimeService)
                 Dim TurnRegisterRequestId = InstanceTurnRegisterRequest.TurnRegisterRequestRegistering(New R2CoreTransportationAndLoadNotificationTurnRegisterRequest With {.TRRId = Nothing, .TRRTypeId = TurnRegisterRequestTypes.Reserve, .TruckId = InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 1), .Description = InstanceTurnRegisterRequest.GetTurnRegisterRequestType(TurnRegisterRequestTypes.Reserve).TRRTypeTitle, .UserId = YourSoftwareUserId, .RequesterId = YourRequesterId, .DateTimeMilladi = Nothing, .DateShamsi = Nothing, .Time = Nothing}, Nothing, YourSoftwareUserId, YourRequesterId)
                 'ثبت نوبت
                 Dim TurnId = InstanceTurns.GetReserveTurn(TurnRegisterRequestId, YourTurnType, YourSoftwareUserId)
@@ -484,10 +494,10 @@ Namespace TurnRegisterRequest
                 If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanResuscitationReserveTurn, YourSotwareUserId, 0) Then Throw New UserCanNotResuscitationReserveTurnException
 
                 'کنترل نوع درخواست و تاریخ انقضاء 
-                Dim InstanceTurnRegisterRequest = New R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(_R2DateTimeService)
+                Dim InstanceTurnRegisterRequest = New R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(_DateTimeService)
                 Dim TRR = InstanceTurnRegisterRequest.GetTurnRegisterRequest(YourTurnRegisterRequestId, False)
                 If TRR.TRRTypeId <> TurnRegisterRequestTypes.Reserve Then Throw New TurnRegisteringRequestIdIsNotaReserveTypeException
-                If DateDiff(DateInterval.Hour, TRR.DateTimeMilladi, _R2DateTimeService.GetCurrentDateTimeMilladi) > InstanceTurnRegisterRequest.GetTurnRegisterRequestType(TRR.TRRTypeId).TurnExpirationHours Then Throw New TurnRegisteringRequestDateTimeExpiredException
+                If DateDiff(DateInterval.Hour, TRR.DateTimeMilladi, _DateTimeService.GetCurrentDateTimeMilladi) > InstanceTurnRegisterRequest.GetTurnRegisterRequestType(TRR.TRRTypeId).TurnExpirationHours Then Throw New TurnRegisteringRequestDateTimeExpiredException
 
                 'کنترل موجودی کیف پول برای هزینه صدور نوبت - درصورتی که موجودی کافی نباشداکسپشن پرتاب می گردد 
                 If Not IsMoneyWalletInventoryIsEnoughForTurnRegistering(YourTruckId, YourSeqTId) Then Throw New MoneyWalletCurrentChargeNotEnoughException
@@ -540,7 +550,7 @@ Namespace TurnRegisterRequest
                 'کنترل موجودی کیف پول برای هزینه صدور نوبت - درصورتی که موجودی کافی نباشداکسپشن پرتاب می گردد 
                 If Not IsMoneyWalletInventoryIsEnoughForTurnRegistering(YourTruckId, YourSeqTId) Then Throw New MoneyWalletCurrentChargeNotEnoughException
                 'ثبت درخواست و صدور نوبت اضطراری
-                Dim InstanceTurnRegisterRequest = New R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(_R2DateTimeService)
+                Dim InstanceTurnRegisterRequest = New R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(_DateTimeService)
                 Dim TurnRegisterRequestId = InstanceTurnRegisterRequest.TurnRegisterRequestRegistering(New R2CoreTransportationAndLoadNotificationTurnRegisterRequest With {.TRRId = Nothing, .TRRTypeId = TurnRegisterRequestTypes.Emergency, .Description = InstanceTurnRegisterRequest.GetTurnRegisterRequestType(TurnRegisterRequestTypes.Emergency).TRRTypeTitle + " " + Left(YourEmergencyTurnRegisterRequestNote, 500), .TruckId = YourTruckId, .RequesterId = YourRequesterId, .UserId = YourSoftwareUserId, .DateTimeMilladi = Nothing, .DateShamsi = Nothing, .Time = Nothing}, Nothing, YourSoftwareUserId, YourRequesterId)
                 Dim Strategy = New RealTimeTurnRegisteringStrategy(YourSeqTId, YourTruckId, TurnRegisterRequestId, YourSoftwareUserId, YourRequesterId, YourTurnType)
                 Strategy.DoStrategy()

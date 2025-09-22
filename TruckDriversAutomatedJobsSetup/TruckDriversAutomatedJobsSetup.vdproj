@@ -231,12 +231,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_9A05132C0FB54590B8E6C99EE5E0D96F"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_9C38B1AD90571D33760D5C665C157F6C"
         "OwnerKey" = "8:_011BE219D3234E12AF833C213A7BCE92"
         "MsmSig" = "8:_UNDEFINED"
@@ -406,12 +400,6 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_BBB7858B0578172714FE411A38140CE2"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_011BE219D3234E12AF833C213A7BCE92"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -551,6 +539,12 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_529B7CD21C8E94ED2A22A973EFF24A36"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_BBB7858B0578172714FE411A38140CE2"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -1187,26 +1181,6 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_9A05132C0FB54590B8E6C99EE5E0D96F"
-            {
-            "SourcePath" = "8:C:\\Users\\BPT\\Desktop\\APIs.Config"
-            "TargetName" = "8:APIs.Config"
-            "Tag" = "8:"
-            "Folder" = "8:_2E720FB670524E1F968FA305E86667A9"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_9C38B1AD90571D33760D5C665C157F6C"

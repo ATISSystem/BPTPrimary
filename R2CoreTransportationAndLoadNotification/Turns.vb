@@ -276,14 +276,14 @@ Namespace Turns
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceTurnsManager
-        Private _DateTime As New R2DateTime
-        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private _DateTimeService As New R2DateTimeService
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Function GetAllOfCurrentActiveTurns() As List(Of R2CoreTransportationAndLoadNotificationStandardActiveTurnStructure)
             Try
                 Dim InstanceTruckDrivers = New R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                             "Select  Turns.*,Cars.strBodyNo as TruckSmartCardNo,Cars.strCarNo as Pelak,Cars.strCarSerialNo as Serial  from dbtransport.dbo.tbEnterExit as Turns
                                  Inner Join dbtransport.dbo.TbCar as Cars On Turns.strCardno=Cars.nIDCar 
                                  Where Cars.ViewFlag=1 and (Turns.TurnStatus=1 or Turns.TurnStatus=7 or Turns.TurnStatus=8 or Turns.TurnStatus=9 or Turns.TurnStatus=10)
@@ -303,7 +303,7 @@ Namespace Turns
         Public Function GetNSSTurnStatus(YourTurnStatusId As Int64) As R2CoreTransportationAndLoadNotificationStandardTurnStatusStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                          "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnStatuses Where TurnStatusId=" & YourTurnStatusId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnStatusNotFoundException
                 Dim NSS As R2CoreTransportationAndLoadNotificationStandardTurnStatusStructure = New R2CoreTransportationAndLoadNotificationStandardTurnStatusStructure
                 NSS.TurnStatusId = Ds.Tables(0).Rows(0).Item("TurnStatusId")
@@ -322,7 +322,7 @@ Namespace Turns
             Try
                 Dim DS As DataSet = Nothing
                 Dim InstanceTruckDrivers = New R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                   Select Top 1 * from dbtransport.dbo.tbEnterExit as Turns
                   Where (Turns.TurnStatus=" & TurnStatuses.Registered & " or Turns.TurnStatus=" & TurnStatuses.UsedLoadAllocationRegistered & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationLoadAllocationCancelled & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationLoadPermissionCancelled & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationUser & ") 
                         and substring(Turns.OtaghdarTurnNumber,1,1)='" & YourNSSSequentialTurn.SequentialTurnKeyWord & "' 
@@ -339,7 +339,7 @@ Namespace Turns
             Try
                 Dim InstanceTruckDrivers = New R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from dbtransport.dbo.TbEnterExit Where StrCardNo=" & YourNSSCar.nIdCar & " and (bFlagDriver=0) Order By nEnterExitId desc", 0, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from dbtransport.dbo.TbEnterExit Where StrCardNo=" & YourNSSCar.nIdCar & " and (bFlagDriver=0) Order By nEnterExitId desc", 0, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New LastActiveTurnNotFoundException
                 End If
                 Return New R2CoreTransportationAndLoadNotificationStandardTurnStructure(Ds.Tables(0).Rows(0).Item("nEnterExitId"), Ds.Tables(0).Rows(0).Item("StrEnterDate"), Ds.Tables(0).Rows(0).Item("StrEnterTime"), InstanceTruckDrivers.GetNSSTruckDriver(Convert.ToInt64(Ds.Tables(0).Rows(0).Item("nDriverCode")), False), Ds.Tables(0).Rows(0).Item("bFlagDriver"), Ds.Tables(0).Rows(0).Item("nUserIdEnter"), Ds.Tables(0).Rows(0).Item("BillOfLadingNumber").trim, Ds.Tables(0).Rows(0).Item("OtaghdarTurnNumber").trim, Ds.Tables(0).Rows(0).Item("StrCardNo"), Ds.Tables(0).Rows(0).Item("TurnStatus"), Ds.Tables(0).Rows(0).Item("RegisteringTimeStamp"))
@@ -353,7 +353,7 @@ Namespace Turns
         Public Function GetTurns(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure) As List(Of R2CoreTransportationAndLoadNotificationStandardTurnExtendedStructure)
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select  (Select Count(*) from dbtransport.dbo.tbEnterExit as TurnsX
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT On SUBSTRING(TurnsX.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS=SeqT.SeqTKeyWord Collate Arabic_CI_AI_WS
                              Where SeqT.Active=1 and SeqT.Deleted=0 and SeqT.SeqTKeyWord Collate Arabic_CI_AI_WS=SUBSTRING(DataBox.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS and TurnsX.nEnterExitId<DataBox.nEnterExitId and (TurnsX.TurnStatus=1 or TurnsX.TurnStatus=7 or TurnsX.TurnStatus=8 or TurnsX.TurnStatus=9 or TurnsX.TurnStatus=10)) as TurnDistanceToValidity,DataBox.*
@@ -405,7 +405,7 @@ Namespace Turns
         Public Function GetTurns(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure) As List(Of R2CoreTransportationAndLoadNotificationStandardTurnExtendedStructure)
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select Top 5 Turns.nEnterExitId,Turns.StrEnterDate,Turns.StrEnterTime,Turns.nDriverCode,Turns.bFlagDriver,Turns.nUserIdEnter,Turns.OtaghdarTurnNumber,Turns.StrCardNo,
                                       Turns.TurnStatus,Turns.strElamDate , Cars.strCarNo +'-'+ Cars.strCarSerialNo as LPString,Turns.strDriverName,TurnStatus.TurnStatusTitle,TurnStatus.Description,TurnCreatorUsers.UserName as Username,Turns.RegisteringTimeStamp
                     From dbtransport.dbo.tbEnterExit as Turns
@@ -451,7 +451,7 @@ Namespace Turns
         Public Function GetNSSTurn(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure) As R2CoreTransportationAndLoadNotificationStandardTurnStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select Top 1 TurnCreatorUsers.UserName,TurnStatus.TurnStatusTitle,Persons.strPersonFullName,Cars.strCarNo+'-'+Cars.strCarSerialNo as LPString,Turns.nEnterExitId,Turns.strEnterDate,Turns.strEnterTime,Turns.nDriverCode,Turns.bFlagDriver,Turns.nUserIdEnter,Turns.OtaghdarTurnNumber,Turns.strCardno,Turns.TurnStatus,Turns.RegisteringTimeStamp,Turns.strElamDate
                    from dbtransport.dbo.tbEnterExit as Turns
                        Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTurnStatuses as TurnStatus On Turns.TurnStatus=TurnStatus.TurnStatusId
@@ -498,7 +498,7 @@ Namespace Turns
         Public Function GetNSSLastTurn(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure) As R2CoreTransportationAndLoadNotificationStandardTurnStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select Top 1 TurnCreatorUsers.UserName,TurnStatus.TurnStatusTitle,Persons.strPersonFullName,Cars.strCarNo+'-'+Cars.strCarSerialNo as LPString,Turns.nEnterExitId,Turns.strEnterDate,Turns.strEnterTime,Turns.nDriverCode,Turns.bFlagDriver,Turns.nUserIdEnter,Turns.OtaghdarTurnNumber,Turns.strCardno,Turns.TurnStatus,Turns.RegisteringTimeStamp,Turns.strElamDate
                    from dbtransport.dbo.tbEnterExit as Turns
                        Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTurnStatuses as TurnStatus On Turns.TurnStatus=TurnStatus.TurnStatusId
@@ -565,7 +565,7 @@ Namespace Turns
 
         Private Sub LoadAllocationRegistering_(YourNSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 'کنترل وضعیت نوبت
                 If Not (YourNSSTurn.TurnStatus = TurnStatuses.Registered Or YourNSSTurn.TurnStatus = TurnStatuses.UsedLoadAllocationRegistered Or YourNSSTurn.TurnStatus = TurnStatuses.ResuscitationLoadAllocationCancelled Or YourNSSTurn.TurnStatus = TurnStatuses.ResuscitationLoadPermissionCancelled Or YourNSSTurn.TurnStatus = TurnStatuses.ResuscitationUser) Then Throw New TurnHandlingNotAllowedBecuaseTurnStatusException
@@ -630,7 +630,7 @@ Namespace Turns
 
         Public Sub LoadAllocationCancelling(YourNSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 'کنترل وضعیت نوبت
                 If Not (YourNSSTurn.TurnStatus = TurnStatuses.UsedLoadAllocationRegistered Or YourNSSTurn.TurnStatus = TurnStatuses.ResuscitationLoadAllocationCancelled Or
@@ -657,7 +657,7 @@ Namespace Turns
             Try
                 Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationInstanceTrucksManager
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 StrCardNo from dbtransport.dbo.TbEnterExit Where nEnterExitId=" & YourTurnId & "", 300, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 StrCardNo from dbtransport.dbo.TbEnterExit Where nEnterExitId=" & YourTurnId & "", 300, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New RelationBetweenTurnAndTruckNotFoundException
                 End If
                 Return InstanceTrucks.GetNSSTruck(Convert.ToInt64(Ds.Tables(0).Rows(0).Item("StrCardNo")))
@@ -698,7 +698,7 @@ Namespace Turns
 
         Public Sub LoadPermissionCancelling(YourTurnId As Int64, YourResuscitationFlag As Boolean)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
                 Dim NSSTurn = InstanceTurns.GetNSSTurn(YourTurnId)
@@ -723,7 +723,7 @@ Namespace Turns
             Try
                 Dim InstanceTruckDrivers = New R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Top 1 * from dbtransport.dbo.TbEnterExit Where StrCardNo=" & YourNSSTruck.NSSCar.nIdCar & " and (bFlagDriver=0) Order By nEnterExitId desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New TurnNotFoundException
                 End If
@@ -739,7 +739,7 @@ Namespace Turns
             Try
                 Dim InstanceTruckDrivers = New R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Top 1 Turns.* from dbtransport.dbo.tbEnterExit as Turns
                         Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On Turns.nEnterExitId=EntityRelations.E1 
                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests as TurnRegisterRequests On EntityRelations.E2=TurnRegisterRequests.TRRId 
@@ -756,8 +756,8 @@ Namespace Turns
 
         Public Function GetTurnRegisteringTimeStampWithTurnType(YourTurnType As TurnType) As R2CoreDateAndTime
             Try
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                Dim TurnRegisteringTimeStamp As DateTime = IIf(YourTurnType = TurnType.Permanent, InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 4), _DateTime.GetCurrentDateTimeMilladi)
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                Dim TurnRegisteringTimeStamp As DateTime = IIf(YourTurnType = TurnType.Permanent, InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 4), _DateTimeService.GetCurrentDateTimeMilladi)
                 Return New R2CoreDateAndTime With {.DateTimeMilladi = TurnRegisteringTimeStamp}
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -767,7 +767,7 @@ Namespace Turns
         Public Function GetNSSLastTurnCredit(YourSeqTId As Int64) As R2CoreTransportationAndLoadNotificationStandardTurnCreditStructure
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                     "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnCredits 
                      Where SeqTId=" & YourSeqTId & " and Active=1 and Deleted=0 
                      Order By DateTimeMilladi Desc", 0, DS, New Boolean).GetRecordsCount = 0 Then
@@ -786,7 +786,7 @@ Namespace Turns
             Try
                 Dim InstanceTruckDrivers = New R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Top 1 SoftwareUsers.UserId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
                          Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1
 	                     Inner Join dbtransport.dbo.TbDriver as Drivers On EntityRelations.E2=Drivers.nIDDriver 
@@ -811,7 +811,7 @@ Namespace Turns
         Public Function GetNSSTurn(YourTurnId As Int64) As R2CoreTransportationAndLoadNotificationStandardTurnStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                          "Select Users.UserName,TurnStatus.TurnStatusTitle,Person.strPersonFullName,Car.strCarNo+'-'+car.strCarSerialNo as LPString, EnterExit.nEnterExitId,EnterExit.strEnterDate,EnterExit.strEnterTime,EnterExit.nDriverCode,EnterExit.bFlagDriver,EnterExit.nUserIdEnter,EnterExit.OtaghdarTurnNumber,EnterExit.strCardno,EnterExit.TurnStatus,EnterExit.RegisteringTimeStamp
                             from dbtransport.dbo.tbEnterExit as EnterExit 
                                Inner Join dbtransport.dbo.TbCar as Car On EnterExit.strCardno=Car.nIDCar
@@ -845,13 +845,14 @@ Namespace Turns
     End Class
 
     Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassTurnsManagement
-        Private Shared _DateTime As New R2DateTime
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function ExistActiveTurn(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure)
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select * from dbtransport.dbo.tbEnterExit as Turns
                       Where (Turns.TurnStatus=1 or Turns.TurnStatus=7 or Turns.TurnStatus=8 or Turns.TurnStatus=9 or Turns.TurnStatus=10) and Turns.bFlagDriver=0 and
                              Turns.strCardno=" & YourNSSTruck.NSSCar.nIdCar & "", 0, Ds, New Boolean).GetRecordsCount() = 0 Then
@@ -867,7 +868,7 @@ Namespace Turns
         Public Shared Function GetNSSTurn(YourTurnId As Int64) As R2CoreTransportationAndLoadNotificationStandardTurnStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                          "Select Users.UserName,TurnStatus.TurnStatusTitle,Person.strPersonFullName,Car.strCarNo+'-'+car.strCarSerialNo as LPString, EnterExit.nEnterExitId,EnterExit.strEnterDate,EnterExit.strEnterTime,EnterExit.nDriverCode,EnterExit.bFlagDriver,EnterExit.nUserIdEnter,EnterExit.OtaghdarTurnNumber,EnterExit.strCardno,EnterExit.TurnStatus,EnterExit.RegisteringTimeStamp
                             from dbtransport.dbo.tbEnterExit as EnterExit 
                                Inner Join dbtransport.dbo.TbCar as Car On EnterExit.strCardno=Car.nIDCar
@@ -899,9 +900,9 @@ Namespace Turns
 
         Public Shared Function GetNSSTurn(YourSeqTId As Int64, YourTurnId As String, YourTargetYearFull As Int64) As R2CoreTransportationAndLoadNotificationStandardTurnStructure
             Try
-                Dim CurrentSalShamsiFull As String = _DateTime.GetCurrentShamsiSal
+                Dim CurrentSalShamsiFull As String = _DateTimeService.GetCurrentShamsiSal
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                           "Select Users.UserName,TurnStatus.TurnStatusTitle,Person.strPersonFullName,Car.strCarNo+'-'+car.strCarSerialNo as LPString, EnterExit.nEnterExitId,EnterExit.strEnterDate,EnterExit.strEnterTime,EnterExit.nDriverCode,EnterExit.bFlagDriver,EnterExit.nUserIdEnter,EnterExit.OtaghdarTurnNumber,EnterExit.strCardno,EnterExit.TurnStatus,EnterExit.RegisteringTimeStamp
                                 from dbtransport.dbo.tbEnterExit as EnterExit 
                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT On SUBSTRING(EnterExit.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS= SeqT.SeqTKeyWord Collate Arabic_CI_AI_WS
@@ -935,7 +936,7 @@ Namespace Turns
 
         Public Shared Sub LoadPermissionRegistering(YourTurnId As Int64)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim NSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure = R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTurn(YourTurnId)
                 Dim NSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure = R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTruck(YourTurnId)
@@ -969,7 +970,7 @@ Namespace Turns
 
         Public Shared Sub LoadPermissionCancelling(YourTurnId As Int64, YourResuscitationFlag As Boolean)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim NSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure = R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTurn(YourTurnId)
                 'کنترل وضعیت نوبت
@@ -1002,7 +1003,7 @@ Namespace Turns
 
         'Public Shared Sub TurnExpirationCancelling(YourTurnId As Int64)
         '    Dim CmdSql As New SqlCommand
-        '    CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+        '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
         '    Try
         '        Dim NSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure = R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTurn(YourTurnId)
         '        'کنترل وضعیت نوبت
@@ -1031,7 +1032,7 @@ Namespace Turns
         Public Shared Function GetNSSTruck(YourTurnId As Int64) As R2CoreTransportationAndLoadNotificationStandardTruckStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 StrCardNo from dbtransport.dbo.TbEnterExit Where nEnterExitId=" & YourTurnId & "", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 StrCardNo from dbtransport.dbo.TbEnterExit Where nEnterExitId=" & YourTurnId & "", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New RelationBetweenTurnAndTruckNotFoundException
                 End If
                 Return R2CoreTransportationAndLoadNotificationMClassTrucksManagement.GetNSSTruck(Ds.Tables(0).Rows(0).Item("StrCardNo"))
@@ -1079,7 +1080,7 @@ Namespace Turns
         Public Shared Function IsTerraficCardTypeforTurnRegisteringActive(YourNSS As R2CoreParkingSystemStandardTrafficCardStructure) As Boolean
             Try
                 Dim Ds As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 TurnRegisteringActive from R2PrimaryTransportationAndLoadNotification.dbo.TblTerraficCardTypesforTurnRegistering Where TerraficCardTypeId=" & YourNSS.CardType & "", 3600, Ds, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 TurnRegisteringActive from R2PrimaryTransportationAndLoadNotification.dbo.TblTerraficCardTypesforTurnRegistering Where TerraficCardTypeId=" & YourNSS.CardType & "", 3600, Ds, New Boolean)
                 Return Ds.Tables(0).Rows(0).Item("TurnRegisteringActive")
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -1089,7 +1090,7 @@ Namespace Turns
         Public Shared Function IsTerraficCardTypeforTurnRegistering(YourNSS As R2CoreParkingSystemStandardTrafficCardStructure) As Boolean
             Try
                 Dim Ds As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 TurnRegistering from R2PrimaryTransportationAndLoadNotification.dbo.TblTerraficCardTypesforTurnRegistering Where TerraficCardTypeId=" & YourNSS.CardType & "", 3600, Ds, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 TurnRegistering from R2PrimaryTransportationAndLoadNotification.dbo.TblTerraficCardTypesforTurnRegistering Where TerraficCardTypeId=" & YourNSS.CardType & "", 3600, Ds, New Boolean)
                 Return Ds.Tables(0).Rows(0).Item("TurnRegistering")
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -1166,17 +1167,17 @@ Namespace Turns
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationTurnsManager
 
-        Private _R2DateTimeService As IR2DateTimeService
-
-        Public Sub New(YourR2DateTimeService As IR2DateTimeService)
-            _R2DateTimeService = YourR2DateTimeService
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+        Private _DateTimeService As IR2DateTimeService
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Public Function GetSoftwareUserId(YourTurnId As Int64) As Int64
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Top 1 SoftwareUsers.UserId as SoftwareUserId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
                         Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
                         Inner Join dbtransport.dbo.TbPerson as Persons On EntityRelations.E2 =Persons.nIDPerson
@@ -1200,7 +1201,6 @@ Namespace Turns
 
         Public Function GetLastActiveTurnfromTruckId(YourTruckId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTurnExtended
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -1214,10 +1214,10 @@ Namespace Turns
                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SequentialTurns on substring(Turns.OtaghdarTurnNumber,1,1)=SequentialTurns.SeqTKeyWord  
                         Where Turns.StrCardNo=" & YourTruckId & "  and (Turns.TurnStatus=" & Turns.TurnStatuses.Registered & " or Turns.TurnStatus=" & Turns.TurnStatuses.UsedLoadAllocationRegistered & " or Turns.TurnStatus=" & Turns.TurnStatuses.ResuscitationLoadPermissionCancelled & " or Turns.TurnStatus=" & Turns.TurnStatuses.ResuscitationLoadAllocationCancelled & " or Turns.TurnStatus=" & Turns.TurnStatuses.ResuscitationUser & ")
                         Order By nEnterExitId Desc")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(Ds) <= 0 Then Throw New TurnNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select Top 1 Turns.nEnterExitId as TurnId,Turns.strEnterDate as TurnIssueDate,Turns.strEnterTime as TurnIssueTime,Turns.strDriverName as TruckDriver,SoftwareUsers.UserName as SoftwareUserName,
                                      Turns.BillOfLadingNumber as BillOfLadingNumber,Turns.OtaghdarTurnNumber as OtaghdarTurnNumber,TurnStatuses.TurnStatusTitle as TurnStatusTitle,TurnStatuses.Description as TurnStatusDescription,
                                      Turns.strElamDate as DateOfLastChanged,SequentialTurns.SeqTTitle as SequentialTurnTitle
@@ -1242,7 +1242,6 @@ Namespace Turns
 
         Public Function GetLastTurnfromTruckId(YourTruckId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTurnExtended
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -1255,10 +1254,10 @@ Namespace Turns
                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTurnStatuses as TurnStatuses on Turns.TurnStatus=TurnStatuses.TurnStatusId 
                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SequentialTurns on substring(Turns.OtaghdarTurnNumber,1,1)=SequentialTurns.SeqTKeyWord  
                         Where Turns.StrCardNo=" & YourTruckId & "  Order By nEnterExitId Desc")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(Ds) <= 0 Then Throw New TurnNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select Top 1 Turns.nEnterExitId as TurnId,Turns.strEnterDate as TurnIssueDate,Turns.strEnterTime as TurnIssueTime,Turns.strDriverName as TruckDriver,SoftwareUsers.UserName as SoftwareUserName,
                                      Turns.BillOfLadingNumber as BillOfLadingNumber,Turns.OtaghdarTurnNumber as OtaghdarTurnNumber,TurnStatuses.TurnStatusTitle as TurnStatusTitle,TurnStatuses.Description as TurnStatusDescription,
                                      Turns.strElamDate as DateOfLastChanged,SequentialTurns.SeqTTitle as SequentialTurnTitle
@@ -1281,10 +1280,39 @@ Namespace Turns
             End Try
         End Function
 
+        Public Function GetLastTurnfromSoftwareUser(YourSoftwareUserId As Int64) As R2CoreTransportationAndLoadNotificationTurn
+            Try
+                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim Ds As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                   "Select Top 1 Turns.nEnterExitId as TurnId,Turns.strCardno as TruckId,Turns.strEnterDate as TurnIssueDate,Turns.strEnterTime as TurnIssueTime,Turns.strDesc as TurnDescription,
+                                 Turns.nUserIdEnter as TurnIssueSoftwareUserId,Turns.nUserIdExit as TurnLastChangedSoftwareUserId,Turns.strDriverName as TruckDriverName,Turns.bFlag,Turns.bFlagDriver,
+                    	         Turns.strElamDate as TurnLastChangedDate,Turns.strElamTime as TurnLastChangedTime,Turns.nDriverCode as TruckDriverId,Turns.BillOfLadingNumber as BillOfLadingNumber,
+	                             Turns.OtaghdarTurnNumber as SequentialTurnNumber,Turns.TurnStatus as TurnStatusId,Turns.RegisteringTimeStamp as RegisteringTimeStamp
+                       from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+	                     Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1
+                         Inner Join dbtransport.dbo.TbPerson as Persons On EntityRelations.E2=Persons.nIDPerson 
+                         Inner Join dbtransport.dbo.TbCarAndPerson as CarAndPersons On Persons.nIDPerson=CarAndPersons.nIDPerson
+                         Inner Join dbtransport.dbo.TbCar as Cars On CarAndPersons.nIDCar=Cars.nIDCar 
+                         Inner Join dbtransport.dbo.tbEnterExit as Turns On Cars.nIDCar=Turns.strCardno 
+                       Where SoftwareUsers.UserId=" & YourSoftwareUserId & " and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and EntityRelations.ERTypeId=" & R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & " and EntityRelations.RelationActive=1 and Cars.ViewFlag=1 and CarAndPersons.snRelation=2 
+                             and ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000'))", 300, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnNotFoundException
+                Return New R2CoreTransportationAndLoadNotificationTurn With {.TurnId = Ds.Tables(0).Rows(0).Item("TurnId"), .TruckId = Ds.Tables(0).Rows(0).Item("TruckId"), .TurnIssueDate = Ds.Tables(0).Rows(0).Item("TurnIssueDate").trim,
+                      .TurnIssueTime = Ds.Tables(0).Rows(0).Item("TurnIssueTime").trim, .TurnDescription = Ds.Tables(0).Rows(0).Item("TurnDescription").trim, .TurnIssueSoftwareUserId = Ds.Tables(0).Rows(0).Item("TurnIssueSoftwareUserId"),
+                      .TurnLastChangedSoftwareUserId = Ds.Tables(0).Rows(0).Item("TurnLastChangedSoftwareUserId"), .TruckDriverName = Ds.Tables(0).Rows(0).Item("TruckDriverName").trim,
+                      .bFlag = Ds.Tables(0).Rows(0).Item("bFlag"), .bFlagDriver = Ds.Tables(0).Rows(0).Item("bFlagDriver"), .TurnLastChangedDate = Ds.Tables(0).Rows(0).Item("TurnLastChangedDate").trim,
+                      .TurnLastChangedTime = Ds.Tables(0).Rows(0).Item("TurnLastChangedTime").trim, .TruckDriverId = Ds.Tables(0).Rows(0).Item("TruckDriverId"), .BillOfLadingNumber = Ds.Tables(0).Rows(0).Item("BillOfLadingNumber").trim,
+                      .SequentialTurnNumber = Ds.Tables(0).Rows(0).Item("SequentialTurnNumber").trim, .TurnStatusId = Ds.Tables(0).Rows(0).Item("TurnStatusId"), .RegisteringTimeStamp = Ds.Tables(0).Rows(0).Item("RegisteringTimeStamp")}
+            Catch ex As TurnNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
         Public Function GetTop10TruckTurns(YourTruckId As Int64, YourImmediately As Boolean) As String
             Try
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -1299,10 +1327,10 @@ Namespace Turns
                           Inner Join R2Primary.DBO.TblSoftwareUsers AS TurnCreatorUsers On Turns.nUserIdEnter=TurnCreatorUsers.UserId 
                         Where Turns.StrCardNo=" & YourTruckId & " Order By Turns.nEnterExitId Desc
                         for JSON path")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select Top 10  Turns.nEnterExitId as TurnId,Turns.strEnterDate as TurnIssueDate,Turns.strEnterTime as TurnIssueTime,Turns.strDriverName as TruckDriver,
                                    TurnCreatorUsers.UserName as SoftwareUserName,Turns.BillOfLadingNumber as BillOfLadingNumber,Turns.OtaghdarTurnNumber as OtaghdarTurnNumber,
 			                       TurnStatus.TurnStatusTitle as TurnStatusTitle,TurnStatus.Description as TurnStatusDescription,Turns.strElamDate as DateOfLastChanged,
@@ -1325,9 +1353,8 @@ Namespace Turns
         Public Function GetTop5TruckTurns(YourSoftwareUserId As Int64) As String
             Try
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select  (Select Count(*) from dbtransport.dbo.tbEnterExit as TurnsX
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT On SUBSTRING(TurnsX.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS=SeqT.SeqTKeyWord Collate Arabic_CI_AI_WS
                              Where SeqT.Active=1 and SeqT.Deleted=0 and SeqT.SeqTKeyWord Collate Arabic_CI_AI_WS=SUBSTRING(DataBox.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS and TurnsX.nEnterExitId<DataBox.nEnterExitId and (TurnsX.TurnStatus=1 or TurnsX.TurnStatus=7 or TurnsX.TurnStatus=8 or TurnsX.TurnStatus=9 or TurnsX.TurnStatus=10)) as TurnDistanceToValidity,
@@ -1356,7 +1383,6 @@ Namespace Turns
 
         Public Function GetTurn(YourTurnId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTurn
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -1367,10 +1393,10 @@ Namespace Turns
 	                             Turns.OtaghdarTurnNumber as SequentialTurnNumber,Turns.TurnStatus as TurnStatusId,Turns.RegisteringTimeStamp as RegisteringTimeStamp
 	                      from DBTransport.dbo.tbEnterExit as Turns
                           Where Turns.nEnterExitId=" & YourTurnId & "")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(Ds) <= 0 Then Throw New TurnNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                          "Select Turns.nEnterExitId as TurnId,Turns.strCardno as TruckId,Turns.strEnterDate as TurnIssueDate,Turns.strEnterTime as TurnIssueTime,Turns.strDesc as TurnDescription,
                                  Turns.nUserIdEnter as TurnIssueSoftwareUserId,Turns.nUserIdExit as TurnLastChangedSoftwareUserId,Turns.strDriverName as TruckDriverName,Turns.bFlag,Turns.bFlagDriver,
                     	         Turns.strElamDate as TurnLastChangedDate,Turns.strElamTime as TurnLastChangedTime,Turns.nDriverCode as TruckDriverId,Turns.BillOfLadingNumber as BillOfLadingNumber,
@@ -1393,10 +1419,10 @@ Namespace Turns
 
         Public Sub TurnCancellationByUser(YourTurnId As Int64, YourSoftwareUserId As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Dim InstanceTurnAccounting = New R2CoreTransportationAndLoadNotificationTurnAccountingManager(New R2DateTimeService)
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
 
                 Dim Turn = GetTurn(YourTurnId, True)
                 If Not (Turn.TurnStatusId = TurnStatuses.Registered Or Turn.TurnStatusId = TurnStatuses.UsedLoadAllocationRegistered Or Turn.TurnStatusId = TurnStatuses.ResuscitationLoadPermissionCancelled Or Turn.TurnStatusId = TurnStatuses.ResuscitationLoadAllocationCancelled Or Turn.TurnStatusId = TurnStatuses.ResuscitationUser) Then Throw New TurnCancellationNotPossibleBecuaseTurnStatusException
@@ -1452,10 +1478,10 @@ Namespace Turns
 
         Public Sub TurnCancellationBySystem(YourTurnId As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Dim InstanceTurnAccounting = New R2CoreTransportationAndLoadNotificationTurnAccountingManager(New R2DateTimeService)
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
 
                 Dim Turn = GetTurn(YourTurnId, True)
                 If Not (Turn.TurnStatusId = TurnStatuses.Registered Or Turn.TurnStatusId = TurnStatuses.UsedLoadAllocationRegistered Or Turn.TurnStatusId = TurnStatuses.ResuscitationLoadPermissionCancelled Or Turn.TurnStatusId = TurnStatuses.ResuscitationLoadAllocationCancelled Or Turn.TurnStatusId = TurnStatuses.ResuscitationUser) Then Throw New TurnCancellationNotPossibleBecuaseTurnStatusException
@@ -1512,10 +1538,10 @@ Namespace Turns
 
         Public Function TurnResuscitationByUser(YourTurnId As Int64, YourSoftwareUserId As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Dim InstanceTurnAccounting = New R2CoreTransportationAndLoadNotificationTurnAccountingManager(New R2DateTimeService)
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 Dim Turn = GetTurn(YourTurnId, True)
                 If Not (Turn.TurnStatusId = TurnStatuses.CancelledUser Or Turn.TurnStatusId = TurnStatuses.CancelledSystem Or Turn.TurnStatusId = TurnStatuses.CancelledLoadPermissionCancelled) Then Throw New TurnResuscitationNotPossibleBecuaseTurnStatusException
 
@@ -1572,7 +1598,6 @@ Namespace Turns
 
         Public Function ExistActiveTurn(YourTruckId As Int64, YourImmediately As Boolean)
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -1580,14 +1605,14 @@ Namespace Turns
                         "Select nEnterExitId from dbtransport.dbo.tbEnterExit as Turns
                          Where (Turns.TurnStatus=" & TurnStatuses.Registered & " or Turns.TurnStatus=" & TurnStatuses.UsedLoadAllocationRegistered & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationUser & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationLoadAllocationCancelled & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationLoadPermissionCancelled & ") and 
                                Turns.bFlagDriver=0 and Turns.strCardno=" & YourTruckId & "")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(Ds) <= 0 Then
                         Return False
                     Else
                         Return True
                     End If
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select * from dbtransport.dbo.tbEnterExit as Turns
                       Where (Turns.TurnStatus=1 or Turns.TurnStatus=7 or Turns.TurnStatus=8 or Turns.TurnStatus=9 or Turns.TurnStatus=10) and Turns.bFlagDriver=0 and
                              Turns.strCardno=" & YourTruckId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
@@ -1603,21 +1628,20 @@ Namespace Turns
 
         Public Function HasTruckDriverTurn(YourTruckDriverId As Int64, YorImmediately As Boolean) As Boolean
             Try
-                Dim IntanceDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As New DataSet
                 If YorImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
                     Da.SelectCommand = New SqlCommand(
                         "Select Top 1 nEnterExitId from dbtransport.dbo.TbEnterExit 
                          Where nDriverCode=" & YourTruckDriverId & " and bFlagDriver=0 Order By nEnterExitId desc")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(Ds) <= 0 Then
                         Return False
                     Else
                         Return True
                     End If
                 Else
-                    If IntanceDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select Top 1 nEnterExitId from dbtransport.dbo.TbEnterExit 
                          Where nDriverCode=" & YourTruckDriverId & " and bFlagDriver=0 Order By nEnterExitId desc", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
                         Return False
@@ -1632,15 +1656,15 @@ Namespace Turns
 
         Public Function GetPossibleTruckTravelTime(YourTruckId As Int64) As Int64
             Try
-                Dim InstanceLoadPermission = New R2CoreTransportationAndLoadNotificationLoadPermissionManager(_R2DateTimeService)
-                Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationTrucksManager(_R2DateTimeService)
+                Dim InstanceLoadPermission = New R2CoreTransportationAndLoadNotificationLoadPermissionManager(_DateTimeService)
+                Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService)
                 Dim InstanceTravelTime = New R2CoreTransportationAndLoadNotificationTravelTimeManager
                 Dim Load = InstanceLoadPermission.GetTruckLastLoadWhichPermissioned(YourTruckId, True)
                 Dim LoaderTypeId = InstanceTrucks.GetTruck(YourTruckId, True).LoaderTypeId
 
                 Dim TravelTime As Int16 = InstanceTravelTime.GetTravelTime(LoaderTypeId, Load.SourceCityId, Load.TargetCityId, True).TravelTime
-                Dim DateTimeMilladiExit As DateTime = _R2DateTimeService.GetMilladiDateTimeFromShamsiDate(InstanceLoadPermission.GetTruckLastLoadPermission(YourTruckId, False).LoadPermissionDate, InstanceLoadPermission.GetTruckLastLoadPermission(YourTruckId, False).LoadPermissionTime)
-                Dim Diff As Int64 = R2CoreMClassPublicProcedures.GetDateDiff(DateInterval.Minute, DateTimeMilladiExit, _R2DateTimeService.GetCurrentDateTimeMilladi()) + 1
+                Dim DateTimeMilladiExit As DateTime = _DateTimeService.GetMilladiDateTimeFromShamsiDate(InstanceLoadPermission.GetTruckLastLoadPermission(YourTruckId, False).LoadPermissionDate, InstanceLoadPermission.GetTruckLastLoadPermission(YourTruckId, False).LoadPermissionTime)
+                Dim Diff As Int64 = R2CoreMClassPublicProcedures.GetDateDiff(DateInterval.Minute, DateTimeMilladiExit, _DateTimeService.GetCurrentDateTimeMilladi()) + 1
                 Return (Diff - TravelTime * 60)
             Catch ex As TruckHasNotAnyLoadPermissionException
                 Return 0
@@ -1665,15 +1689,14 @@ Namespace Turns
 
         Public Function GetTurnCost(YourSequentialTurnId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTurnCost
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
                     Da.SelectCommand = New SqlCommand("Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnCosts Where SeqTId=" & YourSequentialTurnId & "")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(Ds) <= 0 Then Throw New TurnCostNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                   "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnCosts Where SeqTId=" & YourSequentialTurnId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then Throw New TurnCostNotFoundException
                 End If
                 Return New R2CoreTransportationAndLoadNotificationTurnCost With {.SequentialTurnId = Ds.Tables(0).Rows(0).Item("SeqTId"), .SelfGoverCost = Ds.Tables(0).Rows(0).Item("SelfGoverCost"), .TruckerAssociationCost = Ds.Tables(0).Rows(0).Item("TruckerAssociationCost")}
@@ -1694,19 +1717,19 @@ Namespace Turns
                 'احراز معیار محاسبه
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (CardId=" & TerraficCard.CardId & ") and (MblghA<>0) and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & " or EEAccountingProcessType=" & R2CoreParkingSystemAccountings.SherkatHazinehNobat & " ) order by DateMilladiA desc")
-                Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) = 0 Then Return TurnCost.SelfGoverCost
 
                 'تاخیر تا آخرین اکانت نوبت
-                Dim Tavaghof As Int64 = DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _R2DateTimeService.GetCurrentDateTimeMilladi())
+                Dim Tavaghof As Int64 = DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTimeService.GetCurrentDateTimeMilladi())
                 If Tavaghof >= TerraficCost.DelayFromEntry Then
                     Return TurnCost.SelfGoverCost
                 Else
                     Da.SelectCommand.CommandText = "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (CardId=" & TerraficCard.CardId & ") and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanHazinehNobat & ") order by DateMilladiA desc"
                     Ds.Tables.Clear()
                     If Da.Fill(Ds) <= 0 Then Return 0
-                    Dim TavaghofLastTurn As Int64 = DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _R2DateTimeService.GetCurrentDateTimeMilladi())
+                    Dim TavaghofLastTurn As Int64 = DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTimeService.GetCurrentDateTimeMilladi())
                     If TavaghofLastTurn <= Tavaghof Then
                         Return TurnCost.SelfGoverCost
                     Else
@@ -1724,8 +1747,8 @@ Namespace Turns
 
         Public Function GetTurnRegisteringTimeStampWithTurnType(YourTurnType As TurnType) As R2CoreDateAndTime
             Try
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                Dim TurnRegisteringTimeStamp As DateTime = IIf(YourTurnType = TurnType.Permanent, InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 4), _R2DateTimeService.GetCurrentDateTimeMilladi)
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                Dim TurnRegisteringTimeStamp As DateTime = IIf(YourTurnType = TurnType.Permanent, InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 4), _DateTimeService.GetCurrentDateTimeMilladi)
                 Return New R2CoreDateAndTime With {.DateTimeMilladi = TurnRegisteringTimeStamp}
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -1735,7 +1758,6 @@ Namespace Turns
         Public Function GetTurn(YourTurnRegisteringRequest As R2CoreTransportationAndLoadNotificationTurnRegisterRequest, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTurn
             Try
                 Dim InstanceTruckDrivers = New R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As New DataSet
 
                 If YourImmediately Then
@@ -1745,10 +1767,10 @@ Namespace Turns
                            Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On Turns.nEnterExitId=EntityRelations.E1 
                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests as TurnRegisterRequests On EntityRelations.E2=TurnRegisterRequests.TRRId 
                          Where EntityRelations.RelationActive=1 and EntityRelations.ERTypeId=1 and TurnRegisterRequests.TRRId=" & YourTurnRegisteringRequest.TRRId & "")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(Ds) <= 0 Then Throw New TurnNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                          "Select Top 1 Turns.* from dbtransport.dbo.tbEnterExit as Turns
                         Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On Turns.nEnterExitId=EntityRelations.E1 
                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTurnRegisterRequests as TurnRegisterRequests On EntityRelations.E2=TurnRegisterRequests.TRRId 
@@ -1766,14 +1788,14 @@ Namespace Turns
 
         Public Function GetReserveTurn(YourTurnRegisterRequestId As Int64, YourTurnType As TurnType, YourSoftwareUserId As Int64) As Int64
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
-                Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationTrucksManager(_R2DateTimeService)
+                Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService)
                 Dim InstanceTruckDrivers = New R2CoreTransportationAndLoadNotificationTruckDriversManager
                 Dim InstanceSequential = New R2CoreTransportationAndLoadNotificationSequentialTurnsManager
-                Dim InstanceTurnRegisterRequest = New R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(_R2DateTimeService)
+                Dim InstanceTurnRegisterRequest = New R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(_DateTimeService)
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
-                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_R2DateTimeService)
+                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService)
 
                 'ناوگان پیش فرض 
                 Dim Truck = InstanceTrucks.GetDefaultTruck()
@@ -1792,14 +1814,14 @@ Namespace Turns
 
                 Dim SequentialTurnId As Int64 = Int64.MinValue
                 Dim SequentialTurnId_ As String = String.Empty
-                CmdSql.CommandText = "Select top 1 Substring(OtaghdarTurnNumber,7,20) from tbenterexit with (tablockx) Where Substring(OtaghdarTurnNumber,1,5)='" & SequentialTurn.SeqTurnKeyWord.Trim + _R2DateTimeService.GetCurrentShamsiSal() & "' order by OtaghdarTurnNumber desc"
+                CmdSql.CommandText = "Select top 1 Substring(OtaghdarTurnNumber,7,20) from tbenterexit with (tablockx) Where Substring(OtaghdarTurnNumber,1,5)='" & SequentialTurn.SeqTurnKeyWord.Trim + _DateTimeService.GetCurrentShamsiSal() & "' order by OtaghdarTurnNumber desc"
                 SequentialTurnId = CmdSql.ExecuteScalar + 1
-                SequentialTurnId_ = SequentialTurn.SeqTurnKeyWord.Trim + _R2DateTimeService.GetCurrentShamsiSal() + "/" + InstancePublicProcedures.RepeatStr("0", 6 - SequentialTurnId.ToString().Trim().Length) + SequentialTurnId.ToString().Trim()
+                SequentialTurnId_ = SequentialTurn.SeqTurnKeyWord.Trim + _DateTimeService.GetCurrentShamsiSal() + "/" + InstancePublicProcedures.RepeatStr("0", 6 - SequentialTurnId.ToString().Trim().Length) + SequentialTurnId.ToString().Trim()
                 Dim TurnRegisteringTimeStamp = InstanceTurns.GetTurnRegisteringTimeStampWithTurnType(YourTurnType)
 
                 'ثبت نوبت ناوگان باری
                 CmdSql.CommandText = "Insert Into dbtransport.dbo.TbEnterExit(nEnterExitId,StrCardNo,StrEnterDate,StrEnterTime,StrDesc,bEnterExit,nUserIdEnter,nUserIdExit,StrDriverName,bFlag,bFlagDriver,strElamDate,strElamTime,nDriverCode,BillOfLadingNumber,OtaghdarTurnNumber,TurnStatus,LoadPermissionStatus,RegisteringTimeStamp) 
-                                      Values(" & newTurnId & "," & Truck.TruckId & ",'" & _R2DateTimeService.GetCurrentShamsiDate() & "','" & _R2DateTimeService.GetCurrentTime() & "','" & TRR.Description & "',0," & YourSoftwareUserId & "," & YourSoftwareUserId & ",'" & TruckDriver.NameFamily & "',1,1,'" & String.Empty & "','" & String.Empty & "'," & TruckDriver.DriverId & ",'','" & SequentialTurnId_ & "'," & TurnStatuses.CancelledSystem & "," & R2CoreTransportationAndLoadNotificationLoadPermissionStatuses.None & ",'" & TurnRegisteringTimeStamp.DateTimeMilladi & "')"
+                                      Values(" & newTurnId & "," & Truck.TruckId & ",'" & _DateTimeService.GetCurrentShamsiDate() & "','" & _DateTimeService.GetCurrentTime() & "','" & TRR.Description & "',0," & YourSoftwareUserId & "," & YourSoftwareUserId & ",'" & TruckDriver.NameFamily & "',1,1,'" & String.Empty & "','" & String.Empty & "'," & TruckDriver.DriverId & ",'','" & SequentialTurnId_ & "'," & TurnStatuses.CancelledSystem & "," & R2CoreTransportationAndLoadNotificationLoadPermissionStatuses.None & ",'" & TurnRegisteringTimeStamp.DateTimeMilladi & "')"
                 CmdSql.ExecuteNonQuery()
 
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
@@ -1828,8 +1850,7 @@ Namespace Turns
         Public Function GetTurnInfo(YourTurnId As Int64) As R2CoreTransportationAndLoadNotificationTurnInfo
             Try
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                           "Select Turns.nEnterExitId as TurnId,Turns.TurnStatus as TurnStatusId,Cars.CarNativenessTypeId,SequentialTurns.SeqTId 
                            From DBTransport.dbo.tbEnterExit as Turns
                                Inner Join dbtransport.dbo.TbCar as Cars On Turns.strCardno=Cars.nIDCar 
@@ -1847,14 +1868,13 @@ Namespace Turns
 
         Public Sub TempTurnsCancellation()
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
 
                 'آیا سرویس ابطال نوبت های موقت بر اساس کانفیگ فعال است یا نه
                 If Not InstanceConfiguration.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 3) Then Return
 
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select nEnterExitId from dbtransport.dbo.tbEnterExit
                       Where  strEnterDate=R2Primary.DBO.BPTCOGregorianToPersian(GETDATE()) and (TurnStatus=1 or TurnStatus=7 or TurnStatus=8 or TurnStatus=9 or TurnStatus=10) 
                              and DATEDIFF(MINUTE,RegisteringTimeStamp,GETDATE())>" & InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 4) & " and RegisteringTimeStamp<>'2015-01-01 00:00:00.000'", 0, DS, New Boolean)
@@ -1892,10 +1912,12 @@ Namespace Turns
 
         Public Class R2CoreTransportationAndLoadNotificationTurnAccountingManager
 
-            Private _DateTimeService As IR2DateTimeService = New R2DateTimeService
+            Private _DateTimeService As IR2DateTimeService
+            Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
 
             Public Sub New(YourDateTimeService As IR2DateTimeService)
                 _DateTimeService = YourDateTimeService
+                InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
             End Sub
 
             Public Sub TurnAccountingRegistering(YourTurnId As Int64, YourAccountingTypeId As Int64, YourSoftwareUserId As Int64, YourCommand As SqlClient.SqlCommand)
@@ -1912,7 +1934,6 @@ Namespace Turns
 
             Public Function GetTurnAccounting(YourTurnId As Int64, YourImmediately As Boolean) As String
                 Try
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                     Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                     Dim Ds As New DataSet
                     If YourImmediately Then
@@ -1923,10 +1944,10 @@ Namespace Turns
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTurnAccountingTypes as TurnAccountingTypes On TurnAccountings.AccountingTypeId=TurnAccountingTypes.AccountingTypeId 
                             Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On TurnAccountings.UserId=SoftwareUsers.UserId 
                          Where Turns.nEnterExitId=" & YourTurnId & " for JSON path")
-                        Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                        Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                         If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
                     Else
-                        If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select Turns.nEnterExitId as TurnId,Turns.OtaghdarTurnNumber as SequentialTurnId,TurnAccountings.DateShamsi,TurnAccountings.Time,TurnAccountingTypes.AccountingTypeTitle,SoftwareUsers.UserName  from DBTransport.dbo.tbEnterExit as Turns
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTurnAccounting as TurnAccountings On Turns.nEnterExitId=TurnAccountings.nEnterExitId 
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTurnAccountingTypes as TurnAccountingTypes On TurnAccountings.AccountingTypeId=TurnAccountingTypes.AccountingTypeId 
@@ -1957,10 +1978,16 @@ Namespace Turns
 
         Public Class R2CoreTransportationAndLoadNotificationTurnInfoManager
 
+            Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+            Private _DateTimeService As IR2DateTimeService
+            Public Sub New(YourDateTimeService As IR2DateTimeService)
+                _DateTimeService = YourDateTimeService
+                InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+            End Sub
+
             Public Sub InitializeTurnInfo(YourValue As StackExchange.Redis.RedisValue)
                 Try
-                    Dim InstanceCache = New R2CoreCacheManager
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
+                    Dim InstanceCache = New R2CoreCacheManager(_DateTimeService)
 
                     Dim SoftwareUser = JsonConvert.DeserializeObject(Of R2CoreSoftwareUser)(YourValue)
                     If (SoftwareUser.UserTypeId = R2Core.SoftwareUserManagement.R2CoreSoftwareUserTypes.None) Then
@@ -1968,7 +1995,7 @@ Namespace Turns
                     Else
                         If SoftwareUser.UserTypeId = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.Driver Then
                             Dim DS As DataSet = Nothing
-                            If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                            If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                   "Select Top 1 Turns.nEnterExitId as TurnId,Turns.TurnStatus as TurnStatusId,Cars.CarNativenessTypeId as NativenessTypeId,SequentialTurns.SeqTId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
                                       Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
                                       Inner Join dbtransport.dbo.TbPerson as Persons On EntityRelations.E2 =Persons.nIDPerson
@@ -1999,9 +2026,8 @@ Namespace Turns
 
             Public Sub SetTurnInfo(YourValue As StackExchange.Redis.RedisValue)
                 Try
-                    Dim InstanceCache = New R2CoreCacheManager
+                    Dim InstanceCache = New R2CoreCacheManager(_DateTimeService)
                     Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(New R2DateTimeService)
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
 
                     Dim TurnId = JsonConvert.DeserializeObject(Of Int64)(YourValue)
                     If (TurnId = 0) Then
@@ -2013,7 +2039,7 @@ Namespace Turns
                         'If Value.IsNullOrEmpty Then Throw New CacheNotFoundException
                         InstanceCache.RemoveCache(CacheKey, R2CoreTransportationAndLoadNotificationCatchDataBases.TruckDriverInformation)
                         Dim DS As DataSet = Nothing
-                        If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                   "Select Top 1 Turns.nEnterExitId as TurnId,Turns.TurnStatus as TurnStatusId,Cars.CarNativenessTypeId as NativenessTypeId,SequentialTurns.SeqTId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
                                       Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
                                       Inner Join dbtransport.dbo.TbPerson as Persons On EntityRelations.E2 =Persons.nIDPerson
@@ -2073,12 +2099,13 @@ Namespace Turns
         Public Class R2CoreTransportationAndLoadNotificationMClassTurnPrintingManager
             Private WithEvents _PrintDocumentNobat As PrintDocument = New PrintDocument()
             Private TurnPrintingInf As R2CoreTransportationAndLoadNotificationTurnPrintingInf
+            Private _DateTimeService As New R2DateTimeService
+            Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
             Private Function GetTurnPrintingInf(YourTurnId As Int64) As R2CoreTransportationAndLoadNotificationTurnPrintingInf
                 Try
                     Dim DS As DataSet
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select Top 1 EnterExit.strDesc as Description,EnterExit.nEnterExitId,EnterExit.strEnterDate,EnterExit.strEnterTime,RFIDCard.CardNo,RFIDCard.Charge,
                                     Person.strPersonFullName,LoaderType.LoaderTypeTitle,LoaderTypeFixStatus.LoaderTypeFixStatusTitle,Car.strCarNo,Car.strCarSerialNo,
 	                                SoftwareUser.UserName,Substring(EnterExit.OtaghdarTurnNumber,7,20) as SequentialTurnId
@@ -2128,8 +2155,8 @@ Namespace Turns
 
             Public Sub TurnPrint(YourTurnId As Int64)
                 Try
-                    Dim InstanceConfigurationOfComputers = New R2CoreMClassConfigurationOfComputersManager
-                    Dim InstanceComputers = New R2CoreMClassComputersManager
+                    Dim InstanceConfigurationOfComputers = New R2CoreMClassConfigurationOfComputersManager(_DateTimeService)
+                    Dim InstanceComputers = New R2CoreMClassComputersManager(_DateTimeService)
                     If InstanceConfigurationOfComputers.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.TurnControlling, InstanceComputers.GetNSSCurrentComputer.MId, 2) Then
                         TurnPrintingInf = GetTurnPrintingInf(YourTurnId)
                         'چاپ قبض نوبت
@@ -2207,6 +2234,8 @@ Namespace Turns
 
         Public Class R2CoreTransportationAndLoadNotificationMClassTurnPrintRequestManager
 
+            Private _DateTimeService As New R2DateTimeService
+
             Public Sub NoCostTurnPrintRequest(YourTurnId As Int64, YourTurnPrintRedirect As Boolean)
                 Try
                     TurnPrintRequest(YourTurnId, YourTurnPrintRedirect)
@@ -2218,8 +2247,8 @@ Namespace Turns
             Private Sub TurnPrintRequest(YourTurnId As Int64, YourTurnPrintRedirect As Boolean)
                 Try
                     Dim InstanceTurnPrinting = New R2CoreTransportationAndLoadNotificationMClassTurnPrintingManager
-                    Dim InstanceConfigurationOfComputers = New R2CoreMClassConfigurationOfComputersManager
-                    Dim InstanceComputers = New R2CoreMClassComputersManager
+                    Dim InstanceConfigurationOfComputers = New R2CoreMClassConfigurationOfComputersManager(_DateTimeService)
+                    Dim InstanceComputers = New R2CoreMClassComputersManager(_DateTimeService)
                     Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
                     If Not YourTurnPrintRedirect Then
                         InstanceTurnPrinting.TurnPrint(YourTurnId)
@@ -2228,7 +2257,7 @@ Namespace Turns
                             Dim DataStruct As DataStruct = New DataStruct()
                             DataStruct.Data1 = YourTurnId
                             Dim NSSTruck = InstanceTurns.GetNSSTruck(YourTurnId)
-                            Dim InstanceComputerMessages = New R2CoreMClassComputerMessagesManager
+                            Dim InstanceComputerMessages = New R2CoreMClassComputerMessagesManager(_DateTimeService)
                             InstanceComputerMessages.SendComputerMessage(New R2StandardComputerMessageStructure(Nothing, NSSTruck.NSSCar.GetCarPelakSerialComposit(), R2CoreTransportationAndLoadNotificationComputerMessageTypes.TurnPrint, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, DataStruct))
                         End If
                     End If
@@ -2321,12 +2350,14 @@ Namespace Turns
         End Class
 
         Public Class R2CoreTransportationAndLoadNotificationInstanceSequentialTurnsManager
-            Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
+            Private _DateTimeService As New R2DateTimeService
+            Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
             Public Function GetSequentialTurns() As List(Of R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure)
                 Try
                     Dim Ds As DataSet
-                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select Distinct SeqT.SeqTId,SeqT.SeqTTitle,SeqT.SeqTColor,SeqT.SeqTKeyWord,SeqT.Active,SeqT.ViewFlag,SeqT.Deleted 
                          from R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT
                          Where SeqT.Deleted=0 and SeqT.Active=1", 3600, Ds, New Boolean)
@@ -2343,7 +2374,7 @@ Namespace Turns
             Public Function GetSequentialTurns(YourNSSComputer As R2CoreStandardComputerStructure) As List(Of R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure)
                 Try
                     Dim DS As DataSet
-                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select Distinct SeqT.SeqTId,SeqT.SeqTTitle,SeqT.SeqTColor,SeqT.SeqTKeyWord,SeqT.Active,SeqT.ViewFlag,SeqT.Deleted from R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationSequentialTurns as AHRSeqT On SeqT.SeqTId=AHRSeqT.SeqTId
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AH On AHRSeqT.AHId=AH.AHId
@@ -2363,7 +2394,7 @@ Namespace Turns
             Public Function GetNSSSequentialTurn(YourSeqTId As Int64) As R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure
                 Try
                     Dim DS As DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.DBO.TblSequentialTurns Where SeqTId=" & YourSeqTId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New SequentialTurnNotFoundException
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.DBO.TblSequentialTurns Where SeqTId=" & YourSeqTId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New SequentialTurnNotFoundException
                     Return New R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure(DS.Tables(0).Rows(0).Item("SeqTId"), DS.Tables(0).Rows(0).Item("SeqTTitle").trim, DS.Tables(0).Rows(0).Item("SeqTColor").trim, DS.Tables(0).Rows(0).Item("SeqTKeyWord").trim, DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Deleted"))
                 Catch ex As SequentialTurnNotFoundException
                     Throw ex
@@ -2376,7 +2407,7 @@ Namespace Turns
                 Try
                     Dim SeqTurnKeyWord = Mid(YourNSSTurn.OtaghdarTurnNumber, 1, 1)
                     Dim DS As DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.DBO.TblSequentialTurns Where SeqTKeyWord='" & SeqTurnKeyWord & "'", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New SequentialTurnNotFoundException
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.DBO.TblSequentialTurns Where SeqTKeyWord='" & SeqTurnKeyWord & "'", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New SequentialTurnNotFoundException
                     Return New R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure(DS.Tables(0).Rows(0).Item("SeqTId"), DS.Tables(0).Rows(0).Item("SeqTTitle").trim, DS.Tables(0).Rows(0).Item("SeqTColor").trim, DS.Tables(0).Rows(0).Item("SeqTKeyWord").trim, DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Deleted"))
                 Catch ex As SequentialTurnNotFoundException
                     Throw ex
@@ -2388,7 +2419,7 @@ Namespace Turns
             Public Function GetNSSSequentialTurn(YourNSSAHSG As R2CoreTransportationAndLoadNotificationStandardAnnouncementsubGroupStructure) As R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure
                 Try
                     Dim DS As DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                "Select Top 1 SeqTId from R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroupsRelationSequentialTurns as AHSGRSeqT
                                 Where AHSGId=" & YourNSSAHSG.AHSGId & " and RelationActive=1 Order By RId Desc", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New SequentialTurnNotFoundException
                     Return GetNSSSequentialTurn(Convert.ToInt64(DS.Tables(0).Rows(0).Item("SeqTId")))
@@ -2402,12 +2433,14 @@ Namespace Turns
         End Class
 
         Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassSequentialTurnsManagement
-            Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
+            Private Shared _DateTimeService As New R2DateTimeService
+            Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
             Public Shared Function GetNSSSequentialTurn(YourSeqTId As Int64) As R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure
                 Try
                     Dim DS As DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.DBO.TblSequentialTurns Where SeqTId=" & YourSeqTId & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New SequentialTurnNotFoundException
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.DBO.TblSequentialTurns Where SeqTId=" & YourSeqTId & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New SequentialTurnNotFoundException
                     Return New R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure(DS.Tables(0).Rows(0).Item("SeqTId"), DS.Tables(0).Rows(0).Item("SeqTTitle").trim, DS.Tables(0).Rows(0).Item("SeqTColor").trim, DS.Tables(0).Rows(0).Item("SeqTKeyWord").trim, DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Deleted"))
                 Catch ex As SequentialTurnNotFoundException
                     Throw ex
@@ -2419,7 +2452,7 @@ Namespace Turns
             Public Shared Function GetNSSSequentialTurn(YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure) As R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure
                 Try
                     Dim DS As DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                           Select Top 1 SeqTs.SeqTId from R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqTs
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationSequentialTurns as AHRSeqTs On SeqTs.SeqTId=AHRSeqTs.SeqTId 
 	                        Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AHs on AHRSeqTs.AHId=AHs.AHId 
@@ -2433,7 +2466,7 @@ Namespace Turns
             Public Shared Function GetNSSSequentialTurn(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure) As R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure
                 Try
                     Dim DS As DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select  Top 1 SeqT.* from R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationSequentialTurns as AHRSeqT On SeqT.SeqTId=AHRSeqT.SeqTId
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AH On AHRSeqT.AHId=AH.AHId
@@ -2455,7 +2488,7 @@ Namespace Turns
             Public Shared Function GetSequentialTurns(YourNSSComputer As R2CoreStandardComputerStructure) As List(Of R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure)
                 Try
                     Dim DS As DataSet
-                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select Distinct SeqT.SeqTId,SeqT.SeqTTitle,SeqT.SeqTColor,SeqT.SeqTKeyWord,SeqT.Active,SeqT.ViewFlag,SeqT.Deleted from R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationSequentialTurns as AHRSeqT On SeqT.SeqTId=AHRSeqT.SeqTId
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AH On AHRSeqT.AHId=AH.AHId
@@ -2475,7 +2508,7 @@ Namespace Turns
             Public Shared Function GetNSSSequentialTurn(YourNSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure) As R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure
                 Try
                     Dim DS As DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                "Select Top 1 SeqT.SeqTId from dbtransport.dbo.tbEnterExit as EnterExit 
                                       Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT On SUBSTRING(EnterExit.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS=SeqT.SeqTKeyWord Collate Arabic_CI_AI_WS
                                      Where EnterExit.nEnterExitId=" & YourNSSTurn.nEnterExitId & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then Throw New TurnNotFoundException
@@ -2548,10 +2581,13 @@ Namespace Turns
 
         'BPTChanged
         Public Class R2CoreTransportationAndLoadNotificationSequentialTurnsManager
+
+            Private _DateTimeService As New R2DateTimeService
+            Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+
             Public Function GetSequentialTurns(YourSearchString As String, YourImmediately As Boolean) As String
                 Try
                     Dim Ds As New DataSet
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                     Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                     If YourImmediately Then
                         Dim Da As New SqlClient.SqlDataAdapter
@@ -2560,10 +2596,10 @@ Namespace Turns
                              from R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT
                              Where SeqT.SeqTTitle Like N'%" & YourSearchString & "%' and SeqT.Deleted=0 Order By SeqT.SeqTId
                              for json path")
-                        Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                        Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                         If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
                     Else
-                        If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "
+                        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                              Select SeqT.SeqTId as SeqTurnId,SeqT.SeqTTitle as SeqTurnTitle,SeqT.SeqTKeyWord as SeqTurnKeyWord,SeqT.Active as Active
                              from R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT
                              Where SeqT.SeqTTitle Like N'%" & YourSearchString & "%' SeqT.Deleted=0 Order By SeqT.SeqTId
@@ -2579,16 +2615,14 @@ Namespace Turns
 
             Public Function GetSequentialTurn(YourSeqTId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationSequentialTurn
                 Try
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-
                     Dim DS As New DataSet
                     If YourImmediately Then
                         Dim Da As New SqlClient.SqlDataAdapter
                         Da.SelectCommand = New SqlCommand("Select Top 1 * from R2PrimaryTransportationAndLoadNotification.DBO.TblSequentialTurns Where SeqTId=" & YourSeqTId & "")
-                        Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                        Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                         If Da.Fill(DS) <= 0 Then Throw New SequentialTurnNotFoundException
                     Else
-                        If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                                           "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.DBO.TblSequentialTurns Where SeqTId=" & YourSeqTId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New SequentialTurnNotFoundException
                     End If
                     Return New R2CoreTransportationAndLoadNotificationSequentialTurn With {.SeqTurnId = DS.Tables(0).Rows(0).Item("SeqTId"), .SeqTurnTitle = DS.Tables(0).Rows(0).Item("SeqTTitle").trim, .SeqTurnKeyWord = DS.Tables(0).Rows(0).Item("SeqTKeyWord").trim, .Active = DS.Tables(0).Rows(0).Item("Active")}
@@ -2602,7 +2636,6 @@ Namespace Turns
             Public Function GetSequentialTurnsByLoaderTypeId(YourLoaderTypeId As Int64, YourImmediately As Boolean) As String
                 Try
                     Dim Ds As New DataSet
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                     Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                     If YourImmediately Then
                         Dim Da As New SqlClient.SqlDataAdapter
@@ -2613,10 +2646,10 @@ Namespace Turns
                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes On SequentialTurnsRelationLoaderTypes.LoaderTypeId=LoaderTypes.LoaderTypeId 
                              Where LoaderTypes.LoaderTypeId=" & YourLoaderTypeId & " and SeqTs.Deleted=0 and LoaderTypes.Deleted=0 Order By SeqTs.SeqTId
                              for json path")
-                        Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                        Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                         If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
                     Else
-                        If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "
+                        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                              Select SeqTs.SeqTId as SeqTurnId,SeqTs.SeqTTitle as SeqTurnTitle,SeqTs.SeqTKeyWord as SeqTurnKeyWord,SeqTs.Active as Active
                                 from R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqTs
                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurnsRelationLoaderTypes as SequentialTurnsRelationLoaderTypes On SeqTs.SeqTId=SequentialTurnsRelationLoaderTypes.SeqTId  
@@ -2634,7 +2667,7 @@ Namespace Turns
 
             Public Sub SequentialTurnRegistering(YourRawSeqT As R2CoreTransportationAndLoadNotificationSequentialTurn)
                 Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Try
                     CmdSql.Connection.Open()
                     CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -2659,7 +2692,7 @@ Namespace Turns
 
             Public Sub SequentialTurnEditing(YourRawSeqT As R2CoreTransportationAndLoadNotificationSequentialTurn)
                 Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Try
                     CmdSql.Connection.Open()
                     CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns
@@ -2678,7 +2711,7 @@ Namespace Turns
 
             Public Sub SequentialTurnDeleting(YourSeqTId As Int64)
                 Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Try
                     CmdSql.Connection.Open()
                     CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns
@@ -2697,7 +2730,6 @@ Namespace Turns
             Public Function GetSequentialTurnsRelationLoaderTypes(YourSeqTId As Int64, YourImmediately As Boolean) As String
                 Try
                     Dim Ds As New DataSet
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                     Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                     If YourImmediately Then
                         Dim Da As New SqlClient.SqlDataAdapter
@@ -2707,10 +2739,10 @@ Namespace Turns
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes On SequentialTurnsRelationLoaderTypes.LoaderTypeId=LoaderTypes.LoaderTypeId 
                              Where SequentialTurns.SeqTId=" & YourSeqTId & " and SequentialTurns.Deleted=0 and LoaderTypes.Deleted=0
                              for JSON Auto")
-                        Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                        Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                         If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
                     Else
-                        If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "
+                        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                              Select SequentialTurns.SeqTId as SeqTurnId,SequentialTurns.SeqTTitle as SeqTurnTitle,LoaderTypes.LoaderTypeId,LoaderTypes.LoaderTypeTitle from R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SequentialTurns
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurnsRelationLoaderTypes as SequentialTurnsRelationLoaderTypes On SequentialTurns.SeqTId=SequentialTurnsRelationLoaderTypes.SeqTId 
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes On SequentialTurnsRelationLoaderTypes.LoaderTypeId=LoaderTypes.LoaderTypeId 
@@ -2727,7 +2759,7 @@ Namespace Turns
 
             Public Sub SequentialTurnRelationLoaderTypeDeleting(YourSeqTId As Int64, YourLoaderTypeId As Int64)
                 Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Try
                     CmdSql.Connection.Open()
                     CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurnsRelationLoaderTypes
@@ -2745,7 +2777,7 @@ Namespace Turns
 
             Public Sub SequentialTurnRelationLoaderTypeRegistering(YourSeqTId As Int64, YourLoaderTypeId As Int64)
                 Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Try
                     CmdSql.Connection.Open()
                     CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurnsRelationLoaderTypes(SeqTId,LoaderTypeId) 
@@ -2764,7 +2796,6 @@ Namespace Turns
             Public Function GetSequentialTurnRelationAnnouncementSubGroups(YourSeqTId As Int64, YourImmediately As Boolean) As String
                 Try
                     Dim Ds As New DataSet
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                     Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                     If YourImmediately Then
                         Dim Da As New SqlClient.SqlDataAdapter
@@ -2775,10 +2806,10 @@ Namespace Turns
                                 Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On SequentialTurnsRelationAnnouncementSubGroups.AnnouncementSGId =AnnouncementSubGroups.AnnouncementSGId 
                              Where SequentialTurns.SeqTId=" & YourSeqTId & " and SequentialTurns.Deleted=0 and AnnouncementSubGroups.Deleted=0
                              for JSON Auto")
-                        Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                        Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                         If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
                     Else
-                        If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "
+                        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                              Select SequentialTurns.SeqTId as SeqTurnId,SequentialTurns.SeqTTitle as SeqTurnTitle,AnnouncementSubGroups.AnnouncementSGId,AnnouncementSubGroups.AnnouncementSGTitle
                              from R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SequentialTurns
                                 Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurnsRelationAnnouncementSubGroups as SequentialTurnsRelationAnnouncementSubGroups On SequentialTurns.SeqTId=SequentialTurnsRelationAnnouncementSubGroups.SeqTId 
@@ -2796,7 +2827,7 @@ Namespace Turns
 
             Public Sub SequentialTurnRelationAnnouncementSubGroupDeleting(YourSeqTId As Int64, YourAnnouncementSGId As Int64)
                 Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Try
                     CmdSql.Connection.Open()
                     CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurnsRelationAnnouncementSubGroups
@@ -2813,7 +2844,7 @@ Namespace Turns
 
             Public Sub SequentialTurnRelationAnnouncementSubGroupRegistering(YourSeqTId As Int64, YourAnnouncementSGId As Int64)
                 Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Try
                     CmdSql.Connection.Open()
                     CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurnsRelationAnnouncementSubGroups(SeqTId,AnnouncementSGId)
@@ -2831,8 +2862,7 @@ Namespace Turns
             Public Function GetSequentialTurnIdByAnnouncementSGId(YourAnnouncementSGId As Int64) As Int64
                 Try
                     Dim DS As DataSet
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                "Select Top 1 SeqTId from R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurnsRelationAnnouncementSubGroups as SequentialTurnsRelationAnnouncementSubGroups
                                 Where AnnouncementSGId=" & YourAnnouncementSGId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New SequentialTurnByAnnouncementSGIdNotFoundException
                     Return Convert.ToInt64(DS.Tables(0).Rows(0).Item("SeqTId"))
@@ -2847,8 +2877,7 @@ Namespace Turns
                 Try
                     Dim SeqTurnKeyWord = Mid(YourTurn.OtaghdarTurnNumber, 1, 1)
                     Dim DS As DataSet
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 SeqTId from R2PrimaryTransportationAndLoadNotification.DBO.TblSequentialTurns Where SeqTKeyWord='" & SeqTurnKeyWord & "'", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New SequentialTurnNotFoundException
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 SeqTId from R2PrimaryTransportationAndLoadNotification.DBO.TblSequentialTurns Where SeqTKeyWord='" & SeqTurnKeyWord & "'", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New SequentialTurnNotFoundException
                     Return Convert.ToInt64(DS.Tables(0).Rows(0).Item("SeqTId"))
                 Catch ex As SequentialTurnNotFoundException
                     Throw ex
@@ -2868,18 +2897,28 @@ Namespace Turns
 
     Namespace TurnExpiration
         Public Class R2CoreTransportationAndLoadNotificationMClassTurnExpirationManager
-            Private _DateTime As New R2DateTime
+            Private _DateTimeService As New R2DateTimeService
+
+            Public Sub New()
+                Try
+                    _DateTimeService = New R2DateTimeService
+                Catch ex As FileNotExistException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+                End Try
+            End Sub
 
             Public Sub TurnCreditRegistering(YourNSSSeqTurn As R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure, YourNSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure, YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
                 Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Try
                     CmdSql.Connection.Open()
                     CmdSql.Transaction = CmdSql.Connection.BeginTransaction
                     CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblTurnCredits Set Active=0 Where Active=1 and SeqTId=" & YourNSSSeqTurn.SequentialTurnId & ""
                     CmdSql.ExecuteNonQuery()
                     CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblTurnCredits(SeqTId,SignificantTurnId,OtaghdarTurnNumber,DateTimeMilladi,DateShamsi,Time,UserId,Active,ViewFlag,Deleted)
-                                          Values(" & YourNSSSeqTurn.SequentialTurnId & "," & YourNSSTurn.nEnterExitId & ",'" & YourNSSTurn.OtaghdarTurnNumber.Trim & "','" & _DateTime.GetCurrentDateTimeMilladi & "','" & _DateTime.GetCurrentShamsiDate & "','" & _DateTime.GetCurrentTime & "'," & YourNSSSoftwareUser.UserId & ",1,1,0)"
+                                          Values(" & YourNSSSeqTurn.SequentialTurnId & "," & YourNSSTurn.nEnterExitId & ",'" & YourNSSTurn.OtaghdarTurnNumber.Trim & "','" & _DateTimeService.GetCurrentDateTimeMilladi & "','" & _DateTimeService.GetCurrentShamsiDate & "','" & _DateTimeService.GetCurrentTime & "'," & YourNSSSoftwareUser.UserId & ",1,1,0)"
                     CmdSql.ExecuteNonQuery()
                     CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 Catch ex As Exception
@@ -2893,13 +2932,14 @@ Namespace Turns
         End Class
 
         Public NotInheritable Class R2CoreTransportationAndLoadNotificationMClassTurnExpirationManagement
-            Private Shared _DateTime As New R2DateTime
-            Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+
+            Private Shared _DateTimeService As New R2DateTimeService
+            Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
             Public Shared Sub TurnsExpiration()
                 Try
                     Dim Ds As DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Turns.nEnterExitId,TRRequests.TRRId from dbtransport.dbo.tbEnterExit as Turns
                          Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On Turns.nEnterExitId=EntityRelations.E1
                          Inner Join R2PrimaryTransportationAndLoadNotification.DBO.TblTurnRegisterRequests AS TRRequests ON EntityRelations.E2=TRRequests.TRRId

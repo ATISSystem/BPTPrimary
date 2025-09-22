@@ -2,11 +2,13 @@
 
 
 Imports log4net.Layout
+Imports log4net.Util
 Imports Newtonsoft.Json
 Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateAndTimeManagement.Exceptions
+Imports R2Core.DateTimeProvider
 Imports R2Core.DateTimeProvider.Models
 Imports R2Core.ExceptionManagement
 Imports R2Core.Networking
@@ -19,6 +21,7 @@ Imports System.Net.Http.Headers
 Imports System.Reflection
 Imports System.Text
 Imports System.Text.RegularExpressions
+Imports System.Threading.Tasks
 Imports System.Windows.Forms
 Imports System.Xml
 
@@ -66,15 +69,14 @@ Namespace DateTimeProvider
         Function Get6ZeroTime() As String
     End Interface
 
-    Friend Class R2CoreDateTimeProviderAPICaller
+    Public Class R2CoreDateTimeProviderAPICaller
 
         Private _HttpClient As HttpClient = Nothing
-        Public Result As Object = Nothing
 
         Public Sub New()
             Try
                 Dim InstanceAPIHelper = New R2CoreAPIHelperManager
-                _HttpClient = InstanceAPIHelper.GetHttpClient("APIDateTime")
+                _HttpClient = InstanceAPIHelper.GetAPIDateTime()
             Catch ex As FileNotExistException
                 Throw ex
             Catch ex As Exception
@@ -82,7 +84,7 @@ Namespace DateTimeProvider
             End Try
         End Sub
 
-        Public Async Sub ConvertToShamsiDate(YourDateTime As DateTime)
+        Public Async Function ConvertToShamsiDate(YourDateTime As DateTime) As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/ConvertToShamsiDate")
                 Dim RequestContent = New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTime}
@@ -90,7 +92,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -99,9 +101,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetTimeOfDate(YourDateTime As DateTime)
+        Public Async Function GetTimeOfDate(YourDateTime As DateTime) As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetTimeOfDate")
                 Dim RequestContent = New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTime}
@@ -109,7 +111,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -118,9 +120,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetTickofTime(YourDateTime As DateTime)
+        Public Async Function GetTickofTime(YourDateTime As DateTime) As Threading.Tasks.Task(Of Int64)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetTickofTime")
                 Dim RequestContent = New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTime}
@@ -128,7 +130,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return JsonConvert.DeserializeObject(Of Int64)(JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent).Result.ToString)
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -137,9 +139,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetCurrentTickofTime()
+        Public Async Function GetCurrentTickofTime() As Threading.Tasks.Task(Of Int64)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetCurrentTickofTime")
                 Dim RequestContent = Nothing
@@ -147,7 +149,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return JsonConvert.DeserializeObject(Of Int64)(JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent).Result.ToString)
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -156,9 +158,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetMilladiDateTimeFromShamsiDate(ByVal YourShamsiDate As String, YourTime As String)
+        Public Async Function GetMilladiDateTimeFromShamsiDate(ByVal YourShamsiDate As String, YourTime As String) As Threading.Tasks.Task(Of Date)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetMilladiDateTimeFromShamsiDate")
                 Dim RequestContent = New R2CoreDateAndTime With {.ShamsiDate = YourShamsiDate, .Time = YourTime}
@@ -166,7 +168,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -175,9 +177,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetLastShamsiDate()
+        Public Async Function GetLastShamsiDate() As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetLastShamsiDate")
                 Dim RequestContent = Nothing
@@ -185,7 +187,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -194,9 +196,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetShamsiDateWithAddMonth(YourShamsiDate As String, YourMonthsToAdd As Int16)
+        Public Async Function GetShamsiDateWithAddMonth(YourShamsiDate As String, YourMonthsToAdd As Int16) As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetShamsiDateWithAddMonth")
                 Dim RequestContent = New R2CoreDateTimeProviderShamsiDateMonthsToAdd With {.ShamsiDate = YourShamsiDate, .MonthsToAdd = YourMonthsToAdd}
@@ -204,7 +206,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -213,9 +215,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetCurrentTime()
+        Public Async Function GetCurrentTime() As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetCurrentTime")
                 Dim RequestContent = Nothing
@@ -223,7 +225,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -232,9 +234,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetCurrentTimeWithSecond()
+        Public Async Function GetCurrentTimeWithSecond() As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetCurrentTimeWithSecond")
                 Dim RequestContent = Nothing
@@ -242,7 +244,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -251,9 +253,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetCurrentTimeWithMinute()
+        Public Async Function GetCurrentTimeWithMinute() As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetCurrentTimeWithMinute")
                 Dim RequestContent = Nothing
@@ -261,7 +263,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -270,9 +272,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetNextShamsiDate()
+        Public Async Function GetNextShamsiDate() As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetNextShamsiDate")
                 Dim RequestContent = Nothing
@@ -280,7 +282,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -289,9 +291,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetNextShamsiDateWithoutSlashes()
+        Public Async Function GetNextShamsiDateWithoutSlashes() As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetNextShamsiDateWithoutSlashes")
                 Dim RequestContent = Nothing
@@ -299,7 +301,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -308,9 +310,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetTime(YourDateTimeMilladi As Date)
+        Public Async Function GetTime(YourDateTimeMilladi As Date) As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetTime")
                 Dim RequestContent = New R2CoreDateAndTime With {.DateTimeMilladi = YourDateTimeMilladi}
@@ -318,7 +320,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -327,9 +329,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetCurrentDateAndTime()
+        Public Async Function GetCurrentDateAndTime() As Threading.Tasks.Task(Of R2CoreDateAndTime)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetCurrentDateAndTime")
                 Dim RequestContent = Nothing
@@ -337,7 +339,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return JsonConvert.DeserializeObject(Of R2CoreDateAndTime)(JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent).Result.ToString)
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -346,9 +348,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetCurrentShamsiDate()
+        Public Async Function GetCurrentShamsiDate() As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetCurrentShamsiDate")
                 Dim RequestContent = Nothing
@@ -356,7 +358,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -365,9 +367,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetCurrentShamsiDateWithoutSlashes()
+        Public Async Function GetCurrentShamsiDateWithoutSlashes() As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetCurrentShamsiDateWithoutSlashes")
                 Dim RequestContent = Nothing
@@ -375,7 +377,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -384,9 +386,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetCurrentDateTimeMilladi()
+        Public Async Function GetCurrentDateTimeMilladi() As Threading.Tasks.Task(Of Date)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetCurrentDateTimeMilladi")
                 Dim RequestContent = Nothing
@@ -394,7 +396,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -403,9 +405,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetCurrentShamsiSal()
+        Public Async Function GetCurrentShamsiSal() As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetCurrentShamsiSal")
                 Dim RequestContent = Nothing
@@ -413,7 +415,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -422,9 +424,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub CheckShamsiDateSyntax(YourShamsiDate As String)
+        Public Async Function CheckShamsiDateSyntax(YourShamsiDate As String) As Threading.Tasks.Task(Of Boolean)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/CheckShamsiDateSyntax")
                 Dim RequestContent = New R2CoreDateAndTime With {.ShamsiDate = YourShamsiDate}
@@ -432,7 +434,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -441,9 +443,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub CheckTimeSyntax(YourTime As String)
+        Public Async Function CheckTimeSyntax(YourTime As String) As Threading.Tasks.Task(Of Boolean)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/CheckTimeSyntax")
                 Dim RequestContent = New R2CoreDateAndTime With {.Time = YourTime}
@@ -451,7 +453,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -460,9 +462,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetPersianMonthName(YourShamsiDate As String)
+        Public Async Function GetPersianMonthName(YourShamsiDate As String) As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetPersianMonthName")
                 Dim RequestContent = New R2CoreDateAndTime With {.ShamsiDate = YourShamsiDate}
@@ -470,7 +472,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -479,9 +481,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub GetDelimetedTime(YourUnDelimetedTime As String)
+        Public Async Function GetDelimetedTime(YourUnDelimetedTime As String) As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/GetDelimetedTime")
                 Dim RequestContent = New R2CoreDateAndTime With {.Time = YourUnDelimetedTime}
@@ -489,7 +491,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -498,9 +500,9 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
-        Public Async Sub Get6ZeroTime()
+        Public Async Function Get6ZeroTime() As Threading.Tasks.Task(Of String)
             Try
                 Dim Request As HttpRequestMessage = New HttpRequestMessage(HttpMethod.Post, "/api/Get6ZeroTime")
                 Dim RequestContent = Nothing
@@ -508,7 +510,7 @@ Namespace DateTimeProvider
                 Dim Response As HttpResponseMessage = Await _HttpClient.SendAsync(Request)
                 If Response.IsSuccessStatusCode Then
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
-                    Result = JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)
+                    Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
                     Throw New UnSuccessConnectionToAPIException(Response.Content.ReadAsStringAsync().Result)
                 End If
@@ -517,33 +519,28 @@ Namespace DateTimeProvider
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Sub
+        End Function
 
     End Class
 
     Public Class R2DateTimeService
         Implements IR2DateTimeService
 
-        Private InstanceAPICaller = New R2CoreDateTimeProviderAPICaller
+        Private InstanceAPICaller As R2CoreDateTimeProviderAPICaller
 
-        Private Function GetResult() As R2CoreDateTimeProviderResult
+        Public Sub New()
             Try
-                While (InstanceAPICaller.Result Is Nothing)
-                    Threading.Thread.Sleep(10)
-                    If InstanceAPICaller.Result IsNot Nothing Then Exit While
-                End While
-                Return DirectCast(InstanceAPICaller.Result, R2CoreDateTimeProviderResult)
+                InstanceAPICaller = New R2CoreDateTimeProviderAPICaller
+            Catch ex As FileNotExistException
+                Throw ex
             Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
-        End Function
+        End Sub
 
         Public Function ConvertToShamsiDate(YourDateTime As Date) As String Implements IR2DateTimeService.ConvertToShamsiDate
             Try
-                InstanceAPICaller.ConvertToShamsiDate(YourDateTime)
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.ConvertToShamsiDate(YourDateTime)).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -553,10 +550,7 @@ Namespace DateTimeProvider
 
         Public Function GetTimeOfDate(YourDateTime As Date) As String Implements IR2DateTimeService.GetTimeOfDate
             Try
-                InstanceAPICaller.GetTimeOfDate(YourDateTime)
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetTimeOfDate(YourDateTime)).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -566,10 +560,7 @@ Namespace DateTimeProvider
 
         Public Function GetTickofTime(YourDateTime As Date) As Int64 Implements IR2DateTimeService.GetTickofTime
             Try
-                InstanceAPICaller.GetTickofTime(YourDateTime)
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetTickofTime(YourDateTime)).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -579,10 +570,7 @@ Namespace DateTimeProvider
 
         Public Function GetCurrentTickofTime() As Int64 Implements IR2DateTimeService.GetCurrentTickofTime
             Try
-                InstanceAPICaller.GetCurrentTickofTime()
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetCurrentTickofTime()).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -592,10 +580,7 @@ Namespace DateTimeProvider
 
         Public Function GetMilladiDateTimeFromShamsiDate(YourShamsiDate As String, YourTime As String) As DateTime Implements IR2DateTimeService.GetMilladiDateTimeFromShamsiDate
             Try
-                InstanceAPICaller.GetMilladiDateTimeFromShamsiDate(YourShamsiDate, YourTime)
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetMilladiDateTimeFromShamsiDate(YourShamsiDate, YourTime)).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -605,10 +590,7 @@ Namespace DateTimeProvider
 
         Public Function GetLastShamsiDate() As String Implements IR2DateTimeService.GetLastShamsiDate
             Try
-                InstanceAPICaller.GetLastShamsiDate()
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetLastShamsiDate()).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -618,10 +600,7 @@ Namespace DateTimeProvider
 
         Public Function GetShamsiDateWithAddMonth(YourShamsiDate As String, YourMonthsToAdd As Short) As String Implements IR2DateTimeService.GetShamsiDateWithAddMonth
             Try
-                InstanceAPICaller.GetShamsiDateWithAddMonth(YourShamsiDate, YourMonthsToAdd)
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetShamsiDateWithAddMonth(YourShamsiDate, YourMonthsToAdd)).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -631,10 +610,7 @@ Namespace DateTimeProvider
 
         Public Function GetCurrentTime() As String Implements IR2DateTimeService.GetCurrentTime
             Try
-                InstanceAPICaller.GetCurrentTime()
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetCurrentTime()).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -644,10 +620,7 @@ Namespace DateTimeProvider
 
         Public Function GetCurrentTimeWithSecond() As String Implements IR2DateTimeService.GetCurrentTimeWithSecond
             Try
-                InstanceAPICaller.GetCurrentTimeWithSecond()
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetCurrentTimeWithSecond()).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -657,10 +630,7 @@ Namespace DateTimeProvider
 
         Public Function GetCurrentTimeWithMinute() As String Implements IR2DateTimeService.GetCurrentTimeWithMinute
             Try
-                InstanceAPICaller.GetCurrentTimeWithMinute()
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetCurrentTimeWithMinute()).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -670,10 +640,7 @@ Namespace DateTimeProvider
 
         Public Function GetNextShamsiDate() As String Implements IR2DateTimeService.GetNextShamsiDate
             Try
-                InstanceAPICaller.GetNextShamsiDate()
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetNextShamsiDate()).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -683,10 +650,7 @@ Namespace DateTimeProvider
 
         Public Function GetNextShamsiDateWithoutSlashes() As String Implements IR2DateTimeService.GetNextShamsiDateWithoutSlashes
             Try
-                InstanceAPICaller.GetNextShamsiDateWithoutSlashes()
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetNextShamsiDateWithoutSlashes()).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -696,10 +660,7 @@ Namespace DateTimeProvider
 
         Public Function GetTime(YourDateTimeMilladi As Date) As String Implements IR2DateTimeService.GetTime
             Try
-                InstanceAPICaller.GetTime(YourDateTimeMilladi)
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetTime(YourDateTimeMilladi)).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -709,10 +670,7 @@ Namespace DateTimeProvider
 
         Public Function GetCurrentDateAndTime() As Object Implements IR2DateTimeService.GetCurrentDateAndTime
             Try
-                InstanceAPICaller.GetCurrentDateAndTime()
-                Return JsonConvert.DeserializeObject(Of R2CoreDateAndTime)(GetResult().Result.ToString())
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetCurrentDateAndTime()).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -722,10 +680,7 @@ Namespace DateTimeProvider
 
         Public Function GetCurrentShamsiDate() As String Implements IR2DateTimeService.GetCurrentShamsiDate
             Try
-                InstanceAPICaller.GetCurrentShamsiDate()
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetCurrentShamsiDate()).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -735,10 +690,7 @@ Namespace DateTimeProvider
 
         Public Function GetCurrentShamsiDateWithoutSlashes() As String Implements IR2DateTimeService.GetCurrentShamsiDateWithoutSlashes
             Try
-                InstanceAPICaller.GetCurrentShamsiDateWithoutSlashes()
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetCurrentShamsiDateWithoutSlashes()).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -748,10 +700,7 @@ Namespace DateTimeProvider
 
         Public Function GetCurrentDateTimeMilladi() As DateTime Implements IR2DateTimeService.GetCurrentDateTimeMilladi
             Try
-                InstanceAPICaller.GetCurrentDateTimeMilladi()
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetCurrentDateTimeMilladi()).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -761,10 +710,7 @@ Namespace DateTimeProvider
 
         Public Function GetCurrentShamsiSal() As String Implements IR2DateTimeService.GetCurrentShamsiSal
             Try
-                InstanceAPICaller.GetCurrentShamsiSal()
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetCurrentShamsiSal()).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -774,10 +720,7 @@ Namespace DateTimeProvider
 
         Public Function CheckShamsiDateSyntax(YourShamsiDate As String) As Boolean Implements IR2DateTimeService.CheckShamsiDateSyntax
             Try
-                InstanceAPICaller.CheckShamsiDateSyntax(YourShamsiDate)
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.CheckShamsiDateSyntax(YourShamsiDate)).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -787,10 +730,7 @@ Namespace DateTimeProvider
 
         Public Function CheckTimeSyntax(YourTime As String) As Boolean Implements IR2DateTimeService.CheckTimeSyntax
             Try
-                InstanceAPICaller.CheckTimeSyntax(YourTime)
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.CheckTimeSyntax(YourTime)).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -800,10 +740,7 @@ Namespace DateTimeProvider
 
         Public Function GetPersianMonthName(YourShamsiDate As String) As String Implements IR2DateTimeService.GetPersianMonthName
             Try
-                InstanceAPICaller.GetPersianMonthName(YourShamsiDate)
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetPersianMonthName(YourShamsiDate)).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -813,10 +750,7 @@ Namespace DateTimeProvider
 
         Public Function GetDelimetedTime(YourUnDelimetedTime As String) As String Implements IR2DateTimeService.GetDelimetedTime
             Try
-                InstanceAPICaller.GetDelimetedTime(YourUnDelimetedTime)
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
+                Return Task.Run(Function() InstanceAPICaller.GetDelimetedTime(YourUnDelimetedTime)).Result
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
@@ -826,11 +760,8 @@ Namespace DateTimeProvider
 
         Public Function Get6ZeroTime() As String Implements IR2DateTimeService.Get6ZeroTime
             Try
-                InstanceAPICaller.Get6ZeroTime()
-                Return GetResult().Result
-            Catch ex As FileNotExistException
-                Throw ex
-            Catch ex As UnSuccessConnectionToAPIException
+                Return Task.Run(Function() InstanceAPICaller.Get6ZeroTime()).Result
+            Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -967,7 +898,7 @@ Namespace DateAndTimeManagement
 
     'Public Class R2DateTime
     '    'Dim mycurrenttime As String = Trim(Mid(DateAndTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), 12, 8))
-    '    Private myOpenConnection As R2PrimarySubscriptionDBSqlConnection = New R2PrimarySubscriptionDBSqlConnection
+    '    Private myOpenConnection As R2PrimarySubscriptionDBSqlConnection = R2PrimarySqlConnection.GetSubscriptionDBConnection
     '    Private PC As New System.Globalization.PersianCalendar()
     '    Private HC As New System.Globalization.HijriCalendar()
 
@@ -1174,7 +1105,7 @@ Namespace DateAndTimeManagement
     '                End If
     '            End If
     '            y = y - 622
-    '            If M < 10 Then
+    '            If M <10 Then
     '                m1 = "0" + Trim(Str(M))
     '            Else
     '                m1 = Trim(Str(M))
@@ -1393,47 +1324,39 @@ Namespace DateAndTimeManagement
 
             Public Class R2CoreStandardPersianCalendarStructure
                 Inherits BaseStandardClass.R2StandardStructure
-                Public Sub New()
-                    _HId = Int64.MinValue
-                    _DateShamsi = String.Empty
-                    _PCType = Int16.MinValue
-                End Sub
-
-                Public Sub New(ByVal YourHId As Int64, YourDateShamsi As String, YourPCType As String)
-                    _HId = YourHId
-                    _DateShamsi = YourDateShamsi
-                    _PCType = YourPCType
-                End Sub
 
                 Public Property HId As Int64
                 Public Property DateShamsi As String
                 Public Property PCType As Int16
-
             End Class
 
             Public Class R2CoreInstanceDateAndTimePersianCalendarManager
-                Private _DateTime = New R2DateTime
+
+                Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+                Private _DateTimeService As IR2DateTimeService
+                Public Sub New(YourDateTimeService As IR2DateTimeService)
+                    _DateTimeService = YourDateTimeService
+                    InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+                End Sub
 
                 Public Function GetHoliDayNumber(ByVal YourShamsiDate1 As String, ByVal YourShamsiDate2 As String) As UInteger
                     Try
-                        Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                         Dim Ds As DataSet
-                        InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Count(*) AS Counting from R2Primary.dbo.TblPersianCalendar where (dateshamsi>'" & YourShamsiDate1 & "') and (dateshamsi<'" & YourShamsiDate2 & "')  and PCType=1", 1, Ds, New Boolean)
+                        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Count(*) AS Counting from R2Primary.dbo.TblPersianCalendar where (dateshamsi>'" & YourShamsiDate1 & "') and (dateshamsi<'" & YourShamsiDate2 & "')  and PCType=1", 1, Ds, New Boolean)
                         Return Ds.Tables(0).Rows(0).Item("Counting")
                     Catch ex As Exception
                         Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
                     End Try
                 End Function
 
-                Public Function GetforThisMonth(YourDateTime As R2CoreDateAndTime) As List(Of R2CoreStandardPersianCalendarStructure)
+                Public Function GetforThisMonth(YourShamsiDate As String) As List(Of R2CoreStandardPersianCalendarStructure)
                     Try
                         Dim DSPersianCallendar As New DataSet
-                        Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                        InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
-                         "Select * From R2Primary.Dbo.TblPersianCalendar Where SUBSTRING(DateShamsi,1,7)='" & Mid(YourDateTime.ShamsiDate, 1, 7) & "' Order By DateShamsi ", 3600, DSPersianCallendar, New Boolean)
+                        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                         "Select * From R2Primary.Dbo.TblPersianCalendar Where SUBSTRING(DateShamsi,1,7)='" & Mid(YourShamsiDate, 1, 7) & "' Order By DateShamsi ", 3600, DSPersianCallendar, New Boolean)
                         Dim Lst = New List(Of R2CoreStandardPersianCalendarStructure)
                         For Loopx As Int64 = 0 To DSPersianCallendar.Tables(0).Rows.Count - 1
-                            Dim PersianCalendar = New R2CoreStandardPersianCalendarStructure(DSPersianCallendar.Tables(0).Rows(Loopx).Item("HId"), DSPersianCallendar.Tables(0).Rows(Loopx).Item("DateShamsi").trim, DSPersianCallendar.Tables(0).Rows(Loopx).Item("PCType"))
+                            Dim PersianCalendar = New R2CoreStandardPersianCalendarStructure With {.HId = DSPersianCallendar.Tables(0).Rows(Loopx).Item("HId"), .DateShamsi = DSPersianCallendar.Tables(0).Rows(Loopx).Item("DateShamsi").trim, .PCType = DSPersianCallendar.Tables(0).Rows(Loopx).Item("PCType")}
                             Lst.Add(PersianCalendar)
                         Next
                         Return Lst
@@ -1445,12 +1368,19 @@ Namespace DateAndTimeManagement
             End Class
 
             Public NotInheritable Class R2CoreDateAndTimePersianCalendarManagement
-                Private Shared InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
+
+                Private Shared InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+                Private _DateTimeService As IR2DateTimeService
+                Public Sub New(YourDateTimeService As IR2DateTimeService)
+                    _DateTimeService = YourDateTimeService
+                    InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+                End Sub
+
 
                 Public Shared Function GetHoliDayNumber(ByVal YourShamsiDate1 As String, ByVal YourShamsiDate2 As String) As UInteger
                     Try
                         Dim Ds As DataSet
-                        InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Count(*) AS Counting from R2Primary.dbo.TblPersianCalendar where (dateshamsi>'" & YourShamsiDate1 & "') and (dateshamsi<'" & YourShamsiDate2 & "')  and PCType=1", 1, Ds, New Boolean)
+                        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Count(*) AS Counting from R2Primary.dbo.TblPersianCalendar where (dateshamsi>'" & YourShamsiDate1 & "') and (dateshamsi<'" & YourShamsiDate2 & "')  and PCType=1", 1, Ds, New Boolean)
                         Return Ds.Tables(0).Rows(0).Item("Counting")
                     Catch ex As Exception
                         Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -1460,7 +1390,7 @@ Namespace DateAndTimeManagement
                 Public Shared Function GetLastNonHoliday(YourNSSDateTime As R2CoreDateAndTime) As R2CoreDateAndTime
                     Try
                         Dim Ds As DataSet
-                        InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblPersianCalendar Order By DateShamsi Desc", 3600, Ds, New Boolean)
+                        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblPersianCalendar Order By DateShamsi Desc", 3600, Ds, New Boolean)
                         Dim Record As DataRow
                         Record = Ds.Tables(0).Select("DateShamsi < '" & YourNSSDateTime.ShamsiDate & "' and PCType=0", "DateShamsi Desc")(0)
                         Return New R2CoreDateAndTime With {.ShamsiDate = Record.Item("DateShamsi")}
@@ -1472,6 +1402,54 @@ Namespace DateAndTimeManagement
 
 
             End Class
+
+            'BPTChnaged
+            Public Class R2CorePersianCalendar
+                Inherits BaseStandardClass.R2StandardStructure
+
+                Public Property HId As Int64
+                Public Property DateShamsi As String
+                Public Property PCType As Int16
+            End Class
+
+            'BPTChnaged
+            Public Class R2CorePersianCalendarManager
+
+                Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+                Private _DateTimeService As IR2DateTimeService
+                Public Sub New(YourDateTimeService As IR2DateTimeService)
+                    _DateTimeService = YourDateTimeService
+                    InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+                End Sub
+
+                Public Function GetHoliDayNumber(ByVal YourShamsiDate1 As String, ByVal YourShamsiDate2 As String) As UInteger
+                    Try
+                        Dim Ds As DataSet
+                        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Count(*) AS Counting from R2Primary.dbo.TblPersianCalendar where (dateshamsi>'" & YourShamsiDate1 & "') and (dateshamsi<'" & YourShamsiDate2 & "')  and PCType=1", 32767, Ds, New Boolean)
+                        Return Ds.Tables(0).Rows(0).Item("Counting")
+                    Catch ex As Exception
+                        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                    End Try
+                End Function
+
+                Public Function GetforThisMonth(YourShamsiDate As String) As List(Of R2CorePersianCalendar)
+                    Try
+                        Dim DS As New DataSet
+                        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                         "Select * From R2Primary.Dbo.TblPersianCalendar Where SUBSTRING(DateShamsi,1,7)='" & Mid(YourShamsiDate, 1, 7) & "' Order By DateShamsi ", 32767, DS, New Boolean)
+                        Dim Lst = New List(Of R2CorePersianCalendar)
+                        For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+                            Dim PersianCalendar = New R2CorePersianCalendar With {.HId = DS.Tables(0).Rows(Loopx).Item("HId"), .DateShamsi = DS.Tables(0).Rows(Loopx).Item("DateShamsi").trim, .PCType = DS.Tables(0).Rows(Loopx).Item("PCType")}
+                            Lst.Add(PersianCalendar)
+                        Next
+                        Return Lst
+                    Catch ex As Exception
+                        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                    End Try
+                End Function
+
+            End Class
+
 
         End Namespace
 
@@ -1751,7 +1729,6 @@ Namespace DateAndTimeManagement
 
         Public Function CheckShamsiDateSyntax(ByVal YourShamsiDate As String) As Boolean
             Try
-                Dim InstanceConfigurations = New R2CoreConfigurationsManager
                 Dim pattern = "^[1-4]\d{3}\/((0[1-6]\/((3[0-1])|([1-2][0-9])|(0[1-9])))|((1[0-2]|(0[7-9]))\/(30|31|([1-2][0-9])|(0[1-9]))))$"
                 Dim Regex = New Regex(pattern)
                 If Not Regex.IsMatch(YourShamsiDate) Then Return False
@@ -1765,7 +1742,7 @@ Namespace DateAndTimeManagement
                 ElseIf ((Val(Maah) >= 7) And (Val(Maah) <= 11)) Then
                     If Not ((Val(Rooz) >= 1) And (Val(Rooz) <= 30)) Then Return False
                 ElseIf (Val(Maah) = 12) Then
-                    If Not ((Val(Rooz) >= 1) And (Val(Rooz) <= InstanceConfigurations.GetConfigInt64(R2CoreConfigurations.EsfandRooz, 0))) Then Return False
+                    If Not ((Val(Rooz) >= 1) And (Val(Rooz) <= 30)) Then Return False
                 End If
                 Return True
             Catch ex As Exception

@@ -39,7 +39,7 @@
             // 
             // serviceInstaller1
             // 
-            this.serviceInstaller1.Description = "BPT.Corporation Change Status Of Tommarow Loads Automated Job";
+            this.serviceInstaller1.Description = "BPT.Corporation Change Status Of Tommarow Loads Automated Process";
             this.serviceInstaller1.DisplayName = "ChangingStatusOfTommorowLoadsAutomatedJob";
             this.serviceInstaller1.ServiceName = "ChangingStatusOfTommorowLoadsAutomatedJob";
             this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;

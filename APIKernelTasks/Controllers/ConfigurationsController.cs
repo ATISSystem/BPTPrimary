@@ -13,6 +13,7 @@ using System.Drawing;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -25,8 +26,16 @@ namespace APIKernelTasks.Controllers
     {
 
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService = new R2DateTimeService();
+        private IR2DateTimeService _DateTimeService;
 
+        public ConfigurationsController()
+        {
+            try { _DateTimeService = new R2DateTimeService(); }
+            catch (FileNotExistException ex)
+            { throw ex; }
+            catch (Exception ex)
+            { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
+        }
 
         [HttpPost]
         [Route("api/GetConfigurations")]
@@ -39,7 +48,7 @@ namespace APIKernelTasks.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceConfigurations = new R2CoreConfigurationsManager();
+                var InstanceConfigurations = new R2CoreConfigurationsManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceConfigurations.GetConfigurations(), Encoding.UTF8, "application/json");
@@ -66,7 +75,7 @@ namespace APIKernelTasks.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceConfigurations = new R2CoreConfigurationsManager();
+                var InstanceConfigurations = new R2CoreConfigurationsManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceConfigurations.GetConfigurationOfMachines(), Encoding.UTF8, "application/json");
@@ -93,7 +102,7 @@ namespace APIKernelTasks.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceConfigurations = new R2CoreConfigurationsManager();
+                var InstanceConfigurations = new R2CoreConfigurationsManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(InstanceConfigurations.GetConfigurationOfAnnouncementGroups(), Encoding.UTF8, "application/json");
@@ -116,14 +125,14 @@ namespace APIKernelTasks.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var CId = Content.CId;
                 var CValue = Content.CValue;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceConfigurations = new R2CoreConfigurationsManager();
+                var InstanceConfigurations = new R2CoreConfigurationsManager(_DateTimeService);
                 InstanceConfigurations.SetConfigurations(CId, CValue);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -147,7 +156,7 @@ namespace APIKernelTasks.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var CId = Content.CId;
                 var MId = Content.MId;
@@ -155,7 +164,7 @@ namespace APIKernelTasks.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceConfigurations = new R2CoreConfigurationsManager();
+                var InstanceConfigurations = new R2CoreConfigurationsManager(_DateTimeService);
                 InstanceConfigurations.SetConfigurationOfMachines(CId, MId, CValue);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -179,7 +188,7 @@ namespace APIKernelTasks.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var CId = Content.CId;
                 var AnnouncementId = Content.AnnouncementId;
@@ -187,7 +196,7 @@ namespace APIKernelTasks.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceConfigurations = new R2CoreConfigurationsManager();
+                var InstanceConfigurations = new R2CoreConfigurationsManager(_DateTimeService);
                 InstanceConfigurations.SetConfigurationOfAnnouncementGroups(CId, AnnouncementId, CValue);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -211,13 +220,13 @@ namespace APIKernelTasks.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var CId = Content.CId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceConfigurations = new R2CoreConfigurationsManager();
+                var InstanceConfigurations = new R2CoreConfigurationsManager(_DateTimeService);
                 ;
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);

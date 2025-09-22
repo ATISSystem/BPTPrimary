@@ -92,12 +92,12 @@ Namespace Logging
     End Class
 
     Public Class R2CoreParkingSystemLogManager
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
 
         Public Function GetEntryExitLogsWithTrafficCard(YourTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure) As List(Of R2CoreStandardLoggingExtendedStructure)
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As New DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Top 50 Logs.*,SoftwareUsers.UserName,LoggingTypes.LogColor from R2PrimaryLogging.dbo.TblLogging as Logs
                        Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Logs.Userid=SoftwareUsers.UserId 
                        Inner Join R2PrimaryLogging.dbo.TblLoggingTypes as LoggingTypes On Logs.LogType=LoggingTypes.LogId 
@@ -118,19 +118,6 @@ Namespace Logging
 End Namespace
 
 Namespace DataBaseManagement
-
-    Public Class R2ClassSqlConnectionSepas
-        Inherits R2ClassSqlConnection
-
-        Public Sub New()
-            MyBase.New()
-            Try
-                _Connection = New SqlClient.SqlConnection(DefaultConnectionString.Replace("@IC", "Dbtransport"))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-    End Class
 
 
 End Namespace
@@ -193,7 +180,6 @@ Namespace CamerasManagement
     End Class
 
     Public Class R2Camera
-
         Private CameraSetting As R2StandardCameraSettingStructure = New R2StandardCameraSettingStructure
         Public Event CameraRaisedError(ByRef Camera As R2Camera, ByVal Err As String)
         Public Event CameraActivate(ByRef Camera As R2Camera)
@@ -206,11 +192,12 @@ Namespace CamerasManagement
         Public CarCapturedImage As Bitmap
         Public LP As R2StandardLicensePlateStructure = New R2StandardLicensePlateStructure
         Private WithEvents VideoSourcePlayer As AForge.Controls.VideoSourcePlayer = New AForge.Controls.VideoSourcePlayer()
-        Private myR2DateTime As R2Core.DateAndTimeManagement.R2DateTime = New R2Core.DateAndTimeManagement.R2DateTime
+        Private _DateTimeService As R2DateTimeService
         'Private VideoFileReader As AForge.Video.FFMPEG.VideoFileReader
 
         Public Sub New(ByVal YourCameraSetting As R2StandardCameraSettingStructure)
             Try
+                _DateTimeService = New R2DateTimeService
                 CameraSetting.CameraName = YourCameraSetting.CameraName
                 CameraSetting.CaptureType = YourCameraSetting.CaptureType
                 CameraSetting.CameraType = YourCameraSetting.CameraType
@@ -592,8 +579,8 @@ Namespace EnterExitManagement
 
     Public Class R2CoreParkingSystemMClassEnterExitManagement
 
-        Private Shared _DateTime As DateAndTimeManagement.R2DateTime = New DateAndTimeManagement.R2DateTime
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function GetLPFromLPR(ByRef YourCarImage As Bitmap, ByRef YourReport As String, ByRef LicensePlateBlob As AForge.Imaging.Blob) As R2StandardLicensePlateStructure
             Try
@@ -612,7 +599,7 @@ Namespace EnterExitManagement
 
         Public Shared Function InsertEnterExit(ByVal EnterExitStruct As R2StandardEnterExitStructure) As UInt64
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -662,7 +649,7 @@ Namespace EnterExitManagement
 
         Public Shared Sub UpdateForExit(ByVal EnterExitStruct As R2StandardEnterExitStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -695,7 +682,7 @@ Namespace EnterExitManagement
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim ds As New DataSet
                 Da.SelectCommand = New SqlCommand("select top 1 flaga,EnterExitId from R2PrimaryParkingSystem.dbo.TblEntryExit where (ltrim(rtrim(cardnoenter))='" & YourTrafficCard.CardNo & "') or (ltrim(rtrim(cardnoexit))='" & YourTrafficCard.CardNo & "') order by DateTimeMilladiEnter desc")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 ds.Tables.Clear()
                 If Da.Fill(ds) = 0 Then Return R2EnterExitRequestType.EnterRequest
                 If ds.Tables(0).Rows(0).Item("flaga") = True Then
@@ -712,15 +699,15 @@ Namespace EnterExitManagement
         Public Shared Function GetEnterExitTavaghof(YourDateInterval As DateInterval, ByVal YourTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure) As Int64
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (ltrim(rtrim(CardId))=" & YourTrafficCard.CardId & ") and (MblghA<>0) and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & ") order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (ltrim(rtrim(CardId))=" & YourTrafficCard.CardId & ") and (MblghA<>0) and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & ") order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New GetDataException
                 Else
                     If YourDateInterval = DateInterval.Hour Then
-                        Return DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTime.GetCurrentDateTimeMilladi())
+                        Return DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTimeService.GetCurrentDateTimeMilladi())
                     ElseIf YourDateInterval = DateInterval.Minute Then
-                        Return DateDiff(DateInterval.Minute, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTime.GetCurrentDateTimeMilladi())
+                        Return DateDiff(DateInterval.Minute, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTimeService.GetCurrentDateTimeMilladi())
                     ElseIf YourDateInterval = DateInterval.Day Then
-                        Return DateDiff(DateInterval.Day, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTime.GetCurrentDateTimeMilladi())
+                        Return DateDiff(DateInterval.Day, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTimeService.GetCurrentDateTimeMilladi())
                     End If
                 End If
             Catch exx As GetDataException
@@ -762,31 +749,31 @@ Namespace EnterExitManagement
                 'احراز معیار محاسبه بر اساس نوع کارت
                 Dim Ds As New DataSet
                 If YourTrafficCard.CardType = TerafficCardType.Savari Then
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (ltrim(rtrim(CardId))=" & YourTrafficCard.CardId & ") and (MblghA<>0) and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & ") order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (ltrim(rtrim(CardId))=" & YourTrafficCard.CardId & ") and (MblghA<>0) and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & ") order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then
                         Return myMblghPayeh
                     End If
                 ElseIf YourTrafficCard.CardType = TerafficCardType.SixCharkh Then
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (ltrim(rtrim(CardId))=" & YourTrafficCard.CardId & ") and (MblghA<>0) and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & ") order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (ltrim(rtrim(CardId))=" & YourTrafficCard.CardId & ") and (MblghA<>0) and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & ") order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then
                         Return myMblghPayeh
                     End If
                 ElseIf YourTrafficCard.CardType = TerafficCardType.TenCharkh Then
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (ltrim(rtrim(CardId))=" & YourTrafficCard.CardId & ") and (MblghA<>0) and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & ") order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (ltrim(rtrim(CardId))=" & YourTrafficCard.CardId & ") and (MblghA<>0) and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & ") order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then
                         Return myMblghPayeh
                     End If
                 ElseIf YourTrafficCard.CardType = TerafficCardType.Tereili Then
                     If EnterExitRequestType = R2EnterExitRequestType.EnterRequest Then
-                        If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (ltrim(rtrim(CardId))=" & YourTrafficCard.CardId & ") and (MblghA<>0) and ((EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & ") Or (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.SherkatHazinehNobat & ")) order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then
+                        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (ltrim(rtrim(CardId))=" & YourTrafficCard.CardId & ") and (MblghA<>0) and ((EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & ") Or (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.SherkatHazinehNobat & ")) order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then
                             Return myMblghPayeh
                         End If
                     ElseIf EnterExitRequestType = R2EnterExitRequestType.ExitRequest Then
-                        If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (ltrim(rtrim(CardId))=" & YourTrafficCard.CardId & ") and (MblghA<>0) and ((EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & ") Or (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.SherkatHazinehNobat & ")) order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then
+                        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (ltrim(rtrim(CardId))=" & YourTrafficCard.CardId & ") and (MblghA<>0) and ((EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & ") Or (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.SherkatHazinehNobat & ")) order by DateMilladiA desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then
                             Return myMblghPayeh
                         End If
                     End If
                 ElseIf YourTrafficCard.CardType = TerafficCardType.None Then
                     Throw New Exception("استفاده از این کارت  ممنوع است" + vbCrLf + "نوع  کارت تردد نامشخص است")
                 End If
-                Tavaghof = DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTime.GetCurrentDateTimeMilladi())
+                Tavaghof = DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTimeService.GetCurrentDateTimeMilladi())
                 'محاسبه هزینه نهایی
                 If EnterExitRequestType = R2EnterExitRequestType.EnterRequest Then
                     If YourTrafficCard.CardType = TerafficCardType.Savari Then
@@ -854,8 +841,8 @@ Namespace EnterExitManagement
                     Return myMblghPayeh
                 ElseIf EnterExitRequestType = R2EnterExitRequestType.ExitRequest Then
                     Dim Ds As DataSet
-                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (ltrim(rtrim(CardId))=" & YourTrafficCard.CardId & ") and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & ") order by DateMilladiA desc", 1, Ds, New Boolean)
-                    Tavaghof = DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTime.GetCurrentDateTimeMilladi())
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (ltrim(rtrim(CardId))=" & YourTrafficCard.CardId & ") and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & ") order by DateMilladiA desc", 1, Ds, New Boolean)
+                    Tavaghof = DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTimeService.GetCurrentDateTimeMilladi())
 
                     If YourTrafficCard.CardType = TerafficCardType.Savari Then
                         If Tavaghof >= R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 4) Then
@@ -925,7 +912,7 @@ Namespace EnterExitManagement
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("select Top 1 EnterExitId from R2PrimaryParkingSystem.dbo.TblEntryExit where (ltrim(rtrim(cardnoenter))='" & YourTerafficCard.CardNo & "') order by DateTimeMilladiEnter desc")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) = 0 Then Throw New CarHasNoEnterExitRecordException
                 Return Ds.Tables(0).Rows(0).Item("EnterExitId")
@@ -939,7 +926,7 @@ Namespace EnterExitManagement
         Public Shared Function GetLPfromEnterExit(YourTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure) As R2StandardLicensePlateStructure
             Try
                 Dim DS As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2PrimaryParkingSystem.dbo.TblEntryExit where (CardNoEnter='" & YourTrafficCard.CardNo & "') order by DateTimeMilladiEnter desc", 1, DS, New Boolean).GetRecordsCount = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryParkingSystem.dbo.TblEntryExit where (CardNoEnter='" & YourTrafficCard.CardNo & "') order by DateTimeMilladiEnter desc", 1, DS, New Boolean).GetRecordsCount = 0 Then
                     Return Nothing
                 Else
                     Return New R2StandardLicensePlateStructure(DS.Tables(0).Rows(0).Item("PelakEnter"), DS.Tables(0).Rows(0).Item("SerialEnter"), DS.Tables(0).Rows(0).Item("CityEnter"), DS.Tables(0).Rows(0).Item("PelakTypeEnter"))
@@ -966,7 +953,7 @@ Namespace EnterExitManagement
         Public Shared Function GetLastTrafficCardWhichNotExited(YourLP As R2StandardLicensePlateStructure, ByRef YourEnterExitId As Int64) As R2CoreParkingSystemStandardTrafficCardStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 EnterExitId,CardNoEnter from R2PrimaryParkingSystem.dbo.TblEntryExit Where FlagA=0 and PelakEnter='" & YourLP.Pelak & "' and SerialEnter='" & YourLP.Serial & "' and CityEnter='" & YourLP.City & "' Order By EnterExitId Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 EnterExitId,CardNoEnter from R2PrimaryParkingSystem.dbo.TblEntryExit Where FlagA=0 and PelakEnter='" & YourLP.Pelak & "' and SerialEnter='" & YourLP.Serial & "' and CityEnter='" & YourLP.City & "' Order By EnterExitId Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Return Nothing
                 End If
                 YourEnterExitId = Ds.Tables(0).Rows(0).Item("EnterExitId")
@@ -979,7 +966,7 @@ Namespace EnterExitManagement
         Public Shared Function GetEnterExitIdforTerafficCardWhichNotExited(YourTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure) As Int64
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 EnterExitId from R2PrimaryParkingSystem.dbo.TblEntryExit Where FlagA=0 and  CardNoEnter='" & YourTerafficCard.CardNo & "' Order By EnterExitId Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 EnterExitId from R2PrimaryParkingSystem.dbo.TblEntryExit Where FlagA=0 and  CardNoEnter='" & YourTerafficCard.CardNo & "' Order By EnterExitId Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New TerafficCardLastExitedException
                 End If
                 Return Ds.Tables(0).Rows(0).Item("EnterExitId")
@@ -995,7 +982,7 @@ Namespace EnterExitManagement
                 If YourMblgh <= R2CoreParkingSystemMClassMoneyWalletManagement.GetMoneyWalletCharge(YourTerafficCard) Then
                     Dim LastEnterExitId As Int64
                     LastEnterExitId = R2CoreParkingSystemMClassEnterExitManagement.GetEnterExitIdforTerafficCardWhichNotExited(YourTerafficCard)
-                    R2CoreParkingSystemMClassEnterExitManagement.UpdateForExit(New R2StandardEnterExitStructure(LastEnterExitId, _DateTime.GetCurrentDateTimeMilladi(), "", "", R2CaptureType.None, R2CameraType.None, Nothing, "", 0, R2EnterStatus.None, 0, 0, Nothing, _DateTime.GetCurrentDateTimeMilladi, _DateTime.GetCurrentShamsiDate, _DateTime.GetCurrentTime, R2CaptureType.None, R2CameraType.None, Nothing, YourTerafficCard.CardNo, YourUserNSS.UserId, R2ExitStatus.NotUserPullCard, YourMblgh, R2CoreMClassConfigurationManagement.GetComputerCode, New R2StandardLicensePlateStructure(), True))
+                    R2CoreParkingSystemMClassEnterExitManagement.UpdateForExit(New R2StandardEnterExitStructure(LastEnterExitId, _DateTimeService.GetCurrentDateTimeMilladi(), "", "", R2CaptureType.None, R2CameraType.None, Nothing, "", 0, R2EnterStatus.None, 0, 0, Nothing, _DateTimeService.GetCurrentDateTimeMilladi, _DateTimeService.GetCurrentShamsiDate, _DateTimeService.GetCurrentTime, R2CaptureType.None, R2CameraType.None, Nothing, YourTerafficCard.CardNo, YourUserNSS.UserId, R2ExitStatus.NotUserPullCard, YourMblgh, R2CoreMClassConfigurationManagement.GetComputerCode, New R2StandardLicensePlateStructure(), True))
                     R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(YourTerafficCard, BagPayType.MinusMoney, YourMblgh, R2CoreParkingSystemAccountings.ExitTemp, YourUserNSS)
                     'R2CoreMClassLoggingManagement.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Info, "خروج موقت کارت تردد انجام گرفت", YourTerafficCard.CardNo, 0, 0, 0, 0, YourUserNSS.UserId, _DateTime.GetCurrentDateTimeMilladi(), _DateTime.GetCurrentShamsiDate))
                 Else
@@ -1016,7 +1003,7 @@ Namespace EnterExitManagement
             Try
                 Dim myMblgh As Int64 = Microsoft.VisualBasic.Switch(YourTerafficCardType = TerafficCardType.Savari, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 0), YourTerafficCardType = TerafficCardType.SixCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 2), YourTerafficCardType = TerafficCardType.TenCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 1), YourTerafficCardType = TerafficCardType.Tereili, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 3))
                 For Loopx As Int64 = 0 To YourTeadad - 1
-                    R2CoreParkingSystemMClassAccountingManagement.InsertAccounting(New R2StandardEnterExitAccountingStructure(R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(RegisteringHandyBillsFixedCardNo), R2CoreParkingSystemAccountings.RegisteringHandyBills, YourShamsiDate.ShamsiDate, RegisteringHandyBillsFixedTime, _DateTime.GetMilladiDateTimeFromShamsiDate(YourShamsiDate.ShamsiDate, RegisteringHandyBillsFixedTime), Nothing, R2CoreMClassConfigurationManagement.GetComputerCode(), myMblgh, YourUserNSS.UserId, 0, 0))
+                    R2CoreParkingSystemMClassAccountingManagement.InsertAccounting(New R2StandardEnterExitAccountingStructure(R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(RegisteringHandyBillsFixedCardNo), R2CoreParkingSystemAccountings.RegisteringHandyBills, YourShamsiDate.ShamsiDate, RegisteringHandyBillsFixedTime, _DateTimeService.GetMilladiDateTimeFromShamsiDate(YourShamsiDate.ShamsiDate, RegisteringHandyBillsFixedTime), Nothing, R2CoreMClassConfigurationManagement.GetComputerCode(), myMblgh, YourUserNSS.UserId, 0, 0))
                 Next
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -1025,7 +1012,7 @@ Namespace EnterExitManagement
 
         Public Shared Sub DeleteRegisteredHandyBills(YourShamsiDate As R2CoreDateAndTime, YourTerafficCardType As TerafficCardType)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Dim myMblgh As Int64 = Microsoft.VisualBasic.Switch(YourTerafficCardType = TerafficCardType.Savari, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 0), YourTerafficCardType = TerafficCardType.SixCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 2), YourTerafficCardType = TerafficCardType.TenCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 1), YourTerafficCardType = TerafficCardType.Tereili, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 3))
                 CmdSql.Connection.Open()
@@ -1042,7 +1029,7 @@ Namespace EnterExitManagement
             Try
                 Dim myMblgh As Int64 = Microsoft.VisualBasic.Switch(YourTerafficCardType = TerafficCardType.Savari, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 0), YourTerafficCardType = TerafficCardType.SixCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 2), YourTerafficCardType = TerafficCardType.TenCharkh, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 1), YourTerafficCardType = TerafficCardType.Tereili, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMblghPaye, 3))
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Count(*) as CountX from R2Primary.dbo.TblAccounting Where CardId=" & R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(RegisteringHandyBillsFixedCardNo).CardId & " and TimeA='" & RegisteringHandyBillsFixedTime & "' and DateShamsiA='" & YourShamsiDate.ShamsiDate & "' and MblghA=" & myMblgh & "", 1, Ds, New Boolean).GetRecordsCount() <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Count(*) as CountX from R2Primary.dbo.TblAccounting Where CardId=" & R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(RegisteringHandyBillsFixedCardNo).CardId & " and TimeA='" & RegisteringHandyBillsFixedTime & "' and DateShamsiA='" & YourShamsiDate.ShamsiDate & "' and MblghA=" & myMblgh & "", 1, Ds, New Boolean).GetRecordsCount() <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item("CountX")
                 Else
                     Return 0
@@ -1056,7 +1043,7 @@ Namespace EnterExitManagement
             Try
                 Dim Lst As List(Of R2StandardEnterExitExtendedStructure) = New List(Of R2StandardEnterExitExtendedStructure)
                 Dim Ds As New DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                  "Select Top " & YourTotalNumberOfRecordsRequested & " ComputerEnter.MName as GateEnterName,ComputerExit.MName as GateExitName,SoftwareUserEnter.UserName as UserNameEnter,SoftwareUserExit.UserName as UserNameExit,EnterExit.*  from R2PrimaryParkingSystem.dbo.TblEntryExit as EnterExit
                         Inner Join R2Primary.dbo.TblComputers as ComputerEnter On EnterExit.GateEnter=ComputerEnter.MId
                         Inner Join R2Primary.dbo.TblComputers as ComputerExit On EnterExit.GateExit=ComputerExit.MId
@@ -1076,7 +1063,7 @@ Namespace EnterExitManagement
             Try
                 Dim Lst As List(Of R2StandardEnterExitExtendedStructure) = New List(Of R2StandardEnterExitExtendedStructure)
                 Dim Ds As New DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                                        "Select Top " & YourTotalNumberOfRecordsRequested & " ComputerEnter.MName as GateEnterName,ComputerExit.MName as GateExitName,SoftwareUserEnter.UserName as UserNameEnter,SoftwareUserExit.UserName as UserNameExit,EnterExit.*  from R2PrimaryParkingSystem.dbo.TblEntryExit as EnterExit
                         Inner Join R2Primary.dbo.TblComputers as ComputerEnter On EnterExit.GateEnter=ComputerEnter.MId
                         Inner Join R2Primary.dbo.TblComputers as ComputerExit On EnterExit.GateExit=ComputerExit.MId
@@ -1094,12 +1081,11 @@ Namespace EnterExitManagement
 
         Public Shared Sub EntryExitAllownSMSControlling(YourPelak As String, YourSerial As String)
             Try
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 If Not InstanceConfiguration.GetConfigBoolean(R2CoreParkingSystemConfigurations.EntryExitAllownSMS, 0) Then Exit Sub
 
                 Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                   "Select * from R2PrimaryParkingSystem.dbo.TblEntryExitAllownSMS Where Pelak='" & YourPelak & "' and Serial='" & YourSerial & "' and AllownSMSActive =1", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
                     SendSMSEntryExitAllownSMSControlling(YourPelak + " - " + YourSerial)
                 End If
@@ -1111,7 +1097,7 @@ Namespace EnterExitManagement
         Private Shared Sub SendSMSEntryExitAllownSMSControlling(YourCompositLP As String)
             Try
                 Dim InstanceMoneyWallet = New R2CoreParkingSystemInstanceMoneyWalletManager
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager()
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 'کنترل فعال بودن سرویس اس ام اس
                 If Not InstanceConfiguration.GetConfigBoolean(R2CoreConfigurations.SmsSystemSetting, 0) Then Throw New SmsSystemIsDisabledException
                 'لیست کاربران
@@ -1125,7 +1111,7 @@ Namespace EnterExitManagement
                 Dim myData = New SMSCreationData
                 myData.Data1 = YourCompositLP
                 'ارسال اس ام اس
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager
+                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
                 Dim SMSResult = InstanceSMSHandling.SendSMS(LstSoftwareUsers, R2CoreParkingSystemSMSTypes.EntryExitAllownSMS, InstanceSMSHandling.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
                 Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
                 If Not SMSResultAnalyze = String.Empty Then Throw New Exception
@@ -1440,13 +1426,24 @@ Namespace TrafficCardsManagement
     End Class
 
     Public Class R2CoreParkingSystemInstanceTrafficCardsManager
-        Private ReadOnly _DateTime As R2DateTime = New R2DateTime()
+        Private ReadOnly _DateTimeService As R2DateTimeService
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
+
+
+        Public Sub New()
+            Try
+                _DateTimeService = New R2DateTimeService
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Sub
 
         Public Function GetNSSTrafficCard(ByVal YourCardId As Int64) As R2CoreParkingSystemStandardTrafficCardStructure
-            Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2Primary.dbo.TblRFIDCards Where CardId=" & YourCardId & "", 0, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2Primary.dbo.TblRFIDCards Where CardId=" & YourCardId & "", 0, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New TerraficCardNotFoundException
                 Else
                     Return New R2CoreParkingSystemStandardTrafficCardStructure(Ds.Tables(0).Rows(0).Item("CardId"), Ds.Tables(0).Rows(0).Item("CardNo"), Ds.Tables(0).Rows(0).Item("Charge"), Ds.Tables(0).Rows(0).Item("UserIdSabt"), Ds.Tables(0).Rows(0).Item("UserIdEdit"), Ds.Tables(0).Rows(0).Item("PelakType"), Ds.Tables(0).Rows(0).Item("Pelak"), Ds.Tables(0).Rows(0).Item("Serial"), Ds.Tables(0).Rows(0).Item("NoMoney"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("CompanyName"), Ds.Tables(0).Rows(0).Item("NameFamily"), Ds.Tables(0).Rows(0).Item("Mobile"), Ds.Tables(0).Rows(0).Item("Address"), Ds.Tables(0).Rows(0).Item("Tel"), Ds.Tables(0).Rows(0).Item("Tahvilg"), Ds.Tables(0).Rows(0).Item("DateTimeMilladiSabt"), Ds.Tables(0).Rows(0).Item("DateTimeMilladiEdit"), Ds.Tables(0).Rows(0).Item("DateShamsiSabt"), Ds.Tables(0).Rows(0).Item("DateShamsiEdit"), Ds.Tables(0).Rows(0).Item("CardType"), Ds.Tables(0).Rows(0).Item("TempCardType"))
@@ -1460,13 +1457,13 @@ Namespace TrafficCardsManagement
 
         Public Sub UpdatingTrafficCard(ByVal YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourEditLevel As R2Enums.EditLevel)
             Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Cmdsql.Connection.Open()
                 If YourEditLevel = R2Enums.EditLevel.LowLevel Then
-                    Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set UserIdEdit=" & YourNSSTerafficCard.UserIdEdit & ",Pelak='" & YourNSSTerafficCard.Pelak & "',Serial='" & YourNSSTerafficCard.Serial & "',CompanyName='" & YourNSSTerafficCard.CompanyName & "',NameFamily='" & YourNSSTerafficCard.NameFamily & "',Mobile='" & YourNSSTerafficCard.Mobile & "',Address='" & YourNSSTerafficCard.Address & "',Tel='" & YourNSSTerafficCard.Tel & "',Tahvilg='" & YourNSSTerafficCard.Tahvilg & "',CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & ",DateTimeMilladiEdit='" & _DateTime.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTime.GetCurrentShamsiDate() & "' Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
+                    Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set UserIdEdit=" & YourNSSTerafficCard.UserIdEdit & ",Pelak='" & YourNSSTerafficCard.Pelak & "',Serial='" & YourNSSTerafficCard.Serial & "',CompanyName='" & YourNSSTerafficCard.CompanyName & "',NameFamily='" & YourNSSTerafficCard.NameFamily & "',Mobile='" & YourNSSTerafficCard.Mobile & "',Address='" & YourNSSTerafficCard.Address & "',Tel='" & YourNSSTerafficCard.Tel & "',Tahvilg='" & YourNSSTerafficCard.Tahvilg & "',CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & ",DateTimeMilladiEdit='" & _DateTimeService.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTimeService.GetCurrentShamsiDate() & "' Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
                 ElseIf YourEditLevel = R2Enums.EditLevel.HighLevel Then
-                    Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set UserIdEdit=" & YourNSSTerafficCard.UserIdEdit & ",Pelak='" & YourNSSTerafficCard.Pelak & "',Serial='" & YourNSSTerafficCard.Serial & "',NoMoney=" & IIf(YourNSSTerafficCard.NoMoney = True, 1, 0) & ",Active=" & IIf(YourNSSTerafficCard.Active = True, 1, 0) & ",CompanyName='" & YourNSSTerafficCard.CompanyName & "',NameFamily='" & YourNSSTerafficCard.NameFamily & "',Mobile='" & YourNSSTerafficCard.Mobile & "',Address='" & YourNSSTerafficCard.Address & "',Tel='" & YourNSSTerafficCard.Tel & "',Tahvilg='" & YourNSSTerafficCard.Tahvilg & "',CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & ",DateTimeMilladiEdit='" & _DateTime.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTime.GetCurrentShamsiDate() & "' Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
+                    Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set UserIdEdit=" & YourNSSTerafficCard.UserIdEdit & ",Pelak='" & YourNSSTerafficCard.Pelak & "',Serial='" & YourNSSTerafficCard.Serial & "',NoMoney=" & IIf(YourNSSTerafficCard.NoMoney = True, 1, 0) & ",Active=" & IIf(YourNSSTerafficCard.Active = True, 1, 0) & ",CompanyName='" & YourNSSTerafficCard.CompanyName & "',NameFamily='" & YourNSSTerafficCard.NameFamily & "',Mobile='" & YourNSSTerafficCard.Mobile & "',Address='" & YourNSSTerafficCard.Address & "',Tel='" & YourNSSTerafficCard.Tel & "',Tahvilg='" & YourNSSTerafficCard.Tahvilg & "',CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & ",DateTimeMilladiEdit='" & _DateTimeService.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTimeService.GetCurrentShamsiDate() & "' Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
                 End If
                 Cmdsql.ExecuteNonQuery()
                 Cmdsql.Connection.Close()
@@ -1478,9 +1475,8 @@ Namespace TrafficCardsManagement
 
         Public Function GetNSSTrafficCard(ByVal YourCardNo As String) As R2CoreParkingSystemStandardTrafficCardStructure
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2Primary.dbo.TblRFIDCards Where Cardno='" & YourCardNo & "' Order By ltrim(rtrim(CardId)) Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2Primary.dbo.TblRFIDCards Where Cardno='" & YourCardNo & "' Order By ltrim(rtrim(CardId)) Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New TerraficCardNotFoundException
                 Else
                     Return New R2CoreParkingSystemStandardTrafficCardStructure(Ds.Tables(0).Rows(0).Item("CardId"), Ds.Tables(0).Rows(0).Item("CardNo"), Ds.Tables(0).Rows(0).Item("Charge"), Ds.Tables(0).Rows(0).Item("UserIdSabt"), Ds.Tables(0).Rows(0).Item("UserIdEdit"), Ds.Tables(0).Rows(0).Item("PelakType"), Ds.Tables(0).Rows(0).Item("Pelak"), Ds.Tables(0).Rows(0).Item("Serial"), Ds.Tables(0).Rows(0).Item("NoMoney"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("CompanyName"), Ds.Tables(0).Rows(0).Item("NameFamily"), Ds.Tables(0).Rows(0).Item("Mobile"), Ds.Tables(0).Rows(0).Item("Address"), Ds.Tables(0).Rows(0).Item("Tel"), Ds.Tables(0).Rows(0).Item("Tahvilg"), Ds.Tables(0).Rows(0).Item("DateTimeMilladiSabt"), Ds.Tables(0).Rows(0).Item("DateTimeMilladiEdit"), Ds.Tables(0).Rows(0).Item("DateShamsiSabt"), Ds.Tables(0).Rows(0).Item("DateShamsiEdit"), Ds.Tables(0).Rows(0).Item("CardType"), Ds.Tables(0).Rows(0).Item("TempCardType"))
@@ -1498,8 +1494,8 @@ Namespace TrafficCardsManagement
 
 
     Public Class R2CoreParkingSystemMClassTrafficCardManagement
-        Private Shared ReadOnly _DateTime As R2DateTime = New R2DateTime()
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared ReadOnly _DateTimeService = New R2DateTimeService()
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function IsTerafficCardNoConfirm(ByVal CardNo As String) As Boolean
             Try
@@ -1513,7 +1509,7 @@ Namespace TrafficCardsManagement
         End Function
         Public Shared Sub TrafficCardSabt(ByRef TrafficCard As R2CoreParkingSystemStandardTrafficCardStructure)
             Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Cmdsql.Connection.Open()
                 Cmdsql.CommandText = "insert into R2Primary.dbo.tblrfidcards(CardId,CardNo,Charge,UseriDSabt,UserIdEdit,PelakType,Pelak,Serial,NoMoney,Active,CompanyName,NameFamily,Mobile,Address,Tel,Tahvilg,DateTimeMilladiSabt,DateTimeMilladiEdit,DateShamsiSabt,DateShamsiEdit,CardType,TempCardType) values('" & TrafficCard.CardId & "','" & TrafficCard.CardNo & "'," & TrafficCard.Charge & "," & TrafficCard.UserIdSabt & "," & TrafficCard.UserIdEdit & "," & TrafficCard.PelakType & ",'" & TrafficCard.Pelak & "','" & TrafficCard.Serial & "'," & IIf(TrafficCard.NoMoney = True, 1, 0) & "," & IIf(TrafficCard.Active = True, 1, 0) & ",'" & TrafficCard.CompanyName & "','" & TrafficCard.NameFamily & "','" & TrafficCard.Mobile & "','" & TrafficCard.Address & "','" & TrafficCard.Tel & "','" & TrafficCard.Tahvilg & "','" & TrafficCard.DateTimeMilladiSabt.ToString("yyyy-MM-dd HH:mm:ss") & "','" & TrafficCard.DateTimeMilladiEdit.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) & "','" & TrafficCard.DateShamsiSabt & "','" & TrafficCard.DateShamsiEdit & "'," & TrafficCard.CardType & "," & TrafficCard.TempCardType & ")"
@@ -1525,7 +1521,7 @@ Namespace TrafficCardsManagement
         End Sub
         Public Shared Sub UpdateTrafficCardType(YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2Primary.dbo.TblRfidCards Set CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & " Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
@@ -1537,13 +1533,13 @@ Namespace TrafficCardsManagement
         End Sub
         Public Shared Sub TerafficCardEdit(ByVal YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourEditLevel As R2Enums.EditLevel)
             Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = (New R2PrimarySqlConnection).GetConnection
+            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Cmdsql.Connection.Open()
                 If YourEditLevel = R2Enums.EditLevel.LowLevel Then
-                    Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set UserIdEdit=" & YourNSSTerafficCard.UserIdEdit & ",Pelak='" & YourNSSTerafficCard.Pelak & "',Serial='" & YourNSSTerafficCard.Serial & "',CompanyName='" & YourNSSTerafficCard.CompanyName & "',NameFamily='" & YourNSSTerafficCard.NameFamily & "',Mobile='" & YourNSSTerafficCard.Mobile & "',Address='" & YourNSSTerafficCard.Address & "',Tel='" & YourNSSTerafficCard.Tel & "',Tahvilg='" & YourNSSTerafficCard.Tahvilg & "',CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & ",DateTimeMilladiEdit='" & _DateTime.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTime.GetCurrentShamsiDate() & "' Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
+                    Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set UserIdEdit=" & YourNSSTerafficCard.UserIdEdit & ",Pelak='" & YourNSSTerafficCard.Pelak & "',Serial='" & YourNSSTerafficCard.Serial & "',CompanyName='" & YourNSSTerafficCard.CompanyName & "',NameFamily='" & YourNSSTerafficCard.NameFamily & "',Mobile='" & YourNSSTerafficCard.Mobile & "',Address='" & YourNSSTerafficCard.Address & "',Tel='" & YourNSSTerafficCard.Tel & "',Tahvilg='" & YourNSSTerafficCard.Tahvilg & "',CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & ",DateTimeMilladiEdit='" & _DateTimeService.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTimeService.GetCurrentShamsiDate() & "' Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
                 ElseIf YourEditLevel = R2Enums.EditLevel.HighLevel Then
-                    Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set UserIdEdit=" & YourNSSTerafficCard.UserIdEdit & ",Pelak='" & YourNSSTerafficCard.Pelak & "',Serial='" & YourNSSTerafficCard.Serial & "',NoMoney=" & IIf(YourNSSTerafficCard.NoMoney = True, 1, 0) & ",Active=" & IIf(YourNSSTerafficCard.Active = True, 1, 0) & ",CompanyName='" & YourNSSTerafficCard.CompanyName & "',NameFamily='" & YourNSSTerafficCard.NameFamily & "',Mobile='" & YourNSSTerafficCard.Mobile & "',Address='" & YourNSSTerafficCard.Address & "',Tel='" & YourNSSTerafficCard.Tel & "',Tahvilg='" & YourNSSTerafficCard.Tahvilg & "',CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & ",DateTimeMilladiEdit='" & _DateTime.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTime.GetCurrentShamsiDate() & "' Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
+                    Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set UserIdEdit=" & YourNSSTerafficCard.UserIdEdit & ",Pelak='" & YourNSSTerafficCard.Pelak & "',Serial='" & YourNSSTerafficCard.Serial & "',NoMoney=" & IIf(YourNSSTerafficCard.NoMoney = True, 1, 0) & ",Active=" & IIf(YourNSSTerafficCard.Active = True, 1, 0) & ",CompanyName='" & YourNSSTerafficCard.CompanyName & "',NameFamily='" & YourNSSTerafficCard.NameFamily & "',Mobile='" & YourNSSTerafficCard.Mobile & "',Address='" & YourNSSTerafficCard.Address & "',Tel='" & YourNSSTerafficCard.Tel & "',Tahvilg='" & YourNSSTerafficCard.Tahvilg & "',CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & ",DateTimeMilladiEdit='" & _DateTimeService.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTimeService.GetCurrentShamsiDate() & "' Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
                 End If
                 Cmdsql.ExecuteNonQuery()
                 Cmdsql.Connection.Close()
@@ -1554,7 +1550,7 @@ Namespace TrafficCardsManagement
         Public Shared Function GetNSSTrafficCard(ByVal CardNo As String) As R2CoreParkingSystemStandardTrafficCardStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2Primary.dbo.TblRFIDCards Where Cardno='" & CardNo & "' Order By CardId Desc", 0, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2Primary.dbo.TblRFIDCards Where Cardno='" & CardNo & "' Order By CardId Desc", 0, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New TerraficCardNotFoundException
                 Else
                     Return New R2CoreParkingSystemStandardTrafficCardStructure(Ds.Tables(0).Rows(0).Item("CardId"), Ds.Tables(0).Rows(0).Item("CardNo"), Ds.Tables(0).Rows(0).Item("Charge"), Ds.Tables(0).Rows(0).Item("UserIdSabt"), Ds.Tables(0).Rows(0).Item("UserIdEdit"), Ds.Tables(0).Rows(0).Item("PelakType"), Ds.Tables(0).Rows(0).Item("Pelak"), Ds.Tables(0).Rows(0).Item("Serial"), Ds.Tables(0).Rows(0).Item("NoMoney"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("CompanyName"), Ds.Tables(0).Rows(0).Item("NameFamily"), Ds.Tables(0).Rows(0).Item("Mobile"), Ds.Tables(0).Rows(0).Item("Address"), Ds.Tables(0).Rows(0).Item("Tel"), Ds.Tables(0).Rows(0).Item("Tahvilg"), Ds.Tables(0).Rows(0).Item("DateTimeMilladiSabt"), Ds.Tables(0).Rows(0).Item("DateTimeMilladiEdit"), Ds.Tables(0).Rows(0).Item("DateShamsiSabt"), Ds.Tables(0).Rows(0).Item("DateShamsiEdit"), Ds.Tables(0).Rows(0).Item("CardType"), Ds.Tables(0).Rows(0).Item("TempCardType"))
@@ -1569,7 +1565,7 @@ Namespace TrafficCardsManagement
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim ds As New DataSet
                 Da.SelectCommand = New SqlClient.SqlCommand("select mobile from R2Primary.dbo.tblrfidcards where ltrim(rtrim(cardno))='" & CardNo & "' order by cardno")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
                 ds.Tables.Clear()
                 If Da.Fill(ds) <> 0 Then
                     Return ds.Tables(0).Rows(0).Item("mobile").TRIM
@@ -1583,7 +1579,7 @@ Namespace TrafficCardsManagement
         Public Shared Function GetNSSTrafficCard(ByVal YourCardId As Int64) As R2CoreParkingSystemStandardTrafficCardStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 * from R2Primary.dbo.TblRFIDCards Where CardId=" & YourCardId & "", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2Primary.dbo.TblRFIDCards Where CardId=" & YourCardId & "", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New TerraficCardNotFoundException
                 Else
                     Return New R2CoreParkingSystemStandardTrafficCardStructure(Ds.Tables(0).Rows(0).Item("CardId"), Ds.Tables(0).Rows(0).Item("CardNo"), Ds.Tables(0).Rows(0).Item("Charge"), Ds.Tables(0).Rows(0).Item("UserIdSabt"), Ds.Tables(0).Rows(0).Item("UserIdEdit"), Ds.Tables(0).Rows(0).Item("PelakType"), Ds.Tables(0).Rows(0).Item("Pelak"), Ds.Tables(0).Rows(0).Item("Serial"), Ds.Tables(0).Rows(0).Item("NoMoney"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("CompanyName"), Ds.Tables(0).Rows(0).Item("NameFamily"), Ds.Tables(0).Rows(0).Item("Mobile"), Ds.Tables(0).Rows(0).Item("Address"), Ds.Tables(0).Rows(0).Item("Tel"), Ds.Tables(0).Rows(0).Item("Tahvilg"), Ds.Tables(0).Rows(0).Item("DateTimeMilladiSabt"), Ds.Tables(0).Rows(0).Item("DateTimeMilladiEdit"), Ds.Tables(0).Rows(0).Item("DateShamsiSabt"), Ds.Tables(0).Rows(0).Item("DateShamsiEdit"), Ds.Tables(0).Rows(0).Item("CardType"), Ds.Tables(0).Rows(0).Item("TempCardType"))
@@ -1635,7 +1631,7 @@ Namespace TrafficCardsManagement
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlClient.SqlCommand("SELECT COUNT(*) FROM R2Primary.dbo.TblRFIDCards GROUP BY CardNo")
-                Da.SelectCommand.Connection = (New R2PrimarySqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
                 Ds.Tables.Clear()
                 Return Da.Fill(Ds)
             Catch ex As Exception
@@ -1644,7 +1640,7 @@ Namespace TrafficCardsManagement
         End Function
         Public Shared Sub DisallowTerafficCard(YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2Primary.dbo.TblRFIDCards Set NoMoney=0,Active=0 Where Cardno='" & YourNSSTerafficCard.CardNo & "'"
@@ -1669,7 +1665,7 @@ Namespace TrafficCardsManagement
         Public Shared Function GetDSTerafficCardType() As DataSet
             Try
                 Dim Ds As New DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select TypeName,TypeCode from R2PrimaryParkingSystem.dbo.TblTerafficCardType Order by TypeCode", 1000, Ds, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TypeName,TypeCode from R2PrimaryParkingSystem.dbo.TblTerafficCardType Order by TypeCode", 1000, Ds, New Boolean)
                 Return Ds
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -1678,7 +1674,7 @@ Namespace TrafficCardsManagement
         Public Shared Function GetTerafficCardTypeNameFromTypeCode(YourTypeCode As Int64) As String
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select TypeName from R2PrimaryParkingSystem.dbo.TblTerafficCardType  Where TypeCode=" & YourTypeCode & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TypeName from R2PrimaryParkingSystem.dbo.TblTerafficCardType  Where TypeCode=" & YourTypeCode & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item(0).trim
                 Else
                     Throw New GetDataException
@@ -1692,7 +1688,7 @@ Namespace TrafficCardsManagement
         Public Shared Function GetTerafficCardTypeCodeFromTypeName(YourTypeName As String) As Int64
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select TypeCode from R2PrimaryParkingSystem.dbo.TblTerafficCardType  Where ltrim(rtrim(TypeName))='" & YourTypeName.Trim & "'", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TypeCode from R2PrimaryParkingSystem.dbo.TblTerafficCardType  Where ltrim(rtrim(TypeName))='" & YourTypeName.Trim & "'", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item(0)
                 Else
                     Throw New GetDataException
@@ -1706,7 +1702,7 @@ Namespace TrafficCardsManagement
         Public Shared Function GetDSTerafficTempCardType() As DataSet
             Try
                 Dim Ds As New DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select TempTypeName,TempTypeCode from R2PrimaryParkingSystem.dbo.TblTerafficTempCardType Order by TempTypeCode", 1000, Ds, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TempTypeName,TempTypeCode from R2PrimaryParkingSystem.dbo.TblTerafficTempCardType Order by TempTypeCode", 1000, Ds, New Boolean)
                 Return Ds
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -1715,7 +1711,7 @@ Namespace TrafficCardsManagement
         Public Shared Function GetTerafficTempCardTypeNameFromTempTypeCode(YourTempTypeCode As Int64) As String
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select TempTypeName from R2PrimaryParkingSystem.dbo.TblTerafficTempCardType  Where TempTypeCode=" & YourTempTypeCode & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TempTypeName from R2PrimaryParkingSystem.dbo.TblTerafficTempCardType  Where TempTypeCode=" & YourTempTypeCode & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item(0).trim
                 Else
                     Throw New GetDataException
@@ -1729,7 +1725,7 @@ Namespace TrafficCardsManagement
         Public Shared Function GetTerafficTempCardTypeCodeFromTempTypeName(YourTempTypeName As String) As Int64
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select TempTypeCode from R2PrimaryParkingSystem.dbo.TblTerafficTempCardType  Where ltrim(rtrim(TempTypeName))='" & YourTempTypeName.Trim & "'", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TempTypeCode from R2PrimaryParkingSystem.dbo.TblTerafficTempCardType  Where ltrim(rtrim(TempTypeName))='" & YourTempTypeName.Trim & "'", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item(0)
                 Else
                     Throw New GetDataException
@@ -1818,16 +1814,17 @@ Namespace TrafficCardsManagement
     'BPTChanged
     Public Class R2CoreParkingSystemTrafficCardsManager
 
-        Private _R2DateTimeService As IR2DateTimeService
-        Public Sub New(YourR2DateTimeService As IR2DateTimeService)
-            _R2DateTimeService = YourR2DateTimeService
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+        Private _DateTimeService As IR2DateTimeService
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Public Function GetTrafficCard(ByVal YourCardNo As String) As R2CoreParkingSystemTrafficCard
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblRFIDCards Where Cardno='" & YourCardNo & "'", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblRFIDCards Where Cardno='" & YourCardNo & "'", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New TerraficCardNotFoundException
                 Else
                     Return New R2CoreParkingSystemTrafficCard With {.CardId = Ds.Tables(0).Rows(0).Item("CardId"), .CardNo = Ds.Tables(0).Rows(0).Item("CardNo"), .Balance = Ds.Tables(0).Rows(0).Item("Charge"), .CardTypeId = Ds.Tables(0).Rows(0).Item("CardType")}
@@ -1841,9 +1838,8 @@ Namespace TrafficCardsManagement
 
         Public Function GetTrafficCard(ByVal YourCardId As Int64) As R2CoreParkingSystemTrafficCard
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblRFIDCards Where CardId=" & YourCardId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblRFIDCards Where CardId=" & YourCardId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New TerraficCardNotFoundException
                 Else
                     Return New R2CoreParkingSystemTrafficCard With {.CardId = Ds.Tables(0).Rows(0).Item("CardId"), .CardNo = Ds.Tables(0).Rows(0).Item("CardNo"), .Balance = Ds.Tables(0).Rows(0).Item("Charge"), .CardTypeId = Ds.Tables(0).Rows(0).Item("CardType")}
@@ -1857,15 +1853,14 @@ Namespace TrafficCardsManagement
 
         Public Function GetTerraficCost(YourTerraficCardTypeId As Short, YourImmediately As Boolean) As R2CoreParkingSystemTerraficCost
             Try
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                 Dim Ds As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
                     Da.SelectCommand = New SqlCommand("Select * from R2PrimaryParkingSystem.dbo.TblTerraficCosts Where TerraficCardTypeId=" & YourTerraficCardTypeId & "")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(Ds) <= 0 Then Throw New TerraficCostNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select * from R2PrimaryParkingSystem.dbo.TblTerraficCosts Where TerraficCardTypeId=" & YourTerraficCardTypeId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then Throw New TerraficCostNotFoundException
                 End If
                 Return New R2CoreParkingSystemTerraficCost With {.TerraficCardTypeId = Ds.Tables(0).Rows(0).Item("TerraficCardTypeId"), .SelfGoverEntryCost = Ds.Tables(0).Rows(0).Item("SelfGoverEntryCost"), .DelayFromEntry = Ds.Tables(0).Rows(0).Item("DelayFromEntry")}
@@ -1952,8 +1947,8 @@ Namespace UserChargeProcessManagement
     End Class
 
     Public Class R2CoreParkingSystemMClassUserChargeProcessManagement
-        Private Shared _DateTime As R2DateTime = New R2DateTime()
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared _DateTimeService = New R2DateTimeService()
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function GetUserChargeProcessCollection(YourNSSUser As R2CoreStandardSoftwareUserStructure, YourDate1 As String, YourDate2 As String, YourTime1 As String, YourTime2 As String, YourTotalNumberofRecordsRequested As Int64) As List(Of R2StandardUserChargeProcessStructure)
             Try
@@ -1961,7 +1956,7 @@ Namespace UserChargeProcessManagement
                 Dim myConcat2 As String = YourDate2 + YourTime2
                 Dim Lst As List(Of R2StandardUserChargeProcessStructure) = New List(Of R2StandardUserChargeProcessStructure)
                 Dim Ds As New DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                             "Select Top " & YourTotalNumberofRecordsRequested & " RFIDCards.CardNo,Charge.* from R2Primary.dbo.TblMoneyWalletCharges as Charge
                                 Inner Join R2Primary.dbo.TblRFIDCards as RFIDCards On Charge.CardId=RFIDCards.CardId
                                   Where (DateShamsi+TimeCharge>='" & myConcat1 & "') and (DateShamsi+TimeCharge<='" & myConcat2 & "') and (UserId=" & YourNSSUser.UserId & ") Order by DateTimeMilladi Desc", 1, Ds, New Boolean)
@@ -1979,7 +1974,7 @@ Namespace UserChargeProcessManagement
                 Dim myConcat1 As String = YourDate1 + YourTime1
                 Dim myConcat2 As String = YourDate2 + YourTime2
                 Dim DS As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Sum(Mblgh) as Sumx from R2Primary.dbo.TblMoneyWalletCharges where (DateShamsi+TimeCharge>='" & myConcat1 & "') and (DateShamsi+TimeCharge<='" & myConcat2 & "') and (UserId=" & YourNSSUser.UserId & ")", 1, DS, New Boolean).GetRecordsCount() <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Sum(Mblgh) as Sumx from R2Primary.dbo.TblMoneyWalletCharges where (DateShamsi+TimeCharge>='" & myConcat1 & "') and (DateShamsi+TimeCharge<='" & myConcat2 & "') and (UserId=" & YourNSSUser.UserId & ")", 1, DS, New Boolean).GetRecordsCount() <> 0 Then
                     If Object.Equals(DBNull.Value, DS.Tables(0).Rows(0).Item("Sumx")) Then
                         Return 0
                     Else
@@ -2002,11 +1997,12 @@ Namespace CarType
 
     Public Class R2CoreParkingSystemCarTypeManager
 
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
+
         Public Function GetCarTypeNameFromsnCarType(YourCarType As String) As String
             Try
                 Dim Ds As New DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas, "Select StrCarName from dbtransport.dbo.TbCarType Where snCarType=" & YourCarType & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select StrCarName from dbtransport.dbo.TbCarType Where snCarType=" & YourCarType & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item(0)
                 Else
                     Throw New GetDataException
@@ -2023,12 +2019,12 @@ Namespace CarType
     Public Class R2CoreParkingSystemMClassCarType
 
         Public Shared TereiliKafiCode As String = "505"
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
 
         Public Shared Function GetDSCarType() As DataSet
             Try
                 Dim Ds As New DataSet
-                InstanceSqlDataBOX.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas, "Select StrCarName from dbtransport.dbo.TbCarType Order by StrCarName", 1000, Ds, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select StrCarName from dbtransport.dbo.TbCarType Order by StrCarName", 1000, Ds, New Boolean)
                 Return Ds
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -2038,7 +2034,7 @@ Namespace CarType
         Public Shared Function GetCarTypeNameFromsnCarType(YourCarType As String) As String
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas, "Select StrCarName from dbtransport.dbo.TbCarType Where snCarType=" & YourCarType & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select StrCarName from dbtransport.dbo.TbCarType Where snCarType=" & YourCarType & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item(0)
                 Else
                     Throw New GetDataException
@@ -2053,7 +2049,7 @@ Namespace CarType
         Public Shared Function GetsnCarTypeFromStrCarName(YourCarName As String) As String
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas, "Select top 1 snCarType from dbtransport.dbo.TbCarType Where StrCarName='" & YourCarName & "'", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select top 1 snCarType from dbtransport.dbo.TbCarType Where StrCarName='" & YourCarName & "'", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item(0)
                 Else
                     Throw New GetDataException
@@ -2178,7 +2174,13 @@ Namespace BlackList
     End Class
 
     Public Class R2CoreParkingSystemInstanceBlackListManager
-        Private _DateTime As New R2DateTime
+
+        Private InstanceSqlDataBox As R2CoreSqlDataBOXManager
+        Private _DateTimeService As IR2DateTimeService
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+            InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
+        End Sub
 
         Public Sub New()
 
@@ -2192,13 +2194,12 @@ Namespace BlackList
 
         Public Function GetBlackList(YourNSSCar As R2StandardCarStructure, YourBlackListType As R2CoreParkingSystemBlackListType) As List(Of R2StandardBlackListStructure)
             Try
-                Dim InstanceSqlDataBox = New R2CoreSqlDataBOXManager
                 Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 Dim Ds As DataSet
                 If YourBlackListType = R2CoreParkingSystemBlackListType.ActiveBlackLists Then
-                    InstanceSqlDataBox.GetDataBOX(New R2ClassSqlConnectionSepas, "Select * from dbtransport.dbo.TbBlackList Where ltrim(rtrim(nTruckNo))='" & YourNSSCar.StrCarNo & "' and ltrim(rtrim(nPlakSerial))='" & YourNSSCar.StrCarSerialNo & "' and nPlakPlac=" & YourNSSCar.nIdCity & " and flaga=0 Order By nId Desc", 1, Ds, New Boolean)
+                    InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from dbtransport.dbo.TbBlackList Where ltrim(rtrim(nTruckNo))='" & YourNSSCar.StrCarNo & "' and ltrim(rtrim(nPlakSerial))='" & YourNSSCar.StrCarSerialNo & "' and nPlakPlac=" & YourNSSCar.nIdCity & " and flaga=0 Order By nId Desc", 1, Ds, New Boolean)
                 ElseIf YourBlackListType = R2CoreParkingSystemBlackListType.AllBlackLists Then
-                    InstanceSqlDataBox.GetDataBOX(New R2ClassSqlConnectionSepas, "Select * from dbtransport.dbo.TbBlackList Where ltrim(rtrim(nTruckNo))='" & YourNSSCar.StrCarNo & "' and ltrim(rtrim(nPlakSerial))='" & YourNSSCar.StrCarSerialNo & "' and nPlakPlac=" & YourNSSCar.nIdCity & " Order By nId Desc", 1, Ds, New Boolean)
+                    InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from dbtransport.dbo.TbBlackList Where ltrim(rtrim(nTruckNo))='" & YourNSSCar.StrCarNo & "' and ltrim(rtrim(nPlakSerial))='" & YourNSSCar.StrCarSerialNo & "' and nPlakPlac=" & YourNSSCar.nIdCity & " Order By nId Desc", 1, Ds, New Boolean)
                 Else
                     Return Nothing
                 End If
@@ -2215,10 +2216,9 @@ Namespace BlackList
 
         Public Function HasCarBlackList(YourNSSCar As R2StandardCarStructure, ByRef YourNSSBlackList As R2StandardBlackListStructure) As Boolean
             Try
-                Dim InstanceSqlDataBox = New R2CoreSqlDataBOXManager
-                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(_DateTimeService)
                 Dim Ds As DataSet
-                If InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "
+                If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
                   Select Top 1 * from dbtransport.dbo.TbBlackList Where ltrim(rtrim(nTruckNo))='" & YourNSSCar.StrCarNo & "' 
                      and ltrim(rtrim(nPlakSerial))='" & YourNSSCar.StrCarSerialNo & "' and 
                      nPlakPlac=" & YourNSSCar.nIdCity & " and flaga=0 Order By nId Desc", 3600, Ds, New Boolean).GetRecordsCount <> 0 Then
@@ -2234,12 +2234,12 @@ Namespace BlackList
 
         Public Sub AddBlackList(YourNSSCar As R2StandardCarStructure, YourMblgh As Int64, YourDescription As String, YourSoftwareUser As R2CoreStandardSoftwareUserStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 If YourDescription = String.Empty Then Throw New BlackListDescriptionNotFoundException
 
                 CmdSql.Connection.Open()
-                CmdSql.CommandText = "Insert Into dbtransport.dbo.TbBlackList(nTruckNo,nPlakPlac,nPlakSerial,StrDesc,FlagA,nAmount,StrDate,nUser) Values('" & YourNSSCar.StrCarNo & "'," & YourNSSCar.nIdCity & ",'" & YourNSSCar.StrCarSerialNo & "','" & YourDescription & "',0," & YourMblgh & ",'" & _DateTime.GetCurrentShamsiDate() & "'," & YourSoftwareUser.UserId & ")"
+                CmdSql.CommandText = "Insert Into dbtransport.dbo.TbBlackList(nTruckNo,nPlakPlac,nPlakSerial,StrDesc,FlagA,nAmount,StrDate,nUser) Values('" & YourNSSCar.StrCarNo & "'," & YourNSSCar.nIdCity & ",'" & YourNSSCar.StrCarSerialNo & "','" & YourDescription & "',0," & YourMblgh & ",'" & _DateTimeService.GetCurrentShamsiDate() & "'," & YourSoftwareUser.UserId & ")"
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
 
@@ -2263,9 +2263,9 @@ Namespace BlackList
 
         Private Sub SendingSMSAddtoBlackList(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
             Try
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager
+                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
                 Dim LstUser = New List(Of R2CoreStandardSoftwareUserStructure) From {YourNSSSoftwareUser}
-                Dim LstCreationData = New List(Of SMSCreationData) From {New SMSCreationData With {.Data1 = _DateTime.GetCurrentShamsiDate + " " + _DateTime.GetCurrentTime}}
+                Dim LstCreationData = New List(Of SMSCreationData) From {New SMSCreationData With {.Data1 = _DateTimeService.GetCurrentShamsiDate + " " + _DateTimeService.GetCurrentTime}}
                 Dim SMSResult = InstanceSMSHandling.SendSMS(LstUser, R2CoreParkingSystemSMSTypes.BlackListRecordAddedAllown, LstCreationData, True)
                 Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
                 If Not SMSResultAnalyze = String.Empty Then Throw New SMSResultException(SMSResultAnalyze)
@@ -2281,8 +2281,8 @@ Namespace BlackList
 
     Public Class R2CoreParkingSystemMClassBlackList
 
-        Private Shared _DateTime As New R2DateTime
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Enum R2CoreParkingSystemBlackListType
             None = 0
@@ -2294,9 +2294,9 @@ Namespace BlackList
             Try
                 Dim Ds As DataSet
                 If YourBlackListType = R2CoreParkingSystemBlackListType.ActiveBlackLists Then
-                    InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select * from dbtransport.dbo.TbBlackList Where ltrim(rtrim(nTruckNo))='" & YourNSSCar.StrCarNo & "' and ltrim(rtrim(nPlakSerial))='" & YourNSSCar.StrCarSerialNo & "' and nPlakPlac=" & YourNSSCar.nIdCity & " and flaga=0 Order By nId Desc", 1, Ds, New Boolean)
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from dbtransport.dbo.TbBlackList Where ltrim(rtrim(nTruckNo))='" & YourNSSCar.StrCarNo & "' and ltrim(rtrim(nPlakSerial))='" & YourNSSCar.StrCarSerialNo & "' and nPlakPlac=" & YourNSSCar.nIdCity & " and flaga=0 Order By nId Desc", 1, Ds, New Boolean)
                 ElseIf YourBlackListType = R2CoreParkingSystemBlackListType.AllBlackLists Then
-                    InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select * from dbtransport.dbo.TbBlackList Where ltrim(rtrim(nTruckNo))='" & YourNSSCar.StrCarNo & "' and ltrim(rtrim(nPlakSerial))='" & YourNSSCar.StrCarSerialNo & "' and nPlakPlac=" & YourNSSCar.nIdCity & " Order By nId Desc", 1, Ds, New Boolean)
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from dbtransport.dbo.TbBlackList Where ltrim(rtrim(nTruckNo))='" & YourNSSCar.StrCarNo & "' and ltrim(rtrim(nPlakSerial))='" & YourNSSCar.StrCarSerialNo & "' and nPlakPlac=" & YourNSSCar.nIdCity & " Order By nId Desc", 1, Ds, New Boolean)
                 Else
                     Return Nothing
                 End If
@@ -2314,7 +2314,7 @@ Namespace BlackList
         Public Shared Function GetCompositBlackList(YourNSSCar As R2StandardCarStructure) As String
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select StrDesc from dbtransport.dbo.TbBlackList Where nTruckNo='" & YourNSSCar.StrCarNo & "' and nPlakSerial='" & YourNSSCar.StrCarSerialNo & "' and nPlakPlac=" & YourNSSCar.nIdCity & " and flaga=0 Order By StrDate Desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then Return String.Empty
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select StrDesc from dbtransport.dbo.TbBlackList Where nTruckNo='" & YourNSSCar.StrCarNo & "' and nPlakSerial='" & YourNSSCar.StrCarSerialNo & "' and nPlakPlac=" & YourNSSCar.nIdCity & " and flaga=0 Order By StrDate Desc", 1, Ds, New Boolean).GetRecordsCount = 0 Then Return String.Empty
                 Dim SB As StringBuilder = New StringBuilder()
                 For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
                     SB.Append(Ds.Tables(0).Rows(Loopx).Item("StrDesc").trim).AppendLine()
@@ -2327,10 +2327,10 @@ Namespace BlackList
 
         Public Shared Sub ChangeBlackListMblgh(YourNSSBlackList As R2StandardBlackListStructure, YourNewAmount As Int64, YourUserNSS As R2CoreStandardSoftwareUserStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
-                CmdSql.CommandText = "Update dbtransport.dbo.TbBlackList Set nAmount=" & YourNewAmount & ",StrDate='" & _DateTime.GetCurrentShamsiDate() & "',nUser=" & YourUserNSS.UserId & " Where nId=" & YourNSSBlackList.nId & ""
+                CmdSql.CommandText = "Update dbtransport.dbo.TbBlackList Set nAmount=" & YourNewAmount & ",StrDate='" & _DateTimeService.GetCurrentShamsiDate() & "',nUser=" & YourUserNSS.UserId & " Where nId=" & YourNSSBlackList.nId & ""
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
                 'R2CoreMClassLoggingManagement.LogRegister(New R2CoreStandardLoggingStructure(0, R2CoreLogType.Info, "مبلغ تخلف برای لیست سیاه خودرو تغییر یافت" + vbCrLf + YourNSSBlackList.nId.ToString() + vbCrLf + YourNewAmount.ToString(), 0, 0, 0, 0, 0, YourUserNSS.UserId, _DateTime.GetCurrentDateTimeMilladi(), _DateTime.GetCurrentShamsiDate))
@@ -2460,11 +2460,14 @@ Namespace Drivers
     End Class
 
     Public Class R2CoreParkingSystemInstanceDriversManager
+
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
+
         Public Function GetNSSDriver(YournIdPerson As String) As R2StandardDriverStructure
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select * from dbtransport.dbo.TbPerson as P inner join dbtransport.dbo.TbDriver as D On P.nIDPerson=D.nIDDriver Where P.nIdPerson=" & YournIdPerson & "")
-                Da.SelectCommand.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Dim NSS As R2StandardDriverStructure = New R2StandardDriverStructure
@@ -2489,7 +2492,7 @@ Namespace Drivers
         'BPTChanged
         Public Function InsertDriver(YourNSS As R2StandardDriverStructure) As Int64
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -2512,7 +2515,7 @@ Namespace Drivers
 
         Public Sub UpdateDriver(YourNSS As R2StandardDriverStructure)
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -2533,8 +2536,7 @@ Namespace Drivers
         Public Function GetDriverIdfromCarId(YournIdCar As Int64) As Int64
             Try
                 Dim DS As New DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                              "Select Top 1 nIdPerson from dbtransport.dbo.TbCarAndPerson where (nIdCar=" & YournIdCar & ") and 
                               (snRelation=2) And ((DATEDIFF(SECOND,RelationTimeStamp,getdate())<240) Or (RelationTimeStamp='2015-01-01 00:00:00.000')) Order By nIDCarAndPerson Desc", 300, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return DS.Tables(0).Rows(0).Item("nIdPerson")
@@ -2553,12 +2555,12 @@ Namespace Drivers
     Public Class R2CoreParkingSystemMClassDrivers
 
         Private Shared _R2PrimaryFSWS = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
 
         Public Shared Function IsExistDriver(YourNSS As R2StandardDriverStructure) As Boolean
             Try
                 Dim DS As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas, "Select P.StrPersonFullName from dbtransport.dbo.TbPerson as P inner join dbtransport.dbo.TbDriver as D On P.nIdPerson=D.nIdDriver Where P.StrNationalCode='" & YourNSS.StrNationalCode & "' Or D.StrDrivingLicenceNo='" & YourNSS.strDrivingLicenceNo & "'", 1, DS, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select P.StrPersonFullName from dbtransport.dbo.TbPerson as P inner join dbtransport.dbo.TbDriver as D On P.nIdPerson=D.nIdDriver Where P.StrNationalCode='" & YourNSS.StrNationalCode & "' Or D.StrDrivingLicenceNo='" & YourNSS.strDrivingLicenceNo & "'", 1, DS, New Boolean).GetRecordsCount <> 0 Then
                     Return True
                 Else
                     Return False
@@ -2572,7 +2574,7 @@ Namespace Drivers
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlCommand("Select * from dbtransport.dbo.TbPerson as P inner join dbtransport.dbo.TbDriver as D On P.nIDPerson=D.nIDDriver Where P.nIdPerson=" & YournIdPerson & "")
-                Da.SelectCommand.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) <> 0 Then
                     Dim NSS As R2StandardDriverStructure = New R2StandardDriverStructure
@@ -2597,7 +2599,7 @@ Namespace Drivers
         Public Shared Function ExistDriver(YourNationalCode As R2CoreParkingSystemDriverNationalCode) As Boolean
             Try
                 Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                   "Select strNationalCode from dbtransport.dbo.TbPerson as P 
                                      inner join dbtransport.dbo.TbDriver as D On P.nIDPerson=D.nIDDriver 
                                    Where P.strNationalCode='" & YourNationalCode.DriverNationalCode & "'", 0, DS, New Boolean).GetRecordsCount = 0 Then
@@ -2612,7 +2614,7 @@ Namespace Drivers
 
         Public Shared Function InsertDriver(YourNSS As R2StandardDriverStructure, YourUserNSS As R2CoreStandardSoftwareUserStructure) As Int64
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -2653,7 +2655,7 @@ Namespace Drivers
 
         Public Shared Sub UpdateDriver(YourNSS As R2StandardDriverStructure, YourNSSUser As R2CoreStandardSoftwareUserStructure)
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -2698,7 +2700,7 @@ Namespace Drivers
 
         Public Shared Sub DeleteDriver(YourNSS As R2StandardDriverStructure)
             Dim CmdSql As SqlCommand = New SqlCommand
-            CmdSql.Connection = (New DataBaseManagement.R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -2723,7 +2725,7 @@ Namespace Drivers
         Public Shared Function GetCountOfCarsSecondDriverAttached(YourNSSSecondDriver As R2StandardDriverStructure) As Int64
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "select Count(*) as CountX from dbtransport.dbo.TbCarAndPerson where (nIdPerson=" & YourNSSSecondDriver.nIdPerson & ") and (SnRelation=3) And ((DATEDIFF(SECOND,RelationTimeStamp,getdate())<240) Or (RelationTimeStamp='2015-01-01 00:00:00.000'))", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "select Count(*) as CountX from dbtransport.dbo.TbCarAndPerson where (nIdPerson=" & YourNSSSecondDriver.nIdPerson & ") and (SnRelation=3) And ((DATEDIFF(SECOND,RelationTimeStamp,getdate())<240) Or (RelationTimeStamp='2015-01-01 00:00:00.000'))", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Return 0
                 Else
                     Return Ds.Tables(0).Rows(0).Item("CountX")
@@ -2736,7 +2738,7 @@ Namespace Drivers
         Public Shared Function GetCountOfDriversAttachedCar(YourNSSCar As R2StandardCarStructure) As Int64
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "select Count(*) as CountX from dbtransport.dbo.TbCarAndPerson where (nIdCar=" & YourNSSCar.nIdCar & ") and (SnRelation=2 or SnRelation=3) And ((DATEDIFF(SECOND,RelationTimeStamp,getdate())<240) Or (RelationTimeStamp='2015-01-01 00:00:00.000'))", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "select Count(*) as CountX from dbtransport.dbo.TbCarAndPerson where (nIdCar=" & YourNSSCar.nIdCar & ") and (SnRelation=2 or SnRelation=3) And ((DATEDIFF(SECOND,RelationTimeStamp,getdate())<240) Or (RelationTimeStamp='2015-01-01 00:00:00.000'))", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Return 0
                 Else
                     Return Ds.Tables(0).Rows(0).Item("CountX")
@@ -2954,7 +2956,7 @@ Namespace DriverMonitor
 
         Public Shared Sub UpdateDriverMonitorInfForMaabar(ByVal YourParkingSystemDriverMonitorStructure As R2CoreParkingSystemDriverMonitorStructure)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 If YourParkingSystemDriverMonitorStructure.LP Is Nothing Then
@@ -3061,25 +3063,25 @@ Namespace ReportsManagement
 
     Public Class R2CoreParkingSystemMClassReportsManagement
 
-        Private Shared _DateTime As New R2DateTime
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Sub ReportingInformationProviderUsersChargeReport(YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
 
                 Dim _Concat1 As String = YourDateTime1.ShamsiDate.Replace("/", "") + YourDateTime1.Time.Replace(":", "")
                 Dim _Concat2 As String = YourDateTime2.ShamsiDate.Replace("/", "") + YourDateTime2.Time.Replace(":", "")
                 Dim DS As New DataSet
-                InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Sum(Mblgh) as Sumx,UserId from R2Primary.dbo.TblMoneyWalletCharges where (Replace(DateShamsi,'/','')+Replace(TimeCharge,':','')>='" & _Concat1 & "') and (Replace(DateShamsi,'/','')+Replace(TimeCharge,':','')<='" & _Concat2 & "') Group By UserId Order By UserId", 3600, DS, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Sum(Mblgh) as Sumx,UserId from R2Primary.dbo.TblMoneyWalletCharges where (Replace(DateShamsi,'/','')+Replace(TimeCharge,':','')>='" & _Concat1 & "') and (Replace(DateShamsi,'/','')+Replace(TimeCharge,':','')<='" & _Concat2 & "') Group By UserId Order By UserId", 3600, DS, New Boolean)
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
                 CmdSql.CommandText = "delete R2PrimaryReports.dbo.TblRFIDCardChargeUserReport" : CmdSql.ExecuteNonQuery()
                 For loopx As Int16 = 0 To DS.Tables(0).Rows.Count - 1
                     Dim myUserName As String = R2CoreMClassSoftwareUsersManagement.GetNSSUser(DS.Tables(0).Rows(loopx).Item("userid")).UserName
                     Dim myMblgh As Int64 = DS.Tables(0).Rows(loopx).Item("sumx")
-                    CmdSql.CommandText = "insert into R2PrimaryReports.dbo.TblRFIDCardChargeUserReport(DateShamsi1,DateShamsi2,Time1,Time2,ReportDateShamsi,ReportTime,UserName,Mblgh) values('" & YourDateTime1.ShamsiDate & "','" & YourDateTime2.ShamsiDate & "','" & YourDateTime1.Time & "','" & YourDateTime2.Time & "','" & _DateTime.GetCurrentShamsiDate & "','" & _DateTime.GetCurrentTime & "','" & myUserName & "'," & myMblgh & ")"
+                    CmdSql.CommandText = "insert into R2PrimaryReports.dbo.TblRFIDCardChargeUserReport(DateShamsi1,DateShamsi2,Time1,Time2,ReportDateShamsi,ReportTime,UserName,Mblgh) values('" & YourDateTime1.ShamsiDate & "','" & YourDateTime2.ShamsiDate & "','" & YourDateTime1.Time & "','" & YourDateTime2.Time & "','" & _DateTimeService.GetCurrentShamsiDate & "','" & _DateTimeService.GetCurrentTime & "','" & myUserName & "'," & myMblgh & ")"
                     CmdSql.ExecuteNonQuery()
                 Next
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
@@ -3093,7 +3095,7 @@ Namespace ReportsManagement
 
         Public Shared Sub ReportingInformationProviderSoldRFIDCardsReport(YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -3120,7 +3122,7 @@ Namespace ReportsManagement
 
         Public Shared Sub ReportingInformationProviderParkingTotalEnteranceSeparationByTerraficCardReport(YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 Da.SelectCommand = New SqlClient.SqlCommand(
@@ -3136,7 +3138,7 @@ Namespace ReportsManagement
                         Group By   EnterExit.DateShamsiExit, RFIDCards.CardType) as Inf
                        Inner Join R2PrimaryParkingSystem.dbo.TblTerafficCardType as TerafficCardType On inf.CardType=TerafficCardType.TypeCode  
                              Order By DateShamsi,CardType,EE")
-                Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 Da.Fill(Ds)
 
                 CmdSql.Connection.Open()
@@ -3158,7 +3160,7 @@ Namespace ReportsManagement
 
         Public Shared Sub ReportingInformationProviderPresentCarsInParkingReport(YourDateTime As R2CoreDateAndTime, YourTerraficCardType As TerafficCardType, YourViewCarImages As Boolean)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
                 If YourTerraficCardType = TerafficCardType.None Then
@@ -3184,7 +3186,7 @@ Namespace ReportsManagement
                      Where RFIDCards.CardType = " & YourTerraficCardType & " and EnterExit.FlagA=0 and EnterExit.DateShamsiEnter>='" & YourDateTime.ShamsiDate & "'
 	                 ORDER BY EnterExit.DateShamsiEnter ,EnterExit.TimeEnter ")
                 End If
-                Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 Da.Fill(Ds)
 
                 CmdSql.Connection.Open()
@@ -3238,7 +3240,7 @@ Namespace ReportsManagement
 
         Public Shared Sub ReportingInformationProviderCarEntranceReport(YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime, YourTerraficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourNSSCar As R2StandardCarStructure, YourEntranceDateTimeSupport As R2CoreParkingSystem.EnterExitManagement.R2EnterExitRequestType, YourViewCarImages As Boolean)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim SqlTerraficCardOrNumberPlate As String = String.Empty
                 If YourTerraficCard Is Nothing Then
@@ -3262,7 +3264,7 @@ Namespace ReportsManagement
                            Inner Join R2Primary.dbo.TblComputers as ComputerExit On EnterExit.GateExit = ComputerExit.MId
                       Where " + SqlTerraficCardOrNumberPlate + SqlEntranceDateTimeSupport + " Order By EnterExit.DateTimeMilladiEnter")
 
-                Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection()
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 Da.Fill(Ds)
 
                 CmdSql.Connection.Open()
@@ -3330,7 +3332,7 @@ Namespace ReportsManagement
 
         Public Shared Sub ReportingInformationProviderBlackListFinancialReport(YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim Concat1 As String = YourDateTime1.ShamsiDate.Replace("/", "") + YourDateTime1.Time.Replace(":", "")
                 Dim Concat2 As String = YourDateTime2.ShamsiDate.Replace("/", "") + YourDateTime2.Time.Replace(":", "")
@@ -3356,13 +3358,13 @@ Namespace ReportsManagement
 
         Public Shared Sub ReportingInformationProviderMoneyWalletsCurrentChargeReport(YourBaseDate As R2CoreDateAndTime)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
                 CmdSql.CommandText = "Delete R2PrimaryReports.dbo.TblMoneyWalletsCurrentChargeReport" : CmdSql.ExecuteNonQuery()
                 CmdSql.CommandText = "Insert Into R2PrimaryReports.dbo.TblMoneyWalletsCurrentChargeReport
-                                         Select '" & _DateTime.GetCurrentShamsiDate & "','" & _DateTime.GetCurrentTime & "',* from (Select Distinct CardId,Charge from R2Primary.dbo.TblRFIDCards as RFIDCards Where RFIDCards.CardId In
+                                         Select '" & _DateTimeService.GetCurrentShamsiDate & "','" & _DateTimeService.GetCurrentTime & "',* from (Select Distinct CardId,Charge from R2Primary.dbo.TblRFIDCards as RFIDCards Where RFIDCards.CardId In
                                                            (Select Distinct CardId from R2Primary.dbo.TblAccounting as Accounting
                                                               Where Accounting.DateShamsiA>='" & YourBaseDate.ShamsiDate & "')) as DataBox"
                 CmdSql.ExecuteNonQuery()
@@ -3377,7 +3379,7 @@ Namespace ReportsManagement
 
         Public Shared Sub ReportingInformationProviderTerraficCardsIdentityReport(YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -3400,7 +3402,7 @@ Namespace ReportsManagement
 
         Public Shared Sub ReportingInformationProviderBlackListReport(YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime, YourBlackListType As Int64)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimaryReportsSqlConnection).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
@@ -3444,12 +3446,14 @@ Namespace SoftwareUsersManagement
     End Class
 
     Public Class R2CoreParkingSystemInstanceSoftwareUsersManager
+
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
+
         Public Function GetNSSSoftwareUser(YourDriverId As Int64) As R2CoreStandardSoftwareUserStructure
-            Dim InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
             Dim InstanceSoftwareUser As New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                          "Select Top 1 SoftwareUsers.UserId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
                                 Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
 	                            Inner Join dbtransport.dbo.TbDriver as Drivers On EntityRelations.E2=Drivers.nIDDriver 
@@ -3465,11 +3469,10 @@ Namespace SoftwareUsersManagement
 
         Public Function GetNSSSoftwareUser(YourNSSTruck As R2StandardCarStructure) As R2CoreStandardSoftwareUserStructure
             Try
-                Dim InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
                 Dim InstanceSoftwareUser As New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
 
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                          "Select Top 1 SoftwareUsers.UserId From R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
     	                     Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1
                              Inner Join dbtransport.dbo.TbDriver as Drivers On EntityRelations.E2=Drivers.nIDDriver 
@@ -3492,12 +3495,12 @@ Namespace SoftwareUsersManagement
     End Class
 
     Public NotInheritable Class R2CoreParkingSystemMClassSoftwareUsersManagement
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
 
         Public Shared Function GetNSSSoftwareUser(YourDriverId As Int64) As R2CoreStandardSoftwareUserStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                          "Select Top 1 SoftwareUsers.UserId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
                                 Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1 
 	                            Inner Join dbtransport.dbo.TbDriver as Drivers On EntityRelations.E2=Drivers.nIDDriver 
@@ -3682,17 +3685,17 @@ Namespace CarsNativeness
     End Structure
 
     Public Class R2CoreParkingSystemCarNativenessManager
-        Private _DateTime As New R2DateTime
-        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private _DateTimeService As New R2DateTimeService
+        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Function ChangeCarNativeness(YourNSSCar As R2CoreParkingSystem.Cars.R2StandardCarStructure, YourCarNativenessExpireDate As R2CoreDateAndTime) As R2CoreParkingSystemCarNativenessStructure
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 'کنترل محتوای پارامتر ارسالی
                 If YourNSSCar Is Nothing Then Throw New CarNotExistException
                 'کنترل تغییر وضعیت بومی گری خودرو بومی با پلاک بومی - که البته امکان پذیر نیست
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 Dim IndigenousCars() = InstanceConfiguration.GetConfigString(R2CoreParkingSystemConfigurations.IndigenousCars, 1).Split("-")
                 If IndigenousCars.Contains(YourNSSCar.StrCarSerialNo) Then Throw New IndigenousCarChangeNativnessFailedException
                 'تغییر وضعیت بومی گری
@@ -3739,10 +3742,10 @@ Namespace CarsNativeness
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
                     Da.SelectCommand = New SqlCommand("Select CarNativenessTypeId,CarNativenessExpireDate From  dbtransport.dbo.TbCar Where nIDCar=" & YourNSSCar.nIdCar & "")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(Ds) <= 0 Then Throw New CarNotExistException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select CarNativenessTypeId,CarNativenessExpireDate From  dbtransport.dbo.TbCar Where nIDCar=" & YourNSSCar.nIdCar & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New CarNotExistException
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select CarNativenessTypeId,CarNativenessExpireDate From  dbtransport.dbo.TbCar Where nIDCar=" & YourNSSCar.nIdCar & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New CarNotExistException
                 End If
                 NSS.CarNativenessTypeId = Convert.ToInt64(Ds.Tables(0).Rows(0).Item("CarNativenessTypeId"))
                 NSS.CarNativenessExpireDate = New R2CoreDateAndTime With {.ShamsiDate = Ds.Tables(0).Rows(0).Item("CarNativenessExpireDate").trim}
@@ -3757,7 +3760,7 @@ Namespace CarsNativeness
         Public Function GetNSSCarNativenessType(YourCarNativenessTypeId As Int64) As R2CoreParkingSystemStandardCarNativenessTypeStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection, "Select Top 1 * From R2PrimaryParkingSystem.dbo.TblCarNativenessTypes Where NId=" & YourCarNativenessTypeId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New CarNativenessTypeNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * From R2PrimaryParkingSystem.dbo.TblCarNativenessTypes Where NId=" & YourCarNativenessTypeId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New CarNativenessTypeNotFoundException
                 Dim NSS = New R2CoreParkingSystemStandardCarNativenessTypeStructure(Ds.Tables(0).Rows(0).Item("NId"), Ds.Tables(0).Rows(0).Item("NName").TRIM, Ds.Tables(0).Rows(0).Item("NTitle").TRIM, Color.FromName(Ds.Tables(0).Rows(0).Item("NColor").TRIM), Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi"), Ds.Tables(0).Rows(0).Item("Time"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Deleted"))
                 Return NSS
             Catch ex As CarNativenessTypeNotFoundException
@@ -3786,8 +3789,8 @@ Namespace CarsNativeness
             Try
                 If YourNSSCar Is Nothing Then Throw New CarNotExistException
                 Dim Ds As DataSet = Nothing
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager
-                If InstanceSqlDataBox.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                   "Select CarNativenessTypeId,CarNativenessExpireDate from DBtransport.dbo.TbCar
                    Where StrCarNo='" & YourNSSCar.StrCarNo & "' and StrCarSerialNo='" & YourNSSCar.StrCarSerialNo & "'", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New CarNotExistException
@@ -3795,7 +3798,7 @@ Namespace CarsNativeness
                 If Convert.ToInt64(Ds.Tables(0).Rows(0).Item("CarNativenessTypeId")) = CarNativenessTypes.Native Then
                     If Ds.Tables(0).Rows(0).Item("CarNativenessExpireDate").ToString.Trim = String.Empty Then
                         Return True
-                    ElseIf Ds.Tables(0).Rows(0).Item("CarNativenessExpireDate").ToString.Trim > _DateTime.GetCurrentShamsiDate() Then
+                    ElseIf Ds.Tables(0).Rows(0).Item("CarNativenessExpireDate").ToString.Trim > _DateTimeService.GetCurrentShamsiDate() Then
                         Return True
                     Else
                         Return False
@@ -3825,10 +3828,9 @@ Namespace CarsNativeness
         End Class
 
         Public Class NonIndigenousCarsException
-            Inherits ApplicationException
+            Inherits BPTException
             Public Overrides ReadOnly Property Message As String
                 Get
-                    Dim InstancePredefinedMessages = New R2CoreMClassPredefinedMessagesManager
                     Return InstancePredefinedMessages.GetNSS(R2CoreParkingSystemPredefinedMessages.UnIndigenousCars).MsgContent
                 End Get
             End Property

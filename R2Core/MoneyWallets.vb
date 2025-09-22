@@ -70,10 +70,17 @@ Namespace MoneyWallet
 
         'BPTChanged
         Public Class R2CoreMoneyWalletManager
-            Dim _DateTime As New R2DateTime
+
+            Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+            Private _DateTimeService As IR2DateTimeService
+            Public Sub New(YourDateTimeService As IR2DateTimeService)
+                _DateTimeService = YourDateTimeService
+                InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+            End Sub
+
             Public Function CreateNewMoneyWallet() As Int64
                 Dim Cmdsql As New SqlClient.SqlCommand
-                Cmdsql.Connection = (New DatabaseManagement.R2PrimarySqlConnection).GetConnection
+                Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Try
                     Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
                     Dim InstanceSoftwareUserService = New SoftwareUserService(Nothing)
@@ -86,7 +93,7 @@ Namespace MoneyWallet
                     Dim myCardID As Int64 = Cmdsql.ExecuteScalar + 1
                     Dim cardNONew = InstancePublicProcedures.RepeatStr("0", 7 - myCardID.ToString.Length) + myCardID.ToString + AES.GetSalt(3)
                     Cmdsql.CommandText = "Insert Into R2Primary.dbo.tblrfidcards(CardId,CardNo,Charge,UserIdSabt,UserIdEdit,PelakType,Pelak,Serial,NoMoney,Active,CompanyName,NameFamily,Mobile,Address,Tel,Tahvilg,DateTimeMilladiSabt,DateTimeMilladiEdit,DateShamsiSabt,DateShamsiEdit,CardType,TempCardType) 
-                                      values(" & myCardID & ",'" & cardNONew & "',0," & InstanceSoftwareUserService.SystemUserId & "," & InstanceSoftwareUserService.SystemUserId & ",0,'','',0,1,'','','','','','','" & _DateTime.GetCurrentDateTimeMilladi() & "','" & _DateTime.GetCurrentDateTimeMilladi() & "','" & _DateTime.GetCurrentShamsiDate() & "','" & _DateTime.GetCurrentShamsiDate() & "',0,0)"
+                                      values(" & myCardID & ",'" & cardNONew & "',0," & InstanceSoftwareUserService.SystemUserId & "," & InstanceSoftwareUserService.SystemUserId & ",0,'','',0,1,'','','','','','','" & _DateTimeService.GetCurrentDateTimeMilladi() & "','" & _DateTimeService.GetCurrentDateTimeMilladi() & "','" & _DateTimeService.GetCurrentShamsiDate() & "','" & _DateTimeService.GetCurrentShamsiDate() & "',0,0)"
                     Cmdsql.ExecuteNonQuery()
                     Cmdsql.Transaction.Commit() : Cmdsql.Connection.Close()
                     Return myCardID
@@ -100,7 +107,6 @@ Namespace MoneyWallet
 
             Public Function GetMoneyWallet(YourMoneyWalletId As Int64, YourImmediately As Boolean) As R2CoreMoneyWallet
                 Try
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                     Dim DS As New DataSet
                     If YourImmediately Then
                         Dim Da As New SqlClient.SqlDataAdapter
@@ -108,10 +114,10 @@ Namespace MoneyWallet
                                Select MoneyWallets.CardId As MoneyWalletId , MoneyWallets.CardNo As MoneyWalletCode , MoneyWallets.Charge As Balance  
                                From R2Primary.dbo.TblRFIDCards as MoneyWallets
                                Where MoneyWallets.CardId = " & YourMoneyWalletId & "")
-                        Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                        Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                         If Da.Fill(DS) <= 0 Then Throw New MoneyWalletNotFoundException
                     Else
-                        If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                               "Select MoneyWallets.CardId As MoneyWalletId , MoneyWallets.CardNo As MoneyWalletCode , MoneyWallets.Charge As Balance
                                From R2Primary.dbo.TblRFIDCards as MoneyWallets
                                Where MoneyWallets.CardId = " & YourMoneyWalletId & "", 0, DS, New Boolean).GetRecordsCount = 0 Then
@@ -189,13 +195,19 @@ Namespace MoneyWallet
         End Class
 
         Public Class R2CoreInstansePaymentRequestsManager
-            Private _DateTime As New R2DateTime
+
             Private WithEvents MS As MonetarySupply.R2CoreMonetarySupply = Nothing
             Private PayId As Int64
+            Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+            Private _DateTimeService As IR2DateTimeService
+            Public Sub New(YourDateTimeService As IR2DateTimeService)
+                _DateTimeService = YourDateTimeService
+                InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+            End Sub
 
             Private Function PaymentRequestRegistering(YourMCSSId As Int64, YourAmount As Int64, YourSoftwareUserId As Int64)
                 Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Try
                     Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                     CmdSql.Connection.Open()
@@ -205,7 +217,7 @@ Namespace MoneyWallet
                     CmdSql.CommandText = "Select IDENT_CURRENT('R2Primary.dbo.TblPaymentRequests') "
                     Dim PayIdNew As Int64 = CmdSql.ExecuteScalar() + 1
                     CmdSql.CommandText = "Insert Into R2Primary.dbo.TblPaymentRequests(MCSSId,SoftwareUserId,Amount,Authority,TransactionId,RefId,PaymentErrors,VerificationErrors,VerificationCount,UserId,DateTimeMilladi,DateShamsi,Time) 
-                                          Values(" & YourMCSSId & "," & YourSoftwareUserId & "," & YourAmount & ",'','','','','',1," & InstanceSoftwareUsers.GetNSSSystemUser().UserId & ",'" & _DateTime.GetCurrentDateTimeMilladi() & "','" & _DateTime.GetCurrentShamsiDate() & "','" & _DateTime.GetCurrentTime() & "')"
+                                          Values(" & YourMCSSId & "," & YourSoftwareUserId & "," & YourAmount & ",'','','','','',1," & InstanceSoftwareUsers.GetNSSSystemUser().UserId & ",'" & _DateTimeService.GetCurrentDateTimeMilladi() & "','" & _DateTimeService.GetCurrentShamsiDate() & "','" & _DateTimeService.GetCurrentTime() & "')"
                     CmdSql.ExecuteNonQuery()
                     CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                     Return PayIdNew
@@ -219,9 +231,8 @@ Namespace MoneyWallet
 
             Public Function GetNSSPayment(YourAuthority As String) As R2StandardPaymentRequestStructure
                 Try
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                     Dim Ds As DataSet
-                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblPaymentRequests Where Authority='" & YourAuthority & "'", 0, Ds, New Boolean)
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblPaymentRequests Where Authority='" & YourAuthority & "'", 0, Ds, New Boolean)
                     Return New R2StandardPaymentRequestStructure(Ds.Tables(0).Rows(0).Item("PayId"), Ds.Tables(0).Rows(0).Item("MCSSId"), Ds.Tables(0).Rows(0).Item("SoftwareUserId"), Ds.Tables(0).Rows(0).Item("Amount"), Ds.Tables(0).Rows(0).Item("Authority").trim, Ds.Tables(0).Rows(0).Item("TransactionId").trim, Ds.Tables(0).Rows(0).Item("RefId").trim, Ds.Tables(0).Rows(0).Item("PaymentErrors").trim, Ds.Tables(0).Rows(0).Item("VerificationErrors").trim, Ds.Tables(0).Rows(0).Item("VerificationCount"), Ds.Tables(0).Rows(0).Item("UserId"), Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi"), Ds.Tables(0).Rows(0).Item("Time"))
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -230,7 +241,7 @@ Namespace MoneyWallet
 
             Public Sub DecreaseVerificationCount(YourPayId As Int64)
                 Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Try
                     CmdSql.Connection.Open()
                     CmdSql.CommandText = "Update R2Primary.dbo.TblPaymentRequests Set VerificationCount=VerificationCount-1 Where PayId=" & YourPayId & ""
@@ -244,9 +255,8 @@ Namespace MoneyWallet
 
             Public Function GetNSSPayment(YourPayId As Int64) As R2StandardPaymentRequestStructure
                 Try
-                    Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
                     Dim Ds As DataSet
-                    InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select * from R2Primary.dbo.TblPaymentRequests Where PayId=" & YourPayId & "", 0, Ds, New Boolean)
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblPaymentRequests Where PayId=" & YourPayId & "", 0, Ds, New Boolean)
                     Return New R2StandardPaymentRequestStructure(Ds.Tables(0).Rows(0).Item("PayId"), Ds.Tables(0).Rows(0).Item("MCSSId"), Ds.Tables(0).Rows(0).Item("SoftwareUserId"), Ds.Tables(0).Rows(0).Item("Amount"), Ds.Tables(0).Rows(0).Item("Authority").trim, Ds.Tables(0).Rows(0).Item("TransactionId").trim, Ds.Tables(0).Rows(0).Item("RefId").trim, Ds.Tables(0).Rows(0).Item("PaymentErrors").trim, Ds.Tables(0).Rows(0).Item("VerificationErrors").trim, Ds.Tables(0).Rows(0).Item("VerificationCount"), Ds.Tables(0).Rows(0).Item("UserId"), Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi"), Ds.Tables(0).Rows(0).Item("Time"))
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -256,7 +266,7 @@ Namespace MoneyWallet
             Public Function PaymentRequest(YourMCSSId As Int64, YourAmount As Int64, YourSoftwareUserId As Int64) As Int64
                 Try
                     PayId = PaymentRequestRegistering(YourMCSSId, YourAmount, YourSoftwareUserId)
-                    Dim InstanceMCSS As New R2CoreMClassMonetaryCreditSupplySourcesManager
+                    Dim InstanceMCSS As New R2CoreMClassMonetaryCreditSupplySourcesManager(_DateTimeService)
                     MS = New R2CoreMonetarySupply(InstanceMCSS.GetNSSMonetaryCreditSupplySource(YourMCSSId), YourAmount)
                     MS.StartSupply()
                     Return PayId
@@ -269,7 +279,7 @@ Namespace MoneyWallet
                 Try
                     PayId = GetNSSPayment(YourAuthority).PayId
                     Dim Amount = GetNSSPayment(YourAuthority).Amount
-                    Dim InstanceMCSS = New R2CoreMClassMonetaryCreditSupplySourcesManager
+                    Dim InstanceMCSS = New R2CoreMClassMonetaryCreditSupplySourcesManager(_DateTimeService)
                     MS = New R2CoreMonetarySupply(InstanceMCSS.GetNSSMonetaryCreditSupplySource(YourMCSSId), Amount)
                     MS.StartVerification(YourAuthority)
                     Return PayId
@@ -280,7 +290,7 @@ Namespace MoneyWallet
 
             Private Sub MS_MonetarySupplySuccessEvent(YourMonetarySupplyType As MonetarySupplyType, TransactionId As Long, Amount As Long, SupplyReport As String) Handles MS.MonetarySupplySuccessEvent
                 Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Try
                     CmdSql.Connection.Open()
                     If YourMonetarySupplyType = MonetarySupplyType.PaymentRequest Then
@@ -299,7 +309,7 @@ Namespace MoneyWallet
 
             Private Sub MS_MonetarySupplyUnSuccessEvent(YourMonetarySupplyType As MonetarySupplyType, TransactionId As Long, Amount As Long, SupplyReport As String) Handles MS.MonetarySupplyUnSuccessEvent
                 Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection()
+                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
                 Try
                     CmdSql.Connection.Open()
                     If YourMonetarySupplyType = MonetarySupplyType.PaymentRequest Then
@@ -326,7 +336,6 @@ Namespace MoneyWallet
     Namespace MoneyWalletCharging
 
         Public Class R2CoreInstanceMoneyWalletChargingManager
-            Private _DateTime As New R2DateTime
 
         End Class
 

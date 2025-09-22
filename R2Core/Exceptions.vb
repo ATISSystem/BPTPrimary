@@ -1,6 +1,7 @@
 ﻿
 
 Imports R2Core.DatabaseManagement
+Imports R2Core.DateTimeProvider
 Imports R2Core.PredefinedMessagesManagement
 Imports System.Reflection
 Imports System.Runtime.Remoting.Contexts
@@ -15,12 +16,14 @@ Namespace ExceptionManagement
         Protected _Message As String
         Protected _MessageCode As Int64
         Protected InstancePredefinedMessages As R2CoreMClassPredefinedMessagesManager
-
+        Protected _DateTimeService As IR2DateTimeService
         Public Sub New()
-            InstancePredefinedMessages = New R2CoreMClassPredefinedMessagesManager
+            _DateTimeService = New R2DateTimeService
+            InstancePredefinedMessages = New R2CoreMClassPredefinedMessagesManager(_DateTimeService)
         End Sub
 
         Public Sub New(YourException As Exception)
+            InstancePredefinedMessages = New R2CoreMClassPredefinedMessagesManager(_DateTimeService)
             _Message = YourException.Message
             _MessageCode = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.None).MsgId
         End Sub
@@ -48,11 +51,11 @@ Namespace ExceptionManagement
     End Class
 
     Public MustInherit Class R2CoreMClassExceptionsManagement
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
         Public Shared Function GetSqlExceptionMessage(YourSqlExceptionId As Int64) As String
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySqlConnection, "Select Top 1 Message from R2Primary.dbo.TblSqlExceptions Where SEId=" & YourSqlExceptionId & " Order By SEId Asc", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New SqlExceptionNotFoundException
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 Message from R2Primary.dbo.TblSqlExceptions Where SEId=" & YourSqlExceptionId & " Order By SEId Asc", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New SqlExceptionNotFoundException
                 Return Ds.Tables(0).Rows(0).Item("Message")
             Catch ex As SqlExceptionNotFoundException
                 Throw ex

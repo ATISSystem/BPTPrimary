@@ -7,6 +7,7 @@ Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
+Imports R2Core.SQLInjectionPrevention
 Imports R2CoreParkingSystem.DataBaseManagement
 Imports R2CoreParkingSystem.ProvincesAndCities.Execption
 Imports R2CoreParkingSystem.ProvincesAndCities.R2CoreParkingSystemMClassCitys
@@ -19,12 +20,13 @@ Namespace ProvincesAndCities
     Public Class R2CoreParkingSystemMClassCitys
 
         Public Shared IRANCityCode As String = "99960000"
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
+        Public Shared _DateTimeService As New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         Public Shared Function GetNSSCity(YournCityCode As Int64) As R2StandardCityStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select Top 1 * from dbtransport.dbo.TbCity Where nCityCode=" & YournCityCode & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from dbtransport.dbo.TbCity Where nCityCode=" & YournCityCode & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New GetNSSException
                 End If
                 Return New R2StandardCityStructure(Ds.Tables(0).Rows(0).Item("nCityCode"), Ds.Tables(0).Rows(0).Item("StrCityName").trim, Convert.ToInt64(Ds.Tables(0).Rows(0).Item("nDistance") / 25), Ds.Tables(0).Rows(0).Item("nProvince"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("ViewFlag"))
@@ -38,7 +40,7 @@ Namespace ProvincesAndCities
         Public Shared Function GetNSSCity(YourCityTitle As String) As R2StandardCityStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select Top 1 * from dbtransport.dbo.TbCity Where strCityName like '%" & YourCityTitle.Trim() & "%'", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from dbtransport.dbo.TbCity Where strCityName like '%" & YourCityTitle.Trim() & "%'", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New GetNSSException
                 End If
                 Return New R2StandardCityStructure(Ds.Tables(0).Rows(0).Item("nCityCode"), Ds.Tables(0).Rows(0).Item("StrCityName").trim, Convert.ToInt64(Ds.Tables(0).Rows(0).Item("nDistance") / 25), Ds.Tables(0).Rows(0).Item("nProvince"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("ViewFlag"))
@@ -134,7 +136,7 @@ Namespace ProvincesAndCities
         Public Shared Function GetDSCity() As DataSet
             Try
                 Dim Ds As New DataSet
-                InstanceSqlDataBOX.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas, "Select StrCityName from dbtransport.dbo.TbCity Order by StrCityName", 1000, Ds, New Boolean)
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select StrCityName from dbtransport.dbo.TbCity Order by StrCityName", 1000, Ds, New Boolean)
                 Return Ds
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -144,7 +146,7 @@ Namespace ProvincesAndCities
         Public Shared Function GetCityNameFromnCityCode(YourCityCode As String) As String
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas, "Select StrCityName from dbtransport.dbo.TbCity Where nCityCode=" & YourCityCode & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select StrCityName from dbtransport.dbo.TbCity Where nCityCode=" & YourCityCode & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item(0)
                 Else
                     Throw New GetDataException
@@ -159,7 +161,7 @@ Namespace ProvincesAndCities
         Public Shared Function GetnCityCodeFromStrCityName(YourCityName As String) As String
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas, "Select top 1 nCityCode from dbtransport.dbo.TbCity Where Viewflag=1 and Deleted=0 and StrCityName='" & YourCityName & "'", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select top 1 nCityCode from dbtransport.dbo.TbCity Where Viewflag=1 and Deleted=0 and StrCityName='" & YourCityName & "'", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item(0)
                 Else
                     Throw New GetDataException
@@ -173,10 +175,10 @@ Namespace ProvincesAndCities
 
         Public Shared Function GetListOfCitys_SearchIntroCharacters(YourSearchStr As String) As List(Of R2StandardCityStructure)
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchStr)
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select * from dbtransport.dbo.TbCity Where Viewflag=1 and Deleted=0 and StrCityNAME LIKE '%" & YourSearchStr.Replace("ی", "ي").Replace("ک", "ك") & "%' and ViewFlag=1 Order by nCityCode", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from dbtransport.dbo.TbCity Where Viewflag=1 and Deleted=0 and StrCityNAME LIKE '%" & YourSearchStr.Replace("ی", "ي").Replace("ک", "ك") & "%' and ViewFlag=1 Order by nCityCode", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New GetNSSException
                 End If
                 Dim Lst As List(Of R2StandardCityStructure) = New List(Of R2StandardCityStructure)
@@ -194,10 +196,10 @@ Namespace ProvincesAndCities
 
         Public Shared Function GetListOfCitys_SearchforLeftCharacters(YourSearchStr As String) As List(Of R2StandardCityStructure)
             Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchStr)
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select * from dbtransport.dbo.TbCity Where Left(StrCityNAME," & YourSearchStr.Length & ")='" & YourSearchStr.Replace("ی", "ي").Replace("ک", "ك") & "' and ViewFlag=1 Order by nCityCode", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from dbtransport.dbo.TbCity Where Left(StrCityNAME," & YourSearchStr.Length & ")='" & YourSearchStr.Replace("ی", "ي").Replace("ک", "ك") & "' and ViewFlag=1 Order by nCityCode", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New GetNSSException
                 End If
                 Dim Lst As List(Of R2StandardCityStructure) = New List(Of R2StandardCityStructure)
@@ -216,7 +218,7 @@ Namespace ProvincesAndCities
         Public Shared Function GetListOfCitysWhichDistanceIsZero() As List(Of R2StandardCityStructure)
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas, "Select * from dbtransport.dbo.TbCity Where nDistance=0 Order by StrCityName", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from dbtransport.dbo.TbCity Where nDistance=0 Order by StrCityName", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New GetNSSException
                 End If
                 Dim Lst As List(Of R2StandardCityStructure) = New List(Of R2StandardCityStructure)
@@ -234,7 +236,7 @@ Namespace ProvincesAndCities
 
         Public Shared Sub ChangeCityDistance(YourNSS As R2StandardCityStructure, YourDistance As Int64)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update dbTransport.dbo.TbCity Set nDistance=" & YourDistance * 25 & " Where nCityCode=" & YourNSS.nCityCode & ""
@@ -248,7 +250,7 @@ Namespace ProvincesAndCities
 
         Public Shared Sub ChangeCityProvince(YourNSS As R2StandardCityStructure, YourProvince As Int64)
             Dim CmdSql As New SqlCommand
-            CmdSql.Connection = (New R2ClassSqlConnectionSepas).GetConnection()
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update dbTransport.dbo.TbCity Set nProvince=" & YourProvince & " Where nCityCode=" & YourNSS.nCityCode & ""
@@ -264,33 +266,29 @@ Namespace ProvincesAndCities
 
     End Class
 
-    Namespace Execption
-        Public Class CityNotFoundException
-            Inherits ApplicationException
-            Public Overrides ReadOnly Property Message As String
-                Get
-                    Return "شهر مورد نظر یافت نشد"
-                End Get
-            End Property
-        End Class
-
-
-    End Namespace
+    'BPTChanged
+    Public Class R2CoreParkingSystemCity
+        Public CityId As Int64
+        Public CityTitle As String
+        Public ProvinceId As Int64
+        Public Active As Boolean
+        Public ViewFlag As Boolean
+    End Class
 
     'BPTChanged
     Public Class R2CoreParkingSystemProvincesAndCitiesManager
 
         Private _DateTimeService As IR2DateTimeService
-        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager
-
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
+            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Public Function GetCityNameFromnCityCode(YourCityCode As String) As String
             Try
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New DataBaseManagement.R2ClassSqlConnectionSepas, "Select StrCityName from dbtransport.dbo.TbCity Where nCityCode=" & YourCityCode & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select StrCityName from dbtransport.dbo.TbCity Where nCityCode=" & YourCityCode & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
                     Return Ds.Tables(0).Rows(0).Item(0)
                 Else
                     Throw New GetDataException
@@ -306,7 +304,7 @@ Namespace ProvincesAndCities
         Public Function GetListOfCitys_SearchIntroCharacters(YourSearchStr As String, YourImmediately As Boolean) As String
             Try
                 Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchStr)
 
                 Dim Ds As New DataSet
@@ -318,10 +316,10 @@ Namespace ProvincesAndCities
                                 Inner Join DBTransport.dbo.tbCity as Cities On Provinces.ProvinceId=Cities.nProvince 
                             Where Provinces.Deleted=0 and Cities.Deleted=0 and StrCityName like N'%" & YourSearchStr & "%' Order By Provinces.ProvinceId
                             for json auto")
-                    Da.SelectCommand.Connection = (New R2PrimarySubscriptionDBSqlConnection).GetConnection
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(New R2PrimarySubscriptionDBSqlConnection,
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                            "Select Provinces.ProvinceId as ProvinceId,Provinces.ProvinceName as ProvinceName,Provinces.Active as ProvinceActive,Cities.nCityCode as CityCode,Cities.StrCityName as CityTitle,Cities.Active as CityActive
                               from R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces
                                 Inner Join DBTransport.dbo.tbCity as Cities On Provinces.ProvinceId=Cities.nProvince 
@@ -342,7 +340,7 @@ Namespace ProvincesAndCities
 
         Public Sub ChangeActiveStatusOfProvince(YourProvinceId As Int64, YourProvineActive As Boolean)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces Set Active=" & IIf(YourProvineActive, 1, 0) & " 
@@ -357,7 +355,7 @@ Namespace ProvincesAndCities
 
         Public Sub ChangeActiveStatusOfCity(YourCityId As Int64, YourCityActive As Boolean)
             Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = (New R2PrimarySqlConnection).GetConnection
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
                 CmdSql.CommandText = "Update DBTransport.dbo.tbCity Set Active=" & IIf(YourCityActive, 1, 0) & " 
@@ -373,7 +371,7 @@ Namespace ProvincesAndCities
         Public Function GetProvinceIdOfCity(YourCityId As Int64) As Int64
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(New R2ClassSqlConnectionSepas,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select nProvince from dbtransport.dbo.TbCity Where nCityCode=" & YourCityId & "", 32767, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New CityNotFoundException
                 End If
@@ -385,7 +383,35 @@ Namespace ProvincesAndCities
             End Try
 
         End Function
+
+        Public Function GetCity(YourCityId As Int64) As R2CoreParkingSystemCity
+            Try
+                Dim Ds As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from dbtransport.dbo.TbCity Where nCityCode=" & YourCityId & "", 32767, Ds, New Boolean).GetRecordsCount() = 0 Then
+                    Throw New CityNotFoundException
+                End If
+                Return New R2CoreParkingSystemCity With {.CityId = Ds.Tables(0).Rows(0).Item("nCityCode"), .CityTitle = Ds.Tables(0).Rows(0).Item("StrCityName").trim, .ProvinceId = Ds.Tables(0).Rows(0).Item("nProvince"), .Active = Ds.Tables(0).Rows(0).Item("Active"), .ViewFlag = Ds.Tables(0).Rows(0).Item("ViewFlag")}
+            Catch ex As CityNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
     End Class
 
+    'BPTChanged
+    Namespace Execption
+        Public Class CityNotFoundException
+            Inherits BPTException
+            Public Overrides ReadOnly Property Message As String
+                Get
+                    Return "شهر مورد نظر یافت نشد"
+                End Get
+            End Property
+        End Class
+
+
+    End Namespace
 
 End Namespace
