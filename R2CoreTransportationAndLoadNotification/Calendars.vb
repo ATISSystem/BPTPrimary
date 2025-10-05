@@ -8,6 +8,7 @@ Imports System.Reflection
 
 Namespace CalendarManagement
     Namespace SpecializedPersianCalendar
+
         Public Class R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager
 
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
@@ -21,7 +22,7 @@ Namespace CalendarManagement
                 Try
                     If Not _DateTimeService.CheckShamsiDateSyntax(YourTopBaseDateShamsi) Then Throw New ShamsiDateSyntaxNotValidException
                     Dim Ds As DataSet = Nothing
-                    Dim Count = InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                    Dim Count = InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                             "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
                              Where DateShamsi<
                                    (Select Top 1 * from 
@@ -77,7 +78,6 @@ Namespace CalendarManagement
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + "." + ex.Message)
                 End Try
             End Function
-
 
             Public Function IsTodayIsHoliday() As Boolean
                 Try

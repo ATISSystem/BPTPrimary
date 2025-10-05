@@ -98,7 +98,10 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configurations.vb" />
+    <Compile Include="DriversAssociationControllingMoneyWallet.vb" />
     <Compile Include="LoadAllocations.vb" />
+    <Compile Include="Logging.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -115,10 +118,12 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="PayanehClassLibrary.vb" />
+    <Compile Include="Requesters.vb" />
     <Compile Include="SMS.vb" />
     <Compile Include="TruckersAssociationControllingMoneyWallet.vb" />
     <Compile Include="TurnRegisterRequest.vb" />
     <Compile Include="Turns.vb" />
+    <Compile Include="TurnsCancellation.vb" />
     <Compile Include="TWS.vb" />
     <Compile Include="Web References\PayanehWS\Reference.vb">
       <AutoGen>True</AutoGen>

@@ -15,7 +15,6 @@ Imports R2Core.SecurityAlgorithmsManagement.AESAlgorithms
 Imports R2Core.SecurityAlgorithmsManagement.Captcha
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SecurityAlgorithmsManagement.ExpressionValidationAlgorithms
-Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
 Imports R2Core.SessionManagement
 Imports R2Core.SMS.SMSHandling
 Imports R2Core.SMS.SMSOwners

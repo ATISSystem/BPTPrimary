@@ -13,23 +13,12 @@ Imports R2Core.CachHelper
 Imports Newtonsoft.Json
 Imports R2Core.MobileProcessesManagement.Exceptions
 Imports Newtonsoft.Json.Linq
+Imports R2Core.PubSubMessaging
 
 Namespace LoggingManagement
 
     Public MustInherit Class R2CoreLogType
         Public Shared ReadOnly Property None As Int64 = 0
-        Public Shared ReadOnly Property Note As Int64 = 1
-        Public Shared ReadOnly Property Warn As Int64 = 2
-        Public Shared ReadOnly Property Fail As Int64 = 3
-        Public Shared ReadOnly Property Info As Int64 = 4
-        Public Shared ReadOnly Property SuccessfulUserLogin As Int64 = 5
-        Public Shared ReadOnly Property Print As Int64 = 6
-        Public Shared ReadOnly Property RegisterRecords As Int64 = 7
-        Public Shared ReadOnly Property Delete As Int64 = 8
-        Public Shared ReadOnly Property Update As Int64 = 9
-        Public Shared ReadOnly Property CameraError As Int64 = 10
-        Public Shared ReadOnly Property TimeStamp As Int64 = 11
-        Public Shared ReadOnly Property SendSMSResult As Int64 = 67
     End Class
 
     Public Class R2CoreStandardLogTypeStructure
@@ -176,10 +165,10 @@ Namespace LoggingManagement
         Private Shared _Logger As Logger = Nothing
         Private Shared _Subscriber As ISubscriber = Nothing
 
-        Public Shared Sub RegisterLog(YourPubSubChannel As RedisChannel, YourRawLog As R2CoreRawLog)
+        Public Shared Sub RegisterLog(YourRawLog As R2CoreRawLog)
             Try
                 If _Subscriber Is Nothing Then _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
-                _Subscriber.Publish(YourPubSubChannel, JsonConvert.SerializeObject(YourRawLog))
+                _Subscriber.Publish(R2CorePubSubChannels.Logging, JsonConvert.SerializeObject(YourRawLog))
             Catch ex As RedisException
                 Throw ex
             Catch ex As Exception
@@ -187,10 +176,10 @@ Namespace LoggingManagement
             End Try
         End Sub
 
-        Public Shared Sub RegisterLog(YourPubSubChannel As RedisChannel, YourException As Exception)
+        Public Shared Sub RegisterLog(YourException As Exception)
             Try
                 If _Subscriber Is Nothing Then _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
-                _Subscriber.Publish(YourPubSubChannel, JsonConvert.SerializeObject(YourException))
+                _Subscriber.Publish(R2CorePubSubChannels.Logging, JsonConvert.SerializeObject(YourException))
             Catch ex As RedisException
                 Throw ex
             Catch ex As Exception

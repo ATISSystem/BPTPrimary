@@ -959,7 +959,7 @@ Namespace SMS
                             CmdSql.CommandText = "Update R2PrimarySMSSystem.dbo.TblSmsWareHouse Set Active=0 where SmsId=" & SMSId & ""
                             CmdSql.ExecuteNonQuery()
                         Else
-                            R2CoreLoggingManager.RegisterLog(R2Core.PubSubMessaging.R2CorePubSubChannels.Logging, New Exception((New SendingSMSFailedException(SMSId)).Message))
+                            R2CoreLoggingManager.RegisterLog(New Exception((New SendingSMSFailedException(SMSId)).Message))
                         End If
                     Next
                     CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
@@ -1013,7 +1013,7 @@ Namespace SMS
                             InstanceSQLInjectionPrevention.GeneralAuthorization(MobileNumber)
                             InstanceSQLInjectionPrevention.GeneralAuthorization(myDate)
                         Catch ex As SqlInjectionException
-                            R2CoreLoggingManager.RegisterLog(R2Core.PubSubMessaging.R2CorePubSubChannels.Logging, New Exception((New SqlInjectionException()).Message))
+                            R2CoreLoggingManager.RegisterLog(New Exception((New SqlInjectionException()).Message))
                             Continue For
                         End Try
                         Dim InstanceRecivedSMSCodes = New R2CoreRecivedSMSCodesManager(_DateTimeService)
@@ -1021,7 +1021,7 @@ Namespace SMS
                         Try
                             NSSRecivedSMSCode = InstanceRecivedSMSCodes.GetRecivedSMSCode(SmsText)
                         Catch ex As SqlInjectionException
-                            R2CoreLoggingManager.RegisterLog(R2Core.PubSubMessaging.R2CorePubSubChannels.Logging, New Exception((New SqlInjectionException()).Message))
+                            R2CoreLoggingManager.RegisterLog(New Exception((New SqlInjectionException()).Message))
                             Continue For
                         Catch ex As SMSRecivedCodeforSMSCodeNotFoundException
                             Continue For

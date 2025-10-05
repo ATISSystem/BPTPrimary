@@ -17,89 +17,41 @@ Imports R2Core.PermissionManagement
 Imports R2Core.PermissionManagement.Exceptions
 Imports R2Core.PredefinedMessagesManagement
 Imports R2Core.PublicProc
-Imports R2Core.R2PrimaryFileSharingWS
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
-Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
 Imports R2Core.SiteIsBusy
 Imports R2Core.SMS.Exceptions
 Imports R2Core.SMS.SMSHandling
-Imports R2Core.SMS.SMSTypes.Exceptions
 Imports R2Core.SoftwareUserManagement
-Imports R2Core.SoftwareUserManagement.Exceptions
-Imports R2Core.WebProcessesManagement.Exceptions
-Imports R2CoreGUI
-Imports R2CoreParkingSystem.BlackList
 Imports R2CoreParkingSystem.Cars
-Imports R2CoreParkingSystem.ProvincesAndCities
-Imports R2CoreParkingSystem.ProvincesAndCities.Execption
-Imports R2CoreParkingSystem.Drivers
 Imports R2CoreParkingSystem.EntityRelations
-Imports R2CoreParkingSystem.MoneyWalletManagement
-Imports R2CoreParkingSystem.SoftwareUsersManagement
-Imports R2CoreParkingSystem.TrafficCardsManagement
-Imports R2CoreParkingSystem.TrafficCardsManagement.ExceptionManagement
-Imports R2CoreTransportationAndLoadNotification.Announcements
 Imports R2CoreTransportationAndLoadNotification.Announcements.Exceptions
 Imports R2CoreTransportationAndLoadNotification.AnnouncementTiming
-Imports R2CoreTransportationAndLoadNotification.CalendarManagement.SpecializedPersianCalendar
 Imports R2CoreTransportationAndLoadNotification.ConfigurationsManagement
-Imports R2CoreTransportationAndLoadNotification.DriverSelfDeclaration.Exceptions
-Imports R2CoreTransportationAndLoadNotification.FileShareRawGroupsManagement
-Imports R2CoreTransportationAndLoadNotification.LoadAllocation
 Imports R2CoreTransportationAndLoadNotification.LoadAllocation.Exceptions
 Imports R2CoreTransportationAndLoadNotification.LoadAllocation.FailedLoadAllocationPrinting
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.Exceptions
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorAccounting
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad
-Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoadManipulation
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoadOtherThanManipulation
-Imports R2CoreTransportationAndLoadNotification.LoaderTypes.Exceptions
-Imports R2CoreTransportationAndLoadNotification.LoadingAndDischargingPlaces
-Imports R2CoreTransportationAndLoadNotification.LoadingAndDischargingPlaces.Exceptions
 Imports R2CoreTransportationAndLoadNotification.LoadPermission
 Imports R2CoreTransportationAndLoadNotification.LoadPermission.Exceptions
 Imports R2CoreTransportationAndLoadNotification.LoadPermission.LoadPermissionPrinting
-Imports R2CoreTransportationAndLoadNotification.LoadSedimentation
-Imports R2CoreTransportationAndLoadNotification.LoadSedimentation.Exceptions
-Imports R2CoreTransportationAndLoadNotification.LoadSources
-Imports R2CoreTransportationAndLoadNotification.LoadSources.Exceptions
-Imports R2CoreTransportationAndLoadNotification.LoadTargets
-Imports R2CoreTransportationAndLoadNotification.LoadTargets.Exceptions
-Imports R2CoreTransportationAndLoadNotification.Logging
 Imports R2CoreTransportationAndLoadNotification.PermissionManagement
-Imports R2CoreTransportationAndLoadNotification.PredefinedMessagesManagement
-Imports R2CoreTransportationAndLoadNotification.RequesterManagement
 Imports R2CoreTransportationAndLoadNotification.SMS.SMSTypes
-Imports R2CoreTransportationAndLoadNotification.SoftwareUserManagement
-Imports R2CoreTransportationAndLoadNotification.SoftwareUserManagement.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TransportCompanies
-Imports R2CoreTransportationAndLoadNotification.TransportCompanies.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TransportTariffs
-Imports R2CoreTransportationAndLoadNotification.TransportTariffs.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters
-Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TruckDrivers
-Imports R2CoreTransportationAndLoadNotification.TruckDrivers.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TruckLoaderTypes.Exceptions
 Imports R2CoreTransportationAndLoadNotification.Trucks
 Imports R2CoreTransportationAndLoadNotification.Trucks.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TrucksNativeness
-Imports R2CoreTransportationAndLoadNotification.TurnAttendance
 Imports R2CoreTransportationAndLoadNotification.TurnAttendance.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TurnCancellation
 Imports R2CoreTransportationAndLoadNotification.Turns
 Imports R2CoreTransportationAndLoadNotification.Turns.Exceptions
 Imports R2CoreTransportationAndLoadNotification.Turns.SequentialTurns
 Imports R2CoreTransportationAndLoadNotification.Turns.SequentialTurns.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TravelTime
-Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad.Exceptions
 Imports R2CoreTransportationAndLoadNotification.Turns.TurnAccounting
 Imports Newtonsoft.Json
 Imports R2CoreTransportationAndLoadNotification.Caching
-Imports System.CodeDom
-Imports R2Core.MoneyWallet.Exceptions
-Imports R2CoreParkingSystem.EnterExitManagement
 Imports R2CoreTransportationAndLoadNotification.Turns.TurnInfo
 Imports R2Core.CachHelper
 Imports R2CoreTransportationAndLoadNotification.PubSubMessaging
@@ -2664,6 +2616,111 @@ Namespace LoadAllocation
             End Try
 
         End Function
+
+        Public Function DoesExistAnyLoadAllocationforLoadPermissionRegistering() As Boolean
+            Try
+                Dim DS As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
+                      Select Top 1 LoadAllocations.LAId from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations
+                      Where LoadAllocations.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & "", 0, DS, New Boolean).GetRecordsCount = 0 Then
+                    Return False
+                Else
+                    Return True
+                End If
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        'Public Function LoadAllocationsLoadPermissionRegistering(YourSoftwareUserId As Int64) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure)
+        '    Try
+        '        Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
+        '        Dim InstanceTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
+        '        Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
+        '        Dim InstanceLoadPermissionPrinting = New R2CoreTransportationAndLoadNotificationInstanceLoadPermissionPrintingManager
+        '        Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager(_DateTimeService)
+        '        Dim InstancePermissions = New R2CoreInstansePermissionsManager
+        '        Dim FailedResultLst As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure) = New List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure)()
+
+        '        'جلوگیری از خواندن تخصیص هایی که هنوز در بانک آفلاین(ریپلیکیشن) تغییر نکرده اند 
+        '        Threading.Thread.Sleep(60000)
+
+        '        Dim Lst As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure) = GetLoadAllocationsforLoadPermissionRegistering()
+        '        If Lst.Count > 1000 Then
+        '            'فعال کردن ایز بیزی
+        '            InstanceSiteIsBusy.ActivateSiteIsBusy()
+        '        End If
+
+        '        Dim CurrentDateTime = New R2CoreDateAndTime With {.DateTimeMilladi = _DateTimeService.GetCurrentDateTimeMilladi, .ShamsiDate = _DateTimeService.GetCurrentShamsiDate, .Time = _DateTimeService.GetCurrentTime}
+        '        For Loopx As Int64 = 0 To Lst.Count - 1
+        '            Dim NSSLoadCapacitorLoad = InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(Lst(Loopx).nEstelamId, True)
+        '            Dim AHId As Int64 = NSSLoadCapacitorLoad.AHId
+        '            Dim AHSGId As Int64 = NSSLoadCapacitorLoad.AHSGId
+
+        '            'کنترل مجوز کنترل تایمینگ در آزادسازی بار با توجه به وضعیت بار
+        '            If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.LoadPermissionUseTimeHandlingByLoadStatus, NSSLoadCapacitorLoad.LoadStatus, 0) Then
+        '                'کنترل تایمینگ - آیا زمان صدور مجوز برای زیرگروه سالن مورد نظر فرارسیده است
+        '                If InstanceTiming.IsTimingActive(AHId, AHSGId) Then
+        '                    If InstanceTiming.GetTiming(AHId, AHSGId, CurrentDateTime.Time) <> R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadPermissionRegistering Then
+        '                        Continue For
+        '                    End If
+        '                End If
+        '            End If
+
+        '            Dim NSSLoadAllocation = Lst(Loopx)
+        '            Try
+        '                LoadAllocationLoadPermissionRegistering(NSSLoadAllocation, NSSLoadCapacitorLoad, CurrentDateTime, YourUserNSS)
+        '                'If InstanceConfigurationOfAnnouncements.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsLoadPermissionsSetting, NSSLoadCapacitorLoad.AHId, 2) Then
+        '                '    InstanceLoadPermissionPrinting.PrintLoadPermission(Lst(Loopx).LAId, YourUserNSS)
+        '                '    Threading.Thread.Sleep(InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsLoadAllocationsLoadPermissionRegisteringSetting, 0))
+        '                'End If
+        '            Catch ex As Exception When TypeOf ex Is TurnHandlingNotAllowedBecuaseTurnStatusException _
+        '                                  OrElse TypeOf ex Is LoadPermisionRegisteringFailedBecauseLoadCapacitorLoadIsNotReadyException _
+        '                                  OrElse TypeOf ex Is LoadPermisionRegisteringFailedBecauseTurnIsNotReadyException _
+        '                                  OrElse TypeOf ex Is PresentNotRegisteredInLast30MinuteException _
+        '                                  OrElse TypeOf ex Is PresentsNotEnoughException _
+        '                                  OrElse TypeOf ex Is LoadPermisionRegisteringFailedBecauseBlackListException _
+        '                                  OrElse TypeOf ex Is GetNSSException _
+        '                                  OrElse TypeOf ex Is TimingNotReachedException _
+        '                                  OrElse TypeOf ex Is LoadCapacitorLoadReleaseNotAllowedBecuasenCarNumException _
+        '                                  OrElse TypeOf ex Is LoadCapacitorLoadHandlingNotAllowedBecuaseLoadStatusException _
+        '                                  OrElse TypeOf ex Is LoadCapacitorLoadReleaseTimeNotReachedException _
+        '                                  OrElse TypeOf ex Is LoadAllocationLoadPermissionRegisteringNotAllowedBecauseLoadAllocationStatusException _
+        '                                  OrElse TypeOf ex Is TurnHandlingNotAllowedBecuaseTurnStatusException _
+        '                                  OrElse TypeOf ex Is GetNSSException _
+        '                                  OrElse TypeOf ex Is GetDataException _
+        '                                  OrElse TypeOf ex Is AnnouncementsubGroupNotFoundException _
+        '                                  OrElse TypeOf ex Is AnnouncementsubGroupRelationTruckNotExistException _
+        '                                  OrElse TypeOf ex Is TruckTotalLoadPermissionReachedException _
+        '                                  OrElse TypeOf ex Is ExeededNumberofLoadPermisionsWithOneTurnException
+        '                Try
+        '                    If NSSLoadAllocation.LAStatusId <> R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionFailed Then
+        '                        If InstanceConfigurationOfAnnouncements.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsLoadPermissionsSetting, NSSLoadCapacitorLoad.AHId, 2) Then
+        '                            Dim InstanceFailedLoadAllocationAnnouncePrinting = New R2CoreTransportationAndLoadNotificationInstanceFailedLoadAllocationAnnouncePrintingManager
+        '                            InstanceFailedLoadAllocationAnnouncePrinting.PrintFailedLoadAllocation(Lst(Loopx).LAId)
+        '                            Threading.Thread.Sleep(InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsLoadAllocationsLoadPermissionRegisteringSetting, 0))
+        '                        End If
+        '                    End If
+        '                    Lst(Loopx).LANote = ex.Message
+        '                    FailedResultLst.Add(Lst(Loopx))
+        '                Catch exx As Exception When TypeOf ex Is GetNSSException OrElse TypeOf ex Is GetDataException
+        '                End Try
+        '            End Try
+        '        Next
+
+        '        'غیر فعال کردن ایز بیزی
+        '        InstanceSiteIsBusy.DeActivateSiteIsBusy()
+
+        '        Lst = Nothing
+
+        '        Return FailedResultLst
+        '    Catch ex As Exception
+        '        'غیر فعال کردن ایز بیزی
+        '        InstanceSiteIsBusy.DeActivateSiteIsBusy()
+
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
     End Class
 

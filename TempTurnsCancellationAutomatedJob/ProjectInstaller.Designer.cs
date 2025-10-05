@@ -41,6 +41,7 @@
             // 
             this.serviceInstaller1.Description = "BPT.Corporation TempTurns Cancellation Automated Process";
             this.serviceInstaller1.ServiceName = "TempTurnsCancellationAutomatedJob";
+            this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
             // 
             // ProjectInstaller
             // 

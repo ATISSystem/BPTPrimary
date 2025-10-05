@@ -119,19 +119,6 @@ Imports R2CoreTransportationAndLoadNotification.PredefinedMessages
 Imports R2Core.DateTimeProvider
 Imports R2Core.SQLInjectionPrevention
 
-Namespace Logging
-
-    Public MustInherit Class PayanehClassLibraryLogType
-        Inherits R2CoreParkingSystemLogType
-
-        Public Shared ReadOnly Property CarTruckUpdateInfSuccess As Int64 = 17
-        Public Shared ReadOnly Property CarTruckUpdateInfNotSuccess As Int64 = 18
-        Public Shared ReadOnly Property TurnsCancellation As Int64 = 21
-        Public Shared ReadOnly Property AutomaticTurnRegistering As Int64 = 52
-    End Class
-
-End Namespace
-
 Namespace ComputerMessages
 
     Public MustInherit Class PayanehClassLibraryComputerMessageTypes
@@ -143,134 +130,6 @@ Namespace ComputerMessages
 End Namespace
 
 Namespace DataBaseManagement
-End Namespace
-
-Namespace ConfigurationManagement
-
-    Public MustInherit Class PayanehClassLibraryConfigurations
-        Inherits R2CoreTransportationAndLoadNotificationConfigurations
-
-        Public Shared ReadOnly Property Clock4 As Int64 = 22
-        Public Shared ReadOnly Property SalonFingerPrint As Int64 = 26
-        Public Shared ReadOnly Property TariffsPayaneh As Int64 = 31
-        Public Shared ReadOnly Property ElamBarMonitoringInterval As Int64 = 33
-        Public Shared ReadOnly Property TariffsPayanehKiosk As Int64 = 53
-        Public Shared ReadOnly Property PayanehAmirKabirAutomatedJobsSetting As Int64 = 64
-        Public Shared ReadOnly Property TruckersAssociationControllingMoneyWallet As Int64 = 75
-
-
-
-    End Class
-
-    Public NotInheritable Class PayanehClassLibraryMClassConfigurationManagement
-    End Class
-
-    Public NotInheritable Class PayanehClassLibraryMClassConfigurationOfAnnouncementsManagement
-        'Inherits R2CoreMClassConfigurationManagement
-        Private Shared _DateTimeService As New R2DateTimeService
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
-
-        Public Shared Function GetConfig(YourCId As Int64, YourAHId As Int64, YourIndex As Int64) As Object
-            Try
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from TblConfigurationsOfAnnouncements Where CId=" & YourCId & " And AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
-                    Throw New GetDataException
-                End If
-                Return Split(Ds.Tables(0).Rows(0).Item("CValue"), ";")(YourIndex)
-            Catch exx As GetDataException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Shared Function GetConfig(YourCId As Int64, YourAHId As Int64) As Object
-            Try
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 CValue from TblConfigurationsOfAnnouncements Where CId=" & YourCId & " And AHId=" & YourAHId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
-                    Throw New GetDataException
-                End If
-                Return Ds.Tables(0).Rows(0).Item("CValue")
-            Catch exx As GetDataException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Shared Function GetConfigString(YourCId As Int64, YourAHId As Int64, YourIndex As Int64) As String
-            Try
-                Return GetConfig(YourCId, YourAHId, YourIndex).trim
-            Catch exx As GetDataException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Shared Function GetConfigString(YourCId As Int64, YourAHId As Int64) As String
-            Try
-                Return GetConfig(YourCId, YourAHId).trim
-            Catch exx As GetDataException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Shared Function GetConfigInt32(YourCId As Int64, YourAHId As Int64, YourIndex As Int64) As Int32
-            Try
-                Return GetConfig(YourCId, YourAHId, YourIndex)
-            Catch exx As GetDataException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Shared Function GetConfigBoolean(YourCId As Int64, YourAHId As Int64, YourIndex As Int64) As Boolean
-            Try
-                Return GetConfig(YourCId, YourAHId, YourIndex)
-            Catch exx As GetDataException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Shared Function GetConfigInt64(YourCId As Int64, YourAHId As Int64, YourIndex As Int64) As Int64
-            Try
-                Return GetConfig(YourCId, YourAHId, YourIndex)
-            Catch exx As GetDataException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Shared Function GetConfigDouble(YourCId As Int64, YourAHId As Int64, YourIndex As Int64) As Double
-            Try
-                Dim xRong As Double = GetConfig(YourCId, YourAHId, YourIndex)
-                Return xRong
-            Catch exx As GetDataException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Shared Function GetConfigByte(YourCId As Int64, YourAHId As Int64, YourIndex As Int64) As Byte
-            Try
-                Return GetConfig(YourCId, YourAHId, YourIndex)
-            Catch exx As GetDataException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-    End Class
-
 End Namespace
 
 Namespace DriverTrucksManagement
@@ -4023,25 +3882,25 @@ Namespace TransportCompanies
             Sedimented = 7
         End Enum
 
-        Public Shared Function IsLoadCapacitorLoadAnnounceTimePassed(YourNSS As TransportCompaniesStandardLoadCapacitorLoadStructure) As Boolean
-            Try
-                Dim NSSAH As PayanehClassLibraryStandardAnnouncementstructure = PayanehClassLibraryAnnouncementsManagement.GetNSSAnnouncementHallByCarTruckTypeId(YourNSS.nTruckType)
-                Dim ConfigV As String() = Split(PayanehClassLibraryMClassConfigurationOfAnnouncementsManagement.GetConfigString(PayanehClassLibraryConfigurations.AnnouncementHallAnnounceTime, NSSAH.AHId, 0), "-")
-                Dim CurrentTime As String = _DateTimeService.GetCurrentTime()
-                Dim NSSLoadCapacitorLoad As TransportCompaniesStandardLoadCapacitorLoadStructure = GetNSSTransportCompanyLoadCapacitorLoad(YourNSS.nEstelamId)
-                If NSSLoadCapacitorLoad.dTimeElam < ConfigV(0) Then If CurrentTime < ConfigV(0) Then Return False Else Return True
-                For Loopx As Int64 = 0 To ConfigV.Length - 1
-                    If Loopx < ConfigV.Length - 1 Then
-                        If NSSLoadCapacitorLoad.dTimeElam >= ConfigV(Loopx) And NSSLoadCapacitorLoad.dTimeElam < ConfigV(Loopx + 1) Then
-                            If CurrentTime < ConfigV(Loopx + 1) Then Return False Else Return True
-                        End If
-                    End If
-                Next
-                Return True
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function IsLoadCapacitorLoadAnnounceTimePassed(YourNSS As TransportCompaniesStandardLoadCapacitorLoadStructure) As Boolean
+        '    Try
+        '        Dim NSSAH As PayanehClassLibraryStandardAnnouncementstructure = PayanehClassLibraryAnnouncementsManagement.GetNSSAnnouncementHallByCarTruckTypeId(YourNSS.nTruckType)
+        '        Dim ConfigV As String() = Split(PayanehClassLibraryMClassConfigurationOfAnnouncementsManagement.GetConfigString(PayanehClassLibraryConfigurations.AnnouncementHallAnnounceTime, NSSAH.AHId, 0), "-")
+        '        Dim CurrentTime As String = _DateTimeService.GetCurrentTime()
+        '        Dim NSSLoadCapacitorLoad As TransportCompaniesStandardLoadCapacitorLoadStructure = GetNSSTransportCompanyLoadCapacitorLoad(YourNSS.nEstelamId)
+        '        If NSSLoadCapacitorLoad.dTimeElam < ConfigV(0) Then If CurrentTime < ConfigV(0) Then Return False Else Return True
+        '        For Loopx As Int64 = 0 To ConfigV.Length - 1
+        '            If Loopx < ConfigV.Length - 1 Then
+        '                If NSSLoadCapacitorLoad.dTimeElam >= ConfigV(Loopx) And NSSLoadCapacitorLoad.dTimeElam < ConfigV(Loopx + 1) Then
+        '                    If CurrentTime < ConfigV(Loopx + 1) Then Return False Else Return True
+        '                End If
+        '            End If
+        '        Next
+        '        Return True
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
         Public Shared Function ISCompanyActive(YourCompanyCode As Int64) As Boolean
             Try
@@ -4613,17 +4472,6 @@ Namespace LoadNotification.LoadPermission
         End Property
     End Class
 
-
-
-End Namespace
-
-Namespace RequesterManagement
-
-    Public MustInherit Class PayanehClassLibraryRequesters
-        Inherits R2CoreTransportationAndLoadNotificationRequesters
-
-
-    End Class
 
 
 End Namespace

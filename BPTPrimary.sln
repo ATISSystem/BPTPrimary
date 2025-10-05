@@ -95,6 +95,22 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TruckersAssociationControll
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "TruckersAssociationControllingMoneyWalletAutomatedJobSetup", "TruckersAssociationControllingMoneyWalletAutomatedJobSetup\TruckersAssociationControllingMoneyWalletAutomatedJobSetup.vdproj", "{C3AC9305-9741-98CD-46F0-BFE974222F48}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DriversAssociationControllingMoneyWalletAutomatedJob", "DriversAssociationControllingMoneyWalletAutomatedJob\DriversAssociationControllingMoneyWalletAutomatedJob.csproj", "{32DCCD07-9AB3-4CB1-8A9B-85BFCD734792}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "DriversAssociationControllingMoneyWalletAutomatedJobSetup", "DriversAssociationControllingMoneyWalletAutomatedJobSetup\DriversAssociationControllingMoneyWalletAutomatedJobSetup.vdproj", "{B32CB3C8-FCA4-1AF4-FF37-21EBAC301521}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TurnsCancellationAutomatedJob", "TurnsCancellationAutomatedJob\TurnsCancellationAutomatedJob.csproj", "{A672F74F-B496-4A3B-80C9-A4D742E686ED}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "TurnsCancellationAutomatedJobSetup", "TurnsCancellationAutomatedJobSetup\TurnsCancellationAutomatedJobSetup.vdproj", "{86E8A479-2F19-EDA6-454A-0E21A0605513}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TurnsRegisteringAutomatedJob", "TurnsRegisteringAutomatedJob\TurnsRegisteringAutomatedJob.csproj", "{FCAAEB7E-18AF-4D6D-8D17-6060A89AA634}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "TurnsRegisteringAutomatedJobSetup", "TurnsRegisteringAutomatedJobSetup\TurnsRegisteringAutomatedJobSetup.vdproj", "{91BD7C9A-89E6-7F95-B297-BE3C53903E13}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoadSedimentingAutomatedJob", "LoadSedimentingAutomatedJob\LoadSedimentingAutomatedJob.csproj", "{AE90DF5E-9EB4-40C3-94B5-1E879CD8FF6B}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "LoadSedimentingAutomatedJobSetup", "LoadSedimentingAutomatedJobSetup\LoadSedimentingAutomatedJobSetup.vdproj", "{66AFD41B-A064-11CE-D5C6-92DF08BCF2B8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -261,6 +277,30 @@ Global
 		{357791DE-7DBD-4C18-8F18-4CA58AA0F306}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C3AC9305-9741-98CD-46F0-BFE974222F48}.Debug|Any CPU.ActiveCfg = Debug
 		{C3AC9305-9741-98CD-46F0-BFE974222F48}.Release|Any CPU.ActiveCfg = Release
+		{32DCCD07-9AB3-4CB1-8A9B-85BFCD734792}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32DCCD07-9AB3-4CB1-8A9B-85BFCD734792}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32DCCD07-9AB3-4CB1-8A9B-85BFCD734792}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32DCCD07-9AB3-4CB1-8A9B-85BFCD734792}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B32CB3C8-FCA4-1AF4-FF37-21EBAC301521}.Debug|Any CPU.ActiveCfg = Debug
+		{B32CB3C8-FCA4-1AF4-FF37-21EBAC301521}.Release|Any CPU.ActiveCfg = Release
+		{A672F74F-B496-4A3B-80C9-A4D742E686ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A672F74F-B496-4A3B-80C9-A4D742E686ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A672F74F-B496-4A3B-80C9-A4D742E686ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A672F74F-B496-4A3B-80C9-A4D742E686ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86E8A479-2F19-EDA6-454A-0E21A0605513}.Debug|Any CPU.ActiveCfg = Debug
+		{86E8A479-2F19-EDA6-454A-0E21A0605513}.Release|Any CPU.ActiveCfg = Release
+		{FCAAEB7E-18AF-4D6D-8D17-6060A89AA634}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCAAEB7E-18AF-4D6D-8D17-6060A89AA634}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCAAEB7E-18AF-4D6D-8D17-6060A89AA634}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCAAEB7E-18AF-4D6D-8D17-6060A89AA634}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91BD7C9A-89E6-7F95-B297-BE3C53903E13}.Debug|Any CPU.ActiveCfg = Debug
+		{91BD7C9A-89E6-7F95-B297-BE3C53903E13}.Release|Any CPU.ActiveCfg = Release
+		{AE90DF5E-9EB4-40C3-94B5-1E879CD8FF6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE90DF5E-9EB4-40C3-94B5-1E879CD8FF6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE90DF5E-9EB4-40C3-94B5-1E879CD8FF6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE90DF5E-9EB4-40C3-94B5-1E879CD8FF6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66AFD41B-A064-11CE-D5C6-92DF08BCF2B8}.Debug|Any CPU.ActiveCfg = Debug
+		{66AFD41B-A064-11CE-D5C6-92DF08BCF2B8}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

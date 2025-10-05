@@ -1687,6 +1687,23 @@ Namespace Turns
             End Try
         End Function
 
+        Public Function GetTruckByTurnId(YourTurnId As Int64) As R2CoreTransportationAndLoadNotificationTruck
+            Try
+                Dim Ds As DataSet
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                          "Select Top 1 Cars.* from dbtransport.dbo.TbCar as Cars
+                              Inner Join DBTransport.dbo.tbEnterExit as Turns On Cars.nIDCar=Turns.strCardno 
+                           Where Turns.nEnterExitId=" & YourTurnId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+                    Throw New RelationBetweenTurnAndTruckNotFoundException
+                End If
+                Return New R2CoreTransportationAndLoadNotificationTruck With {.TruckId = Ds.Tables(0).Rows(0).Item("nIdCar"), .LoaderTypeId = Ds.Tables(0).Rows(0).Item("snCarType"), .SmartCardNo = Ds.Tables(0).Rows(0).Item("StrBodyNo").trim, .Pelak = Ds.Tables(0).Rows(0).Item("strCarNo").trim, .Serial = Ds.Tables(0).Rows(0).Item("strCarSerialNo").trim}
+            Catch ex As RelationBetweenTurnAndTruckNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
         Public Function GetTurnCost(YourSequentialTurnId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTurnCost
             Try
                 Dim Ds As New DataSet
@@ -2585,7 +2602,7 @@ Namespace Turns
             Private _DateTimeService As New R2DateTimeService
             Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
 
-            Public Function GetSequentialTurns(YourSearchString As String, YourImmediately As Boolean) As String
+            Public Function GetSequentialTurnsJSON(YourSearchString As String, YourImmediately As Boolean) As String
                 Try
                     Dim Ds As New DataSet
                     Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
@@ -2608,6 +2625,23 @@ Namespace Turns
                     Return InstancePublicProcedures.GetIntegratedJson(Ds)
                 Catch ex As AnyNotFoundException
                     Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+
+            Public Function GetSequentialTurns() As List(Of R2CoreTransportationAndLoadNotificationSequentialTurn)
+                Try
+                    Dim Ds As DataSet
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                        "Select Distinct SeqT.SeqTId,SeqT.SeqTTitle,SeqT.SeqTKeyWord,SeqT.Active,SeqT.ViewFlag,SeqT.Deleted 
+                         from R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT
+                         Where SeqT.Deleted=0 and SeqT.Active=1", 32767, Ds, New Boolean)
+                    Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationSequentialTurn)
+                    For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
+                        Lst.Add(New R2CoreTransportationAndLoadNotificationSequentialTurn With {.SeqTurnId = Ds.Tables(0).Rows(Loopx).Item("SeqTId"), .SeqTurnTitle = Ds.Tables(0).Rows(Loopx).Item("SeqTTitle").trim, .SeqTurnKeyWord = Ds.Tables(0).Rows(Loopx).Item("SeqTKeyWord"), .Active = Ds.Tables(0).Rows(Loopx).Item("Active")})
+                    Next
+                    Return Lst
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
                 End Try
@@ -2864,7 +2898,7 @@ Namespace Turns
                     Dim DS As DataSet
                     If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                "Select Top 1 SeqTId from R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurnsRelationAnnouncementSubGroups as SequentialTurnsRelationAnnouncementSubGroups
-                                Where AnnouncementSGId=" & YourAnnouncementSGId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New SequentialTurnByAnnouncementSGIdNotFoundException
+                                Where AnnouncementSGId=" & YourAnnouncementSGId & "", 32767, DS, New Boolean).GetRecordsCount() = 0 Then Throw New SequentialTurnByAnnouncementSGIdNotFoundException
                     Return Convert.ToInt64(DS.Tables(0).Rows(0).Item("SeqTId"))
                 Catch ex As SequentialTurnByAnnouncementSGIdNotFoundException
                     Throw ex

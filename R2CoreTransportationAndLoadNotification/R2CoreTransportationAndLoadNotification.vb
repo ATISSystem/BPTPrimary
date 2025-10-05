@@ -17,12 +17,10 @@ Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateAndTimeManagement.CalendarManagement.PersianCalendar
 Imports R2Core.ExceptionManagement
-Imports R2Core.FileShareRawGroupsManagement
 Imports R2Core.LoggingManagement
 Imports R2Core.NetworkInternetManagement.Exceptions
 Imports R2Core.DesktopProcessesManagement
 Imports R2Core.PublicProc
-Imports R2Core.R2PrimaryFileSharingWS
 Imports R2Core.ReportsManagement
 Imports R2Core.SoftwareUserManagement
 Imports R2Core.EntityRelationManagement
@@ -67,7 +65,6 @@ Imports R2CoreTransportationAndLoadNotification.Turns
 Imports R2CoreTransportationAndLoadNotification.Turns.SequentialTurns
 Imports R2CoreTransportationAndLoadNotification.Turns.SequentialTurns.Exceptions
 Imports R2CoreTransportationAndLoadNotification.Turns.TurnPrinting
-Imports R2CoreTransportationAndLoadNotification.Turns.TurnRegisterRequest
 Imports R2CoreTransportationAndLoadNotification.AnnouncementTiming
 Imports R2CoreTransportationAndLoadNotification.LoadTargets.Exceptions
 Imports R2CoreTransportationAndLoadNotification.Rmto
@@ -78,7 +75,6 @@ Imports R2CoreParkingSystem.EntityRelations
 Imports R2CoreParkingSystem.RequesterManagement
 Imports R2CoreParkingSystem.PermissionManagement
 Imports R2CoreParkingSystem.EntityManagement
-Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2CoreTransportationAndLoadNotification.SoftwareUserManagement.Exceptions
 Imports R2Core.MoneyWallet.Exceptions
@@ -96,7 +92,6 @@ Imports R2CoreTransportationAndLoadNotification.TrucksNativeness.Exceptions
 Imports R2Core.SMS.SMSHandling
 Imports R2CoreTransportationAndLoadNotification.LoadSources
 Imports System.Net
-Imports R2CoreTransportationAndLoadNotification.PredefinedMessagesManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.SQLInjectionPrevention
 
@@ -818,7 +813,7 @@ Namespace PermissionManagement
         Public Shared ReadOnly UserCanRequestEmergencyTurnRegistering As Int64 = 14
         Public Shared ReadOnly UserCanEditLoadCapacitorLoadAfterLoadAnnounce As Int64 = 15
         Public Shared ReadOnly RequesterCanSendRequestforTurnIssueByLastLoadPermissioned As Int64 = 16
-        Public Shared ReadOnly SoftwareUserCanExcecuteTurnCancellation As Int64 = 17
+        Public Shared ReadOnly SoftwareUserCanExcecuteTurnsCancellation As Int64 = 17
         Public Shared ReadOnly SoftwareUserCanSendRealTimeTurnRegisteringRequestWithLicensePlate As Int64 = 18
         Public Shared ReadOnly SoftwareUserCanSendTruckorTruckDriverChangeRequest As Int64 = 19
         Public Shared ReadOnly SoftwareUserCanExcecuteTurnCancellationWithLicensePlate As Int64 = 20

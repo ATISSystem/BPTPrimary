@@ -4,6 +4,7 @@
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
+Imports R2Core.ExceptionManagement
 Imports R2Core.LoggingManagement
 Imports R2Core.SoftwareUserManagement
 Imports R2CoreTransportationAndLoadNotification.Announcements
@@ -59,7 +60,7 @@ Namespace LoadSedimentation
                 For Each C In Lst
                     Try
                         AHId = C.NSSAnnounementHall.AHId
-                        AHSGId = C.NSSAnnouncementsubGroup.AHSGId
+                        AHSGId = C.NSSAnnouncementHallSubGroup.AHSGId
                         'کنترل فعال بودن فرآیند رسوب برای زیرگروه مورد نظر
                         If Not IsActiveSedimenting(AHId, AHSGId) Then Continue For
                         'کنترل تایمینگ - آیا رسوب بار برای زیرگروه مورد نظر فرارسیده است
@@ -163,6 +164,92 @@ Namespace LoadSedimentation
         End Function
 
     End Class
+
+    'BPTChanged
+    Public Class R2CoreTransportationAndLoadNotificationLoadSedimentationManager
+
+        Private _DateTimeService As New R2DateTimeService
+        Private _InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+        Public Sub New(YourDateTimeService As R2DateTimeService)
+            Try
+                _DateTimeService = YourDateTimeService
+                _InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Sub
+
+        Private Function IsActiveSedimenting(YourAnnouncementId As Int64, YourAnnouncementSGId As Int64) As Boolean
+            Try
+                Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager(_DateTimeService)
+                Dim ComposeSearchString As String = YourAnnouncementSGId.ToString + "="
+                Dim AllSedimentingTimesofAnnouncement As String() = Split(InstanceConfigurationOfAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsLoadSedimentationSetting, YourAnnouncementId), "&")
+                Dim SedimentingStatus = Split(Mid(AllSedimentingTimesofAnnouncement.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllSedimentingTimesofAnnouncement.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ";")(0)
+                Return SedimentingStatus
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Sub SedimentingProcess(YourSoftwareUserId As Int64)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
+            Try
+                Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
+                Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationAnnouncementTimingManager(_DateTimeService)
+                Dim InstanceLoadAllocation = New R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService)
+                Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService)
+                Dim InstanceLoadAccounting = New R2CoreTransportationAndLoadNotificationLoadAccountingManager(_DateTimeService)
+
+                Dim Lst = InstanceAnnouncements.GetAnnouncementsAnnouncementSubGroupsJOINT()
+                Dim AnnouncementId, AnnouncementSGId As Int64
+                For Each C In Lst
+                    Try
+                        AnnouncementId = C.AnnounementId
+                        AnnouncementSGId = C.AnnouncementSGId
+
+                        'کنترل فعال بودن فرآیند رسوب برای زیرگروه مورد نظر
+                        If Not IsActiveSedimenting(AnnouncementId, AnnouncementSGId) Then Continue For
+
+                        'کنترل تایمینگ - آیا رسوب بار برای زیرگروه مورد نظر فرارسیده است
+                        If Not ((InstanceAnnouncementTiming.GetTiming(AnnouncementId, AnnouncementSGId, _DateTimeService.GetCurrentTime) = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadPermissionRegistering) Or (InstanceAnnouncementTiming.GetTiming(AnnouncementId, AnnouncementSGId, _DateTimeService.GetCurrentTime) = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InSedimenting)) Then
+                            Continue For
+                        End If
+
+                        'کنترل این که ممکن است هنوز آزاد سازی بار تمام نشده باشد لذا رسوب بار نباید انجام گیرد حتی اگر زمان رسوب بار فرارسیده باشد
+                        If InstanceLoadAllocation.DoesExistAnyLoadAllocationforLoadPermissionRegistering Then Continue For
+
+                        'لیست کامل باری که باید رسوب گردد
+                        'موجودی داشته باشد و حذف کنسل و رسوب شده نباشد بار فردا هم نباشد 
+                        Dim LstLoads = InstanceLoad.GetLoadsforSedimenting(AnnouncementId, AnnouncementSGId)
+                        If IsNothing(LstLoads) Or LstLoads.Count = 0 Then Continue For
+
+                        'رسوب بار
+                        Dim LastAnnounceTime = InstanceAnnouncements.GetAnnouncemenetLastAnnounceTime(AnnouncementId, AnnouncementSGId).Time
+                        CmdSql.Connection.Open()
+                        CmdSql.CommandText = "Update dbtransport.dbo.tbElam Set bFlag=1,LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " 
+                                              Where (dDateElam='" & _DateTimeService.GetCurrentShamsiDate & "') and (LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered & " or LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.FreeLined & ") and AHId=" & AnnouncementId & " and AHSGId=" & AnnouncementSGId & " and (dTimeElam<='" & LastAnnounceTime & "') and nCarNum>0"
+                        CmdSql.ExecuteNonQuery()
+                        CmdSql.Connection.Close()
+
+                        'ثبت اکانتینگ
+                        For Each Load In LstLoads
+                            InstanceLoadAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationLoadAccounting With {.LoadId = Load.nEstelamId, .AccountTypeId = R2CoreTransportationAndLoadNotificationLoadAccountingTypes.Sedimenting, .Amount = Load.nCarNum}, YourSoftwareUserId)
+                        Next
+                    Catch ex As Exception
+                        If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    End Try
+                Next
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+
+    End Class
+
 
 
     Namespace Exceptions

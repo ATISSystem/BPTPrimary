@@ -54,7 +54,7 @@ namespace APITransportation.Controllers
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceAnnouncements.GetAnnouncements(SearchString, true), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(InstanceAnnouncements.GetAnnouncementsJSON(SearchString, true), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -208,7 +208,7 @@ namespace APITransportation.Controllers
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceAnnouncements.GetAnnouncementSGsByAnnouncementId(AnnouncementId, false), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(InstanceAnnouncements.GetAnnouncementSGsByAnnouncementIdJSON(AnnouncementId, false), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)

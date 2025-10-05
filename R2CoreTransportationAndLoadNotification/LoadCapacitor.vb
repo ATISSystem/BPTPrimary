@@ -2375,6 +2375,31 @@ Namespace LoadCapacitor
                 End Try
             End Sub
 
+            Public Class LoadsforSedimenting
+                Public Property nEstelamId As Int64
+                Public Property nCarNum As Int64
+            End Class
+
+            Public Function GetLoadsforSedimenting(YourAnnouncementId As Int64, YourAnnouncementSGId As Int64) As List(Of LoadsforSedimenting)
+                Try
+                    Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
+                    Dim LastAnnounceTime As String = InstanceAnnouncements.GetAnnouncemenetLastAnnounceTime(YourAnnouncementId, YourAnnouncementSGId).Time
+                    Dim DS As DataSet
+                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                         "Select Loads.nEstelamId,Loads.nCarNum from DBTransport.dbo.TbElam as Loads 
+                          Where Loads.dDateElam ='" & _DateTimeService.GetCurrentShamsiDate() & "' and Loads.AHId=" & YourAnnouncementId & " and Loads.AHSGId=" & YourAnnouncementSGId & "  
+                                And Loads.LoadStatus<>3 And Loads.LoadStatus<>4 And Loads.LoadStatus<>6 and Loads.LoadStatus<>5 And Loads.nCarNum>0 and 
+                                Loads.dTimeElam<'" & LastAnnounceTime & "'", 0, DS, New Boolean)
+                    Dim Lst As New List(Of LoadsforSedimenting)
+                    For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+                        Lst.Add(New LoadsforSedimenting With {.nEstelamId = DS.Tables(0).Rows(Loopx).Item("nEstelamId"), .nCarNum = DS.Tables(0).Rows(Loopx).Item("nCarNum")})
+                    Next
+                    Return Lst
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+
         End Class
 
         'BPTChanged

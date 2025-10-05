@@ -88,7 +88,6 @@ Namespace Logging
     Public MustInherit Class R2CoreParkingSystemLogType
         Inherits R2CoreLogType
 
-        Public Shared ReadOnly Property EntryExit As Int64 = 61
     End Class
 
     Public Class R2CoreParkingSystemLogManager

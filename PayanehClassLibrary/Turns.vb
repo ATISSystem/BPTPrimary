@@ -216,165 +216,6 @@ Namespace CarTruckNobatManagement
         Private _DateTimeService As New R2DateTimeService
         Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
-        Public Sub TurnsCancellationByLoadTargetMethod(YourNSSSequentialTurn As R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure, YourTurnId As Int64, YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                Dim DSTurns As DataSet = Nothing
-                Dim TotalTurns = InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
-                       "Select nEnterExitId from dbtransport.dbo.TbEnterExit
-                        Where (TurnStatus = " & TurnStatuses.Registered & " Or TurnStatus = " & TurnStatuses.UsedLoadAllocationRegistered & " Or TurnStatus = " & TurnStatuses.ResuscitationLoadAllocationCancelled & " Or TurnStatus = " & TurnStatuses.ResuscitationLoadPermissionCancelled & " Or TurnStatus = " & TurnStatuses.ResuscitationUser & ")
-                              and Substring(OtaghdarTurnNumber,1,1)='" & YourNSSSequentialTurn.SequentialTurnKeyWord & "' and nEnterExitId<" & YourTurnId & "", 0, DSTurns, New Boolean).GetRecordsCount
-                CmdSql.Connection.Open()
-                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Update dbtransport.dbo.TbEnterExit Set TurnStatus=" & TurnStatuses.CancelledUnderScore & ",bFlag=1,bFlagDriver=1,strElamDate='" & _DateTimeService.GetCurrentShamsiDate & "',strElamTime='" & _DateTimeService.GetCurrentTime & "',nUserIdExit=" & YourNSSSoftwareUser.UserId & " 
-                                      Where (TurnStatus = " & TurnStatuses.Registered & " Or TurnStatus = " & TurnStatuses.UsedLoadAllocationRegistered & " Or TurnStatus = " & TurnStatuses.ResuscitationLoadAllocationCancelled & " Or TurnStatus = " & TurnStatuses.ResuscitationLoadPermissionCancelled & " Or TurnStatus = " & TurnStatuses.ResuscitationUser & ") 
-                                      and Substring(OtaghdarTurnNumber, 1, 1) ='" & YourNSSSequentialTurn.SequentialTurnKeyWord & "' and nEnterExitId<" & YourTurnId & ""
-                CmdSql.ExecuteNonQuery()
-                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-                'در آنلاین
-                For LoopOnLine As Int64 = 0 To DSTurns.Tables(0).Rows.Count - 1
-                    Dim NSSCarTruck As R2StandardCarTruckStructure = PayanehClassLibraryMClassCarTrucksManagement.GetNSSCarTruckByCarId(R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTruck(DSTurns.Tables(0).Rows(LoopOnLine).Item("nEnterExitId")).NSSCar.nIdCar)
-                    TWSClassLibrary.TDBClientManagement.TWSClassTDBClientManagement.DelNobat(NSSCarTruck.NSSCar.StrCarNo, NSSCarTruck.NSSCar.StrCarSerialNo)
-                Next
-                'R2CoreMClassLoggingManagement.LogRegister(New R2CoreStandardLoggingStructure(Nothing, PayanehClassLibraryLogType.TurnsCancellation, "کنسل کردن گروهی نوبت ها", "SeqT=" + YourNSSSequentialTurn.SequentialTurnTitle, "TotalTurn=" + TotalTurns.ToString, String.Empty, String.Empty, String.Empty, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser.UserId, Nothing, Nothing))
-            Catch ex As SqlInjectionException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
-                Throw ex
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-        Private Sub TurnsCancellationBy3DaysMethod(YourNSSSequentialTurn As R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure, YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure, YourTimeOfDay As R2CoreDateAndTime)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager(_DateTimeService)
-                Dim DSTurns As DataSet = Nothing
-                Dim TotalTurns = InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
-                       "Select nEnterExitId from dbtransport.dbo.tbEnterExit as Turns
-                        Where (Turns.TurnStatus=" & TurnStatuses.Registered & " or Turns.TurnStatus=" & TurnStatuses.UsedLoadAllocationRegistered & "  or Turns.TurnStatus=" & TurnStatuses.ResuscitationLoadAllocationCancelled & "  or Turns.TurnStatus=" & TurnStatuses.ResuscitationLoadPermissionCancelled & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationUser & ") and
-                              Substring(Turns.OtaghdarTurnNumber,1,1)='" & YourNSSSequentialTurn.SequentialTurnKeyWord & "' and
-                              ((Turns.strCardno in (Select Distinct nIDCar from dbtransport.dbo.TbCar Where CarNativenessTypeId=1) and
-	                            Turns.strEnterDate Collate Arabic_CI_AI_WS<=(Select Top 1 DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
-                                                                             Where DateShamsi<
-                                                                                (Select Top 1 DateShamsi from 
-                                                                                  (Select Top " & InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 5) & " DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
-                                                                                   Where PCType=0 and DateShamsi<='" & YourTimeOfDay.ShamsiDate & "' Order By DateShamsi desc) as DataBox
-                                                                                 Order By DateShamsi)
-                                                                             Order By DateShamsi Desc)
-   	                           )
-	                           or
-	                           (Turns.strCardno not in (Select Distinct nIDCar from dbtransport.dbo.TbCar Where CarNativenessTypeId=1) and
-	                            Turns.strEnterDate Collate Arabic_CI_AI_WS<=(Select Top 1 DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
-                                                                             Where DateShamsi<
-                                                                                (Select Top 1 DateShamsi from 
-                                                                                  (Select Top " & InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 6) & " DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
-                                                                                   Where PCType=0 and DateShamsi<='" & YourTimeOfDay.ShamsiDate & "' Order By DateShamsi desc) as DataBox
-                                                                                 Order By DateShamsi)
-                                                                             Order By DateShamsi Desc)
- 	                           )
-                              )
-                        order by nEnterExitId Desc", 0, DSTurns, New Boolean).GetRecordsCount
-                If TotalTurns > 0 Then
-                    CmdSql.Connection.Open()
-                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                    CmdSql.CommandText =
-                     "Update dbtransport.dbo.TbEnterExit
-                      Set TurnStatus=" & TurnStatuses.CancelledUnderScore & ",bFlag=1,bFlagDriver=1,strElamDate='" & YourTimeOfDay.ShamsiDate & "',strElamTime='" & YourTimeOfDay.Time & "',nUserIdExit=" & YourNSSSoftwareUser.UserId & " 
-                      Where nEnterExitId In   
-                       (Select nEnterExitId from dbtransport.dbo.tbEnterExit as Turns
-                        Where (Turns.TurnStatus=" & TurnStatuses.Registered & " or Turns.TurnStatus=" & TurnStatuses.UsedLoadAllocationRegistered & "  or Turns.TurnStatus=" & TurnStatuses.ResuscitationLoadAllocationCancelled & "  or Turns.TurnStatus=" & TurnStatuses.ResuscitationLoadPermissionCancelled & " or Turns.TurnStatus=" & TurnStatuses.ResuscitationUser & ") and
-                              Substring(Turns.OtaghdarTurnNumber,1,1)='" & YourNSSSequentialTurn.SequentialTurnKeyWord & "' and
-                              ((Turns.strCardno in (Select Distinct nIDCar from dbtransport.dbo.TbCar Where CarNativenessTypeId=1) and
-	                            Turns.strEnterDate Collate Arabic_CI_AI_WS<=(Select Top 1 DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
-                                                                             Where DateShamsi<
-                                                                                (Select Top 1 DateShamsi from 
-                                                                                  (Select Top " & InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 5) & " DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
-                                                                                   Where PCType=0 and DateShamsi<='" & YourTimeOfDay.ShamsiDate & "' Order By DateShamsi desc) as DataBox
-                                                                                 Order By DateShamsi)
-                                                                             Order By DateShamsi Desc)
-   	                           )
-	                           or
-	                           (Turns.strCardno not in (Select Distinct nIDCar from dbtransport.dbo.TbCar Where CarNativenessTypeId=1) and
-	                            Turns.strEnterDate Collate Arabic_CI_AI_WS<=(Select Top 1 DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
-                                                                             Where DateShamsi<
-                                                                                (Select Top 1 DateShamsi from 
-                                                                                  (Select Top " & InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 6) & " DateShamsi from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
-                                                                                   Where PCType=0 and DateShamsi<='" & YourTimeOfDay.ShamsiDate & "' Order By DateShamsi desc) as DataBox
-                                                                                 Order By DateShamsi)
-                                                                             Order By DateShamsi Desc)
- 	                           )
-                              )
-                       )"
-                    CmdSql.ExecuteNonQuery()
-                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-                    'در آنلاین
-                    For LoopOnLine As Int64 = 0 To DSTurns.Tables(0).Rows.Count - 1
-                        Dim NSSCarTruck As R2StandardCarTruckStructure = PayanehClassLibraryMClassCarTrucksManagement.GetNSSCarTruckByCarId(R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTruck(DSTurns.Tables(0).Rows(LoopOnLine).Item("nEnterExitId")).NSSCar.nIdCar)
-                        TWSClassLibrary.TDBClientManagement.TWSClassTDBClientManagement.DelNobat(NSSCarTruck.NSSCar.StrCarNo, NSSCarTruck.NSSCar.StrCarSerialNo)
-                    Next
-                    'Dim TurnsSB = New StringBuilder
-                    'For LoopxLog As Int64 = 0 To DSTurns.Tables(0).Rows.Count - 1
-                    '    TurnsSB.Append(DSTurns.Tables(0).Rows(LoopxLog).Item("nEnterExitId")).Append(",")
-                    'Next
-                    'R2CoreMClassLoggingManagement.LogRegister(New R2CoreStandardLoggingStructure(Nothing, PayanehClassLibraryLogType.TurnsCancellation, "کنسل کردن گروهی نوبت ها", "SeqT=" + YourNSSSequentialTurn.SequentialTurnTitle, "TotalTurn=" + TotalTurns.ToString, String.Empty, String.Empty, String.Empty, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser.UserId, Nothing, Nothing))
-                End If
-            Catch ex As SqlInjectionException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
-                Throw ex
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-        Public Sub TurnsCancellation(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
-            Try
-                Dim InstancePermissions = New R2CoreInstansePermissionsManager
-                If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.SoftwareUserCanExcecuteTurnCancellation, YourNSSSoftwareUser.UserId, 0) Then Throw New PermissionException
-
-                Dim InstanceSpecializedPersianCalendar = New R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager(_DateTimeService)
-                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
-                Dim InstanceSequentialTurns = New R2CoreTransportationAndLoadNotificationInstanceSequentialTurnsManager
-                Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager(_DateTimeService)
-                Dim TimeOfDay = _DateTimeService.GetCurrentDateAndTime()
-                'طبق کانفیگ سیستم کلا ابطال نوبت ها فعال باشد یا نه
-                If Not InstanceConfigurations.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 0) Then Return
-
-                'ابطال نوبت ها در روزهای تعطیل صورت نمی گیرد
-                If InstanceSpecializedPersianCalendar.IsTodayIsHoliday() Then Return
-
-                'کنترل این که ممکن است هنوز آزاد سازی بار تمام نشده باشد لذا ابطال نوبت ها نباید انجام گیرد حتی اگر زمان ابطال نوبت ها فرارسیده باشد
-                Dim InstanceLoadAllocation = New R2CoreTransportationAndLoadNotificationInstanceLoadAllocationManager
-                If InstanceLoadAllocation.GetLoadAllocationsforLoadPermissionRegistering().Count <> 0 Then Exit Sub
-                'ابطال نوبت ها
-                Dim LstSeqTs = InstanceSequentialTurns.GetSequentialTurns()
-                For Loopx As Int64 = 0 To LstSeqTs.Count - 1
-                    Dim ComposeSearchString As String = LstSeqTs(Loopx).SequentialTurnId.ToString + "="
-                    Dim AllSeqTConfig As String() = Split(InstanceConfigurations.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting, 2), "-")
-                    Dim ConfigSeqTTurnsCancellationActiveFlag As Boolean = Split(Mid(AllSeqTConfig.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllSeqTConfig.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), "|")(0)
-                    Dim ConfigSeqTTurnsCancellationStartSendingTime As String = Split(Mid(AllSeqTConfig.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllSeqTConfig.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), "|")(1)
-                    If Not ConfigSeqTTurnsCancellationActiveFlag Then Continue For
-                    If TimeOfDay.Time < ConfigSeqTTurnsCancellationStartSendingTime Then Continue For
-                    TurnsCancellationBy3DaysMethod(LstSeqTs(Loopx), YourNSSSoftwareUser, TimeOfDay)
-                Next
-            Catch ex As PermissionException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
 
         Public Sub TurnCancellation(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure, YourOtaghdarTurnNumber As String, YourNSSUser As R2CoreStandardSoftwareUserStructure)
             Dim CmdSql As New SqlClient.SqlCommand
@@ -1899,8 +1740,10 @@ Namespace Turns
     Public Class PayanehClassLibraryTurnManager
 
         Private _DateTimeService As IR2DateTimeService
+        Private _SoftwareUserService As ISoftwareUserService
         Private _InstanceSqlDataBox As R2CoreSqlDataBOXManager
         Public Sub New(YourR2DateTimeService As IR2DateTimeService)
+            _SoftwareUserService = New SoftwareUserService(Nothing)
             _DateTimeService = YourR2DateTimeService
             _InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -2107,7 +1950,63 @@ Namespace Turns
 
         End Sub
 
+        Public Sub AutomaticTurnRegistering()
+            Try
+                Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager(_DateTimeService)
+                Dim InstanceSequentialTurns = New R2CoreTransportationAndLoadNotificationSequentialTurnsManager
+                Dim InstanceTurnRegisterRequest = New PayanehClassLibraryTurnRegisterRequestManager(_DateTimeService)
+                Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
 
+                'ابتدا تولید رشته ساب کوری
+                'گروه های اعلام بار
+                Dim Announcements = InstanceAnnouncements.GetActiveAnnouncements(False)
+                Dim SubQuery = String.Empty
+                For LoopAnnouncements As Int16 = 0 To Announcements.Count - 1
+                    Dim AnnouncementSGsConfig = Split(InstanceConfigurationOfAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTurnRegisteringSetting, Announcements(LoopAnnouncements).AnnouncementId, 0), "-")
+                    'زیرگروه های اعلام بار
+                    Dim AnnouncementsSubGroups = InstanceAnnouncements.GetAnnouncementSGsByAnnouncementId(Announcements(LoopAnnouncements).AnnouncementId, False)
+                    For LoopAnnouncementsSubGroups As Int16 = 0 To AnnouncementsSubGroups.Count - 1
+                        Dim LoopIndex = LoopAnnouncementsSubGroups
+                        Dim IsActiveAutomaticTurnRegistering As Boolean = Split(AnnouncementSGsConfig.Where(Function(x) AnnouncementsSubGroups(LoopIndex).AnnouncementSGId = Split(x, ":")(0))(0), ":")(2)
+                        If IsActiveAutomaticTurnRegistering Then
+                            SubQuery = SubQuery + " or (AHSGId=" & AnnouncementsSubGroups(LoopIndex).AnnouncementSGId.ToString() & ")"
+                        End If
+                    Next
+                Next
+
+                'بدست آوردن لیست نوبت هایی که مجوز برایشان  صادر شده و باید نوبت برایشان صادر شود
+                Dim Query = "Select Turns.strBarnameNo,Turns.nEnterExitId,Turns.strCardno,Loads.AHId,Loads.AHSGId,Loads.LoadStatus from dbtransport.dbo.tbEnterExit as Turns
+                                       Inner Join dbtransport.dbo.tbElam as Loads On Turns.nEstelamID=Loads.nEstelamID 
+                                 Where  Turns.strCardno not in (Select strCardno from dbtransport.dbo.tbEnterExit Where (TurnStatus=1 or TurnStatus=7 or TurnStatus=8 or TurnStatus=9 or TurnStatus=10) and strEnterDate='" & _DateTimeService.GetCurrentShamsiDate & "') and 
+                                        Turns.bDelAutomated=1 and Turns.TurnStatus = 6 And Turns.strExitDate ='" & _DateTimeService.GetCurrentShamsiDate & "' and (2=3" + SubQuery + ")" + " Order By Turns.nEnterExitId Asc"
+                Dim DsTurns As DataSet = Nothing
+                Dim TotalTurn = _InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, Query, 0, DsTurns, New Boolean).GetRecordsCount
+                If TotalTurn <> 0 Then
+                    'کنترل زمان اجرای فرآیند
+                    Dim TimeOfDay = _DateTimeService.GetCurrentTickofTime
+                    If Convert.ToInt64((TimeOfDay - TimeSpan.Parse("00:45:00").Ticks) \ TimeSpan.Parse("00:30:00").Ticks) Mod 2 <> 0 Then Exit Try
+
+                    Dim TotalTurnsSuccessed As Int64 = 0
+                    For LoopTurns As Int64 = 0 To DsTurns.Tables(0).Rows.Count - 1
+                        Dim AnnouncementId As Int64 = DsTurns.Tables(0).Rows(LoopTurns).Item("AHId")
+                        Dim AnnouncementSGId As Int64 = DsTurns.Tables(0).Rows(LoopTurns).Item("AHSGId")
+                        Dim TruckId As Int64 = DsTurns.Tables(0).Rows(LoopTurns).Item("strCardno")
+                        Dim TurnId As Int64 = DsTurns.Tables(0).Rows(LoopTurns).Item("nEnterExitId")
+                        Dim LoadStatusId As Int64 = DsTurns.Tables(0).Rows(LoopTurns).Item("LoadStatus")
+                        Try
+                            Dim SeqTId = InstanceSequentialTurns.GetSequentialTurnIdByAnnouncementSGId(AnnouncementSGId)
+                            Dim TurnRegisterRequestId = InstanceTurnRegisterRequest.RealTimeTurnRegisterRequest(SeqTId, TruckId, Nothing, PayanehClassLibraryRequesters.AutomaticTurnRegistering, TurnType.Permanent, _SoftwareUserService.SystemUserId)
+                            TotalTurnsSuccessed += 1
+                        Catch ex As Exception
+                            R2CoreLoggingManager.RegisterLog(New R2CoreRawLog With {.LogTypeId = PayanehClassLibraryLogType.AutomaticTurnRegistering, .Description = ex.Message, .MessageDetail1 = "TruckId=" + TruckId.ToString, .MessageDetail2 = String.Empty, .MessageDetail3 = String.Empty, .UserId = _SoftwareUserService.SystemUserId})
+                        End Try
+                    Next
+                    R2CoreLoggingManager.RegisterLog(New R2CoreRawLog With {.LogTypeId = PayanehClassLibraryLogType.AutomaticTurnRegistering, .Description = MethodBase.GetCurrentMethod().Name, .MessageDetail1 = "TotalTurn=" + TotalTurn.ToString, .MessageDetail2 = "TotalTurnSuccessed=" + TotalTurnsSuccessed.ToString, .MessageDetail3 = String.Empty, .UserId = _SoftwareUserService.SystemUserId})
+                End If
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
 
     End Class
 
