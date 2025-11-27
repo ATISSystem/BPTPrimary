@@ -20,12 +20,23 @@ namespace APITransportation.LoadAllocation.Models
 
         }
 
+        public class LAIdPriority
+        {
+            public Int64 LAId;
+            public Int64 Priority;
+        }
+
+        public class APITransportationLoadAllocationSessionIdLAIdPrioritys
+        {
+            public string SessionId;
+            public LAIdPriority[] LAIdPrioritys;
+        }
+
         public class APITransportationLoadAllocationSessionIdLAIdLoadId
         {
             public string SessionId;
             public Int64 LAId;
             public Int64 LoadId;
-
         }
 
         public class APITransportationLoadAllocationSessionIdTruckIdTruckDriverIdLoadId

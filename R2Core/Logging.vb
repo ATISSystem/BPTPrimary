@@ -14,6 +14,7 @@ Imports Newtonsoft.Json
 Imports R2Core.MobileProcessesManagement.Exceptions
 Imports Newtonsoft.Json.Linq
 Imports R2Core.PubSubMessaging
+Imports System.Security.Cryptography
 
 Namespace LoggingManagement
 
@@ -160,14 +161,15 @@ Namespace LoggingManagement
         Public Time As String
     End Class
 
-    Public MustInherit Class R2CoreLoggingManager
+    Public Class R2CoreLoggingManager
 
-        Private Shared _Logger As Logger = Nothing
-        Private Shared _Subscriber As ISubscriber = Nothing
+        Private _Logger As Logger = Nothing
+        Private _Subscriber As ISubscriber = Nothing
+        Private _RCH = New RedisConnectorHelper
 
-        Public Shared Sub RegisterLog(YourRawLog As R2CoreRawLog)
+        Public Sub RegisterLog(YourRawLog As R2CoreRawLog)
             Try
-                If _Subscriber Is Nothing Then _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                _Subscriber = _RCH.Connection.GetSubscriber()
                 _Subscriber.Publish(R2CorePubSubChannels.Logging, JsonConvert.SerializeObject(YourRawLog))
             Catch ex As RedisException
                 Throw ex
@@ -176,9 +178,9 @@ Namespace LoggingManagement
             End Try
         End Sub
 
-        Public Shared Sub RegisterLog(YourException As Exception)
+        Public Sub RegisterLog(YourException As Exception)
             Try
-                If _Subscriber Is Nothing Then _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                _Subscriber = _RCH.Connection.GetSubscriber()
                 _Subscriber.Publish(R2CorePubSubChannels.Logging, JsonConvert.SerializeObject(YourException))
             Catch ex As RedisException
                 Throw ex
@@ -187,7 +189,7 @@ Namespace LoggingManagement
             End Try
         End Sub
 
-        Public Shared Sub WriteInfLog(YourLog As R2CoreRawLog)
+        Public Sub WriteInfLog(YourLog As R2CoreRawLog)
             Try
                 If _Logger Is Nothing Then _Logger = LogManager.GetCurrentClassLogger()
                 _Logger.WithProperty("LogTypeId", YourLog.LogTypeId).WithProperty("MessageDetail1", YourLog.MessageDetail1).WithProperty("MessageDetail2", YourLog.MessageDetail2).WithProperty("MessageDetail3", YourLog.MessageDetail3).WithProperty("UserId", YourLog.UserId).Info(YourLog.Description)
@@ -196,7 +198,7 @@ Namespace LoggingManagement
             End Try
         End Sub
 
-        Public Shared Sub WriteErrorLog(YourException As Exception)
+        Public Sub WriteErrorLog(YourException As Exception)
             Try
                 If _Logger Is Nothing Then _Logger = LogManager.GetCurrentClassLogger()
                 _Logger.Error(YourException, YourException.Message)
@@ -205,7 +207,7 @@ Namespace LoggingManagement
             End Try
         End Sub
 
-        Public Shared Sub Logger(Yourvalue As StackExchange.Redis.RedisValue)
+        Public Sub Logger(Yourvalue As StackExchange.Redis.RedisValue)
             Try
                 Dim RawLog = JsonConvert.DeserializeObject(Of R2CoreRawLog)(Yourvalue)
                 If (RawLog.LogTypeId = R2Core.LoggingManagement.R2CoreLogType.None) Then

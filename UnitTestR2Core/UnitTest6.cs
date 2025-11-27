@@ -14,10 +14,10 @@ namespace UnitTestR2Core
         [TestMethod]
         public void RedisTester()
         {
-            var redis = RedisConnectorHelper.Connection; 
+            var redis = (new RedisConnectorHelper()).Connection; 
             var db = redis.GetDatabase(0);
 
-            var server = RedisConnectorHelper.GetServer;
+            var server = (new RedisConnectorHelper()).GetServer;
             var keys = server.Keys();
 
             foreach (var key in keys)

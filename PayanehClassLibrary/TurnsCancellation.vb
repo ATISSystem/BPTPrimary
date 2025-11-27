@@ -29,9 +29,12 @@ Namespace TurnsCancellation
 
         Private _DateTimeService As IR2DateTimeService
         Private _InstanceSqlDataBox As R2CoreSqlDataBOXManager
+        Private _InstanceLogging As R2CoreLoggingManager
+
         Public Sub New(YourR2DateTimeService As IR2DateTimeService)
             _DateTimeService = YourR2DateTimeService
             _InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
+            _InstanceLogging = New R2CoreLoggingManager
         End Sub
 
         Private Sub TurnsCancellationByLoadTargetMethod(YourSequentialTurn As R2CoreTransportationAndLoadNotificationSequentialTurn, YourTurnId As Int64, YourSoftwareUserId As Int64)
@@ -63,7 +66,7 @@ Namespace TurnsCancellation
                 Next
 
                 'لاگ آمار ابطال
-                R2CoreLoggingManager.RegisterLog(New R2CoreRawLog With {.LogTypeId = PayanehClassLibraryLogType.TurnsCancellation, .Description = "ابطال گروهی نوبت ها", .MessageDetail1 = "SeqT=" + YourSequentialTurn.SeqTurnTitle, .MessageDetail2 = "TotalTurn=" + TotalTurns.ToString, .MessageDetail3 = String.Empty, .UserId = YourSoftwareUserId})
+                _InstanceLogging.RegisterLog(New R2CoreRawLog With {.LogTypeId = PayanehClassLibraryLogType.TurnsCancellation, .Description = "ابطال گروهی نوبت ها", .MessageDetail1 = "SeqT=" + YourSequentialTurn.SeqTurnTitle, .MessageDetail2 = "TotalTurn=" + TotalTurns.ToString, .MessageDetail3 = String.Empty, .UserId = YourSoftwareUserId})
 
             Catch ex As SqlInjectionException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then
@@ -155,7 +158,7 @@ Namespace TurnsCancellation
                     Next
 
                     'لاگ آمار ابطال
-                    R2CoreLoggingManager.RegisterLog(New R2CoreRawLog With {.LogTypeId = PayanehClassLibraryLogType.TurnsCancellation, .Description = "ابطال گروهی نوبت ها", .MessageDetail1 = "SeqT=" + YourSequentialTurn.SeqTurnTitle, .MessageDetail2 = "TotalTurn=" + TotalTurns.ToString, .MessageDetail3 = String.Empty, .UserId = YourSoftwareUserId})
+                    _InstanceLogging.RegisterLog(New R2CoreRawLog With {.LogTypeId = PayanehClassLibraryLogType.TurnsCancellation, .Description = "ابطال گروهی نوبت ها", .MessageDetail1 = "SeqT=" + YourSequentialTurn.SeqTurnTitle, .MessageDetail2 = "TotalTurn=" + TotalTurns.ToString, .MessageDetail3 = String.Empty, .UserId = YourSoftwareUserId})
                 End If
             Catch ex As SqlInjectionException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then

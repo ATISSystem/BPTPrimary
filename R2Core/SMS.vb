@@ -920,10 +920,12 @@ Namespace SMS
             Private _SepahanSMS As New net.sepahansms.smsSendWebServiceforPHP()
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
             Private _DateTimeService As IR2DateTimeService
+            Private _InstanceLogging As R2CoreLoggingManager
 
             Public Sub New(YourDateTimeService As IR2DateTimeService)
                 _DateTimeService = YourDateTimeService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+                _InstanceLogging = New R2CoreLoggingManager
             End Sub
 
             Public Sub Sending()
@@ -959,7 +961,7 @@ Namespace SMS
                             CmdSql.CommandText = "Update R2PrimarySMSSystem.dbo.TblSmsWareHouse Set Active=0 where SmsId=" & SMSId & ""
                             CmdSql.ExecuteNonQuery()
                         Else
-                            R2CoreLoggingManager.RegisterLog(New Exception((New SendingSMSFailedException(SMSId)).Message))
+                            _InstanceLogging.RegisterLog(New Exception((New SendingSMSFailedException(SMSId)).Message))
                         End If
                     Next
                     CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
@@ -984,10 +986,12 @@ Namespace SMS
             Private _SepahanSMS As New net.sepahansms.smsSendWebServiceforPHP()
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
             Private _DateTimeService As IR2DateTimeService
+            Private _InstanceLogging As R2CoreLoggingManager
 
             Public Sub New(YourDateTimeService As IR2DateTimeService)
                 _DateTimeService = YourDateTimeService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+                _InstanceLogging = New R2CoreLoggingManager
             End Sub
 
             Public Sub Reciving()
@@ -1013,7 +1017,7 @@ Namespace SMS
                             InstanceSQLInjectionPrevention.GeneralAuthorization(MobileNumber)
                             InstanceSQLInjectionPrevention.GeneralAuthorization(myDate)
                         Catch ex As SqlInjectionException
-                            R2CoreLoggingManager.RegisterLog(New Exception((New SqlInjectionException()).Message))
+                            _InstanceLogging.RegisterLog(New Exception((New SqlInjectionException()).Message))
                             Continue For
                         End Try
                         Dim InstanceRecivedSMSCodes = New R2CoreRecivedSMSCodesManager(_DateTimeService)
@@ -1021,7 +1025,7 @@ Namespace SMS
                         Try
                             NSSRecivedSMSCode = InstanceRecivedSMSCodes.GetRecivedSMSCode(SmsText)
                         Catch ex As SqlInjectionException
-                            R2CoreLoggingManager.RegisterLog(New Exception((New SqlInjectionException()).Message))
+                            _InstanceLogging.RegisterLog(New Exception((New SqlInjectionException()).Message))
                             Continue For
                         Catch ex As SMSRecivedCodeforSMSCodeNotFoundException
                             Continue For

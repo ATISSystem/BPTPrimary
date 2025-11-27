@@ -55,7 +55,7 @@ namespace APITransportation.Controllers
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceSequentialTurns.GetSequentialTurns(SearchString, true), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(InstanceSequentialTurns.GetSequentialTurnsJSON(SearchString, true), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)

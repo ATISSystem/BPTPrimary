@@ -327,7 +327,7 @@ Namespace DriverTrucksManagement
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
                 Dim mynIdPerson As Int64 = YourNSS.NSSDriver.nIdPerson
-                CmdSql.CommandText = "Update TbDriver Set StrSmartCardNo='" & YourNSS.StrSmartCardNo & "' Where nIdDriver=" & mynIdPerson & ""
+                CmdSql.CommandText = "Update DBTransport.dbo.TbDriver Set StrSmartCardNo='" & YourNSS.StrSmartCardNo & "' Where nIdDriver=" & mynIdPerson & ""
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
             Catch ex As DriverTruckSmartCardNoAlreadyAvailabletException

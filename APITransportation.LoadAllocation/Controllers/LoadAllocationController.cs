@@ -293,6 +293,39 @@ namespace APITransportation.LoadAllocation.Controllers
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
+        [Route("api/LoadAllocationsChangePriority")]
+        public HttpResponseMessage LoadAllocationsChangePriority([FromBody] APITransportationLoadAllocationSessionIdLAIdPrioritys Content)
+        {
+            try
+            {
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstanceSession = new R2CoreSessionManager();
+                var SessionId = Content.SessionId;
+                var LAIdPrioritys = Content.LAIdPrioritys ;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService);
+                //InstanceLoadAllocation.DecreasePriority(LAId, LoadId);
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (RedisException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
 
 
         }

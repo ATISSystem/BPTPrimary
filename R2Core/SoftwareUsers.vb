@@ -1087,7 +1087,7 @@ Namespace SoftwareUserManagement
 
             Public Overrides ReadOnly Property Message As String
                 Get
-                    Return "ارسال اس ام اس لینک وب سایت با خطا مواجه شد" + _Message
+                    Return "ارسال اس ام اس لینک سامانه با خطا مواجه شد" + _Message
                 End Get
             End Property
         End Class
@@ -1111,10 +1111,12 @@ Namespace SoftwareUserManagement
         Private _DateTimeService As IR2DateTimeService
         Private _SoftwareUserService As ISoftwareUserService
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+        Private _RCH As RedisConnectorHelper
         Public Sub New(YourDateTimeService As IR2DateTimeService, YourSoftwareUserService As ISoftwareUserService)
             _DateTimeService = YourDateTimeService
             _SoftwareUserService = YourSoftwareUserService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+            _RCH = New RedisConnectorHelper
         End Sub
 
         Public Function GetUser(YourSoftWareUserMobile As R2CoreSoftwareUserMobile, YourImmediately As Boolean) As R2CoreSoftwareUser
@@ -1243,7 +1245,7 @@ Namespace SoftwareUserManagement
                     InstanceCacheKeys.SetCache(CachKey, SessionIdSoftwareUser, R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions, False)
 
                     'PubSubMessage-UserAuthenticated
-                    Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                    Dim _Subscriber = _RCH.Connection.GetSubscriber()
                     _Subscriber.Publish(R2CorePubSubChannels.UserAuthenticated, JsonConvert.SerializeObject(SessionIdSoftwareUser.SoftWareUser))
                 Else
                     Throw New CaptchaWordNotCorrectException
@@ -1350,6 +1352,9 @@ Namespace SoftwareUserManagement
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
             Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
                 Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As Exception
                 If CmdSql.Connection.State <> ConnectionState.Closed Then
@@ -1366,6 +1371,41 @@ Namespace SoftwareUserManagement
                 Dim InstancePermissions = New R2CoreInstansePermissionsManager
                 If Not InstancePermissions.ExistPermission(R2CorePermissionTypes.UserCanSendSoftwareUserShenasehPasswordViaSMS, YourUserId, 0) Then Throw New UserNotAllowedRunThisProccessException
 
+                Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
+                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                Dim InstanceSoftwareUser = New R2CoreSoftwareUsersManager(_DateTimeService, _SoftwareUserService)
+
+                Dim SoftwareUser = GetUser(YourSoftwareUserId, False)
+                Dim newPassword As String = GetaNewSoftwareUserPassword()
+                Dim UserPasswordExpiration As String = _DateTimeService.GetShamsiDateWithAddMonth(_DateTimeService.GetCurrentShamsiDate, InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 2))
+                SoftwareUser.UserShenaseh = SoftwareUser.MobileNumber
+                SoftwareUser.UserPassword = newPassword
+
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Update R2Primary.dbo.TblSoftwareUsers Set UserPassword='" & Hasher.GenerateSHA256String(newPassword) & "',UserPasswordExpiration='" & UserPasswordExpiration & "'  Where UserId=" & YourSoftwareUserId & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+
+                InstanceSoftwareUser.SendUserSecurity(SoftwareUser)
+                Dim SoftWareUserSecurity = New R2CoreSoftWareUserSecurity
+                SoftWareUserSecurity.UserShenaseh = SoftwareUser.MobileNumber
+                SoftWareUserSecurity.UserPassword = newPassword
+                Return SoftWareUserSecurity
+            Catch ex As PermissionException
+                Throw ex
+            Catch ex As DataBaseException
+                Throw ex
+            Catch ex As SqlException
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function ResetSoftwareUserPasswordforMe(YourSoftwareUserId As Int64, YourUserId As Int64) As R2CoreSoftWareUserSecurity
+            Dim CmdSql As New SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
                 Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
                 Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 Dim InstanceSoftwareUser = New R2CoreSoftwareUsersManager(_DateTimeService, _SoftwareUserService)

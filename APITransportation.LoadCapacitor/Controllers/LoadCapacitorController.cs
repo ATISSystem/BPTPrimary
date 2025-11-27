@@ -398,8 +398,8 @@ namespace APITransportation.LoadCapacitor.Controllers
         {
             try
             {
-                var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var Load = Content.Load;
 
@@ -409,7 +409,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 var newLoadId = InstanceLoadManipulation.LoadRegistering(Load, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { newLoadId = newLoadId }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)

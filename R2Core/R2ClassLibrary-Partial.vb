@@ -39,7 +39,6 @@ Imports R2Core.SecurityAlgorithmsManagement.ExpressionValidationAlgorithms.Excep
 Imports R2Core.PermissionManagement.Exceptions
 
 Imports PcPosDll
-Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
 Imports R2Core.SecurityAlgorithmsManagement.AESAlgorithms
 Imports R2Core.MonetarySupply
 Imports R2Core.Email.Exceptions
@@ -301,7 +300,9 @@ Namespace MonetaryCreditSupplySources
     End Class
 
     Public MustInherit Class R2CoreMonetaryCreditSupplySourcesManagement
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
+        Private Shared _DateTimeService = New R2DateTimeService
+        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
+
 
         Public Shared Function GetNSSMonetaryCreditSupplySource(YourMCSSId As String) As R2CoreStandardMonetaryCreditSupplySourceStructure
             Try
@@ -360,7 +361,7 @@ Namespace MonetaryCreditSupplySources
         Public Shared Function GetMonetaryCreditSupplySourceInstance(YourNSS As R2CoreStandardMonetaryCreditSupplySourceStructure, YourAmount As Int64) As R2CoreMonetaryCreditSupplySource
             Try
                 Dim AssemblyClassName As String = YourNSS.AssemblyPath
-                Dim Instance As Object = Activator.CreateInstance(Type.GetType(AssemblyClassName), New Object() {YourAmount})
+                Dim Instance As Object = Activator.CreateInstance(Type.GetType(AssemblyClassName), New Object() {YourAmount, _DateTimeService})
                 'Dim Instance As Object = Activator.CreateInstance(Type.GetType("R2Core.MonetaryCreditSupplySources.ShepaPaymentGate.R2CoreShepaPaymentGate,R2Core"), New Object() {YourAmount})
                 Return Instance
             Catch ex As Exception
@@ -373,13 +374,16 @@ Namespace MonetaryCreditSupplySources
 
     Public MustInherit Class R2CoreMonetaryCreditSupplySource
 
-        Public Sub New(YourAmount As Int64)
+        Protected _DateTimeService As IR2DateTimeService
+        Public Sub New(YourAmount As Int64, YourDateTimeService As IR2DateTimeService)
             Try
                 _Amount = YourAmount
+                _DateTimeService = YourDateTimeService
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Sub
+
 
         Protected _Amount As Int64 = 0
         <Browsable(False)>
@@ -437,15 +441,8 @@ Namespace MonetaryCreditSupplySources
         Public Class R2CoreCash
             Inherits MonetaryCreditSupplySources.R2CoreMonetaryCreditSupplySource
 
-            Private _DateTimeService As R2DateTimeService
-
-            Public Sub New(YourAmount As Int64)
-                MyBase.New(YourAmount)
-                Try
-                    _DateTimeService = New R2DateTimeService
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
+            Public Sub New(YourAmount As Int64, YourDateTimeService As IR2DateTimeService)
+                MyBase.New(YourAmount, YourDateTimeService)
             End Sub
 
             Public Overrides Sub Initialize()
@@ -482,10 +479,8 @@ Namespace MonetaryCreditSupplySources
                 Public WithEvents _SearchPos As PcPosDiscovery = New PcPosDiscovery
                 Public Event SearchAsyncCompleted(ResultCount As Int16, Description As String)
 
-                Private _DateTimeService As IR2DateTimeService
                 Public Sub New(YourAmount As Int64, YourDateTimeService As IR2DateTimeService)
-                    MyBase.New(YourAmount)
-                    _DateTimeService = YourDateTimeService
+                    MyBase.New(YourAmount, YourDateTimeService)
                 End Sub
 
                 Public ReadOnly Property GetTargetPosIPAddress As String
@@ -615,10 +610,8 @@ Namespace MonetaryCreditSupplySources
         Public Class R2CoreZarrinPalPaymentGate
             Inherits MonetaryCreditSupplySources.R2CoreMonetaryCreditSupplySource
 
-            Private _DateTimeService As IR2DateTimeService
             Public Sub New(YourAmount As Int64, YourDateTimeService As IR2DateTimeService)
-                MyBase.New(YourAmount)
-                _DateTimeService = YourDateTimeService
+                MyBase.New(YourAmount, YourDateTimeService)
             End Sub
 
             Public Overrides Sub Initialize()
@@ -713,10 +706,8 @@ Namespace MonetaryCreditSupplySources
         Public Class R2CoreShepaPaymentGate
             Inherits MonetaryCreditSupplySources.R2CoreMonetaryCreditSupplySource
 
-            Private _DateTimeService As IR2DateTimeService
             Public Sub New(YourAmount As Int64, YourDateTimeService As IR2DateTimeService)
-                MyBase.New(YourAmount)
-                _DateTimeService = YourDateTimeService
+                MyBase.New(YourAmount, YourDateTimeService)
             End Sub
 
             Public Overrides Sub Initialize()
@@ -774,10 +765,8 @@ Namespace MonetaryCreditSupplySources
         Public Class R2CoreAqayepardakhtPaymentGate
             Inherits MonetaryCreditSupplySources.R2CoreMonetaryCreditSupplySource
 
-            Private _DateTimeService As IR2DateTimeService
             Public Sub New(YourAmount As Int64, YourDateTimeService As IR2DateTimeService)
-                MyBase.New(YourAmount)
-                _DateTimeService = YourDateTimeService
+                MyBase.New(YourAmount, YourDateTimeService)
             End Sub
 
             Public Overrides Sub Initialize()
@@ -786,6 +775,8 @@ Namespace MonetaryCreditSupplySources
 
             Public Overrides Sub DoCreditSupply()
                 Try
+                    'Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+
                     Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                     Dim requesturl As String
                     requesturl = InstanceConfiguration.GetConfigString(R2CoreConfigurations.AqayepardakhtPaymentGate, 1) + "&pin=" + InstanceConfiguration.GetConfigString(R2CoreConfigurations.AqayepardakhtPaymentGate, 0) + "&amount=" + (_Amount / 10).ToString() +
@@ -821,7 +812,9 @@ Namespace MonetaryCreditSupplySources
 
             Public Overrides Sub DoVerification(YourAuthority As String)
                 Try
+                    'Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                     Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+
                     Dim url As String = String.Empty
                     url = InstanceConfiguration.GetConfigString(R2CoreConfigurations.AqayepardakhtPaymentGate, 4) + "&pin=" + InstanceConfiguration.GetConfigString(R2CoreConfigurations.AqayepardakhtPaymentGate, 0) + "&amount=" + (_Amount / 10).ToString() + "&transid=" + YourAuthority
                     Dim client = New RestClient(url)
@@ -2008,23 +2001,16 @@ Namespace PredefinedMessagesManagement
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
-
         Public Function GetNSS(YourMSGId As Int64) As R2CoreStandardPredefinedMessageStructure
             Try
-                'Return New R2CoreStandardPredefinedMessageStructure(0, String.Empty, String.Empty, String.Empty, String.Empty, 0, Color.Red, 21, Date.Now, String.Empty, True, True, False)
                 Dim Ds As DataSet
-                'If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblPredefinedMessages Where MsgId  = " & YourMSGId & " And Deleted=0", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New PredefinedMessageNotFoundException
-
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblPredefinedMessages Where MsgId  = " & YourMSGId & " And Deleted=0", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New PredefinedMessageNotFoundException
-
-
                 Return New R2CoreStandardPredefinedMessageStructure(Ds.Tables(0).Rows(0).Item("MsgId"), Ds.Tables(0).Rows(0).Item("MsgName").trim, Ds.Tables(0).Rows(0).Item("MsgTitle").trim, Ds.Tables(0).Rows(0).Item("MsgContent").trim, Ds.Tables(0).Rows(0).Item("Description").trim, Ds.Tables(0).Rows(0).Item("InputLanguageType"), Color.FromName(Ds.Tables(0).Rows(0).Item("MsgColor").trim), Ds.Tables(0).Rows(0).Item("UserId"), Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi").trim, Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("Deleted"))
             Catch ex As PredefinedMessageNotFoundException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
-
         End Function
 
         'BPTChanged
@@ -2312,14 +2298,17 @@ Namespace EntityRelationManagement
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
-                If YourDeactive = RelationDeactiveTypes.E1Deactive Then
-                    CmdSql.CommandText = "Update R2Primary.dbo.TblEntityRelations Set RelationActive=0 Where E1=" & YourNSSEntityRelation.E1 & " and ERTypeId=" & YourNSSEntityRelation.ERTypeId & ""
-                ElseIf YourDeactive = RelationDeactiveTypes.E2Deactive Then
-                    CmdSql.CommandText = "Update R2Primary.dbo.TblEntityRelations Set RelationActive=0 Where E2=" & YourNSSEntityRelation.E2 & " and ERTypeId=" & YourNSSEntityRelation.ERTypeId & ""
-                ElseIf YourDeactive = RelationDeactiveTypes.BothDeactive Then
-                    CmdSql.CommandText = "Update R2Primary.dbo.TblEntityRelations Set RelationActive=0 Where (E1=" & YourNSSEntityRelation.E1 & " or E2=" & YourNSSEntityRelation.E2 & ") and ERTypeId=" & YourNSSEntityRelation.ERTypeId & ""
-                ElseIf YourDeactive = RelationDeactiveTypes.None Then
-                End If
+                'If YourDeactive = RelationDeactiveTypes.E1Deactive Then
+                '    CmdSql.CommandText = "Update R2Primary.dbo.TblEntityRelations Set RelationActive=0 Where E1=" & YourNSSEntityRelation.E1 & " and ERTypeId=" & YourNSSEntityRelation.ERTypeId & ""
+                'ElseIf YourDeactive = RelationDeactiveTypes.E2Deactive Then
+                '    CmdSql.CommandText = "Update R2Primary.dbo.TblEntityRelations Set RelationActive=0 Where E2=" & YourNSSEntityRelation.E2 & " and ERTypeId=" & YourNSSEntityRelation.ERTypeId & ""
+                'ElseIf YourDeactive = RelationDeactiveTypes.BothDeactive Then
+                '    CmdSql.CommandText = "Update R2Primary.dbo.TblEntityRelations Set RelationActive=0 Where (E1=" & YourNSSEntityRelation.E1 & " or E2=" & YourNSSEntityRelation.E2 & ") and ERTypeId=" & YourNSSEntityRelation.ERTypeId & ""
+                'ElseIf YourDeactive = RelationDeactiveTypes.None Then
+                'End If
+                'CmdSql.ExecuteNonQuery()
+
+                CmdSql.CommandText = "Delete R2Primary.dbo.TblEntityRelations Where (E1=" & YourNSSEntityRelation.E1 & " or E2=" & YourNSSEntityRelation.E2 & ") and ERTypeId=" & YourNSSEntityRelation.ERTypeId & ""
                 CmdSql.ExecuteNonQuery()
 
                 CmdSql.CommandText = "Select Top 1 ERId From R2Primary.dbo.TblEntityRelations With (tablockx) Order By ERId Desc"
@@ -2369,6 +2358,8 @@ Namespace EntityRelationManagement
             Try
                 Cmdsql.Connection.Open()
                 Cmdsql.Transaction = Cmdsql.Connection.BeginTransaction
+                Cmdsql.CommandText = "Delete R2Primary.dbo.TblEntityRelations Where ERTypeId=" & YourEntityRelationTypeId & " and E1=" & YourE1Id & ""
+                Cmdsql.ExecuteNonQuery()
                 For Loopx As Int64 = 0 To YourE2Ids.Count - 1
                     Cmdsql.CommandText = "Select Top 1 ERId From R2Primary.dbo.TblEntityRelations With (tablockx) Order By ERId Desc"
                     Cmdsql.ExecuteNonQuery()
@@ -2538,6 +2529,8 @@ Namespace PermissionManagement
             Try
                 Cmdsql.Connection.Open()
                 Cmdsql.Transaction = Cmdsql.Connection.BeginTransaction
+                Cmdsql.CommandText = "Delete R2Primary.dbo.TblPermissions Where PermissionTypeId=" & YourPermissionTypeId & " and EntityIdFirst=" & YourEntityIdFirst & ""
+                Cmdsql.ExecuteNonQuery()
                 For Loopx As Int64 = 0 To YourEntityIdsSecond.Count - 1
                     Cmdsql.CommandText = "Insert Into R2Primary.dbo.TblPermissions(EntityIdFirst,EntityIdSecond,PermissionTypeId,RelationActive) 
                                           Values(" & YourEntityIdFirst & "," & YourEntityIdsSecond(Loopx) & "," & YourPermissionTypeId & ",1)"

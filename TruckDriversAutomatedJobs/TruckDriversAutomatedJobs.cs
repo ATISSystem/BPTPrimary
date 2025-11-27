@@ -32,12 +32,15 @@ namespace TruckDriversAutomatedJobs
         private bool _FailStatus = true;
         private ISubscriber _Subscriber = null;
         private R2DateTimeService _DateTimeService;
+        private RedisConnectorHelper _RCH;
+
 
         public TruckDriversAutomatedJobs()
         {
             InitializeComponent();
             _DateTimeService = new R2DateTimeService();
             _AutomatedJobsTimer.Elapsed += _AutomatedJobsTimer_Elapsed;
+            _RCH = new RedisConnectorHelper();
         }
 
         private void _AutomatedJobsTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -124,7 +127,7 @@ namespace TruckDriversAutomatedJobs
                 _AutomatedJobsTimer.Enabled = true;
                 _AutomatedJobsTimer.Start();
 
-                _Subscriber = RedisConnectorHelper.Connection.GetSubscriber();
+                _Subscriber = _RCH.Connection.GetSubscriber();
                 _Subscriber.Subscribe(R2CorePubSubChannels.UserAuthenticated, new Action<StackExchange.Redis.RedisChannel, StackExchange.Redis.RedisValue>(InitializeTurnInfo));
                 _Subscriber.Subscribe(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, new Action<StackExchange.Redis.RedisChannel, StackExchange.Redis.RedisValue>(SetTurnInfo));
                 EventLog.WriteEntry("TruckDriversAutomatedJobs", "TruckDriversAutomatedJobs Start ...", EventLogEntryType.SuccessAudit);

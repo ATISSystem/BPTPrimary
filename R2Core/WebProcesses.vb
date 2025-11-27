@@ -8,6 +8,7 @@ Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.EntityRelationManagement
+Imports R2Core.LoggingManagement
 Imports R2Core.PublicProc
 Imports R2Core.SoftwareUserManagement
 Imports R2Core.WebProcessesManagement.Exceptions

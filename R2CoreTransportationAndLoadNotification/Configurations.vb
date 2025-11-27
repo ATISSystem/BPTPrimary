@@ -2,10 +2,12 @@
 
 
 Imports R2Core.ConfigurationManagement
+Imports R2Core.ConfigurationOfDevices
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
+Imports R2Core.PublicProc
 Imports R2CoreTransportationAndLoadNotification.ConfigurationsManagement.Exceptions
 Imports System.Data.SqlClient
 Imports System.Reflection
@@ -353,5 +355,143 @@ Namespace ConfigurationsManagement
         End Class
 
     End Namespace
+
+End Namespace
+
+'BPTChanged
+Namespace ConfigurationOfLoadAnnouncement
+
+    'BPTChanged
+    Public MustInherit Class R2CoreTransportationAndLoadNotificationConfigurationOfLoadAnnouncement
+        Public Shared ReadOnly Property None As Int64 = 0
+
+
+    End Class
+
+    'BPTChanged
+    Public Class R2CoreTransportationAndLoadNotificationRawConfigurationOfLoadAnnouncement
+        Public COLAId As Int64
+        Public COLAName As String
+        Public COLATitle As String
+        Public AnnouncementId As Int64
+        Public AnnouncementSGId As Int64
+        Public COLAIndex As Int64
+        Public COLAIndexTitle As String
+        Public Description As String
+        Public COLAValue As String
+    End Class
+
+    'BPTChanged
+    Public Class R2CoreTransportationAndLoadNotificationConfigurationOfLoadAnnouncementManager
+        Private InstanceSqlDataBox As R2CoreSqlDataBOXManager
+        Private _DateTimeService As IR2DateTimeService
+
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+            InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
+        End Sub
+
+        Public Function GetAllConfigurationOfLoadAnnouncement(YourImmediately As Boolean) As String
+            Try
+                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                        "Select ConfigurationOfLoadAnnouncement.COLAId,ConfigurationOfLoadAnnouncement.COLAName,ConfigurationOfLoadAnnouncement.COLATitle ,
+                                ConfigurationOfLoadAnnouncement.AnnouncementId,Announcements.AnnouncementTitle,ConfigurationOfLoadAnnouncement.AnnouncementSGId,AnnouncementSubGroups.AnnouncementSGTitle,ConfigurationOfLoadAnnouncement.COLAIndex ,
+	                            ConfigurationOfLoadAnnouncement.COLAIndexTitle,ConfigurationOfLoadAnnouncement.Description ,ConfigurationOfLoadAnnouncement.COLAValue  
+                         from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationOfLoadAnnouncement as ConfigurationOfLoadAnnouncement 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On  ConfigurationOfLoadAnnouncement.AnnouncementId=Announcements.AnnouncementId 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On ConfigurationOfLoadAnnouncement.AnnouncementSGId=AnnouncementSubGroups.AnnouncementSGId 
+                         Where ConfigurationOfLoadAnnouncement.Active=1
+                         Order By ConfigurationOfLoadAnnouncement.COLAId,ConfigurationOfLoadAnnouncement.COLAIndex,
+                                  ConfigurationOfLoadAnnouncement.AnnouncementId ,ConfigurationOfLoadAnnouncement.AnnouncementSGId 
+                         for JSON Path")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                        "Select ConfigurationOfLoadAnnouncement.COLAId,ConfigurationOfLoadAnnouncement.COLAName,ConfigurationOfLoadAnnouncement.COLATitle ,
+                                ConfigurationOfLoadAnnouncement.AnnouncementId,Announcements.AnnouncementTitle,ConfigurationOfLoadAnnouncement.AnnouncementSGId,AnnouncementSubGroups.AnnouncementSGTitle,ConfigurationOfLoadAnnouncement.COLAIndex ,
+	                            ConfigurationOfLoadAnnouncement.COLAIndexTitle,ConfigurationOfLoadAnnouncement.Description ,ConfigurationOfLoadAnnouncement.COLAValue  
+                         from R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationOfLoadAnnouncement as ConfigurationOfLoadAnnouncement 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On  ConfigurationOfLoadAnnouncement.AnnouncementId=Announcements.AnnouncementId 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On ConfigurationOfLoadAnnouncement.AnnouncementSGId=AnnouncementSubGroups.AnnouncementSGId 
+                         Where ConfigurationOfLoadAnnouncement.Active=1
+                         Order By ConfigurationOfLoadAnnouncement.COLAId,ConfigurationOfLoadAnnouncement.COLAIndex,
+                                  ConfigurationOfLoadAnnouncement.AnnouncementId ,ConfigurationOfLoadAnnouncement.AnnouncementSGId 
+                         for JSON Path", 32767, Ds, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Sub ConfigurationOfLoadAnnouncementRegistering(YourRawConfigurationOfLoadAnnouncement As R2CoreTransportationAndLoadNotificationRawConfigurationOfLoadAnnouncement)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationOfLoadAnnouncement(COLAId,COLAName,COLATitle,AnnouncementId,AnnouncementSGId,COLAIndex,
+        	                                                                                       COLAIndexTitle,Description,COLAValue,Template,Active)
+                                      Values(" & YourRawConfigurationOfLoadAnnouncement.COLAId & ",'" & YourRawConfigurationOfLoadAnnouncement.COLAName & "','" & YourRawConfigurationOfLoadAnnouncement.COLATitle & "',
+                                             " & YourRawConfigurationOfLoadAnnouncement.AnnouncementId & "," & YourRawConfigurationOfLoadAnnouncement.AnnouncementSGId & ",
+                                             " & YourRawConfigurationOfLoadAnnouncement.COLAIndex & ",'" & YourRawConfigurationOfLoadAnnouncement.COLAIndexTitle & "','" & YourRawConfigurationOfLoadAnnouncement.Description & "',
+                                             '" & YourRawConfigurationOfLoadAnnouncement.COLAValue & "',0,1)"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub ConfigurationOfLoadAnnouncementEditing(YourRawConfigurationOfLoadAnnouncement As R2CoreTransportationAndLoadNotificationRawConfigurationOfLoadAnnouncement)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationOfLoadAnnouncement 
+                                      Set COLAValue='" & YourRawConfigurationOfLoadAnnouncement.COLAValue & "'
+                                      Where COLAId=" & YourRawConfigurationOfLoadAnnouncement.COLAId & " and COLAIndex=" & YourRawConfigurationOfLoadAnnouncement.COLAIndex & " and AnnouncementId=" & YourRawConfigurationOfLoadAnnouncement.AnnouncementId & " and AnnouncementSGId=" & YourRawConfigurationOfLoadAnnouncement.AnnouncementSGId & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub ConfigurationOfLoadAnnouncementDeleting(YourCOLAId As Int64, YourCOLAIndex As Int64, YourAnnouncementId As Int64, YourAnnouncementSGId As Int64)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblConfigurationOfLoadAnnouncement  
+                                      Where COLAId=" & YourCOLAId & " and COLAIndex=" & YourCOLAIndex & " and AnnouncementId=" & YourAnnouncementId & " and AnnouncementSGId=" & YourAnnouncementSGId & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+    End Class
+
 
 End Namespace

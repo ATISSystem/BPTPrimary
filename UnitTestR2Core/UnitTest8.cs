@@ -32,6 +32,7 @@ using R2Core.SMS.SMSSendRecive;
 using R2Core.SMS.SMSOwners;
 using PayanehClassLibrary.Turns;
 using R2CoreTransportationAndLoadNotification.LoadSedimentation;
+using R2CoreTransportationAndLoadNotification.Announcements;
 
 namespace LoadCapacitor
 {
@@ -41,8 +42,8 @@ namespace LoadCapacitor
         [TestMethod]
         public void TestMethod1()
         {
-            var InstanceLoadSedimentation = new R2CoreTransportationAndLoadNotificationLoadSedimentationManager(new R2DateTimeService());
-            InstanceLoadSedimentation.SedimentingProcess(1);
+            var InstanceLoadSedimentation = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(new R2DateTimeService());
+            InstanceLoadSedimentation.AnnouncementRegistering(new R2CoreTransportationAndLoadNotificationAnnouncement { AnnouncementId=0, Active=true , AnnouncementTitle= "تريلي برون شهري - صادراتي" });
 
             var InstanceTurn = new PayanehClassLibraryTurnManager(new R2DateTimeService());
             InstanceTurn.AutomaticTurnRegistering();
@@ -61,7 +62,7 @@ namespace LoadCapacitor
             //sms1.Sending();
 
             var xxx = new R2CoreRawLog { LogTypeId = 0, Description = "22", MessageDetail1 = "AnnouncementGroupId", MessageDetail2 = "", MessageDetail3 = "", UserId = 21 };
-            R2CoreLoggingManager.RegisterLog(new Exception("654321"));
+            (new R2CoreLoggingManager()).RegisterLog(new Exception("654321"));
 
             var InstanceSoftwareUsers = new R2CoreParkingSystemSoftwareUsersManager(new R2DateTimeService() , new SoftwareUserService(21));
             var Instance = new R2Core.SoftwareUserManagement.R2CoreSoftwareUsersManager(new R2DateTimeService (),null );
@@ -93,13 +94,13 @@ namespace LoadCapacitor
             //iNSTANCEAPIHelper.GetAPIDateTime();
 
 
-            var InstanceConectionStrings = new R2Core.ConfigurationManagement.R2CoreConectionStringsManager();
+            //var InstanceConectionStrings = new R2Core.ConfigurationManagement.R2CoreConectionStringsManager();
             //InstanceConectionStrings.GetSMSDBSubscriptionConnectionString();
 
             //var InstanceSession = new R2Core.SessionManagement.R2CoreSessionManager();
             //var SessionStartBox = InstanceSession.StartSession();
 
-            R2Core.LoggingManagement.R2CoreLoggingManager.RegisterLog( new R2CoreRawLog { LogTypeId = 0, Description = "14040623", MessageDetail1 = "1", MessageDetail2 = "2", MessageDetail3 = "3", UserId = 21 });
+            (new R2Core.LoggingManagement.R2CoreLoggingManager()).RegisterLog( new R2CoreRawLog { LogTypeId = 0, Description = "14040623", MessageDetail1 = "1", MessageDetail2 = "2", MessageDetail3 = "3", UserId = 21 });
             return;
 
             //var y = new R2DateTime();

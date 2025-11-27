@@ -232,12 +232,11 @@ Namespace MoneyWalletManagement
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
-
-        Public Function GetMoneyWallet(YourSoftwareuser As R2CoreSoftwareUser) As R2CoreMoneyWallet
+        Public Function GetMoneyWallet(YourSoftwareuser As R2CoreSoftwareUser, YourImmediately As Boolean) As R2CoreMoneyWallet
             Dim InstanceMoneyWallet = New R2Core.MoneyWallet.MoneyWallet.R2CoreMoneyWalletManager(_DateTimeService)
             Try
                 Dim SqlString = String.Empty
-                If YourSoftwareuser.UserTypeId = 1 Or YourSoftwareuser.UserTypeId = 2 Then
+                If YourSoftwareuser.UserTypeId() = 1 Or YourSoftwareuser.UserTypeId() = 2 Or YourSoftwareuser.UserTypeId() = 4 Or YourSoftwareuser.UserTypeId() = 5 Or YourSoftwareuser.UserTypeId() = 6 Or YourSoftwareuser.UserTypeId() = 8 Or YourSoftwareuser.UserTypeId() = 9 Or YourSoftwareuser.UserTypeId() = 10 Or YourSoftwareuser.UserTypeId() = 11 Or YourSoftwareuser.UserTypeId() = 12 Or YourSoftwareuser.UserTypeId() = 13 Or YourSoftwareuser.UserTypeId() = 14 Then
                     SqlString = "select  Top 1 SoftwareUsersRelationMoneyWallet.CardId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
                                     Inner Join R2Primary.dbo.TblSoftwareUsersRelationMoneyWallet as SoftwareUsersRelationMoneyWallet On SoftwareUsers.UserId=SoftwareUsersRelationMoneyWallet.UserId 
                                  Where SoftwareUsers.UserId=" & YourSoftwareuser.UserId & "  and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and SoftwareUsersRelationMoneyWallet.RelationActive=1"
@@ -268,11 +267,15 @@ Namespace MoneyWalletManagement
                                  Where SoftwareUsers.UserId=" & YourSoftwareuser.UserId & " and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and FPCs.Active=1"
                 End If
                 Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, SqlString, 300, Ds, New Boolean).GetRecordsCount <> 0 Then
-                    Return InstanceMoneyWallet.GetMoneyWallet(Convert.ToInt64(Ds.Tables(0).Rows(0).Item("CardId")), True)
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(SqlString)
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New SoftwareUserMoneyWalletNotFoundException
                 Else
-                    Throw New SoftwareUserMoneyWalletNotFoundException
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, SqlString, 300, Ds, New Boolean).GetRecordsCount = 0 Then Throw New SoftwareUserMoneyWalletNotFoundException
                 End If
+                Return InstanceMoneyWallet.GetMoneyWallet(Convert.ToInt64(Ds.Tables(0).Rows(0).Item("CardId")), True)
             Catch ex As SoftwareUserMoneyWalletNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -309,16 +312,28 @@ Namespace MoneyWalletManagement
 
         End Function
 
-        Public Function GetMoneyWalletfromTransportCompanyId(YourTransportCompanyId As Int64) As R2CoreMoneyWallet
+        Public Function GetMoneyWalletfromTransportCompanyId(YourTransportCompanyId As Int64, YourImmediately As Boolean) As R2CoreMoneyWallet
             Try
-                Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
                        "Select Top 1 MoneyWallets.CardId as MoneyWalletId,MoneyWallets.CardNo as MoneyWalletCode,MoneyWallets.Charge as Balance
                         from R2Primary.dbo.TblRFIDCards as MoneyWallets 
                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationMoneyWallets as TCRMoneyWallets On MoneyWallets.CardId=TCRMoneyWallets.CardId 
                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On TCRMoneyWallets.TCId=TransportCompanies.TCId 
-                        Where MoneyWallets.Active=1 and TransportCompanies.TCId=" & YourTransportCompanyId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then Throw New RelatedMoneyWalletNotFoundException
-                Return New R2CoreMoneyWallet With {.MoneyWalletId = DS.Tables(0).Rows(0).Item("MoneyWalletId"), .MoneyWalletCode = DS.Tables(0).Rows(0).Item("MoneyWalletCode").trim, .Balance = DS.Tables(0).Rows(0).Item("Balance")}
+                        Where MoneyWallets.Active=1 and TransportCompanies.TCId=" & YourTransportCompanyId & "")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New RelatedMoneyWalletNotFoundException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                       "Select Top 1 MoneyWallets.CardId as MoneyWalletId,MoneyWallets.CardNo as MoneyWalletCode,MoneyWallets.Charge as Balance
+                        from R2Primary.dbo.TblRFIDCards as MoneyWallets 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationMoneyWallets as TCRMoneyWallets On MoneyWallets.CardId=TCRMoneyWallets.CardId 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies as TransportCompanies On TCRMoneyWallets.TCId=TransportCompanies.TCId 
+                        Where MoneyWallets.Active=1 and TransportCompanies.TCId=" & YourTransportCompanyId & "", 32767, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New RelatedMoneyWalletNotFoundException
+                End If
+                Return New R2CoreMoneyWallet With {.MoneyWalletId = Ds.Tables(0).Rows(0).Item("MoneyWalletId"), .MoneyWalletCode = Ds.Tables(0).Rows(0).Item("MoneyWalletCode").trim, .Balance = Ds.Tables(0).Rows(0).Item("Balance")}
             Catch ex As RelatedMoneyWalletNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -348,14 +363,7 @@ Namespace MoneyWalletManagement
             Dim InstanceCars = New R2CoreParkingSystemInstanceCarsManager()
             Dim InstanceAccounting = New R2CoreParkingSystemAccountingManager(New R2DateTimeService)
             Try
-                Dim MoneyWalletCurrentCharge As Int64 = GetMoneyWalletCharge(YourMoneyWalletId)
-                Dim myMoneyWalletReminder As Int64
-                If YourBagType = BagPayType.AddMoney Then
-                    myMoneyWalletReminder = MoneyWalletCurrentCharge + YourMblgh
-                ElseIf YourBagType = BagPayType.MinusMoney Then
-                    myMoneyWalletReminder = MoneyWalletCurrentCharge - YourMblgh
-                End If
-                InstanceAccounting.InsertAccounting(New R2CoreParkingSystemAccounting With {.AccountingTypeId = YourAccountCode, .MoneyWalletId = YourMoneyWalletId, .Mblgh = YourMblgh, .SoftwareUserId = YourSoftwareUserId})
+                InstanceAccounting.InsertAccounting(New R2CoreParkingSystemAccounting With {.AccountingTypeId = YourAccountCode, .MoneyWalletId = YourMoneyWalletId, .Mblgh = YourMblgh, .SoftwareUserId = YourSoftwareUserId, .BagPayType = YourBagType})
                 AddMinusMoneyWallet(YourMoneyWalletId, YourBagType, YourMblgh)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -697,8 +705,8 @@ Namespace MoneyWalletChargeManagement
                 If Amount > MaxChargeAmount Then Throw New ChargingAmountInvalidException
 
                 Dim WS = New R2Core.R2PrimaryWS.R2PrimaryWebService()
-                Dim PayId = WS.WebMethodPaymentRequest(R2CoreMonetaryCreditSupplySources.AqayepardakhtPaymentGate, Amount, YourUserId, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword))
-                'Dim PayId = WS.WebMethodPaymentRequest(R2CoreMonetaryCreditSupplySources.ZarrinPalPaymentGate, YourAmount, YourUserId, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword))
+                'Dim PayId = WS.WebMethodPaymentRequest(R2CoreMonetaryCreditSupplySources.AqayepardakhtPaymentGate, Amount, YourUserId, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword))
+                Dim PayId = WS.WebMethodPaymentRequest(R2CoreMonetaryCreditSupplySources.ZarrinPalPaymentGate, YourAmount, YourUserId, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword))
                 'Dim PayId = WS.WebMethodPaymentRequest(R2CoreMonetaryCreditSupplySources.ShepaPaymentGate, YourAmount, YourUserId, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword))
                 Dim InstancePaymentRequests = New R2CoreInstansePaymentRequestsManager(_DateTimeService)
                 Dim NSSPaymentRequest = InstancePaymentRequests.GetNSSPayment(PayId)
@@ -706,8 +714,8 @@ Namespace MoneyWalletChargeManagement
                     System.Threading.Thread.Sleep(500) : NSSPaymentRequest = InstancePaymentRequests.GetNSSPayment(PayId)
                 End While
                 If NSSPaymentRequest.Authority <> String.Empty Then
-                    Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceConfiguration.GetConfigString(R2CoreConfigurations.AqayepardakhtPaymentGate, 2)})
-                    'Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceConfiguration.GetConfigString(R2CoreConfigurations.ZarrinPalPaymentGate, 2)})
+                    'Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceConfiguration.GetConfigString(R2CoreConfigurations.AqayepardakhtPaymentGate, 2)})
+                    Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceConfiguration.GetConfigString(R2CoreConfigurations.ZarrinPalPaymentGate, 2)})
                     'Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceConfiguration.GetConfigString(R2CoreConfigurations.ShepaPaymentGate, 2)})
                 Else
                     Throw New PaymentWebServiceConnectingException(NSSPaymentRequest.PaymentErrors)

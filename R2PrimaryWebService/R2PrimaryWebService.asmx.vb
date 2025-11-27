@@ -26,7 +26,7 @@ Imports R2CoreTransportationAndLoadNotification.ReportManagement
 Public Class R2PrimaryWebService
     Inherits System.Web.Services.WebService
 
-    Private _DateTime As R2DateTime = New R2DateTime()
+    Private Shared _DateTimeService = New R2DateTimeService
     Private Shared _ExchangeKeyManager As New ExchangeKeyManager
 
     <WebMethod()>
@@ -178,7 +178,7 @@ Public Class R2PrimaryWebService
     Public Function WebMethodGetCurrentDateTimeMilladi(YourExchangeKey As Int64) As DateTime
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            Return _DateTime.GetCurrentDateTimeMilladi()
+            Return _DateTimeService.GetCurrentDateTimeMilladi()
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw ex
         Catch ex As ExchangeKeyNotExistException
@@ -294,7 +294,7 @@ Public Class R2PrimaryWebService
     Public Function WebMethodPaymentRequest(YourMCSSId As Int64, YourAmount As Int64, YourSoftwareUserId As Int64, YourExchangeKey As Int64) As Int64
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            Dim InstancePaymentRequests = New R2CoreInstansePaymentRequestsManager
+            Dim InstancePaymentRequests = New R2Core.MoneyWallet.PaymentRequests.R2CoreInstansePaymentRequestsManager(_DateTimeService)
             Dim PayId = InstancePaymentRequests.PaymentRequest(YourMCSSId, YourAmount, YourSoftwareUserId)
             Return PayId
         Catch ex As ExchangeKeyTimeRangePassedException
@@ -310,7 +310,7 @@ Public Class R2PrimaryWebService
     Public Function WebMethodVerificationRequest(YourMCSSId As Int64, YourAuthority As String, YourExchangeKey As Int64) As Int64
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            Dim InstancePaymentRequests = New R2CoreInstansePaymentRequestsManager
+            Dim InstancePaymentRequests = New R2CoreInstansePaymentRequestsManager(_DateTimeService)
             Dim PayId = InstancePaymentRequests.VerificationRequest(YourMCSSId, YourAuthority)
             Return PayId
         Catch ex As ExchangeKeyTimeRangePassedException

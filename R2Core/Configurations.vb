@@ -3,6 +3,8 @@
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
+Imports R2Core.LoggingManagement
+Imports R2Core.PublicProc
 Imports R2Core.RawGroups
 Imports R2Core.SoftwareUserManagement
 Imports System.Data.SqlClient
@@ -13,6 +15,7 @@ Imports System.Net.Http.Headers
 Imports System.Reflection
 Imports System.Text
 Imports System.Web.Services.Protocols
+Imports System.Web.UI
 Imports System.Xml
 
 Namespace ConfigurationManagement
@@ -656,23 +659,38 @@ Namespace ConfigurationManagement
     End Class
 
     'BPTChanged
-    Public Class R2CoreConectionStringsManager
+    Public MustInherit Class R2CoreConectionStringsManager
 
-        Private Function GetTransactionDBConnectionString(YourDBName As String) As String
+        'XML Config File
+        Private Shared Doc As XmlDocument = Nothing
+        Private Shared Sub PrepareDoc()
             Try
-                'XML Config File
-                Dim Doc = New XmlDocument()
-                Dim APPFolder = AppDomain.CurrentDomain.BaseDirectory
-                Dim FileName = "Configuration.Config"
-                Dim FilePath = Path.Combine(APPFolder, FileName)
-                If File.Exists(FilePath) Then
-                    Doc.Load(FilePath)
-                Else
-                    Throw New FileNotExistException(FilePath)
+                If Doc Is Nothing Then
+                    Dim APPFolder = AppDomain.CurrentDomain.BaseDirectory
+                    Dim FileName = "Configuration.Config"
+                    Dim FilePath = Path.Combine(APPFolder, FileName)
+                    If File.Exists(FilePath) Then
+                        Doc = New XmlDocument
+                        Doc.Load(FilePath)
+                    Else
+                        Throw New FileNotExistException(FilePath)
+                    End If
                 End If
-                Dim SMS As XmlNode = Doc.SelectSingleNode("/Configurations/ConnectionStrings/" + YourDBName)
-                Dim ConnectionString = SMS("TransactionConnectionString").InnerText
-                Return ConnectionString
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
+        End Sub
+
+        Private Shared Function GetTransactionDBConnectionString(YourDBName As String) As String
+            Try
+                Dim SMS As XmlNode = Nothing
+                Do While SMS Is Nothing
+                    PrepareDoc()
+                    SMS = Doc.SelectSingleNode("/Configurations/ConnectionStrings/" + YourDBName)
+                Loop
+                Return SMS("TransactionConnectionString").InnerText
             Catch ex As FileNotExistException
                 Throw ex
             Catch ex As Exception
@@ -680,21 +698,15 @@ Namespace ConfigurationManagement
             End Try
         End Function
 
-        Private Function GetSubscriptionDBConnectionString(YourDBName As String) As String
+        Private Shared Function GetSubscriptionDBConnectionString(YourDBName As String) As String
             Try
-                'XML Config File
-                Dim Doc = New XmlDocument()
-                Dim APPFolder = AppDomain.CurrentDomain.BaseDirectory
-                Dim FileName = "Configuration.Config"
-                Dim FilePath = Path.Combine(APPFolder, FileName)
-                If File.Exists(FilePath) Then
-                    Doc.Load(FilePath)
-                Else
-                    Throw New FileNotExistException(FilePath)
-                End If
-                Dim SMS As XmlNode = Doc.SelectSingleNode("/Configurations/ConnectionStrings/" + YourDBName)
-                Dim ConnectionString = SMS("SubscriptionConnectionString").InnerText
-                Return ConnectionString
+                Dim SMS As XmlNode = Nothing
+                Do While SMS Is Nothing
+                    PrepareDoc()
+                    SMS = Doc.SelectSingleNode("/Configurations/ConnectionStrings/" + YourDBName)
+                Loop
+                SMS = Doc.SelectSingleNode("/Configurations/ConnectionStrings/" + YourDBName)
+                Return SMS("SubscriptionConnectionString").InnerText
             Catch ex As FileNotExistException
                 Throw ex
             Catch ex As Exception
@@ -702,12 +714,20 @@ Namespace ConfigurationManagement
             End Try
         End Function
 
-        Public Function GetR2PrimarySMSSystemDBConnectionString(YourDBType As R2PrimaryDBType) As String
+        Private Shared R2PrimarySMSSystemTransactionDBConnectionString = String.Empty
+        Private Shared R2PrimarySMSSystemSubscriptionDBConnectionString = String.Empty
+        Public Shared Function GetR2PrimarySMSSystemConnectionString(YourDBType As R2PrimaryDBType) As String
             Try
                 If YourDBType = R2PrimaryDBType.TransactionDB Then
-                    Return GetTransactionDBConnectionString("R2PrimarySMSSystem")
+                    If R2PrimarySMSSystemTransactionDBConnectionString = String.Empty Then
+                        R2PrimarySMSSystemTransactionDBConnectionString = GetTransactionDBConnectionString("R2PrimarySMSSystem")
+                    End If
+                    Return R2PrimarySMSSystemTransactionDBConnectionString
                 ElseIf YourDBType = R2PrimaryDBType.SubscriptionDB Then
-                    Return GetSubscriptionDBConnectionString("R2PrimarySMSSystem")
+                    If R2PrimarySMSSystemSubscriptionDBConnectionString = String.Empty Then
+                        R2PrimarySMSSystemSubscriptionDBConnectionString = GetSubscriptionDBConnectionString("R2PrimarySMSSystem")
+                    End If
+                    Return R2PrimarySMSSystemSubscriptionDBConnectionString
                 ElseIf YourDBType = R2PrimaryDBType.None Then
                     Throw New Exception("DBType Invalid")
                 Else
@@ -720,12 +740,20 @@ Namespace ConfigurationManagement
             End Try
         End Function
 
-        Public Function GetR2PrimaryConnectionString(YourDBType As R2PrimaryDBType) As String
+        Private Shared R2PrimaryTransactionDBConnectionString = String.Empty
+        Private Shared R2PrimarySubscriptionDBConnectionString = String.Empty
+        Public Shared Function GetR2PrimaryConnectionString(YourDBType As R2PrimaryDBType) As String
             Try
                 If YourDBType = R2PrimaryDBType.TransactionDB Then
-                    Return GetTransactionDBConnectionString("R2Primary")
+                    If R2PrimaryTransactionDBConnectionString = String.Empty Then
+                        R2PrimaryTransactionDBConnectionString = GetTransactionDBConnectionString("R2Primary")
+                    End If
+                    Return R2PrimaryTransactionDBConnectionString
                 ElseIf YourDBType = R2PrimaryDBType.SubscriptionDB Then
-                    Return GetSubscriptionDBConnectionString("R2Primary")
+                    If R2PrimarySubscriptionDBConnectionString = String.Empty Then
+                        R2PrimarySubscriptionDBConnectionString = GetSubscriptionDBConnectionString("R2Primary")
+                    End If
+                    Return R2PrimarySubscriptionDBConnectionString
                 ElseIf YourDBType = R2PrimaryDBType.None Then
                     Throw New Exception("DBType Invalid")
                 Else
@@ -738,12 +766,20 @@ Namespace ConfigurationManagement
             End Try
         End Function
 
-        Public Function GetDBTransportConnectionString(YourDBType As R2PrimaryDBType) As String
+        Private Shared DBTransportTransactionDBConnectionString = String.Empty
+        Private Shared DBTransportSubscriptionDBConnectionString = String.Empty
+        Public Shared Function GetDBTransportConnectionString(YourDBType As R2PrimaryDBType) As String
             Try
                 If YourDBType = R2PrimaryDBType.TransactionDB Then
-                    Return GetTransactionDBConnectionString("DBTransport")
+                    If DBTransportTransactionDBConnectionString = String.Empty Then
+                        DBTransportTransactionDBConnectionString = GetTransactionDBConnectionString("DBTransport")
+                    End If
+                    Return DBTransportTransactionDBConnectionString
                 ElseIf YourDBType = R2PrimaryDBType.SubscriptionDB Then
-                    Return GetSubscriptionDBConnectionString("DBTransport")
+                    If DBTransportSubscriptionDBConnectionString = String.Empty Then
+                        DBTransportSubscriptionDBConnectionString = GetSubscriptionDBConnectionString("DBTransport")
+                    End If
+                    Return DBTransportSubscriptionDBConnectionString
                 ElseIf YourDBType = R2PrimaryDBType.None Then
                     Throw New Exception("DBType Invalid")
                 Else
@@ -756,12 +792,20 @@ Namespace ConfigurationManagement
             End Try
         End Function
 
-        Public Function GetR2PrimaryParkingSystemConnectionString(YourDBType As R2PrimaryDBType) As String
+        Private Shared R2PrimaryParkingSystemTransactionDBConnectionString = String.Empty
+        Private Shared R2PrimaryParkingSystemSubscriptionDBConnectionString = String.Empty
+        Public Shared Function GetR2PrimaryParkingSystemConnectionString(YourDBType As R2PrimaryDBType) As String
             Try
                 If YourDBType = R2PrimaryDBType.TransactionDB Then
-                    Return GetTransactionDBConnectionString("R2PrimaryParkingSystem")
+                    If R2PrimaryParkingSystemTransactionDBConnectionString = String.Empty Then
+                        R2PrimaryParkingSystemTransactionDBConnectionString = GetTransactionDBConnectionString("R2PrimaryParkingSystem")
+                    End If
+                    Return R2PrimaryParkingSystemTransactionDBConnectionString
                 ElseIf YourDBType = R2PrimaryDBType.SubscriptionDB Then
-                    Return GetSubscriptionDBConnectionString("R2PrimaryParkingSystem")
+                    If R2PrimaryParkingSystemSubscriptionDBConnectionString = String.Empty Then
+                        R2PrimaryParkingSystemSubscriptionDBConnectionString = GetSubscriptionDBConnectionString("R2PrimaryParkingSystem")
+                    End If
+                    Return R2PrimaryParkingSystemSubscriptionDBConnectionString
                 ElseIf YourDBType = R2PrimaryDBType.None Then
                     Throw New Exception("DBType Invalid")
                 Else
@@ -774,12 +818,20 @@ Namespace ConfigurationManagement
             End Try
         End Function
 
-        Public Function GetR2PrimaryTransportationAndLoadNotificationConnectionString(YourDBType As R2PrimaryDBType) As String
+        Private Shared R2PrimaryTransportationAndLoadNotificationTransactionDBConnectionString = String.Empty
+        Private Shared R2PrimaryTransportationAndLoadNotificationSubscriptionDBConnectionString = String.Empty
+        Public Shared Function GetR2PrimaryTransportationAndLoadNotificationConnectionString(YourDBType As R2PrimaryDBType) As String
             Try
                 If YourDBType = R2PrimaryDBType.TransactionDB Then
-                    Return GetTransactionDBConnectionString("R2PrimaryTransportationAndLoadNotification")
+                    If R2PrimaryTransportationAndLoadNotificationTransactionDBConnectionString = String.Empty Then
+                        R2PrimaryTransportationAndLoadNotificationTransactionDBConnectionString = GetTransactionDBConnectionString("R2PrimaryTransportationAndLoadNotification")
+                    End If
+                    Return R2PrimaryTransportationAndLoadNotificationTransactionDBConnectionString
                 ElseIf YourDBType = R2PrimaryDBType.SubscriptionDB Then
-                    Return GetSubscriptionDBConnectionString("R2PrimaryTransportationAndLoadNotification")
+                    If R2PrimaryTransportationAndLoadNotificationSubscriptionDBConnectionString = String.Empty Then
+                        R2PrimaryTransportationAndLoadNotificationSubscriptionDBConnectionString = GetSubscriptionDBConnectionString("R2PrimaryTransportationAndLoadNotification")
+                    End If
+                    Return R2PrimaryTransportationAndLoadNotificationSubscriptionDBConnectionString
                 ElseIf YourDBType = R2PrimaryDBType.None Then
                     Throw New Exception("DBType Invalid")
                 Else
@@ -792,12 +844,20 @@ Namespace ConfigurationManagement
             End Try
         End Function
 
-        Public Function GetTDBClientConnectionString(YourDBType As R2PrimaryDBType) As String
+        Private Shared TDBClientTransactionDBConnectionString = String.Empty
+        Private Shared TDBClientSubscriptionDBConnectionString = String.Empty
+        Public Shared Function GetTDBClientConnectionString(YourDBType As R2PrimaryDBType) As String
             Try
                 If YourDBType = R2PrimaryDBType.TransactionDB Then
-                    Return GetTransactionDBConnectionString("TDBClient")
+                    If TDBClientTransactionDBConnectionString = String.Empty Then
+                        TDBClientTransactionDBConnectionString = GetTransactionDBConnectionString("TDBClient")
+                    End If
+                    Return TDBClientTransactionDBConnectionString
                 ElseIf YourDBType = R2PrimaryDBType.SubscriptionDB Then
-                    Return GetSubscriptionDBConnectionString("TDBClient")
+                    If TDBClientSubscriptionDBConnectionString = String.Empty Then
+                        TDBClientSubscriptionDBConnectionString = GetSubscriptionDBConnectionString("TDBClient")
+                    End If
+                    Return TDBClientSubscriptionDBConnectionString
                 ElseIf YourDBType = R2PrimaryDBType.None Then
                     Throw New Exception("DBType Invalid")
                 Else
@@ -814,3 +874,202 @@ Namespace ConfigurationManagement
 
 
 End Namespace
+
+Namespace GeneralConfiguration
+
+    Public MustInherit Class R2CoreGeneralConfigurations
+        Public Shared ReadOnly Property None As Int64 = 0
+        Public Shared ReadOnly Property Pictures As Int64 = 1
+
+
+    End Class
+
+    Public Class R2CoreRawGeneralConfiguration
+        Public CId As Int64
+        Public CTitle As String
+        Public CName As String
+        Public CIndex As Int64
+        Public CIndexTitle As String
+        Public CValue As String
+        Public Description As String
+    End Class
+
+    Public Class R2CoreGeneralConfigurationManager
+        Private InstanceSqlDataBox As R2CoreSqlDataBOXManager
+        Private _DateTimeService As IR2DateTimeService
+
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+            InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
+        End Sub
+
+        Public Function GetAllOfConfigurations(YourImmediately As Boolean) As String
+            Try
+                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                        "Select CId,CTitle,CName,CIndex,CIndexTitle,CValue,Description from R2Primary.dbo.TblGeneralConfiguration Where Active=1
+                         Order By CId,CIndex for Json Auto")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                        "Select CId,CTitle,CName,CIndex,CIndexTitle,CValue,Description from R2Primary.dbo.TblGeneralConfiguration 
+                         Order By CId,CIndex for Json Auto", 32767, Ds, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Sub GeneralConfigurationEditing(YourRawGeneralConfigurationCId As R2CoreRawGeneralConfiguration)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                CmdSql.CommandText = "Update R2Primary.dbo.TblGeneralConfiguration Set CValue='" & YourRawGeneralConfigurationCId.CValue & "' Where CId=" & YourRawGeneralConfigurationCId.CId & " and CIndex=" & YourRawGeneralConfigurationCId.CIndex & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+    End Class
+
+
+End Namespace
+
+Namespace ConfigurationOfDevices
+
+    Public MustInherit Class R2CoreConfigurationsOfDevices
+        Public Shared ReadOnly Property None As Int64 = 0
+
+
+    End Class
+
+    Public Class R2CoreRawConfigurationOfDevice
+        Public CODId As Int64
+        Public CODName As String
+        Public CODTitle As String
+        Public DeviceId As Int64
+        Public DeviceTitle As String
+        Public CODIndex As Int64
+        Public CODIndexTitle As String
+        Public Description As String
+        Public CODValue As String
+    End Class
+
+    Public Class R2CoreConfigurationOfDevicesManager
+        Private InstanceSqlDataBox As R2CoreSqlDataBOXManager
+        Private _DateTimeService As IR2DateTimeService
+
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+            InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
+        End Sub
+
+        Public Function GetAllConfigurationOfDevices(YourImmediately As Boolean) As String
+            Try
+                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                        "Select ConfigurationOfDevices.CODId,ConfigurationOfDevices.CODName,ConfigurationOfDevices.CODTitle,ConfigurationOfDevices.CODIndex,ConfigurationOfDevices.CODIndexTitle,ConfigurationOfDevices.DeviceId,Devices.DeviceTitle,ConfigurationOfDevices.Description,ConfigurationOfDevices.CODValue 
+                         from R2Primary.dbo.TblConfigurationOfDevices as ConfigurationOfDevices
+                           Inner Join R2Primary.dbo.TblDevices as Devices On  ConfigurationOfDevices.DeviceId=Devices.DeviceId 
+                         Where  ConfigurationOfDevices.Active=1
+                         Order by ConfigurationOfDevices.CODId,ConfigurationOfDevices.DeviceId,ConfigurationOfDevices.CODIndex 
+                         for JSON Path")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                        "Select ConfigurationOfDevices.CODId,ConfigurationOfDevices.CODName,ConfigurationOfDevices.CODTitle,ConfigurationOfDevices.CODIndex,ConfigurationOfDevices.CODIndexTitle,ConfigurationOfDevices.DeviceId,Devices.DeviceTitle,ConfigurationOfDevices.Description,ConfigurationOfDevices.CODValue 
+                         from R2Primary.dbo.TblConfigurationOfDevices as ConfigurationOfDevices
+                           Inner Join R2Primary.dbo.TblDevices as Devices On  ConfigurationOfDevices.DeviceId=Devices.DeviceId 
+                         Where  ConfigurationOfDevices.Active=1
+                         Order by ConfigurationOfDevices.CODId,ConfigurationOfDevices.DeviceId,ConfigurationOfDevices.CODIndex 
+                         for JSON Path", 32767, Ds, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Sub ConfigurationOfDeviceEditing(YourRawConfigurationOfDevice As R2CoreRawConfigurationOfDevice)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Update R2Primary.dbo.TblConfigurationOfDevices Set CODValue='" & YourRawConfigurationOfDevice.CODValue & "' 
+                                      Where CODId=" & YourRawConfigurationOfDevice.CODId & " AND DeviceId=" & YourRawConfigurationOfDevice.DeviceId & " AND CODIndex=" & YourRawConfigurationOfDevice.CODIndex & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub ConfigurationOfDeviceRegistering(YourRawConfigurationOfDevice As R2CoreRawConfigurationOfDevice)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Insert Into R2Primary.dbo.TblConfigurationOfDevices(CODId,CODName,CODTitle,DeviceId,CODIndex,CODIndexTitle,Description,CODValue,Template,Active)
+                                      Values(" & YourRawConfigurationOfDevice.CODId & ",'" & YourRawConfigurationOfDevice.CODName & "','" & YourRawConfigurationOfDevice.CODTitle & "'," & YourRawConfigurationOfDevice.DeviceId & "," & YourRawConfigurationOfDevice.CODIndex & ",'" & YourRawConfigurationOfDevice.CODIndexTitle & "','" & YourRawConfigurationOfDevice.Description & "','" & YourRawConfigurationOfDevice.CODValue & "',0,1)"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub ConfigurationOfDeviceDeleting(YourRawConfigurationOfDevice As R2CoreRawConfigurationOfDevice)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Delete R2Primary.dbo.TblConfigurationOfDevices Where CODId=" & YourRawConfigurationOfDevice.CODId & " and CODIndex=" & YourRawConfigurationOfDevice.CODIndex & " and DeviceId=" & YourRawConfigurationOfDevice.DeviceId & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+
+    End Class
+
+
+End Namespace
+
+
+

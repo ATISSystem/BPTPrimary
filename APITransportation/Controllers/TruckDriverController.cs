@@ -134,7 +134,6 @@ namespace APITransportation.Controllers
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
 
-
         [HttpPost]
         [Route("api/TruckDriverRegisteringMobileNumber")]
         public HttpResponseMessage TruckDriverRegisteringMobileNumber()
@@ -184,7 +183,7 @@ namespace APITransportation.Controllers
 
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
                 var InstanceSMSOwners = new R2CoreParkingSystemSMSOwnersManager(new SoftwareUserService(User.UserId), _DateTimeService);
-                InstanceSMSOwners.ActivateSMSOwner(InstanceTruckDrivers.GetSoftwareUserIdfromTruckDriverId(TruckDriverId));
+                InstanceSMSOwners.ActivateSMSOwner(InstanceTruckDrivers.GetSoftwareUserIdfromTruckDriverId(TruckDriverId,true ));
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -214,7 +213,7 @@ namespace APITransportation.Controllers
 
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
                 var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(User.UserId));
-                var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(InstanceTruckDrivers.GetSoftwareUserIdfromTruckDriverId(TruckDriverId), User.UserId);
+                var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(InstanceTruckDrivers.GetSoftwareUserIdfromTruckDriverId(TruckDriverId,true ), User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(SoftWareUserSecurity), Encoding.UTF8, "application/json");

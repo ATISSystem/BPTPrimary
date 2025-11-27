@@ -703,22 +703,22 @@ Namespace Trucks
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
-                Dim InstanceMoneyWallet = New R2CoreParkingSystemInstanceTrafficCardsManager
+                Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager(_DateTimeService)
                 Dim InstanceCars = New R2CoreParkingSystemInstanceCarsManager
                 Dim InstanceDrivers = New R2CoreParkingSystemInstanceDriversManager
-                Dim MoneyWallet = InstanceMoneyWallet.GetNSSTrafficCard(YourCardId)
+                Dim MoneyWallet = InstanceMoneyWallet.GetMoneyWallet(YourCardId, True)
                 Dim TruckDriver = InstanceDrivers.GetNSSDriver(YourTruckDriverId)
 
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
                 ' حذف روابط قبلی کیف پول با پلاک های دیگر
-                CmdSql.CommandText = "Update R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars Set RelationActive=0 Where CardId=" & MoneyWallet.CardId & ""
+                CmdSql.CommandText = "Update R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars Set RelationActive=0 Where CardId=" & MoneyWallet.MoneyWalletId & ""
                 CmdSql.ExecuteNonQuery()
                 'حذف روابط قبلی پلاک با کیف پول دیگر
                 CmdSql.CommandText = "Update R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars Set RelationActive=0 Where nCarId=" & YourTruckId & ""
                 CmdSql.ExecuteNonQuery()
                 'ایجاد رابطه جدید کیف پول و پلاک
-                CmdSql.CommandText = "Insert into R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars(CardId,nCarId,RelationActive,RelationTimeStamp) Values(" & MoneyWallet.CardId & "," & YourTruckId & ",1,'2015-01-01 00:00:00.000')"
+                CmdSql.CommandText = "Insert into R2PrimaryParkingSystem.dbo.TblTrafficCardsRelationCars(CardId,nCarId,RelationActive,RelationTimeStamp) Values(" & MoneyWallet.MoneyWalletId & "," & YourTruckId & ",1,'2015-01-01 00:00:00.000')"
                 CmdSql.ExecuteNonQuery()
                 'حذف ارتباط راننده در صورت وجود با ناوگان ها
                 CmdSql.CommandText = "Delete Dbtransport.dbo.TbCarAndPerson Where nIdPerson=" & YourTruckDriverId & ""

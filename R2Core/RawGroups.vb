@@ -47,14 +47,13 @@ Namespace RawGroups
     Public Class R2CoreRawGroupsManager
 
         Private Shared InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
-            _DateTimeService = YourDateTimeService
-            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
-        End Sub
+        Private Shared _DateTimeService As IR2DateTimeService
 
         Public Shared Function GetRawGroup(YourRawGroupId As Int64) As R2CoreRawGroup
             Try
+                _DateTimeService = New R2DateTimeService
+                InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+
                 Dim Ds As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblRawGroups Where RGId=" & YourRawGroupId & "", 32767, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New R2CoreRawGroupNotFoundException

@@ -464,8 +464,8 @@ Namespace PayanehWS
         End Sub
         
         '''<remarks/>
-        <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementsPerforma"& _ 
-            "nceReport", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
+        <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementsPerformanceR"& _ 
+            "eport", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
         Public Sub WebMethodReportingInformationPrividerAnnouncementsPerformanceReport(ByVal YourDateTimeMilladi1 As Date, ByVal YourShamsiDate1 As String, ByVal YourTime1 As String, ByVal YourDateTimeMilladi2 As Date, ByVal YourShamsiDate2 As String, ByVal YourTime2 As String, ByVal YourAHId As Long, ByVal YourExchangeKey As Long)
             Me.Invoke("WebMethodReportingInformationPrividerAnnouncementsPerformanceReport", New Object() {YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourAHId, YourExchangeKey})
         End Sub
@@ -491,11 +491,11 @@ Namespace PayanehWS
         End Sub
         
         '''<remarks/>
-        <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementsPerforma"& _ 
-            "nceGeneralStatisticsReport", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
+        <System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/WebMethodReportingInformationPrividerAnnouncementsPerformanceG"& _ 
+            "eneralStatisticsReport", RequestNamespace:="http://tempuri.org/", ResponseNamespace:="http://tempuri.org/", Use:=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle:=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)>  _
         Public Sub WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReport(ByVal YourDateTimeMilladi1 As Date, ByVal YourShamsiDate1 As String, ByVal YourTime1 As String, ByVal YourDateTimeMilladi2 As Date, ByVal YourShamsiDate2 As String, ByVal YourTime2 As String, ByVal YourExchangeKey As Long)
-            Me.Invoke("WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatistic"& _ 
-                    "sReport", New Object() {YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourExchangeKey})
+            Me.Invoke("WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsRep"& _ 
+                    "ort", New Object() {YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourExchangeKey})
         End Sub
         
         '''<remarks/>
@@ -508,8 +508,8 @@ Namespace PayanehWS
             If (Me.WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportOperationCompleted Is Nothing) Then
                 Me.WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportOperationCompleted = AddressOf Me.OnWebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportOperationCompleted
             End If
-            Me.InvokeAsync("WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatistic"& _ 
-                    "sReport", New Object() {YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourExchangeKey}, Me.WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportOperationCompleted, userState)
+            Me.InvokeAsync("WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsRep"& _ 
+                    "ort", New Object() {YourDateTimeMilladi1, YourShamsiDate1, YourTime1, YourDateTimeMilladi2, YourShamsiDate2, YourTime2, YourExchangeKey}, Me.WebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportOperationCompleted, userState)
         End Sub
         
         Private Sub OnWebMethodReportingInformationPrividerAnnouncementsPerformanceGeneralStatisticsReportOperationCompleted(ByVal arg As Object)

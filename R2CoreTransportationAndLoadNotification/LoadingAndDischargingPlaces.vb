@@ -368,7 +368,7 @@ Namespace LoadingAndDischargingPlaces
 
     'BPTChanged
     Public Class RawLoadingAndDischargingPlace
-        Public Property LADPlaceId As Int64
+        Public Property LADPlaceId As Int64?
         Public Property LADPlaceTitle As String
         Public Property LADPlaceTel As String
         Public Property LADPlaceAddress As String

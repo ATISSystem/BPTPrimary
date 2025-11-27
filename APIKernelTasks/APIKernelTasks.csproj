@@ -182,7 +182,10 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
-    <Compile Include="Controllers\ConfigurationsController.cs" />
+    <Compile Include="Controllers\ConfigurationOfDevicesController.cs" />
+    <Compile Include="Controllers\ConfigurationOfLoadAnnouncementController.cs" />
+    <Compile Include="Controllers\DevicesController.cs" />
+    <Compile Include="Controllers\GeneralConfigurationController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
@@ -336,6 +339,10 @@
     <ProjectReference Include="..\APICommon\APICommon.csproj">
       <Project>{49657141-d750-4e9e-aa00-7ba8dcf767dc}</Project>
       <Name>APICommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\R2CoreTransportationAndLoadNotification\R2CoreTransportationAndLoadNotification.vbproj">
+      <Project>{ef77b294-2e31-4914-af7b-289a6a1bf8dc}</Project>
+      <Name>R2CoreTransportationAndLoadNotification</Name>
     </ProjectReference>
     <ProjectReference Include="..\R2Core\R2Core.vbproj">
       <Project>{b0651d1e-73a2-4e74-8483-6fbc60831969}</Project>

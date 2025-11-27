@@ -2140,9 +2140,12 @@ Namespace LoadAllocation
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
         Private _DateTimeService As IR2DateTimeService
+        Private _RCH As RedisConnectorHelper
+
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+            _RCH = New RedisConnectorHelper
         End Sub
 
         Private Sub LoadAllocationConditionControl(YourAHSGId As Int64, YourSeqTId As Int64, YourNativenessTypeId As Int64, YourLoadStatusId As Int64, YourRequesterId As Int64, YourTurnStatusId As Int64)
@@ -2169,7 +2172,7 @@ Namespace LoadAllocation
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
-                Dim InstancePermissions = New R2CoreInstansePermissionsManager
+                Dim InstancePermissions = New R2CorePermissionsManager
                 Dim InstanceTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
                 Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(New R2DateTimeService)
 
@@ -2207,7 +2210,7 @@ Namespace LoadAllocation
                 CmdSql.Connection.Close()
 
                 'PubSubMessaging
-                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                Dim _Subscriber = _RCH.Connection.GetSubscriber()
                 _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(YourTurnId))
 
             Catch ex As RedisException
@@ -2352,8 +2355,7 @@ Namespace LoadAllocation
                      Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as LoadingPlaces On Loads.LoadingPlaceId=LoadingPlaces.LADPlaceId
                      Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces as DischargingPlaces On Loads.DischargingPlaceId=DischargingPlaces.LADPlaceId
                      Inner Join DBTransport.dbo.tbCompany as Companies On Loads.nCompCode=Companies.nCompCode 
-                   Where LoadAllocations.TurnId=@LastTurnId and LoadAllocations.DateShamsi=R2Primary.dbo.BPTCOGregorianToPersian(GETDATE())
-                   Order By LoadAllocations.LAStatusId Asc for JSON PATH", 60, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                   Where LoadAllocations.TurnId=@LastTurnId Order By LoadAllocations.LAStatusId Asc for JSON PATH", 60, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
                 Return InstancePublicProcedures.GetIntegratedJson(DS)
             Catch ex As AnyNotFoundException
                 Throw ex
@@ -2484,6 +2486,7 @@ Namespace LoadAllocation
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
+                Dim InstancePermissions = New R2CorePermissionsManager
                 Dim InstanceTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
                 Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(New R2DateTimeService)
                 Dim InstanceLoadAllocation = New R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService)
@@ -2492,9 +2495,13 @@ Namespace LoadAllocation
                 Dim Load = InstanceLoad.GetLoadForLoadAllocationProccess(YourLoadId)
                 'نوبت
                 Dim TurnId = InstanceLoadAllocation.GetTurnIdfromLoadAllocationId(YourLAId)
-                'آیا زمان تخصیص بار برای زیرگروه سالن مورد نظر فرارسیده است
-                If InstanceTiming.GetTiming(Load.AnnouncementGroupId, Load.AnnouncementSubGroupId, _DateTimeService.GetCurrentTime) <> R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
-                    Throw New TimingNotReachedException
+
+                'کنترل مجوز کنترل تایمینگ در تخصیص بار با توجه به وضعیت بار
+                If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.LoadAllocationUseTimeHandlingByLoadStatus, Load.LoadStatusId, 0) Then
+                    'آیا زمان تخصیص بار برای زیرگروه سالن مورد نظر فرارسیده است
+                    If InstanceTiming.GetTiming(Load.AnnouncementGroupId, Load.AnnouncementSubGroupId, _DateTimeService.GetCurrentTime) <> R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
+                        Throw New TimingNotReachedException
+                    End If
                 End If
 
                 Dim Param As SqlClient.SqlParameter
@@ -2515,7 +2522,7 @@ Namespace LoadAllocation
                 CmdSql.Connection.Close()
 
                 'PubSubMessaging
-                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                Dim _Subscriber = _RCH.Connection.GetSubscriber()
                 _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(TurnId))
 
             Catch ex As RedisException

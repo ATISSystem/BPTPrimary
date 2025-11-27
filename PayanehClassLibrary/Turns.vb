@@ -1742,10 +1742,13 @@ Namespace Turns
         Private _DateTimeService As IR2DateTimeService
         Private _SoftwareUserService As ISoftwareUserService
         Private _InstanceSqlDataBox As R2CoreSqlDataBOXManager
+        Private _InstanceLogging As R2CoreLoggingManager
+
         Public Sub New(YourR2DateTimeService As IR2DateTimeService)
             _SoftwareUserService = New SoftwareUserService(Nothing)
             _DateTimeService = YourR2DateTimeService
             _InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
+            _InstanceLogging = New R2CoreLoggingManager
         End Sub
 
         Public Function GetTurnofKiosk(YourSeqTId As Int64, YourTruckId As Int64, YourTruckDriverId As Int64, YourRequesterId As Int64, YourSoftwareUser As R2CoreSoftwareUser) As Int64
@@ -1753,7 +1756,7 @@ Namespace Turns
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(_DateTimeService)
-                Dim MoneyWallet = InstanceMoneyWallet.GetMoneyWallet(YourSoftwareUser)
+                Dim MoneyWallet = InstanceMoneyWallet.GetMoneyWallet(YourSoftwareUser, False)
                 'تراکنش ثبت روابط موقت ناوگان و راننده باری و کیف پول و زیرگروه اعلام بار
                 'کلیه روابط به صورت موقت ایجاد می گردند و از طریق فیلد تایم استمپ در کل سیستم ایزوله می شوند و شناسایی می گردند
                 CmdSql.Connection.Open()
@@ -1848,9 +1851,11 @@ Namespace Turns
                 'هزینه ها 
                 Dim MoneyWallet = InstanceMoneyWallet.GetMoneyWalletfromCarId(YourTurn.TruckId, False)
                 Dim CostOfTurnRegisteringSelfGoverCost As Int64 = InstanceTurns.GetTurnCost(TurnInfo.SeqTId, False).SelfGoverCost
-                Dim CostOfTurnRegisteringTruckerAssociationCost As Int64 = InstanceTurns.GetTurnCost(TurnInfo.SeqTId, False).TruckerAssociationCost
+                Dim CostOfTurnRegisteringTruckersAssociationCost As Int64 = InstanceTurns.GetTurnCost(TurnInfo.SeqTId, False).TruckersAssociationCost
+                Dim CostOfTurnRegisteringTruckDriversAssociationCost As Int64 = InstanceTurns.GetTurnCost(TurnInfo.SeqTId, False).TruckDriversAssociationCost
                 If CostOfTurnRegisteringSelfGoverCost > 0 Then InstanceMoneyWallet.ActMoneyWalletNextStatus(MoneyWallet.MoneyWalletId, BagPayType.MinusMoney, CostOfTurnRegisteringSelfGoverCost, R2CoreParkingSystemAccountings.SherkatHazinehNobat, YourUserId)
-                If CostOfTurnRegisteringTruckerAssociationCost > 0 Then InstanceMoneyWallet.ActMoneyWalletNextStatus(MoneyWallet.MoneyWalletId, BagPayType.MinusMoney, CostOfTurnRegisteringTruckerAssociationCost, R2CoreParkingSystemAccountings.AnjomanHazinehNobat, YourUserId)
+                If CostOfTurnRegisteringTruckersAssociationCost > 0 Then InstanceMoneyWallet.ActMoneyWalletNextStatus(MoneyWallet.MoneyWalletId, BagPayType.MinusMoney, CostOfTurnRegisteringTruckersAssociationCost, R2CoreParkingSystemAccountings.AnjomanHazinehNobat, YourUserId)
+                If CostOfTurnRegisteringTruckDriversAssociationCost > 0 Then InstanceMoneyWallet.ActMoneyWalletNextStatus(MoneyWallet.MoneyWalletId, BagPayType.MinusMoney, CostOfTurnRegisteringTruckDriversAssociationCost, R2CoreParkingSystemAccountings.AnjomanHazinehNobat, YourUserId)
 
                 'احیاء نوبت
                 InstanceTurns.TurnResuscitationByUser(YourTurn.TurnId, YourUserId)
@@ -1998,10 +2003,10 @@ Namespace Turns
                             Dim TurnRegisterRequestId = InstanceTurnRegisterRequest.RealTimeTurnRegisterRequest(SeqTId, TruckId, Nothing, PayanehClassLibraryRequesters.AutomaticTurnRegistering, TurnType.Permanent, _SoftwareUserService.SystemUserId)
                             TotalTurnsSuccessed += 1
                         Catch ex As Exception
-                            R2CoreLoggingManager.RegisterLog(New R2CoreRawLog With {.LogTypeId = PayanehClassLibraryLogType.AutomaticTurnRegistering, .Description = ex.Message, .MessageDetail1 = "TruckId=" + TruckId.ToString, .MessageDetail2 = String.Empty, .MessageDetail3 = String.Empty, .UserId = _SoftwareUserService.SystemUserId})
+                            _InstanceLogging.RegisterLog(New R2CoreRawLog With {.LogTypeId = PayanehClassLibraryLogType.AutomaticTurnRegistering, .Description = ex.Message, .MessageDetail1 = "TruckId=" + TruckId.ToString, .MessageDetail2 = String.Empty, .MessageDetail3 = String.Empty, .UserId = _SoftwareUserService.SystemUserId})
                         End Try
                     Next
-                    R2CoreLoggingManager.RegisterLog(New R2CoreRawLog With {.LogTypeId = PayanehClassLibraryLogType.AutomaticTurnRegistering, .Description = MethodBase.GetCurrentMethod().Name, .MessageDetail1 = "TotalTurn=" + TotalTurn.ToString, .MessageDetail2 = "TotalTurnSuccessed=" + TotalTurnsSuccessed.ToString, .MessageDetail3 = String.Empty, .UserId = _SoftwareUserService.SystemUserId})
+                    _InstanceLogging.RegisterLog(New R2CoreRawLog With {.LogTypeId = PayanehClassLibraryLogType.AutomaticTurnRegistering, .Description = MethodBase.GetCurrentMethod().Name, .MessageDetail1 = "TotalTurn=" + TotalTurn.ToString, .MessageDetail2 = "TotalTurnSuccessed=" + TotalTurnsSuccessed.ToString, .MessageDetail3 = String.Empty, .UserId = _SoftwareUserService.SystemUserId})
                 End If
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -2024,10 +2029,11 @@ Namespace Turns
         Protected SoftwareUser As R2CoreSoftwareUser
         Protected TurnType As TurnType = TurnType.None
         Protected TurnCost As R2CoreTransportationAndLoadNotificationTurnCost
+        Protected _RCH As RedisConnectorHelper
 
         Public ReadOnly Property GetTurnCost As Int64
             Get
-                Return TurnCost.SelfGoverCost + TurnCost.TruckerAssociationCost
+                Return TurnCost.SelfGoverCost + TurnCost.TruckersAssociationCost + TurnCost.TruckDriversAssociationCost
             End Get
         End Property
 
@@ -2039,11 +2045,13 @@ Namespace Turns
 
         Public Sub New(YourR2DateTimeService As IR2DateTimeService)
             _DateTimeService = YourR2DateTimeService
+            _RCH = New RedisConnectorHelper
         End Sub
 
         Public Sub New(YourDateTimeService As IR2DateTimeService, YourSequentialTurnId As Int64, YourTruckId As Int64, YourTurnRegisteringRequestId As Int64, YourSoftwareUserId As Int64, YourRequesterId As Int64, YourTurnType As TurnType)
             Try
                 _DateTimeService = YourDateTimeService
+                _RCH = New RedisConnectorHelper
                 TurnType = YourTurnType
 
                 Dim InstanceLoadPermission = New R2CoreTransportationAndLoadNotificationLoadPermissionManager(_DateTimeService)
@@ -2152,10 +2160,11 @@ Namespace Turns
                 Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(New R2DateTimeService)
 
-                'هزینه نوبت انجمن و شرکت
+                'هزینه نوبت
                 TurnCost = InstanceTurns.GetTurnCost(SequentialTurn.SeqTurnId, False)
                 If TurnCost.SelfGoverCost > 0 Then InstanceMoneyWallet.ActMoneyWalletNextStatus(MoneyWallet.MoneyWalletId, BagPayType.MinusMoney, TurnCost.SelfGoverCost, R2CoreParkingSystemAccountings.SherkatHazinehNobat, SoftwareUser.UserId)
-                If TurnCost.TruckerAssociationCost > 0 Then InstanceMoneyWallet.ActMoneyWalletNextStatus(MoneyWallet.MoneyWalletId, BagPayType.MinusMoney, TurnCost.TruckerAssociationCost, R2CoreParkingSystemAccountings.AnjomanHazinehNobat, SoftwareUser.UserId)
+                If TurnCost.TruckersAssociationCost > 0 Then InstanceMoneyWallet.ActMoneyWalletNextStatus(MoneyWallet.MoneyWalletId, BagPayType.MinusMoney, TurnCost.TruckersAssociationCost, R2CoreParkingSystemAccountings.AnjomanHazinehNobat, SoftwareUser.UserId)
+                If TurnCost.TruckDriversAssociationCost > 0 Then InstanceMoneyWallet.ActMoneyWalletNextStatus(MoneyWallet.MoneyWalletId, BagPayType.MinusMoney, TurnCost.TruckDriversAssociationCost, R2CoreParkingSystemAccountings.AnjomanKargariHazinehNobat, SoftwareUser.UserId)
 
                 'ارسال نوبت ناوگان برای سیستم آنلاین
                 If InstanceConfiguration.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.TWS, 0) Then
@@ -2239,7 +2248,7 @@ Namespace Turns
                 DoStrategyComplementaryWorks()
 
                 'PubSubMessaging
-                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                Dim _Subscriber = _RCH.Connection.GetSubscriber()
                 _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(mynIdEnterExit))
 
             Catch ex As RedisException
@@ -2316,7 +2325,7 @@ Namespace Turns
                 DoStrategyComplementaryWorks()
 
                 'PubSubMessaging
-                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                Dim _Subscriber = _RCH.Connection.GetSubscriber()
                 _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(Turn.TurnId))
 
             Catch ex As RedisException

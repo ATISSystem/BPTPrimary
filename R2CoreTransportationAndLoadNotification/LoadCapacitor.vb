@@ -107,6 +107,7 @@ Imports StackExchange.Redis
 Imports R2CoreTransportationAndLoadNotification.PredefinedMessages
 Imports R2Core.DateTimeProvider
 Imports R2Core.SQLInjectionPrevention
+Imports System.Net
 
 
 Namespace LoadCapacitor
@@ -1853,9 +1854,12 @@ Namespace LoadCapacitor
 
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
             Private _DateTimeService As IR2DateTimeService
+            Private _RCH As RedisConnectorHelper
+
             Public Sub New(YourR2DateTimeService As IR2DateTimeService)
                 _DateTimeService = YourR2DateTimeService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+                _RCH = New RedisConnectorHelper
             End Sub
 
             Public Function GetLoadReminder(YourLoadId As Int64, YourImmediately As Boolean) As Int64
@@ -1936,7 +1940,7 @@ Namespace LoadCapacitor
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces On MyLoads.ProvinceId=Provinces.ProvinceId  
 						 Order By ProvinceName,MyLoads.TargetCityTitle for JSON AUTO"
                         Dim PubSubMessage = New PubSubMessageforCachingLoads With {.Query = SqlQuery, .CacheKey = CacheKeyLoads}
-                        Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                        Dim _Subscriber = _RCH.Connection.GetSubscriber()
                         _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.LoadsForTruckDrivers, JsonConvert.SerializeObject(PubSubMessage))
                         Throw New PleaseReTryException
                     Else
@@ -1987,7 +1991,7 @@ Namespace LoadCapacitor
             Public Sub UpdateLoadLists()
                 Try
                     Dim InstanceCache = New R2Core.Caching.R2CoreCacheManager(_DateTimeService)
-                    Dim CacheServer = RedisConnectorHelper.GetServer()
+                    Dim CacheServer = _RCH.GetServer()
                     Dim Keys = CacheServer.Keys(R2CoreTransportationAndLoadNotificationCatchDataBases.Loads)
                     For Each Key In Keys
                         Dim Value = InstanceCache.GetCache(Key, R2CoreTransportationAndLoadNotificationCatchDataBases.Loads).ToString
@@ -3609,6 +3613,7 @@ Namespace LoadCapacitor
                 Dim CmdSql As New SqlCommand
                 CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
                 Try
+
                     Dim InstanceLoadingAndDischargingPlaces = New R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager
                     Dim InstanceLoadTargets = New R2CoreTransportationAndLoadNotificationLoadTargetsManager(_DateTimeService)
                     Dim InstanceLoadSources = New R2CoreTransportationAndLoadNotificationLoadSourcesManager(_DateTimeService)
@@ -3738,7 +3743,7 @@ Namespace LoadCapacitor
                     If TommorowLoadRegisteringFlag Then
                         P = New SqlClient.SqlParameter("@LoadStatus", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.RegisteredforTommorow
                     Else
-                        P = New SqlClient.SqlParameter("@LoadStatus", SqlDbType.TinyInt) : P.Value = YourLoad.LoadStatusId
+                        P = New SqlClient.SqlParameter("@LoadStatus", SqlDbType.TinyInt) : P.Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered
                     End If
                     CmdSql.Parameters.Add(P)
                     P = New SqlClient.SqlParameter("@nBarSource", SqlDbType.BigInt) : P.Value = YourLoad.SourceCityId

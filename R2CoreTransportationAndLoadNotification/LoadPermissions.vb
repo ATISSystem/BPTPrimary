@@ -1336,9 +1336,12 @@ Namespace LoadPermission
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
         Private _DateTimeService As IR2DateTimeService
+        Private _RCH As RedisConnectorHelper
+
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+            _RCH = New RedisConnectorHelper
         End Sub
 
         Public Function GetTruckLastLoadWhichPermissioned(YourTruckId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationLoad
@@ -1497,7 +1500,7 @@ Namespace LoadPermission
                 CmdSql.Connection.Close()
 
                 'PubSubMessaging
-                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                Dim _Subscriber = _RCH.Connection.GetSubscriber()
                 _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(TurnId))
 
             Catch ex As RedisException

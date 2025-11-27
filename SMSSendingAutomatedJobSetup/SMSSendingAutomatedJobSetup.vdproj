@@ -28,7 +28,7 @@
         "Entry"
         {
         "MsmKey" = "8:_0B2603806415E14C503810833F98A58C"
-        "OwnerKey" = "8:_B75008B757A04A0BB639668C7A5F13ED"
+        "OwnerKey" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -40,7 +40,7 @@
         "Entry"
         {
         "MsmKey" = "8:_1354088BB55A716E865EC26084C39507"
-        "OwnerKey" = "8:_B75008B757A04A0BB639668C7A5F13ED"
+        "OwnerKey" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -58,7 +58,7 @@
         "Entry"
         {
         "MsmKey" = "8:_29DBC21BAEF1191EEF6BEDFA62BCD7C3"
-        "OwnerKey" = "8:_B75008B757A04A0BB639668C7A5F13ED"
+        "OwnerKey" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -70,13 +70,19 @@
         "Entry"
         {
         "MsmKey" = "8:_36B9D7F546F1ACCD03C25F9D2B69E558"
-        "OwnerKey" = "8:_B75008B757A04A0BB639668C7A5F13ED"
+        "OwnerKey" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_5E88A3807F520EB46813238B38CF5410"
-        "OwnerKey" = "8:_B75008B757A04A0BB639668C7A5F13ED"
+        "OwnerKey" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -94,7 +100,7 @@
         "Entry"
         {
         "MsmKey" = "8:_84FA326B9E38AA83F9F827CE46E1393D"
-        "OwnerKey" = "8:_B75008B757A04A0BB639668C7A5F13ED"
+        "OwnerKey" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -106,13 +112,7 @@
         "Entry"
         {
         "MsmKey" = "8:_B49610F1283651EC95C1BD48AF9FAC26"
-        "OwnerKey" = "8:_B75008B757A04A0BB639668C7A5F13ED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_B75008B757A04A0BB639668C7A5F13ED"
-        "OwnerKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -124,13 +124,13 @@
         "Entry"
         {
         "MsmKey" = "8:_BEE3D5BC1CDB33AAE29A10BF9064DA27"
-        "OwnerKey" = "8:_B75008B757A04A0BB639668C7A5F13ED"
+        "OwnerKey" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_CA10D1F839F059FBDAB3E9A728447BDD"
-        "OwnerKey" = "8:_B75008B757A04A0BB639668C7A5F13ED"
+        "OwnerKey" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -154,7 +154,7 @@
         "Entry"
         {
         "MsmKey" = "8:_D64025D551C5C255770BDEACD07319DA"
-        "OwnerKey" = "8:_B75008B757A04A0BB639668C7A5F13ED"
+        "OwnerKey" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -172,7 +172,7 @@
         "Entry"
         {
         "MsmKey" = "8:_D83E415AF8CD3FBFCACD52E3549CC032"
-        "OwnerKey" = "8:_B75008B757A04A0BB639668C7A5F13ED"
+        "OwnerKey" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -184,7 +184,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_B75008B757A04A0BB639668C7A5F13ED"
+        "OwnerKey" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -271,6 +271,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
         "Release"
         {
@@ -287,65 +295,73 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
     }
     "Deployable"
     {
         "CustomAction"
         {
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_6D7A41CD210D4CA895816EFBCD08F2C0"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_49647A95E87B4E0082381F6B7D9CA11C"
             {
             "Name" = "8:Primary output from SMSSendingAutomatedJob (Active)"
             "Condition" = "8:"
-            "Object" = "8:_B75008B757A04A0BB639668C7A5F13ED"
+            "Object" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
             "FileType" = "3:2"
             "InstallAction" = "3:4"
             "Arguments" = "8:"
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
-            "Identifier" = "8:_4C823CC9_3AB4_4AE4_AB86_9711F6634FE3"
+            "Identifier" = "8:_0175CA45_FD6F_4D18_B64C_00AD33EC2723"
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:"
             }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_8D0D20C622A34165A40AF607C854FC5F"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_A74989F13BF34E709539F19E5E8198BF"
             {
             "Name" = "8:Primary output from SMSSendingAutomatedJob (Active)"
             "Condition" = "8:"
-            "Object" = "8:_B75008B757A04A0BB639668C7A5F13ED"
-            "FileType" = "3:2"
-            "InstallAction" = "3:3"
-            "Arguments" = "8:"
-            "EntryPoint" = "8:"
-            "Sequence" = "3:1"
-            "Identifier" = "8:_C90BBF1A_BCAB_421C_92CA_EEC3B9F6FF9B"
-            "InstallerClass" = "11:TRUE"
-            "CustomActionData" = "8:"
-            }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_9D4ECF84944A4752954D475727493DF2"
-            {
-            "Name" = "8:Primary output from SMSSendingAutomatedJob (Active)"
-            "Condition" = "8:"
-            "Object" = "8:_B75008B757A04A0BB639668C7A5F13ED"
+            "Object" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
             "FileType" = "3:2"
             "InstallAction" = "3:2"
             "Arguments" = "8:"
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
-            "Identifier" = "8:_64EABAA7_D4AF_4251_85D1_AD591DF43B14"
+            "Identifier" = "8:_8825AE7C_8C0E_4A3E_9CB4_813ABB1549C2"
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:"
             }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_E2FDA6FC6D674267A9C690D74F1E7A93"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_D2EF54847A8E4FD9AD2F4553EF5D595D"
             {
             "Name" = "8:Primary output from SMSSendingAutomatedJob (Active)"
             "Condition" = "8:"
-            "Object" = "8:_B75008B757A04A0BB639668C7A5F13ED"
+            "Object" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
+            "FileType" = "3:2"
+            "InstallAction" = "3:3"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_67AF99F5_AC49_427A_9F55_CC18C66B5185"
+            "InstallerClass" = "11:TRUE"
+            "CustomActionData" = "8:"
+            }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_DB31ABF0275D439ABA01D2CF448A894D"
+            {
+            "Name" = "8:Primary output from SMSSendingAutomatedJob (Active)"
+            "Condition" = "8:"
+            "Object" = "8:_454E2A25FFC54E469CF80D9DCFD0B0AC"
             "FileType" = "3:2"
             "InstallAction" = "3:1"
             "Arguments" = "8:"
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
-            "Identifier" = "8:_FB36EF4C_8675_42E5_AAE5_A95683C4ADC2"
+            "Identifier" = "8:_BFCB712B_9806_466D_9FDF_75B74DB147FF"
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:"
             }
@@ -1360,7 +1376,7 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_B75008B757A04A0BB639668C7A5F13ED"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_454E2A25FFC54E469CF80D9DCFD0B0AC"
             {
             "SourcePath" = "8:..\\SMSSendingAutomatedJobs\\obj\\Debug\\SMSSendingAutomatedJobs.exe"
             "TargetName" = "8:"

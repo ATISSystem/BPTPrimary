@@ -322,7 +322,7 @@ namespace APITransportation.Models
         {
             public String SessionId;
             public Int64 AnnouncementId;
-            public Int64 AnnouncementSGId;
+            public Int64 AnnouncementSubGroupId;
         }
 
     }

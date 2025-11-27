@@ -26,7 +26,7 @@ namespace UnitTestR2Core
                 try
                 {
                     var x = new R2CoreTransportationAndLoadNotification.TruckDrivers.R2CoreTransportationAndLoadNotificationTruckDriversManager();
-                    var y=x.GetSoftwareUserIdfromTruckDriverId(1);
+                    var y=x.GetSoftwareUserIdfromTruckDriverId(1,true );
                     PayanehClassLibraryMClassCarTrucksManagement.GetNSSTruckBySmartCardNoWithUpdatingfromRMTO("4267898");
 
                     R2CoreTransportationAndLoadNotification.Rmto.RmtoWebService.GetNSSTruck("4267898");

@@ -117,7 +117,7 @@ namespace APITransportation.Controllers
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdRawFactoryAndProductionCenter>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var FactoryAndProductionCenter = Content.RawFPC;
-
+                
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();

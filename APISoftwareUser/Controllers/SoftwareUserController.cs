@@ -177,7 +177,7 @@ namespace APISoftwareUser.Controllers
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             {
-                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { ISSessionLive = false }), Encoding.UTF8, "application/json");
                 return response;
             }
@@ -358,7 +358,7 @@ namespace APISoftwareUser.Controllers
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService ,new SoftwareUserService(User.UserId));
-                var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(SoftwareUserId, User.UserId);
+                var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPasswordforMe(SoftwareUserId, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(SoftWareUserSecurity), Encoding.UTF8, "application/json");
@@ -589,6 +589,8 @@ namespace APISoftwareUser.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
+                //R2Core.LoggingManagement.R2CoreLoggingManager.RegisterLog(new R2Core.LoggingManagement.R2CoreRawLog { LogTypeId = 1, Description = "ChangeSoftwareUserWebProcessGroupAccess", MessageDetail1 = Content.SoftwareUserId.ToString(), MessageDetail2 = Content.PGId.ToString(), MessageDetail3 = Content.PGAccess.ToString(), UserId = 21 });
+
                 var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(User.UserId));
                 InstanceSoftwareUsers.ChangeSoftwareUserWebProcessGroupAccess(SoftwareUserId, WPGId, WPGAccess);
 
@@ -620,7 +622,9 @@ namespace APISoftwareUser.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(User.UserId));
+                //R2Core.LoggingManagement.R2CoreLoggingManager.RegisterLog(new R2Core.LoggingManagement.R2CoreRawLog { LogTypeId=2, Description= "ChangeSoftwareUserWebProcessAccess", MessageDetail1= Content.SoftwareUserId.ToString(), MessageDetail2 = Content.PId.ToString(), MessageDetail3= Content.PAccess.ToString(), UserId =21 });
+
+                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
                 InstanceSoftwareUsers.ChangeSoftwareUserWebProcessAccess(SoftwareUserId, WPId, WPAccess);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -760,11 +764,12 @@ namespace APISoftwareUser.Controllers
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceSoftwareUsers = new R2CoreParkingSystemSoftwareUsersManager(_DateTimeService, new SoftwareUserService(User.UserId));
+                var InstanceSoftwareUser = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(User.UserId));
                 var SoftwareUserComposedInf = InstanceSoftwareUsers.GetSoftwareUserComposedInf(User);
+                var RawSoftwareUser = new R2CoreRawSoftwareUserStructure { UserId = SoftwareUserComposedInf.SoftwareUserExtended.UserId, UserName = SoftwareUserComposedInf.SoftwareUserExtended.UserName, MobileNumber = SoftwareUserComposedInf.SoftwareUserExtended.MobileNumber, UserTypeId = SoftwareUserComposedInf.SoftwareUserExtended.UserTypeId, UserActive = SoftwareUserComposedInf.SoftwareUserExtended.UserActive, SMSOwnerActive = InstanceSoftwareUser.GetRawSoftwareUser(User.UserId,false).SMSOwnerActive , UserTypeTitle = SoftwareUserComposedInf.SoftwareUserExtended.SoftwareUserTypeTitle };
+                var TempComposedInf = new { RawSoftwareUser = RawSoftwareUser, MoneyWallet = SoftwareUserComposedInf.MoneyWallet};
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                var RawSoftwareUser = new R2CoreRawSoftwareUserStructure { UserId = SoftwareUserComposedInf.SoftwareUserExtended.UserId, UserName = SoftwareUserComposedInf.SoftwareUserExtended.UserName, MobileNumber = SoftwareUserComposedInf.SoftwareUserExtended.MobileNumber, UserTypeId = SoftwareUserComposedInf.SoftwareUserExtended.UserTypeId, UserActive = SoftwareUserComposedInf.SoftwareUserExtended.UserActive, UserTypeTitle = SoftwareUserComposedInf.SoftwareUserExtended.SoftwareUserTypeTitle };
-                var TempComposedInf = new { RawSoftwareUser = RawSoftwareUser, MoneyWallet = SoftwareUserComposedInf.MoneyWallet, DictCount = R2Core.DatabaseManagement.GarbageCollector._Dict.Count };
                 response.Content = new StringContent(JsonConvert.SerializeObject(TempComposedInf), Encoding.UTF8, "application/json");
                 return response;
             }

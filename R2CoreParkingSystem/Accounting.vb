@@ -13,6 +13,7 @@ Imports R2CoreParkingSystem.ProvincesAndCities
 Imports R2CoreParkingSystem.TrafficCardsManagement
 Imports R2CoreParkingSystem.AccountingManagement.ExceptionManagement
 Imports R2Core.DateTimeProvider
+Imports R2CoreParkingSystem.MoneyWalletManagement
 
 
 Namespace AccountingManagement
@@ -361,6 +362,7 @@ Namespace AccountingManagement
         Public DateTimeMilladi As DateTime
         Public Mblgh As Int64
         Public SoftwareUserId As Int64
+        Public BagPayType As BagPayType
     End Class
 
     'BPTChanged
@@ -377,9 +379,19 @@ Namespace AccountingManagement
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
+
+                Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(_DateTimeService)
+                Dim MoneyWalletCurrentCharge As Int64 = InstanceMoneyWallet.GetMoneyWalletCharge(YourAccounting.MoneyWalletId)
+                Dim myMoneyWalletReminder As Int64
+                If YourAccounting.BagPayType = BagPayType.AddMoney Then
+                    myMoneyWalletReminder = MoneyWalletCurrentCharge + YourAccounting.Mblgh
+                ElseIf YourAccounting.BagPayType = BagPayType.MinusMoney Then
+                    myMoneyWalletReminder = MoneyWalletCurrentCharge - YourAccounting.Mblgh
+                End If
+
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "insert into R2Primary.dbo.TblAccounting(CardId,EEAccountingProcessType,DateShamsiA,TimeA,DateMilladiA,PelakA,SerialA,CityA,PelakTypeA,MaabarCode,MblghA,UseridA,CurrentChargeA,ReminderChargeA) values(" & YourAccounting.MoneyWalletId & "," & YourAccounting.AccountingTypeId & ",'" & _DateTimeService.GetCurrentShamsiDate & "','" & _DateTimeService.GetCurrentTime & "','" & _DateTimeService.GetCurrentDateTimeMilladi & "','','','',0,0," & YourAccounting.Mblgh & "," & YourAccounting.SoftwareUserId & ",0,0)"
+                CmdSql.CommandText = "insert into R2Primary.dbo.TblAccounting(CardId,EEAccountingProcessType,DateShamsiA,TimeA,DateMilladiA,PelakA,SerialA,CityA,PelakTypeA,MaabarCode,MblghA,UseridA,CurrentChargeA,ReminderChargeA) values(" & YourAccounting.MoneyWalletId & "," & YourAccounting.AccountingTypeId & ",'" & _DateTimeService.GetCurrentShamsiDate & "','" & _DateTimeService.GetCurrentTime & "','" & _DateTimeService.GetCurrentDateTimeMilladi & "','','','',0,0," & YourAccounting.Mblgh & "," & YourAccounting.SoftwareUserId & "," & MoneyWalletCurrentCharge & "," & myMoneyWalletReminder & ")"
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
             Catch ex As Exception

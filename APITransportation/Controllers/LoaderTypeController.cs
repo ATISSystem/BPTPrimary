@@ -98,7 +98,6 @@ namespace APITransportation.Controllers
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
 
-
         [HttpPost]
         [Route("api/ChangeActivateStatusOfLoaderType")]
         public HttpResponseMessage ChangeActivateStatusOfLoaderType()
@@ -129,6 +128,8 @@ namespace APITransportation.Controllers
             catch (Exception ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
+
+
 
     }
 }

@@ -9,7 +9,6 @@ Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.PublicProc
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
-Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
 Imports R2Core.SQLInjectionPrevention
 Imports R2CoreTransportationAndLoadNotification.LoaderTypes.Exceptions
 Imports R2CoreTransportationAndLoadNotification.Trucks
@@ -142,7 +141,7 @@ Namespace LoaderTypes
                      Select LoaderTypes.LoaderTypeId,LoaderTypes.LoaderTypeTitle,LoaderTypes.LoaderTypeOrganizationId,LoaderTypes.LoaderTypeFixStatusId,LoaderTypeFixStatuses.LoaderTypeFixStatusTitle,LoaderTypes.Active
                      from R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes
                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypeFixStatuses as LoaderTypeFixStatuses On LoaderTypes.LoaderTypeFixStatusId=LoaderTypeFixStatuses.LoaderTypeFixStatusId 
-                     Where LoaderTypes.LoaderTypeTitle Like N'%" & YourSearchString & "%' and LoaderTypes.Deleted=0 for json path")
+                     Where LoaderTypes.LoaderTypeTitle Like N'%" & YourSearchString & "%' and Active=1 and LoaderTypes.Deleted=0 for json path")
                     Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
                 Else
@@ -150,7 +149,7 @@ Namespace LoaderTypes
                     "Select LoaderTypes.LoaderTypeId,LoaderTypes.LoaderTypeTitle,LoaderTypes.LoaderTypeOrganizationId,LoaderTypes.LoaderTypeFixStatusId,LoaderTypeFixStatuses.LoaderTypeFixStatusTitle,LoaderTypes.Active
                      from R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes
                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypeFixStatuses as LoaderTypeFixStatuses On LoaderTypes.LoaderTypeFixStatusId=LoaderTypeFixStatuses.LoaderTypeFixStatusId 
-                     Where LoaderTypes.LoaderTypeTitle Like N'%" & YourSearchString & "%' and LoaderTypes.Deleted=0 for json path", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                     Where LoaderTypes.LoaderTypeTitle Like N'%" & YourSearchString & "%' and Active=1 and LoaderTypes.Deleted=0 for json path", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
                 End If
                 Return InstancePublicProcedures.GetIntegratedJson(DS)
             Catch ex As AnyNotFoundException
@@ -235,6 +234,14 @@ Namespace LoaderTypes
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetLoaderTypeRelationAnnouncementSubGroups(YourImmediately As Boolean) As String
+            Try
+
+            Catch ex As Exception
+
             End Try
         End Function
 

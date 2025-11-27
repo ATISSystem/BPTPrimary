@@ -1159,7 +1159,7 @@ Namespace TravelTime
                        Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes On TravelTimes.LoaderTypeId=LoaderTypes.LoaderTypeId
                        Inner Join DBTransport.dbo.tbCity As SourceCities On TravelTimes.SourceCityId=SourceCities.nCityCode 
                        Inner Join DBTransport.dbo.tbCity As TargetCities On TravelTimes.TargetCityId=TargetCities.nCityCode 
-                     Where TravelTimes.LoaderTypeId=" & YourLoaderTypeId & " and TravelTimes.SourceCityId=" & YourSourceCityId & " and TravelTimes.TargetCityId=" & YourTargetCityId & " and TravelTimes.Deleted=0")
+                     Where TravelTimes.LoaderTypeId=" & YourLoaderTypeId & " and TravelTimes.SourceCityId=" & YourSourceCityId & " and TravelTimes.TargetCityId=" & YourTargetCityId & " and TravelTimes.Active=1 and TravelTimes.Deleted=0")
                     Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                     If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
                 Else
@@ -1169,7 +1169,7 @@ Namespace TravelTime
                        Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes On TravelTimes.LoaderTypeId=LoaderTypes.LoaderTypeId
                        Inner Join DBTransport.dbo.tbCity As SourceCities On TravelTimes.SourceCityId=SourceCities.nCityCode 
                        Inner Join DBTransport.dbo.tbCity As TargetCities On TravelTimes.TargetCityId=TargetCities.nCityCode 
-                     Where TravelTimes.LoaderTypeId=" & YourLoaderTypeId & " and TravelTimes.SourceCityId=" & YourSourceCityId & " and TravelTimes.TargetCityId=" & YourTargetCityId & " and TravelTimes.Deleted=0", 3600, Ds, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                     Where TravelTimes.LoaderTypeId=" & YourLoaderTypeId & " and TravelTimes.SourceCityId=" & YourSourceCityId & " and TravelTimes.TargetCityId=" & YourTargetCityId & " and TravelTimes.Active=1 and TravelTimes.Deleted=0", 32767, Ds, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
                 End If
                 Return New R2CoreTransportationAndLoadNotificationTravelTime With {.LoaderTypeId = Ds.Tables(0).Rows(0).Item("LoaderTypeId"), .SourceCityId = Ds.Tables(0).Rows(0).Item("SourceCityId"), .SourceCityName = Ds.Tables(0).Rows(0).Item("SourceCityName").trim, .TargetCityId = Ds.Tables(0).Rows(0).Item("TargetCityId"), .TargetCityName = Ds.Tables(0).Rows(0).Item("TargetCityName").trim, .TravelTime = Ds.Tables(0).Rows(0).Item("TravelTime"), .Active = Ds.Tables(0).Rows(0).Item("Active")}
             Catch ex As AnyNotFoundException

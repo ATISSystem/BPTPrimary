@@ -356,7 +356,7 @@ namespace APITransportation.Controllers
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var AnnouncementId = Content.AnnouncementId;
-                var AnnouncementSGId = Content.AnnouncementSGId;
+                var AnnouncementSGId = Content.AnnouncementSubGroupId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
@@ -388,7 +388,7 @@ namespace APITransportation.Controllers
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var AnnouncementId = Content.AnnouncementId;
-                var AnnouncementSGId = Content.AnnouncementSGId;
+                var AnnouncementSGId = Content.AnnouncementSubGroupId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 

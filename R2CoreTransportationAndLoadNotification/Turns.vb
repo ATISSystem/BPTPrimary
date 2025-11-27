@@ -112,6 +112,7 @@ Imports R2Core.PubSubMessaging
 Imports R2CoreTransportationAndLoadNotification.PubSubMessaging
 Imports StackExchange.Redis
 Imports R2Core.DateTimeProvider
+Imports R2CoreParkingSystem.TrafficCosts
 
 
 Namespace Turns
@@ -1156,10 +1157,11 @@ Namespace Turns
     Public Class R2CoreTransportationAndLoadNotificationTurnCost
         Public SequentialTurnId As Int64
         Public SelfGoverCost As Int64
-        Public TruckerAssociationCost As Int64
+        Public TruckersAssociationCost As Int64
+        Public TruckDriversAssociationCost As Int64
         Public ReadOnly Property TotalCost As Int64
             Get
-                Return SelfGoverCost + TruckerAssociationCost
+                Return SelfGoverCost + TruckersAssociationCost + TruckDriversAssociationCost
             End Get
         End Property
     End Class
@@ -1169,9 +1171,12 @@ Namespace Turns
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
         Private _DateTimeService As IR2DateTimeService
+        Private _RCH As RedisConnectorHelper
+
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+            _RCH = New RedisConnectorHelper
         End Sub
 
         Public Function GetSoftwareUserId(YourTurnId As Int64) As Int64
@@ -1437,7 +1442,7 @@ Namespace Turns
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
                 'PubSubMessaging
-                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                Dim _Subscriber = _RCH.Connection.GetSubscriber()
                 _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(YourTurnId))
 
                 'ارسال پیام ابطال نوبت به سرویس نوبت آنلاین
@@ -1497,7 +1502,7 @@ Namespace Turns
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
                 'PubSubMessaging
-                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                Dim _Subscriber = _RCH.Connection.GetSubscriber()
                 _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(YourTurnId))
 
                 'ارسال پیام ابطال نوبت به سرویس نوبت آنلاین
@@ -1556,7 +1561,7 @@ Namespace Turns
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
                 'PubSubMessaging
-                Dim _Subscriber = RedisConnectorHelper.Connection.GetSubscriber()
+                Dim _Subscriber = _RCH.Connection.GetSubscriber()
                 _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(YourTurnId))
 
                 'ارسال پیام ابطال نوبت به سرویس نوبت آنلاین
@@ -1666,6 +1671,8 @@ Namespace Turns
                 Dim DateTimeMilladiExit As DateTime = _DateTimeService.GetMilladiDateTimeFromShamsiDate(InstanceLoadPermission.GetTruckLastLoadPermission(YourTruckId, False).LoadPermissionDate, InstanceLoadPermission.GetTruckLastLoadPermission(YourTruckId, False).LoadPermissionTime)
                 Dim Diff As Int64 = R2CoreMClassPublicProcedures.GetDateDiff(DateInterval.Minute, DateTimeMilladiExit, _DateTimeService.GetCurrentDateTimeMilladi()) + 1
                 Return (Diff - TravelTime * 60)
+            Catch ex As AnyNotFoundException
+                Return 0
             Catch ex As TruckHasNotAnyLoadPermissionException
                 Return 0
             Catch ex As Exception
@@ -1716,7 +1723,7 @@ Namespace Turns
                     If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                   "Select * from R2PrimaryTransportationAndLoadNotification.dbo.TblTurnCosts Where SeqTId=" & YourSequentialTurnId & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then Throw New TurnCostNotFoundException
                 End If
-                Return New R2CoreTransportationAndLoadNotificationTurnCost With {.SequentialTurnId = Ds.Tables(0).Rows(0).Item("SeqTId"), .SelfGoverCost = Ds.Tables(0).Rows(0).Item("SelfGoverCost"), .TruckerAssociationCost = Ds.Tables(0).Rows(0).Item("TruckerAssociationCost")}
+                Return New R2CoreTransportationAndLoadNotificationTurnCost With {.SequentialTurnId = Ds.Tables(0).Rows(0).Item("SeqTId"), .SelfGoverCost = Ds.Tables(0).Rows(0).Item("SelfGoverCost"), .TruckersAssociationCost = Ds.Tables(0).Rows(0).Item("TruckersAssociationCost"), .TruckDriversAssociationCost = Ds.Tables(0).Rows(0).Item("TruckDriversAssociationCost")}
             Catch ex As TurnCostNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -1727,23 +1734,24 @@ Namespace Turns
         Public Function GetTurnCost(ByVal YourMoneyWallet As R2CoreMoneyWallet, YourSequentialTurnId As Int64) As Int64
             Try
                 Dim InstanceTrafficCards = New R2CoreParkingSystemTrafficCardsManager(New R2DateTimeService)
-                Dim TerraficCard = InstanceTrafficCards.GetTrafficCard(YourMoneyWallet.MoneyWalletId)
-                Dim TerraficCost = InstanceTrafficCards.GetTerraficCost(TerraficCard.CardTypeId, False)
+                Dim InstanceTrafficCosts = New R2CoreParkingSystemTrafficCostsManager(New R2DateTimeService)
+                Dim TrafficCard = InstanceTrafficCards.GetTrafficCard(YourMoneyWallet.MoneyWalletId)
+                Dim TrafficCost = InstanceTrafficCosts.GetTrafficCost(TrafficCard.TrafficCardId, False)
                 Dim TurnCost = GetTurnCost(YourSequentialTurnId, False)
 
                 'احراز معیار محاسبه
                 Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
-                Da.SelectCommand = New SqlCommand("Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (CardId=" & TerraficCard.CardId & ") and (MblghA<>0) and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & " or EEAccountingProcessType=" & R2CoreParkingSystemAccountings.SherkatHazinehNobat & " ) order by DateMilladiA desc")
+                Da.SelectCommand = New SqlCommand("Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (CardId=" & TrafficCard.TrafficCardId & ") and (MblghA<>0) and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.EnterType & " or EEAccountingProcessType=" & R2CoreParkingSystemAccountings.SherkatHazinehNobat & " ) order by DateMilladiA desc")
                 Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection()
                 Ds.Tables.Clear()
                 If Da.Fill(Ds) = 0 Then Return TurnCost.SelfGoverCost
 
                 'تاخیر تا آخرین اکانت نوبت
                 Dim Tavaghof As Int64 = DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTimeService.GetCurrentDateTimeMilladi())
-                If Tavaghof >= TerraficCost.DelayFromEntry Then
+                If Tavaghof >= TrafficCost.NoCostStoppageDuration Then
                     Return TurnCost.SelfGoverCost
                 Else
-                    Da.SelectCommand.CommandText = "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (CardId=" & TerraficCard.CardId & ") and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanHazinehNobat & ") order by DateMilladiA desc"
+                    Da.SelectCommand.CommandText = "Select Top 1 DateMilladiA from R2Primary.dbo.TblAccounting Where (CardId=" & TrafficCard.TrafficCardId & ") and (EEAccountingProcessType=" & R2CoreParkingSystemAccountings.AnjomanHazinehNobat & ") order by DateMilladiA desc"
                     Ds.Tables.Clear()
                     If Da.Fill(Ds) <= 0 Then Return 0
                     Dim TavaghofLastTurn As Int64 = DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateMilladiA"), _DateTimeService.GetCurrentDateTimeMilladi())
@@ -1831,7 +1839,7 @@ Namespace Turns
 
                 Dim SequentialTurnId As Int64 = Int64.MinValue
                 Dim SequentialTurnId_ As String = String.Empty
-                CmdSql.CommandText = "Select top 1 Substring(OtaghdarTurnNumber,7,20) from tbenterexit with (tablockx) Where Substring(OtaghdarTurnNumber,1,5)='" & SequentialTurn.SeqTurnKeyWord.Trim + _DateTimeService.GetCurrentShamsiSal() & "' order by OtaghdarTurnNumber desc"
+                CmdSql.CommandText = "Select top 1 Substring(OtaghdarTurnNumber,7,20) from dbtransport.dbo.tbenterexit with (tablockx) Where Substring(OtaghdarTurnNumber,1,5)='" & SequentialTurn.SeqTurnKeyWord.Trim + _DateTimeService.GetCurrentShamsiSal() & "' order by OtaghdarTurnNumber desc"
                 SequentialTurnId = CmdSql.ExecuteScalar + 1
                 SequentialTurnId_ = SequentialTurn.SeqTurnKeyWord.Trim + _DateTimeService.GetCurrentShamsiSal() + "/" + InstancePublicProcedures.RepeatStr("0", 6 - SequentialTurnId.ToString().Trim().Length) + SequentialTurnId.ToString().Trim()
                 Dim TurnRegisteringTimeStamp = InstanceTurns.GetTurnRegisteringTimeStampWithTurnType(YourTurnType)

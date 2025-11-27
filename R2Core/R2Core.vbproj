@@ -156,6 +156,7 @@
     <Compile Include="Configurations.vb" />
     <Compile Include="DataBases.vb" />
     <Compile Include="DateAndTime.vb" />
+    <Compile Include="Devices.vb" />
     <Compile Include="Exceptions.vb" />
     <Compile Include="Logging.vb" />
     <Compile Include="Networking.vb" />
@@ -178,6 +179,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="RFIDCards.vb" />
     <Compile Include="Sessions.vb" />
     <Compile Include="SMS.vb" />
     <Compile Include="SoftwareUsers.vb" />
@@ -262,10 +264,10 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://192.168.1.2:2011/R2PrimaryWebService.asmx">
+    <WebReferenceUrl Include="http://127.0.0.1:2011/R2PrimaryWebService.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\R2PrimaryWS\</RelPath>
-      <UpdateFromURL>http://192.168.1.2:2011/R2PrimaryWebService.asmx</UpdateFromURL>
+      <UpdateFromURL>http://127.0.0.1:2011/R2PrimaryWebService.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
@@ -273,10 +275,10 @@
       <CachedAppSettingsObjectName>MySettings</CachedAppSettingsObjectName>
       <CachedSettingsPropName>R2Core_R2PrimaryWS_R2PrimaryWebService</CachedSettingsPropName>
     </WebReferenceUrl>
-    <WebReferenceUrl Include="http://192.168.1.2:2013/R2PrimaryFileSharingWebService.asmx">
+    <WebReferenceUrl Include="http://127.0.0.1:2013/R2PrimaryFileSharingWebService.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\R2PrimaryFileSharingWebService\</RelPath>
-      <UpdateFromURL>http://192.168.1.2:2013/R2PrimaryFileSharingWebService.asmx</UpdateFromURL>
+      <UpdateFromURL>http://127.0.0.1:2013/R2PrimaryFileSharingWebService.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>

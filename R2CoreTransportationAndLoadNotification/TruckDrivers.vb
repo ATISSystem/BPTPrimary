@@ -409,10 +409,20 @@ Namespace TruckDrivers
                 Dim UserId As Int64
                 If InstanceSoftwareUsers.IsExistSoftwareUser(New R2CoreSoftwareUserMobile(YourMobileNumber), UserId, True) Then
                     If InstanceSoftwareUsers.GetUser(New R2CoreSoftwareUserMobile(YourMobileNumber), True).UserTypeId <> R2CoreTransportationAndLoadNotificationSoftwareUserTypes.Driver Then Throw New SoftwareUserMobileNumberBelongsToSomeoneElseException
+                    Dim NSSDriver = R2CoreParkingSystemMClassDrivers.GetNSSDriver(YourTruckDriverId)
                     CmdSql.CommandText = "Update dbtransport.dbo.tbPerson Set strIDNO='" & YourMobileNumber & "' Where nIdPerson=" & YourTruckDriverId & ""
                     CmdSql.ExecuteNonQuery()
                     'ایجاد رابطه کاربر موجود و راننده موجود
                     R2CoreMClassEntityRelationManagement.RegisteringEntityRelation(New R2StandardEntityRelationStructure(Nothing, R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver, UserId, YourTruckDriverId, Nothing), RelationDeactiveTypes.BothDeactive)
+                    'به دست آوردن لیست فرآیندهای وب قابل دسترسی برای نوع کاربر راننده و ارسال به مدیریت مجوز
+                    Dim ComposeSearchString As String = R2CoreParkingSystemSoftwareUserTypes.Driver.ToString + ":"
+                    Dim AllofSoftwareUserTypes1 As String() = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesAccessWebProcesses), ";")
+                    Dim AllofWebProcessesIds As String() = Split(Mid(AllofSoftwareUserTypes1.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes1.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
+                    R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, UserId, AllofWebProcessesIds)
+                    'به دست آوردن لیست گروههای فرآیند وب برای نوع کاربر راننده و ارسال آن به مدیریت روابط نهادی
+                    Dim AllofSoftwareUserTypes2 As String() = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesRelationWebProcessGroups), ";")
+                    Dim AllofWebProcessGroupsIds As String() = Split(Mid(AllofSoftwareUserTypes2.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes2.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
+                    R2CoreMClassEntityRelationManagement.RegisteringEntityRelations(R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup, UserId, AllofWebProcessGroupsIds)
                 Else
                     Dim NSSDriver = R2CoreParkingSystemMClassDrivers.GetNSSDriver(YourTruckDriverId)
                     UserId = InstanceSoftwareUsers.RegisteringSoftwareUser(New R2CoreRawSoftwareUserStructure With {.UserId = Nothing, .MobileNumber = YourMobileNumber, .UserActive = True, .UserName = NSSDriver.StrPersonFullName, .UserTypeId = R2CoreParkingSystemSoftwareUserTypes.Driver}, False, InstanceSoftwareUsers.GetSystemUser.UserId)
@@ -470,18 +480,28 @@ Namespace TruckDrivers
 
         End Sub
 
-        Public Function GetSoftwareUserIdfromTruckDriverId(YourTruckDriverId As Int64) As Int64
+        Public Function GetSoftwareUserIdfromTruckDriverId(YourTruckDriverId As Int64, YourImmediately As Boolean) As Int64
             Try
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                       "Select SoftwareUsers.UserId from DBTransport.dbo.TbDriver as Drivers
+                          Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On Drivers.nIDDriver=EntityRelations.E2 
+                          Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On EntityRelations.E1=SoftwareUsers.UserId  
+                        where Drivers.nIDDriver=" & YourTruckDriverId & " and EntityRelations.ERTypeId=" & R2CoreParkingSystem.EntityRelations.R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & " and EntityRelations.RelationActive=1 and SoftwareUsers.Deleted=0")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New SoftwareUserfromTruckDriverNotFoundException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select SoftwareUsers.UserId from DBTransport.dbo.TbDriver as Drivers
                           Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On Drivers.nIDDriver=EntityRelations.E2 
                           Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On EntityRelations.E1=SoftwareUsers.UserId  
                         where Drivers.nIDDriver=" & YourTruckDriverId & " and EntityRelations.ERTypeId=" & R2CoreParkingSystem.EntityRelations.R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & " and EntityRelations.RelationActive=1 and SoftwareUsers.Deleted=0", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
-                    Throw New SoftwareUserfromTruckDriverNotFoundException
-                Else
-                    Return Ds.Tables(0).Rows(0).Item("UserId")
+                        Throw New SoftwareUserfromTruckDriverNotFoundException
+                    End If
                 End If
+                Return Ds.Tables(0).Rows(0).Item("UserId")
             Catch ex As SoftwareUserfromTruckDriverNotFoundException
                 Throw ex
             Catch ex As Exception

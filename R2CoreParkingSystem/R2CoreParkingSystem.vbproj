@@ -138,6 +138,10 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="SMS.vb" />
+    <Compile Include="Traffic.vb" />
+    <Compile Include="TrafficCards.vb" />
+    <Compile Include="TrafficCosts.vb" />
+    <Compile Include="TrafficGates.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">

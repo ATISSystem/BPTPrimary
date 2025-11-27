@@ -217,7 +217,7 @@ Namespace MoneyWallet
                     CmdSql.CommandText = "Select IDENT_CURRENT('R2Primary.dbo.TblPaymentRequests') "
                     Dim PayIdNew As Int64 = CmdSql.ExecuteScalar() + 1
                     CmdSql.CommandText = "Insert Into R2Primary.dbo.TblPaymentRequests(MCSSId,SoftwareUserId,Amount,Authority,TransactionId,RefId,PaymentErrors,VerificationErrors,VerificationCount,UserId,DateTimeMilladi,DateShamsi,Time) 
-                                          Values(" & YourMCSSId & "," & YourSoftwareUserId & "," & YourAmount & ",'','','','','',1," & InstanceSoftwareUsers.GetNSSSystemUser().UserId & ",'" & _DateTimeService.GetCurrentDateTimeMilladi() & "','" & _DateTimeService.GetCurrentShamsiDate() & "','" & _DateTimeService.GetCurrentTime() & "')"
+                                          Values(" & YourMCSSId & "," & YourSoftwareUserId & "," & YourAmount & ",'','','','','',1," & InstanceSoftwareUsers.GetNSSSystemUser().UserId & ",convert(varchar, getdate(), 20),R2Primary.DBO.BPTCOGregorianToPersian(GETDATE()),convert(varchar, getdate(), 8))"
                     CmdSql.ExecuteNonQuery()
                     CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                     Return PayIdNew

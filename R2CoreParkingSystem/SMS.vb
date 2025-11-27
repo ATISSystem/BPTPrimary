@@ -528,7 +528,7 @@ Namespace SMS
             'BPTChanged
             Public Sub ChangeSMSOwnerCurrentState(YourSoftwareUserId As Int64)
                 Try
-                    Dim InstanceSMSOwners = New R2CoreSMSOwnersManager(_SoftwareUserService, _DateTimeService)
+                    Dim InstanceSMSOwners = New R2CoreSMSOwnersManager(_DateTimeService, _SoftwareUserService)
                     Dim CState As R2CoreSMSOwnersManager.SMSOwnerCurrentState
                     Try
                         CState = InstanceSMSOwners.GetSMSOwnerCurrentState(YourSoftwareUserId, True)
@@ -627,7 +627,7 @@ Namespace SMS
 
                     'کنترل موجودی کیف پول
                     Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(New R2DateTimeService)
-                    Dim MoneyWallet = InstanceMoneyWallet.GetMoneyWallet(YourSoftwareUser)
+                    Dim MoneyWallet = InstanceMoneyWallet.GetMoneyWallet(YourSoftwareUser, True)
                     If MoneyWallet.Balance < NSSSMSOwnerType.Price Then
                         Throw New MoneyWalletCurrentChargeNotEnoughException
                     End If

@@ -96,7 +96,6 @@ Namespace SessionManagement
                 InstanceCache.SetCache(InstanceCache.GetCacheType(R2CoreCacheTypes.Session).CacheTypeName + SessionId, New R2CoreStandardSessionCaptchaWordStructure(SessionId, CaptchaWord), R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions, False)
                 Return New R2CoreStandardSessionCaptchaBitMapStructure(SessionId, CaptchaBitMap)
             Catch ex As Exception
-                R2CoreLoggingManager.WriteErrorLog(ex)
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Function

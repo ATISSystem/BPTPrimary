@@ -7,19 +7,22 @@ Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateTimeProvider
 Imports StackExchange.Redis
+Imports System.CodeDom
+Imports System.Data.SqlClient
 Imports System.Reflection
 Imports System.Web
 
 Namespace CachHelper
-    Public NotInheritable Class RedisConnectorHelper
 
-        Private Shared ReadOnly Property RedisHost As String
+    Public Class RedisConnectorHelper
+
+        Private ReadOnly Property RedisHost As String
             Get
                 Return R2CoreConfigurationManagement.GetConfigString(R2Core.ConfigurationManagement.R2CoreConfigurations.Caching, 0)
             End Get
         End Property
 
-        Public Shared ReadOnly lazyConnection As New Lazy(Of ConnectionMultiplexer)(
+        Public ReadOnly lazyConnection As New Lazy(Of ConnectionMultiplexer)(
         Function()
             Try
                 Return ConnectionMultiplexer.Connect(RedisHost)
@@ -30,7 +33,7 @@ Namespace CachHelper
             End Try
         End Function)
 
-        Public Shared ReadOnly Property Connection As ConnectionMultiplexer
+        Public ReadOnly Property Connection As ConnectionMultiplexer
             Get
                 Try
                     Return lazyConnection.Value
@@ -42,10 +45,11 @@ Namespace CachHelper
             End Get
         End Property
 
-        Public Shared ReadOnly Property GetServer As IServer
+        Public ReadOnly Property GetServer As IServer
             Get
                 Try
-                    Return Connection.GetServer(RedisHost)
+                    Dim EndPoint = Connection.GetEndPoints().First()
+                    Return Connection.GetServer(EndPoint)
                 Catch ex As RedisException
                     Throw ex
                 Catch ex As Exception
@@ -117,12 +121,25 @@ Namespace Caching
 
     End Class
 
+
     Public Class R2CoreCacheManager
 
         Private _DateTimeService As IR2DateTimeService
+        Private _RCH As RedisConnectorHelper
         Public Sub New(YourDateTimeService As IR2DateTimeService)
             _DateTimeService = YourDateTimeService
+            _RCH = New RedisConnectorHelper
         End Sub
+
+        Private Shared _Cache(100) As IDatabase
+        Private Function GetDataBase(YourDataBaseId As Integer) As IDatabase
+            Try
+                If _Cache(YourDataBaseId) Is Nothing Then _Cache(YourDataBaseId) = _RCH.Connection.GetDatabase(YourDataBaseId)
+                Return _Cache(YourDataBaseId)
+            Catch ex As Exception
+                Throw ex
+            End Try
+        End Function
 
         Public Function GetCacheType(YourCacheTypeId As Int64) As R2CoreStandardCacheTypeStructure
             Try
@@ -130,7 +147,6 @@ Namespace Caching
                 Dim DS As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2Primary.dbo.TblCacheTypes Where CacheTypeId=" & YourCacheTypeId & "", 10000, DS, New Boolean).GetRecordsCount = 0 Then
                     Throw New CacheTypeNotFoundException
-
                 Else
                     Return New R2CoreStandardCacheTypeStructure(DS.Tables(0).Rows(0).Item("CacheTypeId"), DS.Tables(0).Rows(0).Item("CacheTypeName").trim, DS.Tables(0).Rows(0).Item("CacheTime"), DS.Tables(0).Rows(0).Item("DateTimeMilladi"), DS.Tables(0).Rows(0).Item("DateShamsi").trim, DS.Tables(0).Rows(0).Item("Time").trim, DS.Tables(0).Rows(0).Item("UserId"), DS.Tables(0).Rows(0).Item("Core").trim, DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted"))
                 End If
@@ -143,7 +159,8 @@ Namespace Caching
 
         Public Function ExistCache(YourKeyId As String, YourDataBaseId As Integer) As Boolean
             Try
-                Dim Cache = CachHelper.RedisConnectorHelper.Connection.GetDatabase(YourDataBaseId)
+
+                Dim Cache = _RCH.Connection.GetDatabase(YourDataBaseId)
                 If Cache.KeyExists(YourKeyId) Then
                     Return True
                 Else
@@ -156,7 +173,7 @@ Namespace Caching
 
         Public Sub SetCache(YourKeyId As String, YourCacheValue As Object, YourCacheTypeId As Int64, YourDataBaseId As Integer, YourIndefiniteTimeSpan As Boolean)
             Try
-                Dim Cache = CachHelper.RedisConnectorHelper.Connection.GetDatabase(YourDataBaseId)
+                Dim Cache = _RCH.Connection.GetDatabase(YourDataBaseId)
                 If Not YourIndefiniteTimeSpan Then
                     Cache.StringSet(YourKeyId, JsonConvert.SerializeObject(YourCacheValue), TimeSpan.FromSeconds(GetCacheType(YourCacheTypeId).CacheTime))
                 Else
@@ -169,8 +186,7 @@ Namespace Caching
 
         Public Function GetCache(YourKeyId As String, YourDataBaseId As Integer) As Object
             Try
-                Dim Cache = CachHelper.RedisConnectorHelper.Connection.GetDatabase(YourDataBaseId)
-                Return Cache.StringGet(YourKeyId)
+                Return GetDataBase(YourDataBaseId).StringGet(YourKeyId)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
@@ -178,7 +194,7 @@ Namespace Caching
 
         Public Sub RemoveCache(YourCacheKey As String, YourDataBaseId As Integer)
             Try
-                Dim Cache = CachHelper.RedisConnectorHelper.Connection.GetDatabase(YourDataBaseId)
+                Dim Cache = _RCH.Connection.GetDatabase(YourDataBaseId)
                 Cache.KeyDelete(YourCacheKey)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)

@@ -104,8 +104,10 @@ Namespace Carousels
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
                 CmdSql.CommandText = "Update R2Primary.dbo.TblCarousels Set CTitle='" & YourCarousel.CTitle & "',URL='" & YourCarousel.URL & "',Description='" & YourCarousel.Description & "' Where CId=" & YourCarousel.CId & ""
                 CmdSql.ExecuteNonQuery()
-                _WS.WebMethodDeleteFile(RawGroups.R2CoreRawGroups.Carousels, YourCarousel.CId.ToString + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 0), _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
-                _WS.WebMethodSaveFile(RawGroups.R2CoreRawGroups.Carousels, YourCarousel.CId.ToString + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 0), YourCarousel.Picture, _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
+                If YourCarousel.Picture IsNot Nothing Then
+                    _WS.WebMethodDeleteFile(RawGroups.R2CoreRawGroups.Carousels, YourCarousel.CId.ToString + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 0), _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
+                    _WS.WebMethodSaveFile(RawGroups.R2CoreRawGroups.Carousels, YourCarousel.CId.ToString + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 0), YourCarousel.Picture, _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
+                End If
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 CarouselsCachePreparing(YourSoftwareUser)
             Catch ex As SoapException

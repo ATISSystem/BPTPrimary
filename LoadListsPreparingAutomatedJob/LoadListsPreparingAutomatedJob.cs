@@ -30,12 +30,14 @@ namespace LoadListsPreparingAutomatedJob
         private bool _FailStatus = true;
         private ISubscriber _Subscriber = null;
         private R2DateTimeService  _DateTimeService;
+        private RedisConnectorHelper _RCH; 
 
         public LoadListsPreparingAutomatedJob()
         {
             InitializeComponent();
             _DateTimeService = new R2DateTimeService();
             _AutomatedJobsTimer.Elapsed += _AutomatedJobsTimer_Elapsed;
+            _RCH = new RedisConnectorHelper();
         }
 
         private void _AutomatedJobsTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -60,7 +62,7 @@ namespace LoadListsPreparingAutomatedJob
                     catch (Exception ex)
                     {
                         _FailStatus = true;
-                        EventLog.WriteEntry("LoadListsPreparingAutomatedJob", "LoadListsPreparingAutomatedJob.Interval Setting Failed", EventLogEntryType.SuccessAudit);
+                        EventLog.WriteEntry("LoadListsPreparingAutomatedJob", "LoadListsPreparingAutomatedJob.Interval Setting Failed:"+ex.Message , EventLogEntryType.Error );
                         System.Threading.Thread.Sleep(15000);
                     }
                 }
@@ -71,7 +73,7 @@ namespace LoadListsPreparingAutomatedJob
                     InstanceLoad.UpdateLoadLists();
                 }
                 catch (Exception ex)
-                { EventLog.WriteEntry("LoadListsPreparingAutomatedJob", "xxx" + ex.Message.ToString(), EventLogEntryType.Error); }
+                { EventLog.WriteEntry("LoadListsPreparingAutomatedJob", "UpdateLoadLists:" + ex.Message.ToString(), EventLogEntryType.Error); }
             }
             catch (Exception ex)
             { EventLog.WriteEntry("LoadListsPreparingAutomatedJob", "_AutomatedJobsTimer_Elapsed:" + ex.Message.ToString(), EventLogEntryType.Error); }
@@ -87,7 +89,7 @@ namespace LoadListsPreparingAutomatedJob
             {
                 var InstanceLoads = new R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService);
                 InstanceLoads.CacheLoads(value);
-                EventLog.WriteEntry("LoadListsPreparingAutomatedJob", " InstanceLoads.CacheLoads(value)" , EventLogEntryType.Error);
+                EventLog.WriteEntry("LoadListsPreparingAutomatedJob", " InstanceLoads.CacheLoads(value)", EventLogEntryType.SuccessAudit);
             
             }
             catch (RedisException ex)
@@ -111,7 +113,7 @@ namespace LoadListsPreparingAutomatedJob
                 _AutomatedJobsTimer.Enabled = true;
                 _AutomatedJobsTimer.Start();
 
-                _Subscriber = RedisConnectorHelper.Connection.GetSubscriber();
+                _Subscriber = _RCH.Connection.GetSubscriber();
                 _Subscriber.Subscribe(R2CoreTransportationAndLoadNotificationPubSubChannels.LoadsForTruckDrivers, new Action<StackExchange.Redis.RedisChannel, StackExchange.Redis.RedisValue>(PreparingLoadsList));
                 EventLog.WriteEntry("LoadListsPreparingAutomatedJob", "LoadListsPreparingAutomatedJob Start ...", EventLogEntryType.SuccessAudit);
             }
