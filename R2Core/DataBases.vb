@@ -18,109 +18,109 @@ Namespace DatabaseManagement
     End Enum
 
     Public Class R2CoreMClassDatabaseManagement
-        Public Shared Function GetOLEDbConnectionString(ByVal FileName As String) As String
-            Dim Builder As New OleDb.OleDbConnectionStringBuilder
-            If IO.Path.GetExtension(FileName).ToUpper = ".XLS" Then
-                Builder.Provider = "Microsoft.Jet.OLEDB.4.0"
-                Builder.Add("Extended Properties", "Excel 8.0;IMEX=1;HDR=No;")
-            Else
-                Builder.Provider = "Microsoft.ACE.OLEDB.12.0"
-                Builder.Add("Extended Properties", "Excel 12.0;")
-                Builder.Add("Extended Properties", "Excel 12.0;IMEX=1;HDR=No;")
-            End If
-            Builder.DataSource = FileName
-            Return Builder.ConnectionString
-        End Function
+        'Public Shared Function GetOLEDbConnectionString(ByVal FileName As String) As String
+        '    Dim Builder As New OleDb.OleDbConnectionStringBuilder
+        '    If IO.Path.GetExtension(FileName).ToUpper = ".XLS" Then
+        '        Builder.Provider = "Microsoft.Jet.OLEDB.4.0"
+        '        Builder.Add("Extended Properties", "Excel 8.0;IMEX=1;HDR=No;")
+        '    Else
+        '        Builder.Provider = "Microsoft.ACE.OLEDB.12.0"
+        '        Builder.Add("Extended Properties", "Excel 12.0;")
+        '        Builder.Add("Extended Properties", "Excel 12.0;IMEX=1;HDR=No;")
+        '    End If
+        '    Builder.DataSource = FileName
+        '    Return Builder.ConnectionString
+        'End Function
 
-        Public Shared Function GetOLEDbConnectionString(ByVal FileName As String, ByVal Header As String) As String
-            Dim Builder As New OleDb.OleDbConnectionStringBuilder
-            If IO.Path.GetExtension(FileName).ToUpper = ".XLS" Then
-                Builder.Provider = "Microsoft.Jet.OLEDB.4.0"
-                Builder.Add("Extended Properties", String.Format("Excel 8.0;IMEX=1;HDR={0};", Header))
-            Else
-                Builder.Provider = "Microsoft.ACE.OLEDB.12.0"
-                Builder.Add("Extended Properties", String.Format("Excel 12.0;IMEX=1;HDR={0};", Header))
-            End If
-            Builder.DataSource = FileName
-            Return Builder.ConnectionString
-        End Function
+        'Public Shared Function GetOLEDbConnectionString(ByVal FileName As String, ByVal Header As String) As String
+        '    Dim Builder As New OleDb.OleDbConnectionStringBuilder
+        '    If IO.Path.GetExtension(FileName).ToUpper = ".XLS" Then
+        '        Builder.Provider = "Microsoft.Jet.OLEDB.4.0"
+        '        Builder.Add("Extended Properties", String.Format("Excel 8.0;IMEX=1;HDR={0};", Header))
+        '    Else
+        '        Builder.Provider = "Microsoft.ACE.OLEDB.12.0"
+        '        Builder.Add("Extended Properties", String.Format("Excel 12.0;IMEX=1;HDR={0};", Header))
+        '    End If
+        '    Builder.DataSource = FileName
+        '    Return Builder.ConnectionString
+        'End Function
 
-        Public Shared Function DocPaths() As String
-            Try
-                Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\pic common"
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function DocPaths() As String
+        '    Try
+        '        Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\pic common"
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function RptPaths() As String
-            Try
-                Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\rpt"
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function RptPaths() As String
+        '    Try
+        '        Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\rpt"
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function IconsPath() As String
-            Try
-                Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\atlas icons"
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function IconsPath() As String
+        '    Try
+        '        Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\atlas icons"
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function EmzaPaths() As String
-            Try
-                Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\emza secret"
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function EmzaPaths() As String
+        '    Try
+        '        Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\emza secret"
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function PersonelPicPath() As String
-            Try
-                Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\personelpic"
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function PersonelPicPath() As String
+        '    Try
+        '        Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\personelpic"
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
 
         Private Shared _OpenConnection As SqlClient.SqlConnection = R2PrimarySqlConnection.GetTransactionDBConnection
         Private Shared WithEvents ConnectionTimer As New System.Timers.Timer(60000)
 
-        Public Sub ForceConnectionToOpen(YourTimerInterval As Int64)
-            Try
-                _OpenConnection.Close()
-                _OpenConnection.Open()
-                ConnectionTimer.Interval = YourTimerInterval
-                ConnectionTimer.Enabled = True
-                ConnectionTimer.Start()
-            Catch ex As Exception
-                MessageBox.Show(ex.Message)
-            End Try
-        End Sub
+        'Public Sub ForceConnectionToOpen(YourTimerInterval As Int64)
+        '    Try
+        '        _OpenConnection.Close()
+        '        _OpenConnection.Open()
+        '        ConnectionTimer.Interval = YourTimerInterval
+        '        ConnectionTimer.Enabled = True
+        '        ConnectionTimer.Start()
+        '    Catch ex As Exception
+        '        MessageBox.Show(ex.Message)
+        '    End Try
+        'End Sub
 
-        Public Shared Function GetOpenConnection() As SqlConnection
-            Try
-                If _OpenConnection.State <> ConnectionState.Closed Then Return _OpenConnection
-                _OpenConnection.Open()
-                ConnectionTimer.Enabled = True
-                ConnectionTimer.Start()
-                Return _OpenConnection
-            Catch ex As Exception
-                MessageBox.Show(ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetOpenConnection() As SqlConnection
+        '    Try
+        '        If _OpenConnection.State <> ConnectionState.Closed Then Return _OpenConnection
+        '        _OpenConnection.Open()
+        '        ConnectionTimer.Enabled = True
+        '        ConnectionTimer.Start()
+        '        Return _OpenConnection
+        '    Catch ex As Exception
+        '        MessageBox.Show(ex.Message)
+        '    End Try
+        'End Function
 
-        Private Shared Sub ConnectionTimerHandler() Handles ConnectionTimer.Elapsed
-            Try
-                ConnectionTimer.Enabled = False
-                ConnectionTimer.Stop()
-                _OpenConnection.Close()
-            Catch ex As Exception
-                MessageBox.Show(ex.Message)
-            End Try
-        End Sub
+        'Private Shared Sub ConnectionTimerHandler() Handles ConnectionTimer.Elapsed
+        '    Try
+        '        ConnectionTimer.Enabled = False
+        '        ConnectionTimer.Stop()
+        '        _OpenConnection.Close()
+        '    Catch ex As Exception
+        '        MessageBox.Show(ex.Message)
+        '    End Try
+        'End Sub
 
     End Class
 
@@ -349,7 +349,7 @@ Namespace DatabaseManagement
             Catch ex As UnableConnectToAPIException
                 Throw ex
             Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message + SqlString)
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 

@@ -29,6 +29,7 @@ Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.MoneyWallet.MoneyWallet
 Imports R2CoreParkingSystem.AccountingManagement.ExceptionManagement
+Imports R2Core.GeneralConfiguration
 
 
 
@@ -92,125 +93,125 @@ Namespace SMS
             Private Shared _DateTimeService As New R2DateTimeService
             Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
-            Public Shared Function GetNSSMoneyWallet() As R2CoreParkingSystemStandardTrafficCardStructure
-                Try
-                    Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
-                    Return R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 8))
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            'Public Shared Function GetNSSMoneyWallet() As R2CoreParkingSystemStandardTrafficCardStructure
+            '    Try
+            '        Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+            '        Return R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 8))
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
-            Private Shared _ControllingMoneyWalletAccountingExcecutedFlag As Boolean = False
-            Public Shared Sub ControllingMoneyWalletAccounting(YourNSSUser As R2CoreStandardSoftwareUserStructure)
-                Try
-                    Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager(_DateTimeService)
-                    Dim InstancePersianCallendar = New R2CoreInstanceDateAndTimePersianCalendarManager(_DateTimeService)
-                    'کنترل زمان اجرای فرآیند بر اساس کانفیگ
-                    Dim myCurrentDateTime = _DateTimeService.GetCurrentDateAndTime
-                    Dim TimeOfDay = _DateTimeService.GetTickofTime(myCurrentDateTime.DateTimeMilladi)
-                    Dim StTime = TimeSpan.Parse("00:00:00").Ticks
-                    Dim EndTime = TimeSpan.Parse("00:05:00").Ticks
-                    Dim ConfigTime = TimeSpan.Parse(InstanceConfigurations.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 9)).Ticks
-                    If TimeOfDay >= StTime And TimeOfDay <= EndTime Then
-                        _ControllingMoneyWalletAccountingExcecutedFlag = False
-                        Return
-                    ElseIf TimeOfDay <= ConfigTime Then
-                        Return
-                    Else
-                    End If
-                    'این فرآیند در روز فقط باید یکبار اجرا گردد و نه بیشتر
-                    'خط کد زیر یعنی فرآیند امروز قبلا در بازه معین اجرا یکبار اجرا شده است
-                    If _ControllingMoneyWalletAccountingExcecutedFlag Then Return
-                    'طبق کانفیگ سیستم کلا اکانتینگ فعال باشد یا نه
-                    If Not InstanceConfigurations.GetConfigBoolean(R2CoreConfigurations.SmsSystemSetting, 10) Then Return
-                    'آغاز فرآیند اکانتینگ
-                    'آخرین اکانت ثبت شده
-                    Dim NSSLastAccounting = R2CoreParkingSystemMClassAccountingManagement.GetNSSLastAccounting(R2CoreParkingSystemAccountings.SMSControllingMoneyWallet)
-                    'امروز یک مرتبه اکانت ثبت شده پس نیازی به ثبت مجدد نیست
-                    If NSSLastAccounting.DateShamsiA = myCurrentDateTime.ShamsiDate Then Return
-                    Dim Amount As Int64 = GetAmountforSMSControllingMoneyWallet()
-                    'کسر پورسانت شرکت عامل
-                    'هزینه شرکت عامل قبلا هنگام فعال سازی اس ام اس کاربر در فیلد ریمایندرشارژ در جدول مالکان اس ام اس منظور شده است
-                    'ثبت اکانت
-                    Dim NSSControllingMoneyWallet = R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 8))
-                    R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSControllingMoneyWallet, BagPayType.MinusMoney, Amount, R2CoreParkingSystemAccountings.SMSControllingMoneyWallet, YourNSSUser)
+            'Private Shared _ControllingMoneyWalletAccountingExcecutedFlag As Boolean = False
+            'Public Shared Sub ControllingMoneyWalletAccounting(YourNSSUser As R2CoreStandardSoftwareUserStructure)
+            '    Try
+            '        Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager(_DateTimeService)
+            '        Dim InstancePersianCallendar = New R2CoreInstanceDateAndTimePersianCalendarManager(_DateTimeService)
+            '        'کنترل زمان اجرای فرآیند بر اساس کانفیگ
+            '        Dim myCurrentDateTime = _DateTimeService.GetCurrentDateAndTime
+            '        Dim TimeOfDay = _DateTimeService.GetTickofTime(myCurrentDateTime.DateTimeMilladi)
+            '        Dim StTime = TimeSpan.Parse("00:00:00").Ticks
+            '        Dim EndTime = TimeSpan.Parse("00:05:00").Ticks
+            '        Dim ConfigTime = TimeSpan.Parse(InstanceConfigurations.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 9)).Ticks
+            '        If TimeOfDay >= StTime And TimeOfDay <= EndTime Then
+            '            _ControllingMoneyWalletAccountingExcecutedFlag = False
+            '            Return
+            '        ElseIf TimeOfDay <= ConfigTime Then
+            '            Return
+            '        Else
+            '        End If
+            '        'این فرآیند در روز فقط باید یکبار اجرا گردد و نه بیشتر
+            '        'خط کد زیر یعنی فرآیند امروز قبلا در بازه معین اجرا یکبار اجرا شده است
+            '        If _ControllingMoneyWalletAccountingExcecutedFlag Then Return
+            '        'طبق کانفیگ سیستم کلا اکانتینگ فعال باشد یا نه
+            '        If Not InstanceConfigurations.GetConfigBoolean(R2CoreConfigurations.SmsSystemSetting, 10) Then Return
+            '        'آغاز فرآیند اکانتینگ
+            '        'آخرین اکانت ثبت شده
+            '        Dim NSSLastAccounting = R2CoreParkingSystemMClassAccountingManagement.GetNSSLastAccounting(R2CoreParkingSystemAccountings.SMSControllingMoneyWallet)
+            '        'امروز یک مرتبه اکانت ثبت شده پس نیازی به ثبت مجدد نیست
+            '        If NSSLastAccounting.DateShamsiA = myCurrentDateTime.ShamsiDate Then Return
+            '        Dim Amount As Int64 = GetAmountforSMSControllingMoneyWallet()
+            '        'کسر پورسانت شرکت عامل
+            '        'هزینه شرکت عامل قبلا هنگام فعال سازی اس ام اس کاربر در فیلد ریمایندرشارژ در جدول مالکان اس ام اس منظور شده است
+            '        'ثبت اکانت
+            '        Dim NSSControllingMoneyWallet = R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 8))
+            '        R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(NSSControllingMoneyWallet, BagPayType.MinusMoney, Amount, R2CoreParkingSystemAccountings.SMSControllingMoneyWallet, YourNSSUser)
 
-                    _ControllingMoneyWalletAccountingExcecutedFlag = True
+            '        _ControllingMoneyWalletAccountingExcecutedFlag = True
 
-                    'ارسال اس ام اس موجودی کیف پول
-                    SendSMSSMSControllingMoneyWallet()
-                Catch ex As SendSMSControllingMoneyWalletFailedException
-                    Throw ex
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Sub
+            '        'ارسال اس ام اس موجودی کیف پول
+            '        SendSMSSMSControllingMoneyWallet()
+            '    Catch ex As SendSMSControllingMoneyWalletFailedException
+            '        Throw ex
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Sub
 
-            Private Shared Sub SendSMSSMSControllingMoneyWallet()
-                Try
-                    Dim InstanceMoneyWallet = New R2CoreParkingSystemInstanceMoneyWalletManager
-                    Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
-                    'کنترل فعال بودن سرویس اس ام اس
-                    If Not InstanceConfiguration.GetConfigBoolean(R2CoreConfigurations.SmsSystemSetting, 0) Then Throw New SmsSystemIsDisabledException
-                    'لیست مقاصد و کاربران
-                    Dim TargetUsers = InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 17).Split("-")
-                    Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
-                    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
-                    For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
-                        LstSoftwareUsers.Add(InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(TargetUsers(LoopxUsers))))
-                    Next
+            'Private Shared Sub SendSMSSMSControllingMoneyWallet()
+            '    Try
+            '        Dim InstanceMoneyWallet = New R2CoreParkingSystemInstanceMoneyWalletManager
+            '        Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+            '        'کنترل فعال بودن سرویس اس ام اس
+            '        If Not InstanceConfiguration.GetConfigBoolean(R2CoreConfigurations.SmsSystemSetting, 0) Then Throw New SmsSystemIsDisabledException
+            '        'لیست مقاصد و کاربران
+            '        Dim TargetUsers = InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 17).Split("-")
+            '        Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
+            '        Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+            '        For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
+            '            LstSoftwareUsers.Add(InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(TargetUsers(LoopxUsers))))
+            '        Next
 
-                    'موجودی کیف پول
-                    Dim myData = New SMSCreationData
-                    Dim NSSControllingMoneyWallet = R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 8))
-                    myData.Data1 = InstanceMoneyWallet.GetMoneyWalletCharge(NSSControllingMoneyWallet)
+            '        'موجودی کیف پول
+            '        Dim myData = New SMSCreationData
+            '        Dim NSSControllingMoneyWallet = R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 8))
+            '        myData.Data1 = InstanceMoneyWallet.GetMoneyWalletCharge(NSSControllingMoneyWallet)
 
-                    'ارسال اس ام اس
-                    If InstanceMoneyWallet.GetMoneyWalletCharge(NSSControllingMoneyWallet) = 0 Then Return
-                    Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
-                    Dim SMSResult = InstanceSMSHandling.SendSMS(LstSoftwareUsers, R2CoreSMSTypes.SMSControllingMoneyWallet, InstanceSMSHandling.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
-                    Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
-                    If Not SMSResultAnalyze = String.Empty Then Throw New SendSMSControllingMoneyWalletFailedException(SMSResultAnalyze)
-                Catch ex As SendSMSControllingMoneyWalletFailedException
-                    Throw ex
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Sub
+            '        'ارسال اس ام اس
+            '        If InstanceMoneyWallet.GetMoneyWalletCharge(NSSControllingMoneyWallet) = 0 Then Return
+            '        Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
+            '        Dim SMSResult = InstanceSMSHandling.SendSMS(LstSoftwareUsers, R2CoreSMSTypes.SMSControllingMoneyWallet, InstanceSMSHandling.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
+            '        Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
+            '        If Not SMSResultAnalyze = String.Empty Then Throw New SendSMSControllingMoneyWalletFailedException(SMSResultAnalyze)
+            '    Catch ex As SendSMSControllingMoneyWalletFailedException
+            '        Throw ex
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Sub
 
-            Public Shared Sub DoControlforControllingMoneyWallet()
-                Try
-                    Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager(_DateTimeService)
-                    Dim NSS = GetNSSMoneyWallet()
-                    Dim Amount = R2CoreParkingSystemMClassMoneyWalletManagement.GetMoneyWalletCharge(NSS)
-                    If Amount < InstanceConfigurations.GetConfigInt64(R2CoreConfigurations.SmsSystemSetting, 11) Then
-                        Throw New SMSControllingMoneyWalletCriticalAmountReachedException
-                    End If
-                Catch ex As SMSControllingMoneyWalletCriticalAmountReachedException
-                    Throw ex
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Sub
+            'Public Shared Sub DoControlforControllingMoneyWallet()
+            '    Try
+            '        Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
+            '        Dim NSS = GetNSSMoneyWallet()
+            '        Dim Amount = R2CoreParkingSystemMClassMoneyWalletManagement.GetMoneyWalletCharge(NSS)
+            '        If Amount < InstanceGeneralConfiguration.GetInt64Configuration(R2CoreConfigurations.SmsSystemSetting, 11) Then
+            '            Throw New SMSControllingMoneyWalletCriticalAmountReachedException
+            '        End If
+            '    Catch ex As SMSControllingMoneyWalletCriticalAmountReachedException
+            '        Throw ex
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Sub
 
-            Public Shared Function GetAmountforSMSControllingMoneyWallet() As Int64
-                Try
-                    Dim NSSLast = R2CoreParkingSystemMClassAccountingManagement.GetNSSLastAccounting(R2CoreParkingSystemAccountings.SMSControllingMoneyWallet)
-                    Dim Ds As New DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
-                                  "Select Sum(SMSOwnerTypes.PriceMinusCommission) as Amount from R2PrimarySMSSystem.dbo.TblSMSOwners As SMSOwners
-                                        Inner Join R2PrimarySMSSystem.dbo.TblSMSOwnerTypes as SMSOwnerTypes On SMSOwners.SMSOTypeId=SMSOwnerTypes.SMSOTypeId 
-                                   Where SMSOwners.DateTimeMilladi Between '" & _DateTimeService.GetMilladiDateTimeFromShamsiDate(NSSLast.DateShamsiA, NSSLast.TimeA) & "' and '" & _DateTimeService.GetCurrentDateTimeMilladi() & "'
-                                         And SMSOwnerTypes.Active=1 and SMSOwnerTypes.Deleted=0 and SMSOwners.Active=1 and SMSOwners.Deleted=0", 0, Ds, New Boolean).GetRecordsCount = 0 Then
-                        Return 0
-                    Else
-                        Return IIf(Ds.Tables(0).Rows(0).Item("Amount").Equals(System.DBNull.Value), 0, Ds.Tables(0).Rows(0).Item("Amount"))
-                    End If
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            'Public Shared Function GetAmountforSMSControllingMoneyWallet() As Int64
+            '    Try
+            '        Dim NSSLast = R2CoreParkingSystemMClassAccountingManagement.GetNSSLastAccounting(R2CoreParkingSystemAccountings.SMSControllingMoneyWallet)
+            '        Dim Ds As New DataSet
+            '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+            '                      "Select Sum(SMSOwnerTypes.PriceMinusCommission) as Amount from R2PrimarySMSSystem.dbo.TblSMSOwners As SMSOwners
+            '                            Inner Join R2PrimarySMSSystem.dbo.TblSMSOwnerTypes as SMSOwnerTypes On SMSOwners.SMSOTypeId=SMSOwnerTypes.SMSOTypeId 
+            '                       Where SMSOwners.DateTimeMilladi Between '" & _DateTimeService.GetMilladiDateTimeFromShamsiDate(NSSLast.DateShamsiA, NSSLast.TimeA) & "' and '" & _DateTimeService.GetCurrentDateTimeMilladi() & "'
+            '                             And SMSOwnerTypes.Active=1 and SMSOwnerTypes.Deleted=0 and SMSOwners.Active=1 and SMSOwners.Deleted=0", 0, Ds, New Boolean).GetRecordsCount = 0 Then
+            '            Return 0
+            '        Else
+            '            Return IIf(Ds.Tables(0).Rows(0).Item("Amount").Equals(System.DBNull.Value), 0, Ds.Tables(0).Rows(0).Item("Amount"))
+            '        End If
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
         End Class
 
@@ -264,9 +265,9 @@ Namespace SMS
 
             Public Function GetMoneyWallet() As R2Core.MoneyWallet.MoneyWallet.R2CoreMoneyWallet
                 Try
-                    Dim InstanceConfiguration = New R2CoreConfigurationsManager(_DateTimeService)
+                    Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                     Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager(_DateTimeService)
-                    Return InstanceMoneyWallet.GetMoneyWallet(InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.SmsSystemSetting, 8), False)
+                    Return InstanceMoneyWallet.GetMoneyWallet(InstanceGeneralConfiguration.GetInt64Configuration(R2CoreGeneralConfigurations.SmsSystemSetting, 8), False)
                 Catch ex As MoneyWalletNotFoundException
                     Throw ex
                 Catch ex As Exception
@@ -280,7 +281,7 @@ Namespace SMS
                     If _InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                                   "Select Sum(SMSOwnerTypes.PriceMinusCommission) as Amount from R2PrimarySMSSystem.dbo.TblSMSOwners As SMSOwners
                                         Inner Join R2PrimarySMSSystem.dbo.TblSMSOwnerTypes as SMSOwnerTypes On SMSOwners.SMSOTypeId=SMSOwnerTypes.SMSOTypeId 
-                                   Where SMSOwners.DateTimeMilladi Between '" & _DateTimeService.GetMilladiDateTimeFromShamsiDate(YourLastAccounting.DateShamsi, YourLastAccounting.Time) & "' and '" & _DateTimeService.GetCurrentDateTimeMilladi() & "'
+                                   Where SMSOwners.DateTimeMilladi Between '" & _DateTimeService.GetMilladiDateTimeFromShamsiDate(YourLastAccounting.DateShamsi, YourLastAccounting.Time) & "' and convert(varchar, getdate(), 20) 
                                          And SMSOwnerTypes.Active=1 and SMSOwnerTypes.Deleted=0 and SMSOwners.Active=1 and SMSOwners.Deleted=0", 0, Ds, New Boolean).GetRecordsCount = 0 Then
                         Return 0
                     Else
@@ -294,10 +295,10 @@ Namespace SMS
             Private Sub SendSMSSMSControllingMoneyWallet(YourSMSControllingMoneyWalletId As Int64)
                 Try
                     Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(_DateTimeService)
-                    Dim InstanceConfiguration = New R2CoreConfigurationsManager(_DateTimeService)
+                    Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
 
                     'لیست مقاصد و کاربران
-                    Dim TargetUsers = InstanceConfiguration.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 17).Split("-")
+                    Dim TargetUsers = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.SmsSystemSetting, 17).Split("-")
                     Dim LstSoftwareUsers = New List(Of R2CoreSoftwareUser)
                     Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(_DateTimeService, Nothing)
                     For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
@@ -328,7 +329,7 @@ Namespace SMS
             Private Shared _ControllingMoneyWalletExcecutedFlag As Boolean = False
             Public Sub ControllingMoneyWalletAccounting(YourUserId As Int64)
                 Try
-                    Dim InstanceConfigurations = New R2CoreConfigurationsManager(_DateTimeService)
+                    Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                     Dim InstancePersianCallendar = New R2CorePersianCalendarManager(_DateTimeService)
                     Dim InstanceAccounting = New R2CoreParkingSystemAccountingManager(_DateTimeService)
                     Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(_DateTimeService)
@@ -337,7 +338,7 @@ Namespace SMS
                     Dim TimeOfDay = _DateTimeService.GetCurrentTickofTime
                     Dim StartTime = TimeSpan.Parse("00:00:00").Ticks
                     Dim EndTime = TimeSpan.Parse("00:05:00").Ticks
-                    Dim ConfigTime = TimeSpan.Parse(InstanceConfigurations.GetConfigString(R2CoreConfigurations.SmsSystemSetting, 9)).Ticks
+                    Dim ConfigTime = TimeSpan.Parse(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.SmsSystemSetting, 9)).Ticks
                     If TimeOfDay >= StartTime And TimeOfDay <= EndTime Then
                         _ControllingMoneyWalletExcecutedFlag = False
                         Return
@@ -351,7 +352,7 @@ Namespace SMS
                     If _ControllingMoneyWalletExcecutedFlag Then Return
 
                     'طبق کانفیگ سیستم کلا اکانتینگ فعال باشد یا نه
-                    If Not InstanceConfigurations.GetConfigBoolean(R2CoreConfigurations.SmsSystemSetting, 10) Then Return
+                    If Not InstanceGeneralConfiguration.GetBooleanConfiguration(R2CoreGeneralConfigurations.SmsSystemSetting, 10) Then Return
 
                     'آغاز فرآیند اکانتینگ
                     'آخرین اکانت ثبت شده
@@ -388,10 +389,10 @@ Namespace SMS
 
             Public Sub DoControlforControllingMoneyWallet()
                 Try
-                    Dim InstanceConfigurations = New R2CoreConfigurationsManager(_DateTimeService)
+                    Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                     Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(_DateTimeService)
                     Dim Inventory = InstanceMoneyWallet.GetMoneyWalletCharge(GetMoneyWallet.MoneyWalletId)
-                    If Inventory < InstanceConfigurations.GetConfigInt64(R2CoreConfigurations.SmsSystemSetting, 11) Then
+                    If Inventory < InstanceGeneralConfiguration.GetInt64Configuration(R2CoreGeneralConfigurations.SmsSystemSetting, 11) Then
                         Throw New SMSControllingMoneyWalletCriticalAmountReachedException
                     End If
                 Catch ex As SMSControllingMoneyWalletCriticalAmountReachedException
@@ -412,10 +413,10 @@ Namespace SMS
 
             Private _SoftwareUserService As ISoftwareUserService
             Private _DateTimeService As IR2DateTimeService
-            Public Sub New(YourSoftwareUserService As ISoftwareUserService, YourDateTimeService As IR2DateTimeService)
-                _SoftwareUserService = YourSoftwareUserService
-                _DateTimeService = YourDateTimeService
-            End Sub
+            'Public Sub New(YourSoftwareUserService As ISoftwareUserService, YourDateTimeService As IR2DateTimeService)
+            '    _SoftwareUserService = YourSoftwareUserService
+            '    _DateTimeService = YourDateTimeService
+            'End Sub
 
             'Private Sub SMSOwnerAccounting(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure, YourNSSUser As R2CoreStandardSoftwareUserStructure)
             '    Try
@@ -446,38 +447,38 @@ Namespace SMS
             '    End Try
             'End Sub
 
-            Private Sub SendingSMSActivateSMSOwner(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
-                Try
-                    Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
-                    Dim LstUser = New List(Of R2CoreStandardSoftwareUserStructure) From {YourNSSSoftwareUser}
-                    Dim LstCreationData = New List(Of SMSCreationData) From {New SMSCreationData With {.Data1 = String.Empty}}
-                    Dim SMSResult = InstanceSMSHandling.SendSMS(LstUser, R2Core.SMS.SMSTypes.R2CoreSMSTypes.ActivateSMSOwnerSuccess, LstCreationData, True)
-                    Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
-                    If Not SMSResultAnalyze = String.Empty Then Throw New SMSResultException(SMSResultAnalyze)
-                Catch ex As SMSResultException
-                    Throw ex
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Sub
+            'Private Sub SendingSMSActivateSMSOwner(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
+            '    Try
+            '        Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
+            '        Dim LstUser = New List(Of R2CoreStandardSoftwareUserStructure) From {YourNSSSoftwareUser}
+            '        Dim LstCreationData = New List(Of SMSCreationData) From {New SMSCreationData With {.Data1 = String.Empty}}
+            '        Dim SMSResult = InstanceSMSHandling.SendSMS(LstUser, R2Core.SMS.SMSTypes.R2CoreSMSTypes.ActivateSMSOwnerSuccess, LstCreationData, True)
+            '        Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
+            '        If Not SMSResultAnalyze = String.Empty Then Throw New SMSResultException(SMSResultAnalyze)
+            '    Catch ex As SMSResultException
+            '        Throw ex
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Sub
 
-            Public Sub UnActivateSMSOwner(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
-                Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
-                Try
-                    CmdSql.Connection.Open()
-                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
-                    CmdSql.CommandText = "Update R2PrimarySMSSystem.dbo.TblSMSOwners Set IsSendingActive=0
-                                          Where SMSOwnerUserId=" & YourNSSSoftwareUser.UserId & " and IsSendingActive=1"
-                    CmdSql.ExecuteNonQuery()
-                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-                Catch ex As Exception
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Sub
+            'Public Sub UnActivateSMSOwner(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
+            '    Dim CmdSql As New SqlClient.SqlCommand
+            '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
+            '    Try
+            '        CmdSql.Connection.Open()
+            '        CmdSql.Transaction = CmdSql.Connection.BeginTransaction()
+            '        CmdSql.CommandText = "Update R2PrimarySMSSystem.dbo.TblSMSOwners Set IsSendingActive=0
+            '                              Where SMSOwnerUserId=" & YourNSSSoftwareUser.UserId & " and IsSendingActive=1"
+            '        CmdSql.ExecuteNonQuery()
+            '        CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            '    Catch ex As Exception
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+            '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            '        End If
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Sub
 
             'Public Sub ChangeSMSOwnerCurrentState(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure, YourNSSUser As R2CoreStandardSoftwareUserStructure)
             '    Try

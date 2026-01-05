@@ -1,5 +1,6 @@
 ﻿using R2Core.ConfigurationManagement;
 using R2Core.DateTimeProvider;
+using R2Core.GeneralConfiguration;
 using R2Core.SMS.SMSOwners;
 using R2Core.SMS.SMSSendRecive;
 using R2Core.SoftwareUserManagement;
@@ -48,9 +49,9 @@ namespace SMSPleaseChargeAutomatedJob
                 {
                     try
                     {
-                        var InstanceConfiguration = new R2CoreConfigurationsManager(_DateTimeService);
+                        var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(_SystemUser);
-                        _AutomatedJobsTimer.Interval = InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.SmsSystemSetting, 23) * 1000;
+                        _AutomatedJobsTimer.Interval = InstanceGeneralConfiguration.GetInt64Configuration(R2CoreGeneralConfigurations.SmsSystemSetting, 23) * 1000;
                         _FailStatus = false;
                         EventLog.WriteEntry("SMSPleaseChargeAutomatedJob", "SMSPleaseChargeAutomatedJob.Interval=" + _AutomatedJobsTimer.Interval.ToString(), EventLogEntryType.SuccessAudit);
                     }

@@ -2,9 +2,11 @@
 using R2Core.ConfigurationManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
+using R2Core.GeneralConfiguration;
 using R2Core.PubSubMessaging;
 using R2Core.SoftwareUserManagement;
 using R2CoreTransportationAndLoadNotification.ConfigurationsManagement;
+using R2CoreTransportationAndLoadNotification.GeneralConfiguration;
 using R2CoreTransportationAndLoadNotification.Turns;
 using System;
 using System.Collections.Generic;
@@ -44,10 +46,10 @@ namespace TempTurnsCancellationAutomatedJob
                 {
                     try
                     {
-                        var InstanceConfiguration = new R2CoreInstanceConfigurationManager(_DateTimeService);
+                        var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
                         var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(1));
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(InstanceSoftwareUsers.GetSystemUser());
-                        _AutomatedJobsTimer.Interval = InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.TurnsCancellationSetting  , 9) * 1000;
+                        _AutomatedJobsTimer.Interval = InstanceGeneralConfiguration.GetInt64Configuration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.BaseTurnsCancellationSetting  , 9) * 1000;
                         _FailStatus = false;
                         EventLog.WriteEntry("TempTurnsCancellationAutomatedJob", "TempTurnsCancellationAutomatedJob.Interval=" + _AutomatedJobsTimer.Interval.ToString(), EventLogEntryType.SuccessAudit);
                     }

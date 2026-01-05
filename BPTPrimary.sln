@@ -71,8 +71,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMSRecivingAutomatedJob", "
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SMSRecivingAutomatedJobSetup", "SMSRecivingAutomatedJobSetup\SMSRecivingAutomatedJobSetup.vdproj", "{A0CDC7D2-8508-AA49-C7A8-EB6F50FEF198}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMSHandlingAutomatedJob", "SMSHandlingAutomatedJob\SMSHandlingAutomatedJob.csproj", "{A0393798-43A2-4949-AFB6-D218CD4791C3}"
-EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SMSHandlingAutomatedJobSetup", "SMSHandlingAutomatedJobSetup\SMSHandlingAutomatedJobSetup.vdproj", "{0972AECF-701D-A3C9-20FD-15C68098B364}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMSPleaseChargeAutomatedJob", "SMSPleaseChargeAutomatedJob\SMSPleaseChargeAutomatedJob.csproj", "{AB2DE32D-E97D-480B-B128-1025531A5A40}"
@@ -112,6 +110,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APITraffic", "APITraffic\APITraffic.csproj", "{827EB9F8-4C33-4FE4-8221-592906503C04}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIMoneyWallet", "APIMoneyWallet\APIMoneyWallet.csproj", "{429E113B-600E-4BD3-9ED1-43C84EEE80A7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMSGeneralAnnounceSMSAutomatedJob", "SMSGeneralAnnounceSMSAutomatedJob\SMSGeneralAnnounceSMSAutomatedJob.csproj", "{3DE3DBD9-0CD8-462A-8753-DE104A4E2F26}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SMSGeneralAnnounceSMSAutomatedJobSetup", "SMSGeneralAnnounceSMSAutomatedJobSetup\SMSGeneralAnnounceSMSAutomatedJobSetup.vdproj", "{CD5AA077-A45F-B419-ED94-782D4262CBD8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -241,10 +243,6 @@ Global
 		{6F79EFB0-ABFD-4C38-BF28-D8FD76BE605C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A0CDC7D2-8508-AA49-C7A8-EB6F50FEF198}.Debug|Any CPU.ActiveCfg = Debug
 		{A0CDC7D2-8508-AA49-C7A8-EB6F50FEF198}.Release|Any CPU.ActiveCfg = Release
-		{A0393798-43A2-4949-AFB6-D218CD4791C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A0393798-43A2-4949-AFB6-D218CD4791C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A0393798-43A2-4949-AFB6-D218CD4791C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A0393798-43A2-4949-AFB6-D218CD4791C3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0972AECF-701D-A3C9-20FD-15C68098B364}.Debug|Any CPU.ActiveCfg = Debug
 		{0972AECF-701D-A3C9-20FD-15C68098B364}.Release|Any CPU.ActiveCfg = Release
 		{AB2DE32D-E97D-480B-B128-1025531A5A40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -307,6 +305,12 @@ Global
 		{429E113B-600E-4BD3-9ED1-43C84EEE80A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{429E113B-600E-4BD3-9ED1-43C84EEE80A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{429E113B-600E-4BD3-9ED1-43C84EEE80A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DE3DBD9-0CD8-462A-8753-DE104A4E2F26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DE3DBD9-0CD8-462A-8753-DE104A4E2F26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DE3DBD9-0CD8-462A-8753-DE104A4E2F26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DE3DBD9-0CD8-462A-8753-DE104A4E2F26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD5AA077-A45F-B419-ED94-782D4262CBD8}.Debug|Any CPU.ActiveCfg = Debug
+		{CD5AA077-A45F-B419-ED94-782D4262CBD8}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

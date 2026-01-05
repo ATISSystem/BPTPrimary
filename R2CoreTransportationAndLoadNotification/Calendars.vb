@@ -72,7 +72,7 @@ Namespace CalendarManagement
                     Dim Ds As DataSet = Nothing
                     InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                             "Select Top 1 LoadAnnounce from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
-                               Where DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "' Order By HId Desc", 32767, Ds, New Boolean)
+                               Where DateShamsi=R2Primary.DBO.BPTCOGregorianToPersian(GETDATE()) Order By HId Desc", 32767, Ds, New Boolean)
                     Return Ds.Tables(0).Rows(0).Item("LoadAnnounce")
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + "." + ex.Message)
@@ -84,7 +84,7 @@ Namespace CalendarManagement
                     Dim Ds As DataSet = Nothing
                     InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                             "Select Top 1 PCTYpe from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportationLoadNotificationSpecializedPersianCalendar 
-                               Where DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "' Order By HId Desc", 32767, Ds, New Boolean)
+                               Where DateShamsi=R2Primary.DBO.BPTCOGregorianToPersian(GETDATE()) Order By HId Desc", 32767, Ds, New Boolean)
                     Return Convert.ToBoolean(Ds.Tables(0).Rows(0).Item("PCTYpe"))
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + "." + ex.Message)

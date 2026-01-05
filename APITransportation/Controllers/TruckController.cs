@@ -99,6 +99,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(Truck), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (TruckNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -129,76 +131,11 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(Truck), Encoding.UTF8, "application/json");
                 return response;
             }
-            catch (DataBaseException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (AnyNotFoundException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (SoapException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (SessionOverException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (Exception ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-        }
-
-        [HttpPost]
-        [Route("api/GetTruckNativeness")]
-        public HttpResponseMessage GetTruckNativeness([FromBody] APITransportationSessionIdTruckId Content)
-        {
-            try
-            {
-                var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
-                var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager();
-                var SessionId = Content.SessionId;
-                var TruckId = Content.TruckId;
-
-                var User = InstanceSession.ConfirmSession(SessionId);
-
-                var InstanceTruckNativeness = new R2CoreTransportationAndLoadNotificationsTruckNativenessManager();
-                var TruckNativenessExtended = InstanceTruckNativeness.GetTruckNativeness(TruckId, true);
-
-                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(TruckNativenessExtended), Encoding.UTF8, "application/json");
-                return response;
-            }
-            catch (DataBaseException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (AnyNotFoundException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (TruckNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (SoapException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (SessionOverException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (Exception ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-        }
-
-        [HttpPost]
-        [Route("api/ChangeTruckNativeness")]
-        public HttpResponseMessage ChangeTruckNativeness([FromBody] APITransportationSessionIdTruckIdTruckNativenessExpireDate Content)
-        {
-            try
-            {
-                var InstanceSession = new R2CoreSessionManager();
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
-                var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager();
-                var SessionId = Content.SessionId;
-                var TruckId = Content.TruckId;
-                var TruckNativenessExpireDate = Content.TruckNativenessExpireDate;
-
-                var User = InstanceSession.ConfirmSession(SessionId);
-
-                var InstanceTruckNativeness = new R2CoreTransportationAndLoadNotificationsTruckNativenessManager();
-                var TruckNativenessExtended = InstanceTruckNativeness.ChangeTruckNativeness(TruckId, TruckNativenessExpireDate);
-
-                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(TruckNativenessExtended), Encoding.UTF8, "application/json");
-                return response;
-            }
             catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }

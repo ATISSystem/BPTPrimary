@@ -338,6 +338,40 @@ Namespace ProvincesAndCities
             End Try
         End Function
 
+        'BPTChanged
+        Public Function GetListOfProvinces_SearchIntroCharacters(YourSearchStr As String, YourImmediately As Boolean) As String
+            Try
+                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchStr)
+
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                           "Select Provinces.ProvinceId as ProvinceId,Provinces.ProvinceName as ProvinceName
+                            from R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces
+                            Where Provinces.Deleted=0 and Provinces.ProvinceName like N'%" & YourSearchStr & "%' Order By Provinces.ProvinceName for json Path")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                           "Select Provinces.ProvinceId as ProvinceId,Provinces.ProvinceName as ProvinceName
+                            from R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces
+                            Where Provinces.Deleted=0 and Provinces.ProvinceName like N'%" & YourSearchStr & "%' Order By Provinces.ProvinceName for json Path", 32767, Ds, New Boolean).GetRecordsCount() = 0 Then
+                        Throw New AnyNotFoundException
+                    End If
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As SqlInjectionException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
         Public Sub ChangeActiveStatusOfProvince(YourProvinceId As Int64, YourProvineActive As Boolean)
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection

@@ -72,7 +72,7 @@ namespace APITraffic.Controllers
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceTraffic.GetTrafficRecords(TrafficCardId), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(InstanceTraffic.GetTrafficRecords(TrafficCardId, true), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SessionOverException ex)

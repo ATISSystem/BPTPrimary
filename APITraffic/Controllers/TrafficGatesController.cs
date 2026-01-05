@@ -50,6 +50,8 @@ namespace APITraffic.Controllers
                 response.Content = new StringContent(InstanceTrafficGates.GetTrafficGatesJSON(), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)

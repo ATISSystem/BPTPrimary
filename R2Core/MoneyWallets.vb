@@ -10,7 +10,9 @@ Imports R2Core.MonetaryCreditSupplySources
 Imports R2Core.MonetarySupply
 Imports R2Core.MoneyWallet.Exceptions
 Imports R2Core.SecurityAlgorithmsManagement.AESAlgorithms
+Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SoftwareUserManagement
+Imports R2Core.SQLInjectionPrevention
 Imports System.Data.SqlClient
 Imports System.Reflection
 
@@ -277,12 +279,17 @@ Namespace MoneyWallet
 
             Public Function VerificationRequest(YourMCSSId As Int64, YourAuthority As String) As Int64
                 Try
+                    Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+                    InstanceSQLInjectionPrevention.GeneralAuthorization(YourAuthority)
+
                     PayId = GetNSSPayment(YourAuthority).PayId
                     Dim Amount = GetNSSPayment(YourAuthority).Amount
                     Dim InstanceMCSS = New R2CoreMClassMonetaryCreditSupplySourcesManager(_DateTimeService)
                     MS = New R2CoreMonetarySupply(InstanceMCSS.GetNSSMonetaryCreditSupplySource(YourMCSSId), Amount)
                     MS.StartVerification(YourAuthority)
                     Return PayId
+                Catch ex As SqlInjectionException
+                    Throw ex
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
                 End Try

@@ -27,6 +27,9 @@ Imports Newtonsoft.Json
 Imports R2Core.PublicProc
 Imports R2CoreParkingSystem.UserChargeProcessManagement
 Imports R2Core.DateTimeProvider
+Imports R2Core.GeneralConfiguration
+Imports R2Core.SQLInjectionPrevention
+Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 
 Namespace MoneyWalletManagement
 
@@ -286,6 +289,9 @@ Namespace MoneyWalletManagement
 
         Public Function GetMoneyWalletfromCarId(YourTruckId As Int64, YourImmediately As Boolean) As R2CoreMoneyWallet
             Try
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourTruckId)
+
                 Dim InstanceTrafficCards = New R2CoreParkingSystemInstanceTrafficCardsManager
 
                 Dim SqlString = "Select Top 1 RFIDCards.CardId,RFIDCards.CardNo,RFIDCards.Charge from dbtransport.dbo.TbCar as Cars 
@@ -304,6 +310,8 @@ Namespace MoneyWalletManagement
                     If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, SqlString, 300, Ds, New Boolean).GetRecordsCount = 0 Then Throw New MoneyWalletNotExistException
                 End If
                 Return New R2CoreMoneyWallet With {.MoneyWalletId = Ds.Tables(0).Rows(0).Item("CardId"), .MoneyWalletCode = Ds.Tables(0).Rows(0).Item("CardNo"), .Balance = Ds.Tables(0).Rows(0).Item("Charge")}
+            Catch ex As SqlInjectionException
+                Throw ex
             Catch ex As MoneyWalletNotExistException
                 Throw ex
             Catch ex As Exception
@@ -314,6 +322,9 @@ Namespace MoneyWalletManagement
 
         Public Function GetMoneyWalletfromTransportCompanyId(YourTransportCompanyId As Int64, YourImmediately As Boolean) As R2CoreMoneyWallet
             Try
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourTransportCompanyId)
+
                 Dim Ds As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -334,6 +345,8 @@ Namespace MoneyWalletManagement
                         Where MoneyWallets.Active=1 and TransportCompanies.TCId=" & YourTransportCompanyId & "", 32767, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New RelatedMoneyWalletNotFoundException
                 End If
                 Return New R2CoreMoneyWallet With {.MoneyWalletId = Ds.Tables(0).Rows(0).Item("MoneyWalletId"), .MoneyWalletCode = Ds.Tables(0).Rows(0).Item("MoneyWalletCode").trim, .Balance = Ds.Tables(0).Rows(0).Item("Balance")}
+            Catch ex As SqlInjectionException
+                Throw ex
             Catch ex As RelatedMoneyWalletNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -344,7 +357,8 @@ Namespace MoneyWalletManagement
         Public Function GetMoneyWalletCharge(YourMoneyWalletId As Int64) As Int64
             Try
                 Dim Da As New SqlClient.SqlDataAdapter : Dim ds As New DataSet
-                Da.SelectCommand = New SqlClient.SqlCommand("select charge from R2Primary.dbo.tblrfidcards where CardId=" & YourMoneyWalletId & "")
+                Da.SelectCommand = New SqlClient.SqlCommand("select charge from R2Primary.dbo.tblrfidcards where CardId=@CardId")
+                Da.SelectCommand.Parameters.Add("@CardId", SqlDbType.BigInt).Value = YourMoneyWalletId
                 Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
                 ds.Tables.Clear()
                 If Da.Fill(ds) <> 0 Then
@@ -668,17 +682,17 @@ Namespace MoneyWalletChargeManagement
             '    End Try
             'End Function
 
-            Public Function GetNSSAmount(YourMWCAId As Int64) As R2CoreParkingSystemMoneyWalletChargingAmountStructure
-                Try
-                    Dim DS As DataSet
-                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
-                        "Select Top 1 MoneyWalletChargingAmounts.* from R2Primary.dbo.TblMoneyWalletChargingAmounts as MoneyWalletChargingAmounts 
-                         Where MoneyWalletChargingAmounts.MWCAId=" & YourMWCAId & " and MoneyWalletChargingAmounts.Deleted=0", 3600, DS, New Boolean)
-                    Return New R2CoreParkingSystemMoneyWalletChargingAmountStructure(DS.Tables(0).Rows(0).Item("MWCAId"), DS.Tables(0).Rows(0).Item("MWCAName").trim, DS.Tables(0).Rows(0).Item("MWCATitle").trim, DS.Tables(0).Rows(0).Item("MWCARial"), DS.Tables(0).Rows(0).Item("UserId"), DS.Tables(0).Rows(0).Item("DateTimeMilladi"), DS.Tables(0).Rows(0).Item("DateShamsi").trim, DS.Tables(0).Rows(0).Item("Time").trim, DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Deleted"))
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            'Public Function GetNSSAmount(YourMWCAId As Int64) As R2CoreParkingSystemMoneyWalletChargingAmountStructure
+            '    Try
+            '        Dim DS As DataSet
+            '        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+            '            "Select Top 1 MoneyWalletChargingAmounts.* from R2Primary.dbo.TblMoneyWalletChargingAmounts as MoneyWalletChargingAmounts 
+            '             Where MoneyWalletChargingAmounts.MWCAId=" & YourMWCAId & " and MoneyWalletChargingAmounts.Deleted=0", 3600, DS, New Boolean)
+            '        Return New R2CoreParkingSystemMoneyWalletChargingAmountStructure(DS.Tables(0).Rows(0).Item("MWCAId"), DS.Tables(0).Rows(0).Item("MWCAName").trim, DS.Tables(0).Rows(0).Item("MWCATitle").trim, DS.Tables(0).Rows(0).Item("MWCARial"), DS.Tables(0).Rows(0).Item("UserId"), DS.Tables(0).Rows(0).Item("DateTimeMilladi"), DS.Tables(0).Rows(0).Item("DateShamsi").trim, DS.Tables(0).Rows(0).Item("Time").trim, DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Deleted"))
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
         End Class
 
@@ -699,8 +713,8 @@ Namespace MoneyWalletChargeManagement
         'مبلغ امانت به واحد ریال است
         Public Function PaymentRequest(YourAmount As Int64, YourUserId As Int64) As String
             Try
-                Dim InstanceConfiguration = New R2Core.ConfigurationManagement.R2CoreInstanceConfigurationManager(_DateTimeService)
-                Dim MaxChargeAmount = InstanceConfiguration.GetConfigInt64(R2CoreParkingSystemConfigurations.MoneyWalletCharge, 0)
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
+                Dim MaxChargeAmount = InstanceGeneralConfiguration.GetInt64Configuration(R2CoreParkingSystemConfigurations.MoneyWalletCharge, 0)
                 Dim Amount = YourAmount * 10
                 If Amount > MaxChargeAmount Then Throw New ChargingAmountInvalidException
 
@@ -715,7 +729,7 @@ Namespace MoneyWalletChargeManagement
                 End While
                 If NSSPaymentRequest.Authority <> String.Empty Then
                     'Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceConfiguration.GetConfigString(R2CoreConfigurations.AqayepardakhtPaymentGate, 2)})
-                    Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceConfiguration.GetConfigString(R2CoreConfigurations.ZarrinPalPaymentGate, 2)})
+                    Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ZarrinPalPaymentGate, 2)})
                     'Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceConfiguration.GetConfigString(R2CoreConfigurations.ShepaPaymentGate, 2)})
                 Else
                     Throw New PaymentWebServiceConnectingException(NSSPaymentRequest.PaymentErrors)
@@ -730,30 +744,54 @@ Namespace MoneyWalletChargeManagement
 
         End Function
 
-        Public Function GetDefaultAmounts() As String
+        Public Function GetDefaultAmounts(YourImmediately As Boolean) As String
             Try
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
-                Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
-                  "Select AmountTitle,Amount from R2Primary.dbo.TblDefaultMoneyWalletChargingAmounts Order By Amount for json auto", 32767, DS, New Boolean)
+                Dim DS As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                        "Select AmountTitle,Amount from R2Primary.dbo.TblDefaultMoneyWalletChargingAmounts Order By Amount for json auto")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                        "Select AmountTitle,Amount from R2Primary.dbo.TblDefaultMoneyWalletChargingAmounts Order By Amount for json auto", 32767, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                End If
                 Return InstancePublicProcedures.GetIntegratedJson(DS)
+            Catch ex As AnyNotFoundException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Function
 
-        Public Function GetMoneyWalletChargeRecords(ByVal YourMoneyWalletId As Int64) As String
+        Public Function GetMoneyWalletChargeRecords(ByVal YourMoneyWalletId As Int64, YourImmediately As Boolean) As String
             Try
-                Dim Ds As New DataSet
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourMoneyWalletId)
+
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
                           "Select Top 100  Charges.DateShamsi as ShamsiDate,Charges.TimeCharge as Time,Charges.Mblgh as Amount,SoftwareUsers.UserName as UserName
                            from R2Primary.dbo.TblMoneyWalletCharges AS Charges 
                               Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Charges.UserId=SoftwareUsers.UserId
-                           Where Charges.CardId=" & YourMoneyWalletId & " Order by Charges.DateTimeMilladi Desc for json path", 300, Ds, New Boolean).GetRecordsCount = 0 Then
-                    Throw New AnyNotFoundException
+                           Where Charges.CardId=" & YourMoneyWalletId & " Order by Charges.DateTimeMilladi Desc for json path")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                          "Select Top 100  Charges.DateShamsi as ShamsiDate,Charges.TimeCharge as Time,Charges.Mblgh as Amount,SoftwareUsers.UserName as UserName
+                           from R2Primary.dbo.TblMoneyWalletCharges AS Charges 
+                              Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Charges.UserId=SoftwareUsers.UserId
+                           Where Charges.CardId=" & YourMoneyWalletId & " Order by Charges.DateTimeMilladi Desc for json path", 300, Ds, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
                 End If
                 Return InstancePublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As SqlInjectionException
+                Throw ex
             Catch ex As AnyNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -763,6 +801,12 @@ Namespace MoneyWalletChargeManagement
 
         Public Function GetUserChargeFunction(YourUserId As Int64, YourDate1 As String, YourDate2 As String, YourTime1 As String, YourTime2 As String) As String
             Try
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourDate1)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourDate2)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourTime1)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourTime2)
+
                 Dim PublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
                 Dim myConcat1 As String = YourDate1 + YourTime1
                 Dim myConcat2 As String = YourDate2 + YourTime2
@@ -775,6 +819,8 @@ Namespace MoneyWalletChargeManagement
                        Where (Charges.DateShamsi+Charges.TimeCharge>='" & myConcat1 & "') and (Charges.DateShamsi+Charges.TimeCharge<='" & myConcat2 & "') and UserId=" & YourUserId & "
                        Order by DateTimeMilladi Desc for json path", 0, Ds, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
                 Return PublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As SqlInjectionException
+                Throw ex
             Catch ex As AnyNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -784,6 +830,12 @@ Namespace MoneyWalletChargeManagement
 
         Public Function GetTotalAmountofUserFunction(YourUserId As Int64, YourDate1 As String, YourDate2 As String, YourTime1 As String, YourTime2 As String) As Int64
             Try
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourDate1)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourDate2)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourTime1)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourTime2)
+
                 Dim myConcat1 As String = YourDate1 + YourTime1
                 Dim myConcat2 As String = YourDate2 + YourTime2
                 Dim DS As New DataSet
@@ -800,6 +852,8 @@ Namespace MoneyWalletChargeManagement
                 Else
                     Return 0
                 End If
+            Catch ex As SqlInjectionException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try

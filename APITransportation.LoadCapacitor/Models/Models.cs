@@ -60,7 +60,26 @@ namespace APITransportation.LoadCapacitor.Models
             public List<R2CoreTransportationAndLoadNotificationTPTParamsDetails> ListofTransportTariffsParams;
         }
 
+        public class APITransportationLoadCapacitorSessionIdRawTPTParam
+        {
+            public String SessionId;
+            public R2CoreTransportationAndLoadNotificationTPTParams RawTPTParam;
+        }
+
+        public class APITransportationLoadCapacitorSessionIdRawTPTParamDetail
+        {
+            public String SessionId;
+            public R2CoreTransportationAndLoadNotificationTransportTariffsParametersDetail RawTPTParamDetail;
+        }
+
+        public class APITransportationLoadCapacitorSessionIdTPTPId
+        {
+            public String SessionId;
+            public Int64  TPTPId;
+        }
+
         
+
 
     }
 }

@@ -2,6 +2,7 @@
 using APITransportation.Models;
 using APITransportation.Models.LoaderTypes;
 using APITransportation.Models.ProvincesAndCities;
+using APITransportation.Models.SequentialTurns;
 using Newtonsoft.Json;
 using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
@@ -11,6 +12,8 @@ using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
 using R2CoreParkingSystem.ProvincesAndCities;
 using R2CoreTransportationAndLoadNotification.LoaderTypes;
+using R2CoreTransportationAndLoadNotification.Trucks.Exceptions;
+using R2CoreTransportationAndLoadNotification.Turns.SequentialTurns;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -86,6 +89,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceLoaderTypes.GetLoaderTypeBySoftwareUser(User.UserId)), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (TruckNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -100,13 +105,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/ChangeActivateStatusOfLoaderType")]
-        public HttpResponseMessage ChangeActivateStatusOfLoaderType()
+        public HttpResponseMessage ChangeActivateStatusOfLoaderType([FromBody] APITransportationSessionIdLoaderTypeId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLoaderTypeId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var LoaderTypeId = Content.LoaderTypeId;
 
@@ -129,7 +133,98 @@ namespace APITransportation.Controllers
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
 
+        [HttpPost]
+        [Route("api/GetLoaderTypeRelationAnnouncementSubGroups")]
+        public HttpResponseMessage GetLoaderTypeRelationAnnouncementSubGroups([FromBody] APICommonSessionId Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var SessionId = Content.SessionId;
 
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceLoaderTypes = new R2CoreTransportationAndLoadNotificationLoaderTypesManager(_DateTimeService);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(InstanceLoaderTypes.GetLoaderTypeRelationAnnouncementSubGroups(true), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
+        [Route("api/LoaderTypeRelationAnnouncementSubGroupRegistering")]
+        public HttpResponseMessage LoaderTypeRelationAnnouncementSubGroupRegistering([FromBody] APITransportationSessionIdLoaderTypeIdAnnouncementSubGroupId Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var SessionId = Content.SessionId;
+                var LoaderTypeId = Content.LoaderTypeId;
+                var AnnouncementSubGroupId = Content.AnnouncementSubGroupId;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceLoaderTypes = new R2CoreTransportationAndLoadNotificationLoaderTypesManager(_DateTimeService);
+                InstanceLoaderTypes.LoaderTypeRelationAnnouncementSubGroupRegistering(LoaderTypeId, AnnouncementSubGroupId);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
+        [Route("api/LoaderTypeRelationAnnouncementSubGroupDeleting")]
+        public HttpResponseMessage LoaderTypeRelationAnnouncementSubGroupDeleting([FromBody] APITransportationSessionIdLoaderTypeIdAnnouncementSubGroupId Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var SessionId = Content.SessionId;
+                var LoaderTypeId = Content.LoaderTypeId;
+                var AnnouncementSubGroupId = Content.AnnouncementSubGroupId;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceLoaderTypes = new R2CoreTransportationAndLoadNotificationLoaderTypesManager(_DateTimeService);
+                InstanceLoaderTypes.LoaderTypeRelationAnnouncementSubGroupDeleting(LoaderTypeId, AnnouncementSubGroupId);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
 
     }
 }

@@ -10,6 +10,7 @@ Imports R2Core.DateTimeProvider
 Imports R2Core.EntityRelationManagement
 Imports R2Core.LoggingManagement
 Imports R2Core.PublicProc
+Imports R2Core.SMS.SMSResultLogging
 Imports R2Core.SoftwareUserManagement
 Imports R2Core.WebProcessesManagement.Exceptions
 Imports System.Drawing
@@ -150,6 +151,13 @@ Namespace WebProcessesManagement
     Public Class R2CoreWebProcessesManager
 
         Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
+        Private _DateTimeService As IR2DateTimeService
+        Private _LoggerService As ILogger
+
+        Public Sub New()
+            _LoggerService = New R2CorenLogService
+            _DateTimeService = New R2DateTimeService
+        End Sub
 
         Public Function GetWebProcesses(YourUserId As Int64) As String
             Try
@@ -182,7 +190,7 @@ Namespace WebProcessesManagement
             End Try
         End Function
 
-        Public Function GetVeryUsefulWebProcesses(YourUserd As R2CoreSoftwareUser) As String
+        Public Function GetVeryUsefulWebProcesses(YourUser As R2CoreSoftwareUser) As String
             Try
                 Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim Ds As DataSet
@@ -196,7 +204,7 @@ Namespace WebProcessesManagement
 						 Inner Join R2Primary.dbo.TblWebProcesses as WebProcesses on  WebProcessGroupWebProcess.E2=WebProcesses.PId 
 						 Inner Join R2Primary.dbo.TblPermissions as [Permissions] On   WebProcesses.PId=[Permissions].EntityIdSecond and SoftwareUser.UserId=[Permissions].EntityIdFirst  
                          Inner Join R2Primary.dbo.TblVeryUsefulProcesses as VeryUsefulProcesses On WebProcesses.PId=VeryUsefulProcesses.WebProcessId 
-                  Where SoftwareUser.UserId=" & YourUserd.UserId & "  and VeryUsefulProcesses.UserTypeId=" & YourUserd.UserTypeId & " and SoftwareUser.UserActive=1 and SoftwareUser.Deleted=0and 
+                  Where SoftwareUser.UserId=" & YourUser.UserId & "  and VeryUsefulProcesses.UserTypeId=" & YourUser.UserTypeId & " and SoftwareUser.UserActive=1 and SoftwareUser.Deleted=0and 
 				        SoftwareUserWebProcessGroup.ERTypeId=" & R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup & " and SoftwareUserWebProcessGroup.RelationActive=1 and  
 						WebProcessGroups.ViewFlag=1 and  WebProcessGroups.Active=1 and WebProcessGroups.Deleted=0 and
 						WebProcessGroupWebProcess.ERTypeId=" & R2CoreEntityRelationTypes.WebProcessGroup_WebProcess & " and WebProcessGroupWebProcess.RelationActive=1 and
@@ -215,7 +223,7 @@ Namespace WebProcessesManagement
             End Try
         End Function
 
-        Public Function GetTaskBarWebProcesses(YourUserd As R2CoreSoftwareUser) As String
+        Public Function GetTaskBarWebProcesses(YourUser As R2CoreSoftwareUser) As String
             Try
                 Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim Ds As DataSet
@@ -229,7 +237,7 @@ Namespace WebProcessesManagement
 						 Inner Join R2Primary.dbo.TblWebProcesses as WebProcesses on  WebProcessGroupWebProcess.E2=WebProcesses.PId 
 						 Inner Join R2Primary.dbo.TblPermissions as [Permissions] On   WebProcesses.PId=[Permissions].EntityIdSecond and SoftwareUser.UserId=[Permissions].EntityIdFirst  
                          Inner Join R2Primary.dbo.TblTaskBarProcesses as TaskBarProcesses On WebProcesses.PId=TaskBarProcesses.WebProcessId 
-                  Where SoftwareUser.UserId=" & YourUserd.UserId & "  and TaskBarProcesses.UserTypeId=" & YourUserd.UserTypeId & " and SoftwareUser.UserActive=1 and SoftwareUser.Deleted=0and 
+                  Where SoftwareUser.UserId=" & YourUser.UserId & "  and TaskBarProcesses.UserTypeId=" & YourUser.UserTypeId & " and SoftwareUser.UserActive=1 and SoftwareUser.Deleted=0and 
 				        SoftwareUserWebProcessGroup.ERTypeId=" & R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup & " and SoftwareUserWebProcessGroup.RelationActive=1 and  
 						WebProcessGroups.ViewFlag=1 and  WebProcessGroups.Active=1 and WebProcessGroups.Deleted=0 and
 						WebProcessGroupWebProcess.ERTypeId=" & R2CoreEntityRelationTypes.WebProcessGroup_WebProcess & " and WebProcessGroupWebProcess.RelationActive=1 and
@@ -251,7 +259,7 @@ Namespace WebProcessesManagement
         Public Function GetAllOfWebProcessGroupsWebProcesses(YourSoftwareUserId As Int64) As String
             Try
                 Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
-                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(New R2DateTimeService, Nothing)
+                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(_DateTimeService, Nothing)
                 Dim Ds As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                  "Select WebProcessGroups.PGId,WebProcessGroups.PGTitle,WebProcessGroups.PGIconName,WebProcesses.PId,WebProcesses.PTitle,WebProcesses.PName,WebProcesses.Description,WebProcesses.PIconName from R2Primary.dbo.TblWebProcessGroups as WebProcessGroups 

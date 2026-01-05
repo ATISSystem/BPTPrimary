@@ -11,6 +11,7 @@ using R2Core.SessionManagement;
 using R2Core.SoftwareUserManagement;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.Exceptions;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad;
+using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad.Exceptions;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoadManipulation;
 using R2CoreTransportationAndLoadNotification.RequesterManagement;
 using R2CoreTransportationAndLoadNotification.TransportTariffsParameters;
@@ -65,6 +66,10 @@ namespace APITransportation.LoadCapacitor.Controllers
                 response.Content = new StringContent(Loads, Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (PleaseReTryException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (BaseInfFailedException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (RedisException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
@@ -98,6 +103,8 @@ namespace APITransportation.LoadCapacitor.Controllers
                 response.Content = new StringContent(InstanceLoad.GetLoadStatusesForSoftwareUserType(User), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (LoadStatusesForSoftwareUserTypeNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (RedisException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
@@ -272,108 +279,6 @@ namespace APITransportation.LoadCapacitor.Controllers
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceLoad.GetLoad(LoadId, true)), Encoding.UTF8, "application/json");
-                return response;
-            }
-            catch (RedisException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (DataBaseException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTariffParameterDetailNotFoundException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (LoadCapacitorLoadNotFoundException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (AnyNotFoundException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (SessionOverException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (Exception ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-        }
-
-        [HttpPost]
-        [Route("api/GetListofTransportTariffsParams")]
-        public HttpResponseMessage GetListofTransportTariffsParams([FromBody] APITransportationLoadCapacitorSessionIdTPTParams Content)
-        {
-            try
-            {
-                var InstanceSession = new R2CoreSessionManager();
-                var SessionId = Content.SessionId;
-                var TPTParams = Content.TPTParams;
-
-                var User = InstanceSession.ConfirmSession(SessionId);
-
-                var InstanceTransportTariffsParameters = new R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService);
-
-                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTransportTariffsParameters.GetListofTransportTariffsParams(TPTParams)), Encoding.UTF8, "application/json");
-                return response;
-            }
-            catch (RedisException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (DataBaseException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTariffParameterDetailNotFoundException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (LoadCapacitorLoadNotFoundException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (AnyNotFoundException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (SessionOverException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (Exception ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-        }
-
-        [HttpPost]
-        [Route("api/GetListofTransportTariffsParamsByAnnouncementSGId")]
-        public HttpResponseMessage GetListofTransportTariffsParamsByAnnouncementSGId([FromBody] APITransportationLoadCapacitorSessionIdAnnouncementSGId Content)
-        {
-            try
-            {
-                var InstanceSession = new R2CoreSessionManager();
-                var SessionId = Content.SessionId;
-                var AnnouncementSGId = Convert.ToInt64(Content.AnnouncementSGId);
-
-                var User = InstanceSession.ConfirmSession(SessionId);
-
-                var InstanceTransportTariffsParameters = new R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService);
-
-                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTransportTariffsParameters.GetListofTransportTariffsParamsByAnnouncementSGId(AnnouncementSGId)), Encoding.UTF8, "application/json");
-                return response;
-            }
-            catch (RedisException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (DataBaseException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (TransportPriceTariffParameterDetailNotFoundException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (LoadCapacitorLoadNotFoundException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (AnyNotFoundException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (SessionOverException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (Exception ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-        }
-
-        [HttpPost]
-        [Route("api/GetTPTParams")]
-        public HttpResponseMessage GetTPTParams([FromBody] APITransportationLoadCapacitorSessionIdListofTransportTariffsParams Content)
-        {
-            try
-            {
-                var InstanceSession = new R2CoreSessionManager();
-                var SessionId = Content.SessionId;
-                var ListofTransportTariffsParams = Content.ListofTransportTariffsParams;
-
-                var User = InstanceSession.ConfirmSession(SessionId);
-
-                var InstanceTransportTariffsParameters = new R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService);
-
-                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { TPTParams = InstanceTransportTariffsParameters.GetTPTParams(ListofTransportTariffsParams) }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)

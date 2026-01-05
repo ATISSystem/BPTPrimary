@@ -43,13 +43,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetFPCs")]
-        public HttpResponseMessage GetFactoriesAndProductionCenters()
+        public HttpResponseMessage GetFactoriesAndProductionCenters([FromBody] APICommonSessionIdSearchString Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
-                var Content = JsonConvert.DeserializeObject<APICommonSessionIdSearchString>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
@@ -75,13 +74,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetFPC")]
-        public HttpResponseMessage GetFactoryAndProductionCenter()
+        public HttpResponseMessage GetFactoryAndProductionCenter([FromBody] APITransportationSessionIdFactoryAndProductionCenterId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdFactoryAndProductionCenterId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var FPCId = Content.FPCId;
 
@@ -107,21 +105,20 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/FPCRegistering")]
-        public HttpResponseMessage FactoryAndProductionCenterRegistering()
+        public HttpResponseMessage FactoryAndProductionCenterRegistering([FromBody] APITransportationSessionIdRawFactoryAndProductionCenter Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdRawFactoryAndProductionCenter>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
-                var FactoryAndProductionCenter = Content.RawFPC;
+                var RawFactoryAndProductionCenter = Content.RawFPC;
                 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
-                InstanceFactoriesAndProductionCenters.FactoryAndProductionCenterRegister(FactoryAndProductionCenter);
+                InstanceFactoriesAndProductionCenters.FactoryAndProductionCenterRegister(RawFactoryAndProductionCenter);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -138,21 +135,20 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/EditFPC")]
-        public HttpResponseMessage EditFactoryAndProductionCenter()
+        public HttpResponseMessage EditFactoryAndProductionCenter([FromBody] APITransportationSessionIdRawFactoryAndProductionCenter Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdRawFactoryAndProductionCenter>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
-                var FactoryAndProductionCenter = Content.RawFPC;
+                var RawFactoryAndProductionCenter = Content.RawFPC;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceFactoriesAndProductionCenters = new R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager();
-                InstanceFactoriesAndProductionCenters.EditFactoryAndProductionCenter(FactoryAndProductionCenter);
+                InstanceFactoriesAndProductionCenters.EditFactoryAndProductionCenter(RawFactoryAndProductionCenter);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -169,14 +165,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/DeleteFPC")]
-        public HttpResponseMessage DeleteFactoryAndProductionCenter()
+        public HttpResponseMessage DeleteFactoryAndProductionCenter([FromBody] APITransportationSessionIdFactoryAndProductionCenterId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdFactoryAndProductionCenterId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var FPCId = Content.FPCId;
 
@@ -200,13 +195,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/ActivateFPCSMSOwner")]
-        public HttpResponseMessage ActivateFactoryAndProductionCenterSMSOwner()
+        public HttpResponseMessage ActivateFactoryAndProductionCenterSMSOwner([FromBody] APITransportationSessionIdFactoryAndProductionCenterId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdFactoryAndProductionCenterId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var FPCId = Content.FPCId;
 
@@ -230,13 +224,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/ResetFPCUserPassword")]
-        public HttpResponseMessage ResetFactoryAndProductionCenterUserPassword()
+        public HttpResponseMessage ResetFactoryAndProductionCenterUserPassword([FromBody] APITransportationSessionIdFactoryAndProductionCenterId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
 
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdFactoryAndProductionCenterId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var FPCId = Content.FPCId;
 
@@ -260,14 +253,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/FPCChangeActiveStatus")]
-        public HttpResponseMessage FactoryAndProductionCenterChangeActiveStatus()
+        public HttpResponseMessage FactoryAndProductionCenterChangeActiveStatus([FromBody] APITransportationSessionIdFactoryAndProductionCenterId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
 
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdFactoryAndProductionCenterId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var FPCId = Content.FPCId;
 

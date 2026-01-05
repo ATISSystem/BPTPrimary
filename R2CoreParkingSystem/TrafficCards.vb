@@ -8,11 +8,13 @@ Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
+Imports R2Core.GeneralConfiguration
 Imports R2Core.PublicProc
 Imports R2Core.RFIDCards
 Imports R2Core.SoftwareUserManagement
 Imports R2CoreParkingSystem.AccountingManagement
 Imports R2CoreParkingSystem.ConfigurationManagement
+Imports R2CoreParkingSystem.GeneralConfiguration
 Imports R2CoreParkingSystem.MoneyWalletManagement
 Imports R2CoreParkingSystem.TrafficCardsManagement.ExceptionManagement
 Imports System.Data.SqlClient
@@ -341,56 +343,56 @@ Namespace TrafficCardsManagement
         Private Shared ReadOnly _DateTimeService = New R2DateTimeService()
         Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
-        Public Shared Function IsTerafficCardNoConfirm(ByVal CardNo As String) As Boolean
-            Try
-                GetNSSTrafficCard(CardNo)
-                Return True
-            Catch exx As GetNSSException
-                Return False
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-        Public Shared Sub TrafficCardSabt(ByRef TrafficCard As R2CoreParkingSystemStandardTrafficCardStructure)
-            Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
-            Try
-                Cmdsql.Connection.Open()
-                Cmdsql.CommandText = "insert into R2Primary.dbo.tblrfidcards(CardId,CardNo,Charge,UseriDSabt,UserIdEdit,PelakType,Pelak,Serial,NoMoney,Active,CompanyName,NameFamily,Mobile,Address,Tel,Tahvilg,DateTimeMilladiSabt,DateTimeMilladiEdit,DateShamsiSabt,DateShamsiEdit,CardType,TempCardType) values('" & TrafficCard.CardId & "','" & TrafficCard.CardNo & "'," & TrafficCard.Charge & "," & TrafficCard.UserIdSabt & "," & TrafficCard.UserIdEdit & "," & TrafficCard.PelakType & ",'" & TrafficCard.Pelak & "','" & TrafficCard.Serial & "'," & IIf(TrafficCard.NoMoney = True, 1, 0) & "," & IIf(TrafficCard.Active = True, 1, 0) & ",'" & TrafficCard.CompanyName & "','" & TrafficCard.NameFamily & "','" & TrafficCard.Mobile & "','" & TrafficCard.Address & "','" & TrafficCard.Tel & "','" & TrafficCard.Tahvilg & "','" & TrafficCard.DateTimeMilladiSabt.ToString("yyyy-MM-dd HH:mm:ss") & "','" & TrafficCard.DateTimeMilladiEdit.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) & "','" & TrafficCard.DateShamsiSabt & "','" & TrafficCard.DateShamsiEdit & "'," & TrafficCard.CardType & "," & TrafficCard.TempCardType & ")"
-                Cmdsql.ExecuteNonQuery()
-                Cmdsql.Connection.Close()
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-        Public Shared Sub UpdateTrafficCardType(YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure)
-            Dim CmdSql As New SqlCommand
-            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.CommandText = "Update R2Primary.dbo.TblRfidCards Set CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & " Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
-                CmdSql.ExecuteNonQuery()
-                CmdSql.Connection.Close()
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-        Public Shared Sub TerafficCardEdit(ByVal YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourEditLevel As R2Enums.EditLevel)
-            Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                Cmdsql.Connection.Open()
-                If YourEditLevel = R2Enums.EditLevel.LowLevel Then
-                    Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set UserIdEdit=" & YourNSSTerafficCard.UserIdEdit & ",Pelak='" & YourNSSTerafficCard.Pelak & "',Serial='" & YourNSSTerafficCard.Serial & "',CompanyName='" & YourNSSTerafficCard.CompanyName & "',NameFamily='" & YourNSSTerafficCard.NameFamily & "',Mobile='" & YourNSSTerafficCard.Mobile & "',Address='" & YourNSSTerafficCard.Address & "',Tel='" & YourNSSTerafficCard.Tel & "',Tahvilg='" & YourNSSTerafficCard.Tahvilg & "',CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & ",DateTimeMilladiEdit='" & _DateTimeService.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTimeService.GetCurrentShamsiDate() & "' Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
-                ElseIf YourEditLevel = R2Enums.EditLevel.HighLevel Then
-                    Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set UserIdEdit=" & YourNSSTerafficCard.UserIdEdit & ",Pelak='" & YourNSSTerafficCard.Pelak & "',Serial='" & YourNSSTerafficCard.Serial & "',NoMoney=" & IIf(YourNSSTerafficCard.NoMoney = True, 1, 0) & ",Active=" & IIf(YourNSSTerafficCard.Active = True, 1, 0) & ",CompanyName='" & YourNSSTerafficCard.CompanyName & "',NameFamily='" & YourNSSTerafficCard.NameFamily & "',Mobile='" & YourNSSTerafficCard.Mobile & "',Address='" & YourNSSTerafficCard.Address & "',Tel='" & YourNSSTerafficCard.Tel & "',Tahvilg='" & YourNSSTerafficCard.Tahvilg & "',CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & ",DateTimeMilladiEdit='" & _DateTimeService.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTimeService.GetCurrentShamsiDate() & "' Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
-                End If
-                Cmdsql.ExecuteNonQuery()
-                Cmdsql.Connection.Close()
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
+        'Public Shared Function IsTerafficCardNoConfirm(ByVal CardNo As String) As Boolean
+        '    Try
+        '        GetNSSTrafficCard(CardNo)
+        '        Return True
+        '    Catch exx As GetNSSException
+        '        Return False
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
+        'Public Shared Sub TrafficCardSabt(ByRef TrafficCard As R2CoreParkingSystemStandardTrafficCardStructure)
+        '    Dim Cmdsql As New SqlClient.SqlCommand
+        '    Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
+        '    Try
+        '        Cmdsql.Connection.Open()
+        '        Cmdsql.CommandText = "insert into R2Primary.dbo.tblrfidcards(CardId,CardNo,Charge,UseriDSabt,UserIdEdit,PelakType,Pelak,Serial,NoMoney,Active,CompanyName,NameFamily,Mobile,Address,Tel,Tahvilg,DateTimeMilladiSabt,DateTimeMilladiEdit,DateShamsiSabt,DateShamsiEdit,CardType,TempCardType) values('" & TrafficCard.CardId & "','" & TrafficCard.CardNo & "'," & TrafficCard.Charge & "," & TrafficCard.UserIdSabt & "," & TrafficCard.UserIdEdit & "," & TrafficCard.PelakType & ",'" & TrafficCard.Pelak & "','" & TrafficCard.Serial & "'," & IIf(TrafficCard.NoMoney = True, 1, 0) & "," & IIf(TrafficCard.Active = True, 1, 0) & ",'" & TrafficCard.CompanyName & "','" & TrafficCard.NameFamily & "','" & TrafficCard.Mobile & "','" & TrafficCard.Address & "','" & TrafficCard.Tel & "','" & TrafficCard.Tahvilg & "','" & TrafficCard.DateTimeMilladiSabt.ToString("yyyy-MM-dd HH:mm:ss") & "','" & TrafficCard.DateTimeMilladiEdit.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) & "','" & TrafficCard.DateShamsiSabt & "','" & TrafficCard.DateShamsiEdit & "'," & TrafficCard.CardType & "," & TrafficCard.TempCardType & ")"
+        '        Cmdsql.ExecuteNonQuery()
+        '        Cmdsql.Connection.Close()
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
+        'Public Shared Sub UpdateTrafficCardType(YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure)
+        '    Dim CmdSql As New SqlCommand
+        '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
+        '    Try
+        '        CmdSql.Connection.Open()
+        '        CmdSql.CommandText = "Update R2Primary.dbo.TblRfidCards Set CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & " Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
+        '        CmdSql.ExecuteNonQuery()
+        '        CmdSql.Connection.Close()
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
+        'Public Shared Sub TerafficCardEdit(ByVal YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourEditLevel As R2Enums.EditLevel)
+        '    Dim Cmdsql As New SqlClient.SqlCommand
+        '    Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+        '    Try
+        '        Cmdsql.Connection.Open()
+        '        If YourEditLevel = R2Enums.EditLevel.LowLevel Then
+        '            Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set UserIdEdit=" & YourNSSTerafficCard.UserIdEdit & ",Pelak='" & YourNSSTerafficCard.Pelak & "',Serial='" & YourNSSTerafficCard.Serial & "',CompanyName='" & YourNSSTerafficCard.CompanyName & "',NameFamily='" & YourNSSTerafficCard.NameFamily & "',Mobile='" & YourNSSTerafficCard.Mobile & "',Address='" & YourNSSTerafficCard.Address & "',Tel='" & YourNSSTerafficCard.Tel & "',Tahvilg='" & YourNSSTerafficCard.Tahvilg & "',CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & ",DateTimeMilladiEdit='" & _DateTimeService.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTimeService.GetCurrentShamsiDate() & "' Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
+        '        ElseIf YourEditLevel = R2Enums.EditLevel.HighLevel Then
+        '            Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set UserIdEdit=" & YourNSSTerafficCard.UserIdEdit & ",Pelak='" & YourNSSTerafficCard.Pelak & "',Serial='" & YourNSSTerafficCard.Serial & "',NoMoney=" & IIf(YourNSSTerafficCard.NoMoney = True, 1, 0) & ",Active=" & IIf(YourNSSTerafficCard.Active = True, 1, 0) & ",CompanyName='" & YourNSSTerafficCard.CompanyName & "',NameFamily='" & YourNSSTerafficCard.NameFamily & "',Mobile='" & YourNSSTerafficCard.Mobile & "',Address='" & YourNSSTerafficCard.Address & "',Tel='" & YourNSSTerafficCard.Tel & "',Tahvilg='" & YourNSSTerafficCard.Tahvilg & "',CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & ",DateTimeMilladiEdit='" & _DateTimeService.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTimeService.GetCurrentShamsiDate() & "' Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
+        '        End If
+        '        Cmdsql.ExecuteNonQuery()
+        '        Cmdsql.Connection.Close()
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
         Public Shared Function GetNSSTrafficCard(ByVal CardNo As String) As R2CoreParkingSystemStandardTrafficCardStructure
             Try
                 Dim Ds As DataSet
@@ -405,21 +407,21 @@ Namespace TrafficCardsManagement
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Function
-        Public Shared Function GetTrafficCardMobile(ByVal CardNo As String) As String
-            Try
-                Dim Da As New SqlClient.SqlDataAdapter : Dim ds As New DataSet
-                Da.SelectCommand = New SqlClient.SqlCommand("select mobile from R2Primary.dbo.tblrfidcards where ltrim(rtrim(cardno))='" & CardNo & "' order by cardno")
-                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
-                ds.Tables.Clear()
-                If Da.Fill(ds) <> 0 Then
-                    Return ds.Tables(0).Rows(0).Item("mobile").TRIM
-                Else
-                    Throw New Exception("كارت تردد مورد نظر در سرور يافت نشد")
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetTrafficCardMobile(ByVal CardNo As String) As String
+        '    Try
+        '        Dim Da As New SqlClient.SqlDataAdapter : Dim ds As New DataSet
+        '        Da.SelectCommand = New SqlClient.SqlCommand("select mobile from R2Primary.dbo.tblrfidcards where ltrim(rtrim(cardno))='" & CardNo & "' order by cardno")
+        '        Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
+        '        ds.Tables.Clear()
+        '        If Da.Fill(ds) <> 0 Then
+        '            Return ds.Tables(0).Rows(0).Item("mobile").TRIM
+        '        Else
+        '            Throw New Exception("كارت تردد مورد نظر در سرور يافت نشد")
+        '        End If
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
         Public Shared Function GetNSSTrafficCard(ByVal YourCardId As Int64) As R2CoreParkingSystemStandardTrafficCardStructure
             Try
                 Dim Ds As DataSet
@@ -434,152 +436,152 @@ Namespace TrafficCardsManagement
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Function
-        Public Shared Function IsTrafficCardTypeSupported(ByVal CardNo As String) As Boolean
-            Try
-                Dim T As R2CoreParkingSystemStandardTrafficCardStructure = GetNSSTrafficCard(CardNo)
-                Dim A As String() = Split(R2CoreMClassConfigurationOfComputersManagement.GetConfigString(R2CoreParkingSystemConfigurations.TerafficCardsTypeSupport, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, 0), "-")
-                If A.Contains(T.CardType) = True Then
-                    Return True
-                Else
-                    Return False
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-        Public Shared Function GetTrafficCardTypeName(ByVal YourCardNo As String) As String
-            Dim T As R2CoreParkingSystemStandardTrafficCardStructure = GetNSSTrafficCard(YourCardNo)
-            Select Case T.CardType
-                Case TerafficCardType.Savari
-                    Return "سواری"
-                Case TerafficCardType.SixCharkh
-                    Return "دو محور - شش چرخ"
-                Case TerafficCardType.TenCharkh
-                    Return "سه محور - ده چرخ"
-                Case TerafficCardType.Tereili
-                    Return "تريلی"
-                Case TerafficCardType.None
-                    Return "نامعلوم"
-            End Select
-        End Function
-        Public Shared Function GetTrafficCardTempTypeName(ByVal CardNo As String) As String
-            Dim T As R2CoreParkingSystemStandardTrafficCardStructure = GetNSSTrafficCard(CardNo)
-            Select Case T.TempCardType
-                Case TrafficTempCardType.Temp
-                    Return "موقت"
-                Case TrafficTempCardType.NoTemp
-                    Return "دائمی"
-            End Select
-        End Function
-        Public Shared Function GetTrafficCardsTeadadReal() As Int64
-            Try
-                Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
-                Da.SelectCommand = New SqlClient.SqlCommand("SELECT COUNT(*) FROM R2Primary.dbo.TblRFIDCards GROUP BY CardNo")
-                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
-                Ds.Tables.Clear()
-                Return Da.Fill(Ds)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-        Public Shared Sub DisallowTerafficCard(YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.CommandText = "Update R2Primary.dbo.TblRFIDCards Set NoMoney=0,Active=0 Where Cardno='" & YourNSSTerafficCard.CardNo & "'"
-                CmdSql.ExecuteNonQuery()
-                CmdSql.Connection.Close()
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-        Public Shared Sub TerafficCardInitialRegister(YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourUserNSS As R2CoreStandardSoftwareUserStructure)
-            Try
-                UpdateTrafficCardType(YourNSSTerafficCard)
-                'کسر هزینه کارت تردد در صورتی که دائمی باشد و نه موقت
-                If YourNSSTerafficCard.TempCardType = TrafficTempCardType.NoTemp Then
-                    R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(YourNSSTerafficCard, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 2), R2CoreParkingSystemAccountings.HazinehKart, YourUserNSS)
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-        Public Shared Function GetDSTerafficCardType() As DataSet
-            Try
-                Dim Ds As New DataSet
-                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TypeName,TypeCode from R2PrimaryParkingSystem.dbo.TblTerafficCardType Order by TypeCode", 1000, Ds, New Boolean)
-                Return Ds
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-        Public Shared Function GetTerafficCardTypeNameFromTypeCode(YourTypeCode As Int64) As String
-            Try
-                Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TypeName from R2PrimaryParkingSystem.dbo.TblTerafficCardType  Where TypeCode=" & YourTypeCode & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
-                    Return Ds.Tables(0).Rows(0).Item(0).trim
-                Else
-                    Throw New GetDataException
-                End If
-            Catch exx As GetDataException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-        Public Shared Function GetTerafficCardTypeCodeFromTypeName(YourTypeName As String) As Int64
-            Try
-                Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TypeCode from R2PrimaryParkingSystem.dbo.TblTerafficCardType  Where ltrim(rtrim(TypeName))='" & YourTypeName.Trim & "'", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
-                    Return Ds.Tables(0).Rows(0).Item(0)
-                Else
-                    Throw New GetDataException
-                End If
-            Catch exx As GetDataException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-        Public Shared Function GetDSTrafficTempCardType() As DataSet
-            Try
-                Dim Ds As New DataSet
-                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TempTypeName,TempTypeCode from R2PrimaryParkingSystem.dbo.TblTrafficTempCardType Order by TempTypeCode", 1000, Ds, New Boolean)
-                Return Ds
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-        Public Shared Function GetTrafficTempCardTypeNameFromTempTypeCode(YourTempTypeCode As Int64) As String
-            Try
-                Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TempTypeName from R2PrimaryParkingSystem.dbo.TblTrafficTempCardType  Where TempTypeCode=" & YourTempTypeCode & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
-                    Return Ds.Tables(0).Rows(0).Item(0).trim
-                Else
-                    Throw New GetDataException
-                End If
-            Catch exx As GetDataException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-        Public Shared Function GetTrafficTempCardTypeCodeFromTempTypeName(YourTempTypeName As String) As Int64
-            Try
-                Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TempTypeCode from R2PrimaryParkingSystem.dbo.TblTrafficTempCardType  Where ltrim(rtrim(TempTypeName))='" & YourTempTypeName.Trim & "'", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
-                    Return Ds.Tables(0).Rows(0).Item(0)
-                Else
-                    Throw New GetDataException
-                End If
-            Catch exx As GetDataException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function IsTrafficCardTypeSupported(ByVal CardNo As String) As Boolean
+        '    Try
+        '        Dim T As R2CoreParkingSystemStandardTrafficCardStructure = GetNSSTrafficCard(CardNo)
+        '        Dim A As String() = Split(R2CoreMClassConfigurationOfComputersManagement.GetConfigString(R2CoreParkingSystemConfigurations.TerafficCardsTypeSupport, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, 0), "-")
+        '        If A.Contains(T.CardType) = True Then
+        '            Return True
+        '        Else
+        '            Return False
+        '        End If
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
+        'Public Shared Function GetTrafficCardTypeName(ByVal YourCardNo As String) As String
+        '    Dim T As R2CoreParkingSystemStandardTrafficCardStructure = GetNSSTrafficCard(YourCardNo)
+        '    Select Case T.CardType
+        '        Case TerafficCardType.Savari
+        '            Return "سواری"
+        '        Case TerafficCardType.SixCharkh
+        '            Return "دو محور - شش چرخ"
+        '        Case TerafficCardType.TenCharkh
+        '            Return "سه محور - ده چرخ"
+        '        Case TerafficCardType.Tereili
+        '            Return "تريلی"
+        '        Case TerafficCardType.None
+        '            Return "نامعلوم"
+        '    End Select
+        'End Function
+        'Public Shared Function GetTrafficCardTempTypeName(ByVal CardNo As String) As String
+        '    Dim T As R2CoreParkingSystemStandardTrafficCardStructure = GetNSSTrafficCard(CardNo)
+        '    Select Case T.TempCardType
+        '        Case TrafficTempCardType.Temp
+        '            Return "موقت"
+        '        Case TrafficTempCardType.NoTemp
+        '            Return "دائمی"
+        '    End Select
+        'End Function
+        'Public Shared Function GetTrafficCardsTeadadReal() As Int64
+        '    Try
+        '        Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
+        '        Da.SelectCommand = New SqlClient.SqlCommand("SELECT COUNT(*) FROM R2Primary.dbo.TblRFIDCards GROUP BY CardNo")
+        '        Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
+        '        Ds.Tables.Clear()
+        '        Return Da.Fill(Ds)
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
+        'Public Shared Sub DisallowTerafficCard(YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure)
+        '    Dim CmdSql As New SqlClient.SqlCommand
+        '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
+        '    Try
+        '        CmdSql.Connection.Open()
+        '        CmdSql.CommandText = "Update R2Primary.dbo.TblRFIDCards Set NoMoney=0,Active=0 Where Cardno='" & YourNSSTerafficCard.CardNo & "'"
+        '        CmdSql.ExecuteNonQuery()
+        '        CmdSql.Connection.Close()
+        '    Catch ex As Exception
+        '        If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
+        'Public Shared Sub TerafficCardInitialRegister(YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourUserNSS As R2CoreStandardSoftwareUserStructure)
+        '    Try
+        '        UpdateTrafficCardType(YourNSSTerafficCard)
+        '        'کسر هزینه کارت تردد در صورتی که دائمی باشد و نه موقت
+        '        If YourNSSTerafficCard.TempCardType = TrafficTempCardType.NoTemp Then
+        '            R2CoreParkingSystemMClassMoneyWalletManagement.ActMoneyWalletNextStatus(YourNSSTerafficCard, BagPayType.MinusMoney, R2CoreMClassConfigurationManagement.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 2), R2CoreParkingSystemAccountings.HazinehKart, YourUserNSS)
+        '        End If
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
+        'Public Shared Function GetDSTerafficCardType() As DataSet
+        '    Try
+        '        Dim Ds As New DataSet
+        '        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TypeName,TypeCode from R2PrimaryParkingSystem.dbo.TblTerafficCardType Order by TypeCode", 1000, Ds, New Boolean)
+        '        Return Ds
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
+        'Public Shared Function GetTerafficCardTypeNameFromTypeCode(YourTypeCode As Int64) As String
+        '    Try
+        '        Dim Ds As New DataSet
+        '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TypeName from R2PrimaryParkingSystem.dbo.TblTerafficCardType  Where TypeCode=" & YourTypeCode & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
+        '            Return Ds.Tables(0).Rows(0).Item(0).trim
+        '        Else
+        '            Throw New GetDataException
+        '        End If
+        '    Catch exx As GetDataException
+        '        Throw exx
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
+        'Public Shared Function GetTerafficCardTypeCodeFromTypeName(YourTypeName As String) As Int64
+        '    Try
+        '        Dim Ds As New DataSet
+        '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TypeCode from R2PrimaryParkingSystem.dbo.TblTerafficCardType  Where ltrim(rtrim(TypeName))='" & YourTypeName.Trim & "'", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
+        '            Return Ds.Tables(0).Rows(0).Item(0)
+        '        Else
+        '            Throw New GetDataException
+        '        End If
+        '    Catch exx As GetDataException
+        '        Throw exx
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
+        'Public Shared Function GetDSTrafficTempCardType() As DataSet
+        '    Try
+        '        Dim Ds As New DataSet
+        '        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TempTypeName,TempTypeCode from R2PrimaryParkingSystem.dbo.TblTrafficTempCardType Order by TempTypeCode", 1000, Ds, New Boolean)
+        '        Return Ds
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
+        'Public Shared Function GetTrafficTempCardTypeNameFromTempTypeCode(YourTempTypeCode As Int64) As String
+        '    Try
+        '        Dim Ds As New DataSet
+        '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TempTypeName from R2PrimaryParkingSystem.dbo.TblTrafficTempCardType  Where TempTypeCode=" & YourTempTypeCode & "", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
+        '            Return Ds.Tables(0).Rows(0).Item(0).trim
+        '        Else
+        '            Throw New GetDataException
+        '        End If
+        '    Catch exx As GetDataException
+        '        Throw exx
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
+        'Public Shared Function GetTrafficTempCardTypeCodeFromTempTypeName(YourTempTypeName As String) As Int64
+        '    Try
+        '        Dim Ds As New DataSet
+        '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select TempTypeCode from R2PrimaryParkingSystem.dbo.TblTrafficTempCardType  Where ltrim(rtrim(TempTypeName))='" & YourTempTypeName.Trim & "'", 10, Ds, New Boolean).GetRecordsCount <> 0 Then
+        '            Return Ds.Tables(0).Rows(0).Item(0)
+        '        Else
+        '            Throw New GetDataException
+        '        End If
+        '    Catch exx As GetDataException
+        '        Throw exx
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
 
     End Class
@@ -681,15 +683,18 @@ Namespace TrafficCardsManagement
             Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(_DateTimeService)
-                Dim InstanceConfigurations = New R2CoreConfigurationsManager(_DateTimeService)
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 Dim InstanceRFIDCards = New R2CoreRFIDCardsManager(_DateTimeService)
                 Dim newCardId = InstanceRFIDCards.RFIDCardRegistering(YourTrafficCardNo, YourSoftwareUserId)
                 Cmdsql.Connection.Open()
-                Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set CardType=" & YourTrafficCardTypeId & ",TempCardType=" & YourTrafficCardTempTypeId & " Where CardId=" & newCardId & ""
+                Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set CardType=@CardType,TempCardType=@TempCardType Where CardId=@CardId"
+                Cmdsql.Parameters.Add("@CardType", SqlDbType.BigInt).Value = YourTrafficCardTypeId
+                Cmdsql.Parameters.Add("@TempCardType", SqlDbType.BigInt).Value = YourTrafficCardTempTypeId
+                Cmdsql.Parameters.Add("@CardId", SqlDbType.BigInt).Value = newCardId
                 Cmdsql.ExecuteNonQuery()
                 Cmdsql.Connection.Close()
                 If YourTrafficCardTempTypeId = TrafficTempCardType.NoTemp Then
-                    InstanceMoneyWallet.ActMoneyWalletNextStatus(newCardId, BagPayType.MinusMoney, InstanceConfigurations.GetConfigInt64(R2CoreParkingSystemConfigurations.TariffsMeselanius, 2), R2CoreParkingSystemAccountings.HazinehKart, YourSoftwareUserId)
+                    InstanceMoneyWallet.ActMoneyWalletNextStatus(newCardId, BagPayType.MinusMoney, InstanceGeneralConfiguration.GetInt64Configuration(R2CoreParkingSystemGeneralConfigurations.TerafficAndTerafficCard, 2), R2CoreParkingSystemAccountings.HazinehKart, YourSoftwareUserId)
                 End If
             Catch ex As SqlException
                 If Cmdsql.Connection.State <> ConnectionState.Closed Then Cmdsql.Connection.Close()
@@ -774,7 +779,9 @@ Namespace TrafficCardsManagement
                 Cmdsql.ExecuteNonQuery()
                 Dim newCardTypeId As Int64 = Cmdsql.ExecuteScalar() + 1
                 Cmdsql.CommandText = "Insert Into R2PrimaryParkingSystem.dbo.TblTrafficCardTypes(TypeId,TypeTitle,ViewFlag,Active,Deleted) 
-                                      Values(" & newCardTypeId & ",'" & YourTrafficCardTypeTitle & "',1,1,0)"
+                                      Values(@TypeId,@TypeTitle,1,1,0)"
+                Cmdsql.Parameters.Add("@TypeId", SqlDbType.BigInt).Value = newCardTypeId
+                Cmdsql.Parameters.Add("@TypeTitle", SqlDbType.NVarChar).Value = YourTrafficCardTypeTitle
                 Cmdsql.ExecuteNonQuery()
                 Cmdsql.Transaction.Commit() : Cmdsql.Connection.Close()
             Catch ex As SqlException
@@ -795,7 +802,10 @@ Namespace TrafficCardsManagement
             Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Cmdsql.Connection.Open()
-                Cmdsql.CommandText = "Update R2PrimaryParkingSystem.dbo.TblTrafficCardTypes Set TypeTitle='" & YourRawTrafficCardType.TrafficCardTypeTitle & "',Active=" & IIf(YourRawTrafficCardType.Active, 1, 0) & " Where TypeId=" & YourRawTrafficCardType.TrafficCardTypeId & ""
+                Cmdsql.CommandText = "Update R2PrimaryParkingSystem.dbo.TblTrafficCardTypes Set TypeTitle=@TypeTitle,Active=@Active Where TypeId=@TypeId"
+                Cmdsql.Parameters.Add("@TypeTitle", SqlDbType.NVarChar).Value = YourRawTrafficCardType.TrafficCardTypeTitle
+                Cmdsql.Parameters.Add("@Active", SqlDbType.Bit).Value = IIf(YourRawTrafficCardType.Active, 1, 0)
+                Cmdsql.Parameters.Add("@TypeId", SqlDbType.BigInt).Value = YourRawTrafficCardType.TrafficCardTypeId
                 Cmdsql.ExecuteNonQuery()
                 Cmdsql.Connection.Close()
             Catch ex As SqlException

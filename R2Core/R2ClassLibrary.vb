@@ -228,75 +228,75 @@ Namespace PublicProc
             End If
         End Function
 
-        Public Sub SaveFile(YourRawGroupId As Int64, YourFileName As String, YourFile As Byte(), YourNSSUser As R2CoreStandardSoftwareUserStructure)
-            Try
-                _R2PrimaryFSWS.WebMethodSaveFile(YourRawGroupId, YourFileName, YourFile, _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Sub
+        'Public Sub SaveFile(YourRawGroupId As Int64, YourFileName As String, YourFile As Byte(), YourNSSUser As R2CoreStandardSoftwareUserStructure)
+        '    Try
+        '        _R2PrimaryFSWS.WebMethodSaveFile(YourRawGroupId, YourFileName, YourFile, _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword))
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Sub
 
-        Public Function IsExistFile(YourRawGroupId As Int64, YourFileName As String, YourNSSUser As R2CoreStandardSoftwareUserStructure) As Boolean
-            Try
-                Return _R2PrimaryFSWS.WebMethodIOFileExist(YourRawGroupId, YourFileName, _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Function IsExistFile(YourRawGroupId As Int64, YourFileName As String, YourNSSUser As R2CoreStandardSoftwareUserStructure) As Boolean
+        '    Try
+        '        Return _R2PrimaryFSWS.WebMethodIOFileExist(YourRawGroupId, YourFileName, _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword))
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Function GetFile(YourRawGroupId As Int64, YourFileName As String, YourNSSUser As R2CoreStandardSoftwareUserStructure) As Byte()
-            Try
-                Return _R2PrimaryFSWS.WebMethodGetFile(YourRawGroupId, YourFileName, _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Function GetFile(YourRawGroupId As Int64, YourFileName As String, YourNSSUser As R2CoreStandardSoftwareUserStructure) As Byte()
+        '    Try
+        '        Return _R2PrimaryFSWS.WebMethodGetFile(YourRawGroupId, YourFileName, _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword))
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Function ParseSignDigitToSignString(ByVal YourDig As Int64) As String
-            Try
-                If YourDig < 0 Then
-                    Return R2MakeCamaYourDigit(Math.Abs(YourDig)) + "-"
-                ElseIf YourDig > 0 Then
-                    Return R2MakeCamaYourDigit(Math.Abs(YourDig))
-                ElseIf YourDig = 0 Then
-                    Return R2MakeCamaYourDigit(Math.Abs(YourDig))
-                Else
-                    Throw New ArgumentException
-                End If
-            Catch ex As ArgumentException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Function ParseSignDigitToSignString(ByVal YourDig As Int64) As String
+        '    Try
+        '        If YourDig < 0 Then
+        '            Return R2MakeCamaYourDigit(Math.Abs(YourDig)) + "-"
+        '        ElseIf YourDig > 0 Then
+        '            Return R2MakeCamaYourDigit(Math.Abs(YourDig))
+        '        ElseIf YourDig = 0 Then
+        '            Return R2MakeCamaYourDigit(Math.Abs(YourDig))
+        '        Else
+        '            Throw New ArgumentException
+        '        End If
+        '    Catch ex As ArgumentException
+        '        Throw ex
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Function R2MakeCamaYourDigit(ByVal xdig As UInt64) As String
-            Dim myDigit As String
-            Dim yourDigit As String
-            Try
-                myDigit = xdig
-                If Len(myDigit) <= 3 Then Return xdig
-                yourDigit = ""
-                For loopx As Int16 = 1 To Math.Ceiling(Len(myDigit) / 3)
-                    If loopx <> Math.Ceiling(Len(myDigit) / 3) Then
-                        yourDigit = "," + Mid(myDigit, (Len(myDigit) - 3 * loopx) + 1, 3) + yourDigit
-                    Else
-                        yourDigit = Mid(myDigit, 1, Len(myDigit) - (Math.Ceiling(Len(myDigit) / 3) - 1) * 3) + yourDigit
-                    End If
-                Next
-                Return yourDigit
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Function R2MakeCamaYourDigit(ByVal xdig As UInt64) As String
+        '    Dim myDigit As String
+        '    Dim yourDigit As String
+        '    Try
+        '        myDigit = xdig
+        '        If Len(myDigit) <= 3 Then Return xdig
+        '        yourDigit = ""
+        '        For loopx As Int16 = 1 To Math.Ceiling(Len(myDigit) / 3)
+        '            If loopx <> Math.Ceiling(Len(myDigit) / 3) Then
+        '                yourDigit = "," + Mid(myDigit, (Len(myDigit) - 3 * loopx) + 1, 3) + yourDigit
+        '            Else
+        '                yourDigit = Mid(myDigit, 1, Len(myDigit) - (Math.Ceiling(Len(myDigit) / 3) - 1) * 3) + yourDigit
+        '            End If
+        '        Next
+        '        Return yourDigit
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
 
         'رنگ سیه و سفید مناسب یک پس زمینه
-        Public Function IdealBlackWhiteTextColor(YourBackGroundColor As Color) As Color
-            Dim nThreshold As Int64 = 105
-            Dim bgDelta As Int64 = Convert.ToInt32((YourBackGroundColor.R * 0.299) + (YourBackGroundColor.G * 0.587) + (YourBackGroundColor.B * 0.114))
-            Dim foreColor As Color = IIf(255 - bgDelta < nThreshold, Color.Black, Color.White)
-            Return foreColor
-        End Function
+        'Public Function IdealBlackWhiteTextColor(YourBackGroundColor As Color) As Color
+        '    Dim nThreshold As Int64 = 105
+        '    Dim bgDelta As Int64 = Convert.ToInt32((YourBackGroundColor.R * 0.299) + (YourBackGroundColor.G * 0.587) + (YourBackGroundColor.B * 0.114))
+        '    Dim foreColor As Color = IIf(255 - bgDelta < nThreshold, Color.Black, Color.White)
+        '    Return foreColor
+        'End Function
 
         Private DaDiff As New SqlClient.SqlDataAdapter
         Private DsDiff As New DataSet
@@ -337,372 +337,372 @@ Namespace PublicProc
 
     Public Class R2CoreMClassPublicProcedures
         'رنگ سیه و سفید مناسب یک پس زمینه
-        Public Shared Function IdealBlackWhiteTextColor(YourBackGroundColor As Color) As Color
-            Dim nThreshold As Int64 = 105
-            Dim bgDelta As Int64 = Convert.ToInt32((YourBackGroundColor.R * 0.299) + (YourBackGroundColor.G * 0.587) + (YourBackGroundColor.B * 0.114))
-            Dim foreColor As Color = IIf(255 - bgDelta < nThreshold, Color.Black, Color.White)
-            Return foreColor
-        End Function
+        'Public Shared Function IdealBlackWhiteTextColor(YourBackGroundColor As Color) As Color
+        '    Dim nThreshold As Int64 = 105
+        '    Dim bgDelta As Int64 = Convert.ToInt32((YourBackGroundColor.R * 0.299) + (YourBackGroundColor.G * 0.587) + (YourBackGroundColor.B * 0.114))
+        '    Dim foreColor As Color = IIf(255 - bgDelta < nThreshold, Color.Black, Color.White)
+        '    Return foreColor
+        'End Function
 
         'توليد تاريخ بعدي از يك تاريخ شمسي
-        Public Shared Function GetNextShamsiDate(ByVal YourShamsiDate As String) As String
-            Try
-                Dim myTempDate As String = YourShamsiDate  'Example 1394/02/31
-                Dim myD As Int16 = Mid(myTempDate, 9, 2)
-                Dim myM As Int16 = Mid(myTempDate, 6, 2)
-                Dim myY As Int16 = Mid(myTempDate, 1, 4)
-                If myM >= 1 And myM <= 6 Then
-                    If myD < 31 Then
-                        myD += 1
-                    Else
-                        myD = 1
-                        myM += 1
-                    End If
-                ElseIf myM >= 7 And myM <= 11 Then
-                    If myD < 30 Then
-                        myD += 1
-                    Else
-                        myD = 1
-                        myM += 1
-                    End If
-                ElseIf myM = 12 Then
-                    If myD < R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.EsfandRooz, 0) Then
-                        myD += 1
-                    Else
-                        myD = 1
-                        myM = 1
-                        myY += 1
-                    End If
-                End If
-                Dim myDS As String = R2CoreMClassPublicProcedures.RepeatStr("0", 2 - Len(myD.ToString.Trim)) + myD.ToString.Trim
-                Dim myMS As String = R2CoreMClassPublicProcedures.RepeatStr("0", 2 - Len(myM.ToString.Trim)) + myM.ToString.Trim
-                Return myY.ToString.Trim + "/" + myMS.Trim + "/" + myDS.Trim
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetNextShamsiDate(ByVal YourShamsiDate As String) As String
+        '    Try
+        '        Dim myTempDate As String = YourShamsiDate  'Example 1394/02/31
+        '        Dim myD As Int16 = Mid(myTempDate, 9, 2)
+        '        Dim myM As Int16 = Mid(myTempDate, 6, 2)
+        '        Dim myY As Int16 = Mid(myTempDate, 1, 4)
+        '        If myM >= 1 And myM <= 6 Then
+        '            If myD < 31 Then
+        '                myD += 1
+        '            Else
+        '                myD = 1
+        '                myM += 1
+        '            End If
+        '        ElseIf myM >= 7 And myM <= 11 Then
+        '            If myD < 30 Then
+        '                myD += 1
+        '            Else
+        '                myD = 1
+        '                myM += 1
+        '            End If
+        '        ElseIf myM = 12 Then
+        '            If myD < R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.EsfandRooz, 0) Then
+        '                myD += 1
+        '            Else
+        '                myD = 1
+        '                myM = 1
+        '                myY += 1
+        '            End If
+        '        End If
+        '        Dim myDS As String = R2CoreMClassPublicProcedures.RepeatStr("0", 2 - Len(myD.ToString.Trim)) + myD.ToString.Trim
+        '        Dim myMS As String = R2CoreMClassPublicProcedures.RepeatStr("0", 2 - Len(myM.ToString.Trim)) + myM.ToString.Trim
+        '        Return myY.ToString.Trim + "/" + myMS.Trim + "/" + myDS.Trim
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
         'تبديل يک عدد به حروف
-        Public Shared Function R2MakeHoroof(ByVal yournum As String) As String
-            Try
-                Dim mynum As String = Trim(yournum).Replace(",", "")
-                Dim makan As Int16
-                Dim dig As String
-                Dim varhichy As String
-                Dim finalstr As String = ""
-                For loopx As Int16 = 1 To Len(mynum)
-                    makan = Len(mynum) - (loopx - 1)
-                    dig = Mid(mynum, loopx, 1)
-                    If makan = 12 Then
-                        If dig = "9" Then finalstr = " نهصد "
-                        If dig = "8" Then finalstr = " هشتصد "
-                        If dig = "7" Then finalstr = " هفتصد "
-                        If dig = "6" Then finalstr = " ششصد "
-                        If dig = "5" Then finalstr = " پانصد "
-                        If dig = "4" Then finalstr = " چهارصد "
-                        If dig = "3" Then finalstr = " سيصد "
-                        If dig = "2" Then finalstr = " دويست "
-                        If dig = "1" Then finalstr = " يکصد "
-                        If dig = "0" Then varhichy = ""
-                    End If
-                    If makan = 11 Then
-                        If dig = "9" Then finalstr = finalstr + "و" + " نود "
-                        If dig = "8" Then finalstr = finalstr + "و" + " هشتاد "
-                        If dig = "7" Then finalstr = finalstr + "و" + " هفتاد "
-                        If dig = "6" Then finalstr = finalstr + "و" + " شصت "
-                        If dig = "5" Then finalstr = finalstr + "و" + " پنجاه "
-                        If dig = "4" Then finalstr = finalstr + "و" + " چهل "
-                        If dig = "3" Then finalstr = finalstr + "و" + " سي "
-                        If dig = "2" Then finalstr = finalstr + "و" + " بيست "
-                        If dig = "1" Then
-                            Dim my10makandig As String = Mid(mynum, 3, 1)
-                            If my10makandig = "9" Then finalstr = finalstr + "و" + " نوزده " + " ميليارد "
-                            If my10makandig = "8" Then finalstr = finalstr + "و" + " هجده " + " ميليارد "
-                            If my10makandig = "7" Then finalstr = finalstr + "و" + " هفده " + " ميليارد "
-                            If my10makandig = "6" Then finalstr = finalstr + "و" + " شانزده " + " ميليارد "
-                            If my10makandig = "5" Then finalstr = finalstr + "و" + " پانزده " + " ميليارد "
-                            If my10makandig = "4" Then finalstr = finalstr + "و" + " چهارده " + " ميليارد "
-                            If my10makandig = "3" Then finalstr = finalstr + "و" + " سيزده " + " ميليارد "
-                            If my10makandig = "2" Then finalstr = finalstr + "و" + " دوازده " + " ميليارد "
-                            If my10makandig = "1" Then finalstr = finalstr + "و" + " يازده " + " ميليارد "
-                            If my10makandig = "0" Then finalstr = finalstr + "و" + " ده " + " ميليارد "
-                            loopx += 1
-                        End If
-                        If dig = "0" Then varhichy = ""
-                    End If
-                    If makan = 10 Then
-                        If dig = "9" Then finalstr = finalstr + "و" + " نه " + " ميليارد "
-                        If dig = "8" Then finalstr = finalstr + "و" + " هشت " + " ميليارد "
-                        If dig = "7" Then finalstr = finalstr + "و" + " هفت " + " ميليارد "
-                        If dig = "6" Then finalstr = finalstr + "و" + " شش " + " ميليارد "
-                        If dig = "5" Then finalstr = finalstr + "و" + " پنج " + " ميليارد "
-                        If dig = "4" Then finalstr = finalstr + "و" + " چهار " + " ميليارد "
-                        If dig = "3" Then finalstr = finalstr + "و" + " سه " + " ميليارد "
-                        If dig = "2" Then finalstr = finalstr + "و" + " دو " + " ميليارد "
-                        If dig = "1" Then finalstr = finalstr + "و" + " يک " + " ميليارد "
-                        If dig = "0" Then
-                            Try
-                                If Mid(mynum, loopx - 2, 3) <> 0 Then
-                                    finalstr = finalstr + " ميليارد "
-                                End If
-                            Catch ex As Exception
-                                finalstr = finalstr + " ميليارد "
-                            End Try
-                        End If
-                    End If
-                    If makan = 9 Then
-                        If dig = "9" Then finalstr = finalstr + "و" + " نهصد "
-                        If dig = "8" Then finalstr = finalstr + "و" + " هشتصد "
-                        If dig = "7" Then finalstr = finalstr + "و" + " هفتصد "
-                        If dig = "6" Then finalstr = finalstr + "و" + " ششصد "
-                        If dig = "5" Then finalstr = finalstr + "و" + " پانصد "
-                        If dig = "4" Then finalstr = finalstr + "و" + " چهارصد "
-                        If dig = "3" Then finalstr = finalstr + "و" + " سيصد "
-                        If dig = "2" Then finalstr = finalstr + "و" + " دويست "
-                        If dig = "1" Then finalstr = finalstr + "و" + " يکصد "
-                        If dig = "0" Then varhichy = ""
-                    End If
-                    If makan = 8 Then
-                        If dig = "9" Then finalstr = finalstr + "و" + " نود "
-                        If dig = "8" Then finalstr = finalstr + "و" + " هشتاد "
-                        If dig = "7" Then finalstr = finalstr + "و" + " هفتاد "
-                        If dig = "6" Then finalstr = finalstr + "و" + " شصت "
-                        If dig = "5" Then finalstr = finalstr + "و" + " پنجاه "
-                        If dig = "4" Then finalstr = finalstr + "و" + " چهل "
-                        If dig = "3" Then finalstr = finalstr + "و" + " سي "
-                        If dig = "2" Then finalstr = finalstr + "و" + " بيست "
-                        If dig = "1" Then
-                            Dim my7makandig As String = Mid(mynum, Len(mynum) - 6, 1)
-                            If my7makandig = "9" Then finalstr = finalstr + "و" + " نوزده " + " ميليون "
-                            If my7makandig = "8" Then finalstr = finalstr + "و" + " هجده " + " ميليون "
-                            If my7makandig = "7" Then finalstr = finalstr + "و" + " هفده " + " ميليون "
-                            If my7makandig = "6" Then finalstr = finalstr + "و" + " شانزده " + " ميليون "
-                            If my7makandig = "5" Then finalstr = finalstr + "و" + " پانزده " + " ميليون "
-                            If my7makandig = "4" Then finalstr = finalstr + "و" + " چهارده " + " ميليون "
-                            If my7makandig = "3" Then finalstr = finalstr + "و" + " سيزده " + " ميليون "
-                            If my7makandig = "2" Then finalstr = finalstr + "و" + " دوازده " + " ميليون "
-                            If my7makandig = "1" Then finalstr = finalstr + "و" + " يازده " + " ميليون "
-                            If my7makandig = "0" Then finalstr = finalstr + "و" + " ده " + " ميليون "
-                            loopx += 1
-                        End If
-                        If dig = "0" Then varhichy = ""
-                    End If
-                    If makan = 7 Then
-                        If dig = "9" Then finalstr = finalstr + "و" + " نه " + " ميليون "
-                        If dig = "8" Then finalstr = finalstr + "و" + " هشت " + " ميليون "
-                        If dig = "7" Then finalstr = finalstr + "و" + " هفت " + " ميليون "
-                        If dig = "6" Then finalstr = finalstr + "و" + " شش " + " ميليون "
-                        If dig = "5" Then finalstr = finalstr + "و" + " پنج " + " ميليون "
-                        If dig = "4" Then finalstr = finalstr + "و" + " چهار " + " ميليون "
-                        If dig = "3" Then finalstr = finalstr + "و" + " سه " + " ميليون "
-                        If dig = "2" Then finalstr = finalstr + "و" + " دو " + " ميليون "
-                        If dig = "1" Then finalstr = finalstr + "و" + " يک " + " ميليون "
-                        If dig = "0" Then
-                            Try
-                                If Mid(mynum, loopx - 2, 3) <> 0 Then
-                                    finalstr = finalstr + " ميليون "
-                                End If
-                            Catch ex As Exception
-                                finalstr = finalstr + " ميليون "
-                            End Try
-                        End If
-                    End If
-                    If makan = 6 Then
-                        If dig = "9" Then finalstr = finalstr + "و" + " نهصد "
-                        If dig = "8" Then finalstr = finalstr + "و" + " هشتصد "
-                        If dig = "7" Then finalstr = finalstr + "و" + " هفتصد "
-                        If dig = "6" Then finalstr = finalstr + "و" + " ششصد "
-                        If dig = "5" Then finalstr = finalstr + "و" + " پانصد "
-                        If dig = "4" Then finalstr = finalstr + "و" + " چهارصد "
-                        If dig = "3" Then finalstr = finalstr + "و" + " سيصد "
-                        If dig = "2" Then finalstr = finalstr + "و" + " دويست "
-                        If dig = "1" Then finalstr = finalstr + "و" + " يکصد "
-                        If dig = "0" Then varhichy = ""
-                    End If
-                    If makan = 5 Then
-                        If dig = "9" Then finalstr = finalstr + "و" + " نود "
-                        If dig = "8" Then finalstr = finalstr + "و" + " هشتاد "
-                        If dig = "7" Then finalstr = finalstr + "و" + " هفتاد "
-                        If dig = "6" Then finalstr = finalstr + "و" + " شصت "
-                        If dig = "5" Then finalstr = finalstr + "و" + " پنجاه "
-                        If dig = "4" Then finalstr = finalstr + "و" + " چهل "
-                        If dig = "3" Then finalstr = finalstr + "و" + " سي "
-                        If dig = "2" Then finalstr = finalstr + "و" + " بيست "
-                        If dig = "1" Then
-                            Dim my4makandig As String = Mid(mynum, Len(mynum) - 3, 1)
-                            If my4makandig = "9" Then finalstr = finalstr + "و" + " نوزده " + " هزار "
-                            If my4makandig = "8" Then finalstr = finalstr + "و" + " هجده " + " هزار "
-                            If my4makandig = "7" Then finalstr = finalstr + "و" + " هفده " + " هزار "
-                            If my4makandig = "6" Then finalstr = finalstr + "و" + " شانزده " + " هزار "
-                            If my4makandig = "5" Then finalstr = finalstr + "و" + " پانزده " + " هزار "
-                            If my4makandig = "4" Then finalstr = finalstr + "و" + " چهارده " + " هزار "
-                            If my4makandig = "3" Then finalstr = finalstr + "و" + " سيزده " + " هزار "
-                            If my4makandig = "2" Then finalstr = finalstr + "و" + " دوازده " + " هزار "
-                            If my4makandig = "1" Then finalstr = finalstr + "و" + " يازده " + " هزار "
-                            If my4makandig = "0" Then finalstr = finalstr + "و" + " ده " + " هزار "
-                            loopx += 1
-                        End If
-                        If dig = "0" Then varhichy = ""
-                    End If
-                    If makan = 4 Then
-                        If dig = "9" Then finalstr = finalstr + "و" + " نه " + " هزار "
-                        If dig = "8" Then finalstr = finalstr + "و" + " هشت " + " هزار "
-                        If dig = "7" Then finalstr = finalstr + "و" + " هفت " + " هزار "
-                        If dig = "6" Then finalstr = finalstr + "و" + " شش " + " هزار "
-                        If dig = "5" Then finalstr = finalstr + "و" + " پنج " + " هزار "
-                        If dig = "4" Then finalstr = finalstr + "و" + " چهار " + " هزار "
-                        If dig = "3" Then finalstr = finalstr + "و" + " سه " + " هزار "
-                        If dig = "2" Then finalstr = finalstr + "و" + " دو " + " هزار "
-                        If dig = "1" Then finalstr = finalstr + "و" + " يک " + " هزار "
-                        If dig = "0" Then
-                            Try
-                                If Mid(mynum, loopx - 2, 3) <> 0 Then
-                                    finalstr = finalstr + " هزار "
-                                End If
-                            Catch ex As Exception
-                                finalstr = finalstr + " هزار "
-                            End Try
+        'Public Shared Function R2MakeHoroof(ByVal yournum As String) As String
+        '    Try
+        '        Dim mynum As String = Trim(yournum).Replace(",", "")
+        '        Dim makan As Int16
+        '        Dim dig As String
+        '        Dim varhichy As String
+        '        Dim finalstr As String = ""
+        '        For loopx As Int16 = 1 To Len(mynum)
+        '            makan = Len(mynum) - (loopx - 1)
+        '            dig = Mid(mynum, loopx, 1)
+        '            If makan = 12 Then
+        '                If dig = "9" Then finalstr = " نهصد "
+        '                If dig = "8" Then finalstr = " هشتصد "
+        '                If dig = "7" Then finalstr = " هفتصد "
+        '                If dig = "6" Then finalstr = " ششصد "
+        '                If dig = "5" Then finalstr = " پانصد "
+        '                If dig = "4" Then finalstr = " چهارصد "
+        '                If dig = "3" Then finalstr = " سيصد "
+        '                If dig = "2" Then finalstr = " دويست "
+        '                If dig = "1" Then finalstr = " يکصد "
+        '                If dig = "0" Then varhichy = ""
+        '            End If
+        '            If makan = 11 Then
+        '                If dig = "9" Then finalstr = finalstr + "و" + " نود "
+        '                If dig = "8" Then finalstr = finalstr + "و" + " هشتاد "
+        '                If dig = "7" Then finalstr = finalstr + "و" + " هفتاد "
+        '                If dig = "6" Then finalstr = finalstr + "و" + " شصت "
+        '                If dig = "5" Then finalstr = finalstr + "و" + " پنجاه "
+        '                If dig = "4" Then finalstr = finalstr + "و" + " چهل "
+        '                If dig = "3" Then finalstr = finalstr + "و" + " سي "
+        '                If dig = "2" Then finalstr = finalstr + "و" + " بيست "
+        '                If dig = "1" Then
+        '                    Dim my10makandig As String = Mid(mynum, 3, 1)
+        '                    If my10makandig = "9" Then finalstr = finalstr + "و" + " نوزده " + " ميليارد "
+        '                    If my10makandig = "8" Then finalstr = finalstr + "و" + " هجده " + " ميليارد "
+        '                    If my10makandig = "7" Then finalstr = finalstr + "و" + " هفده " + " ميليارد "
+        '                    If my10makandig = "6" Then finalstr = finalstr + "و" + " شانزده " + " ميليارد "
+        '                    If my10makandig = "5" Then finalstr = finalstr + "و" + " پانزده " + " ميليارد "
+        '                    If my10makandig = "4" Then finalstr = finalstr + "و" + " چهارده " + " ميليارد "
+        '                    If my10makandig = "3" Then finalstr = finalstr + "و" + " سيزده " + " ميليارد "
+        '                    If my10makandig = "2" Then finalstr = finalstr + "و" + " دوازده " + " ميليارد "
+        '                    If my10makandig = "1" Then finalstr = finalstr + "و" + " يازده " + " ميليارد "
+        '                    If my10makandig = "0" Then finalstr = finalstr + "و" + " ده " + " ميليارد "
+        '                    loopx += 1
+        '                End If
+        '                If dig = "0" Then varhichy = ""
+        '            End If
+        '            If makan = 10 Then
+        '                If dig = "9" Then finalstr = finalstr + "و" + " نه " + " ميليارد "
+        '                If dig = "8" Then finalstr = finalstr + "و" + " هشت " + " ميليارد "
+        '                If dig = "7" Then finalstr = finalstr + "و" + " هفت " + " ميليارد "
+        '                If dig = "6" Then finalstr = finalstr + "و" + " شش " + " ميليارد "
+        '                If dig = "5" Then finalstr = finalstr + "و" + " پنج " + " ميليارد "
+        '                If dig = "4" Then finalstr = finalstr + "و" + " چهار " + " ميليارد "
+        '                If dig = "3" Then finalstr = finalstr + "و" + " سه " + " ميليارد "
+        '                If dig = "2" Then finalstr = finalstr + "و" + " دو " + " ميليارد "
+        '                If dig = "1" Then finalstr = finalstr + "و" + " يک " + " ميليارد "
+        '                If dig = "0" Then
+        '                    Try
+        '                        If Mid(mynum, loopx - 2, 3) <> 0 Then
+        '                            finalstr = finalstr + " ميليارد "
+        '                        End If
+        '                    Catch ex As Exception
+        '                        finalstr = finalstr + " ميليارد "
+        '                    End Try
+        '                End If
+        '            End If
+        '            If makan = 9 Then
+        '                If dig = "9" Then finalstr = finalstr + "و" + " نهصد "
+        '                If dig = "8" Then finalstr = finalstr + "و" + " هشتصد "
+        '                If dig = "7" Then finalstr = finalstr + "و" + " هفتصد "
+        '                If dig = "6" Then finalstr = finalstr + "و" + " ششصد "
+        '                If dig = "5" Then finalstr = finalstr + "و" + " پانصد "
+        '                If dig = "4" Then finalstr = finalstr + "و" + " چهارصد "
+        '                If dig = "3" Then finalstr = finalstr + "و" + " سيصد "
+        '                If dig = "2" Then finalstr = finalstr + "و" + " دويست "
+        '                If dig = "1" Then finalstr = finalstr + "و" + " يکصد "
+        '                If dig = "0" Then varhichy = ""
+        '            End If
+        '            If makan = 8 Then
+        '                If dig = "9" Then finalstr = finalstr + "و" + " نود "
+        '                If dig = "8" Then finalstr = finalstr + "و" + " هشتاد "
+        '                If dig = "7" Then finalstr = finalstr + "و" + " هفتاد "
+        '                If dig = "6" Then finalstr = finalstr + "و" + " شصت "
+        '                If dig = "5" Then finalstr = finalstr + "و" + " پنجاه "
+        '                If dig = "4" Then finalstr = finalstr + "و" + " چهل "
+        '                If dig = "3" Then finalstr = finalstr + "و" + " سي "
+        '                If dig = "2" Then finalstr = finalstr + "و" + " بيست "
+        '                If dig = "1" Then
+        '                    Dim my7makandig As String = Mid(mynum, Len(mynum) - 6, 1)
+        '                    If my7makandig = "9" Then finalstr = finalstr + "و" + " نوزده " + " ميليون "
+        '                    If my7makandig = "8" Then finalstr = finalstr + "و" + " هجده " + " ميليون "
+        '                    If my7makandig = "7" Then finalstr = finalstr + "و" + " هفده " + " ميليون "
+        '                    If my7makandig = "6" Then finalstr = finalstr + "و" + " شانزده " + " ميليون "
+        '                    If my7makandig = "5" Then finalstr = finalstr + "و" + " پانزده " + " ميليون "
+        '                    If my7makandig = "4" Then finalstr = finalstr + "و" + " چهارده " + " ميليون "
+        '                    If my7makandig = "3" Then finalstr = finalstr + "و" + " سيزده " + " ميليون "
+        '                    If my7makandig = "2" Then finalstr = finalstr + "و" + " دوازده " + " ميليون "
+        '                    If my7makandig = "1" Then finalstr = finalstr + "و" + " يازده " + " ميليون "
+        '                    If my7makandig = "0" Then finalstr = finalstr + "و" + " ده " + " ميليون "
+        '                    loopx += 1
+        '                End If
+        '                If dig = "0" Then varhichy = ""
+        '            End If
+        '            If makan = 7 Then
+        '                If dig = "9" Then finalstr = finalstr + "و" + " نه " + " ميليون "
+        '                If dig = "8" Then finalstr = finalstr + "و" + " هشت " + " ميليون "
+        '                If dig = "7" Then finalstr = finalstr + "و" + " هفت " + " ميليون "
+        '                If dig = "6" Then finalstr = finalstr + "و" + " شش " + " ميليون "
+        '                If dig = "5" Then finalstr = finalstr + "و" + " پنج " + " ميليون "
+        '                If dig = "4" Then finalstr = finalstr + "و" + " چهار " + " ميليون "
+        '                If dig = "3" Then finalstr = finalstr + "و" + " سه " + " ميليون "
+        '                If dig = "2" Then finalstr = finalstr + "و" + " دو " + " ميليون "
+        '                If dig = "1" Then finalstr = finalstr + "و" + " يک " + " ميليون "
+        '                If dig = "0" Then
+        '                    Try
+        '                        If Mid(mynum, loopx - 2, 3) <> 0 Then
+        '                            finalstr = finalstr + " ميليون "
+        '                        End If
+        '                    Catch ex As Exception
+        '                        finalstr = finalstr + " ميليون "
+        '                    End Try
+        '                End If
+        '            End If
+        '            If makan = 6 Then
+        '                If dig = "9" Then finalstr = finalstr + "و" + " نهصد "
+        '                If dig = "8" Then finalstr = finalstr + "و" + " هشتصد "
+        '                If dig = "7" Then finalstr = finalstr + "و" + " هفتصد "
+        '                If dig = "6" Then finalstr = finalstr + "و" + " ششصد "
+        '                If dig = "5" Then finalstr = finalstr + "و" + " پانصد "
+        '                If dig = "4" Then finalstr = finalstr + "و" + " چهارصد "
+        '                If dig = "3" Then finalstr = finalstr + "و" + " سيصد "
+        '                If dig = "2" Then finalstr = finalstr + "و" + " دويست "
+        '                If dig = "1" Then finalstr = finalstr + "و" + " يکصد "
+        '                If dig = "0" Then varhichy = ""
+        '            End If
+        '            If makan = 5 Then
+        '                If dig = "9" Then finalstr = finalstr + "و" + " نود "
+        '                If dig = "8" Then finalstr = finalstr + "و" + " هشتاد "
+        '                If dig = "7" Then finalstr = finalstr + "و" + " هفتاد "
+        '                If dig = "6" Then finalstr = finalstr + "و" + " شصت "
+        '                If dig = "5" Then finalstr = finalstr + "و" + " پنجاه "
+        '                If dig = "4" Then finalstr = finalstr + "و" + " چهل "
+        '                If dig = "3" Then finalstr = finalstr + "و" + " سي "
+        '                If dig = "2" Then finalstr = finalstr + "و" + " بيست "
+        '                If dig = "1" Then
+        '                    Dim my4makandig As String = Mid(mynum, Len(mynum) - 3, 1)
+        '                    If my4makandig = "9" Then finalstr = finalstr + "و" + " نوزده " + " هزار "
+        '                    If my4makandig = "8" Then finalstr = finalstr + "و" + " هجده " + " هزار "
+        '                    If my4makandig = "7" Then finalstr = finalstr + "و" + " هفده " + " هزار "
+        '                    If my4makandig = "6" Then finalstr = finalstr + "و" + " شانزده " + " هزار "
+        '                    If my4makandig = "5" Then finalstr = finalstr + "و" + " پانزده " + " هزار "
+        '                    If my4makandig = "4" Then finalstr = finalstr + "و" + " چهارده " + " هزار "
+        '                    If my4makandig = "3" Then finalstr = finalstr + "و" + " سيزده " + " هزار "
+        '                    If my4makandig = "2" Then finalstr = finalstr + "و" + " دوازده " + " هزار "
+        '                    If my4makandig = "1" Then finalstr = finalstr + "و" + " يازده " + " هزار "
+        '                    If my4makandig = "0" Then finalstr = finalstr + "و" + " ده " + " هزار "
+        '                    loopx += 1
+        '                End If
+        '                If dig = "0" Then varhichy = ""
+        '            End If
+        '            If makan = 4 Then
+        '                If dig = "9" Then finalstr = finalstr + "و" + " نه " + " هزار "
+        '                If dig = "8" Then finalstr = finalstr + "و" + " هشت " + " هزار "
+        '                If dig = "7" Then finalstr = finalstr + "و" + " هفت " + " هزار "
+        '                If dig = "6" Then finalstr = finalstr + "و" + " شش " + " هزار "
+        '                If dig = "5" Then finalstr = finalstr + "و" + " پنج " + " هزار "
+        '                If dig = "4" Then finalstr = finalstr + "و" + " چهار " + " هزار "
+        '                If dig = "3" Then finalstr = finalstr + "و" + " سه " + " هزار "
+        '                If dig = "2" Then finalstr = finalstr + "و" + " دو " + " هزار "
+        '                If dig = "1" Then finalstr = finalstr + "و" + " يک " + " هزار "
+        '                If dig = "0" Then
+        '                    Try
+        '                        If Mid(mynum, loopx - 2, 3) <> 0 Then
+        '                            finalstr = finalstr + " هزار "
+        '                        End If
+        '                    Catch ex As Exception
+        '                        finalstr = finalstr + " هزار "
+        '                    End Try
 
-                        End If
-                    End If
+        '                End If
+        '            End If
 
-                    If makan = 3 Then
-                        If dig = "9" Then finalstr = finalstr + "و" + " نهصد "
-                        If dig = "8" Then finalstr = finalstr + "و" + " هشتصد "
-                        If dig = "7" Then finalstr = finalstr + "و" + " هفتصد "
-                        If dig = "6" Then finalstr = finalstr + "و" + " ششصد "
-                        If dig = "5" Then finalstr = finalstr + "و" + " پانصد "
-                        If dig = "4" Then finalstr = finalstr + "و" + " چهارصد "
-                        If dig = "3" Then finalstr = finalstr + "و" + " سيصد "
-                        If dig = "2" Then finalstr = finalstr + "و" + " دويست "
-                        If dig = "1" Then finalstr = finalstr + "و" + " يکصد"
-                        If dig = "0" Then varhichy = ""
-                    End If
-                    If makan = 2 Then
-                        If dig = "9" Then finalstr = finalstr + "و" + " نود "
-                        If dig = "8" Then finalstr = finalstr + "و" + " هشتاد "
-                        If dig = "7" Then finalstr = finalstr + "و" + " هفتاد "
-                        If dig = "6" Then finalstr = finalstr + "و" + " شصت "
-                        If dig = "5" Then finalstr = finalstr + "و" + " پنجاه "
-                        If dig = "4" Then finalstr = finalstr + "و" + " چهل "
-                        If dig = "3" Then finalstr = finalstr + "و" + " سي "
-                        If dig = "2" Then finalstr = finalstr + "و" + " بيست "
-                        If dig = "1" Then
-                            Dim my1makandig As String = Mid(mynum, Len(mynum), 1)
-                            If my1makandig = "9" Then finalstr = finalstr + "و" + " نوزده "
-                            If my1makandig = "8" Then finalstr = finalstr + "و" + " هجده "
-                            If my1makandig = "7" Then finalstr = finalstr + "و" + " هفده "
-                            If my1makandig = "6" Then finalstr = finalstr + "و" + " شانزده "
-                            If my1makandig = "5" Then finalstr = finalstr + "و" + " پانزده "
-                            If my1makandig = "4" Then finalstr = finalstr + "و" + " چهارده "
-                            If my1makandig = "3" Then finalstr = finalstr + "و" + " سيزده "
-                            If my1makandig = "2" Then finalstr = finalstr + "و" + " دوازده "
-                            If my1makandig = "1" Then finalstr = finalstr + "و" + " يازده "
-                            If my1makandig = "0" Then finalstr = finalstr + "و" + " ده "
-                            loopx += 1
-                        End If
-                        If dig = "0" Then varhichy = ""
-                    End If
-                    If makan = 1 Then
-                        If dig = "9" Then finalstr = finalstr + "و" + " نه "
-                        If dig = "8" Then finalstr = finalstr + "و" + " هشت "
-                        If dig = "7" Then finalstr = finalstr + "و" + " هفت "
-                        If dig = "6" Then finalstr = finalstr + "و" + " شش "
-                        If dig = "5" Then finalstr = finalstr + "و" + " پنج "
-                        If dig = "4" Then finalstr = finalstr + "و" + " چهار "
-                        If dig = "3" Then finalstr = finalstr + "و" + " سه "
-                        If dig = "2" Then finalstr = finalstr + "و" + " دو "
-                        If dig = "1" Then finalstr = finalstr + "و" + " يک "
-                        If dig = "0" Then varhichy = ""
-                    End If
-                Next
-                If Mid(finalstr, 1, 1) = "و" Then
-                    finalstr = Mid(finalstr, 2, Len(finalstr))
-                End If
-                Return finalstr
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        '            If makan = 3 Then
+        '                If dig = "9" Then finalstr = finalstr + "و" + " نهصد "
+        '                If dig = "8" Then finalstr = finalstr + "و" + " هشتصد "
+        '                If dig = "7" Then finalstr = finalstr + "و" + " هفتصد "
+        '                If dig = "6" Then finalstr = finalstr + "و" + " ششصد "
+        '                If dig = "5" Then finalstr = finalstr + "و" + " پانصد "
+        '                If dig = "4" Then finalstr = finalstr + "و" + " چهارصد "
+        '                If dig = "3" Then finalstr = finalstr + "و" + " سيصد "
+        '                If dig = "2" Then finalstr = finalstr + "و" + " دويست "
+        '                If dig = "1" Then finalstr = finalstr + "و" + " يکصد"
+        '                If dig = "0" Then varhichy = ""
+        '            End If
+        '            If makan = 2 Then
+        '                If dig = "9" Then finalstr = finalstr + "و" + " نود "
+        '                If dig = "8" Then finalstr = finalstr + "و" + " هشتاد "
+        '                If dig = "7" Then finalstr = finalstr + "و" + " هفتاد "
+        '                If dig = "6" Then finalstr = finalstr + "و" + " شصت "
+        '                If dig = "5" Then finalstr = finalstr + "و" + " پنجاه "
+        '                If dig = "4" Then finalstr = finalstr + "و" + " چهل "
+        '                If dig = "3" Then finalstr = finalstr + "و" + " سي "
+        '                If dig = "2" Then finalstr = finalstr + "و" + " بيست "
+        '                If dig = "1" Then
+        '                    Dim my1makandig As String = Mid(mynum, Len(mynum), 1)
+        '                    If my1makandig = "9" Then finalstr = finalstr + "و" + " نوزده "
+        '                    If my1makandig = "8" Then finalstr = finalstr + "و" + " هجده "
+        '                    If my1makandig = "7" Then finalstr = finalstr + "و" + " هفده "
+        '                    If my1makandig = "6" Then finalstr = finalstr + "و" + " شانزده "
+        '                    If my1makandig = "5" Then finalstr = finalstr + "و" + " پانزده "
+        '                    If my1makandig = "4" Then finalstr = finalstr + "و" + " چهارده "
+        '                    If my1makandig = "3" Then finalstr = finalstr + "و" + " سيزده "
+        '                    If my1makandig = "2" Then finalstr = finalstr + "و" + " دوازده "
+        '                    If my1makandig = "1" Then finalstr = finalstr + "و" + " يازده "
+        '                    If my1makandig = "0" Then finalstr = finalstr + "و" + " ده "
+        '                    loopx += 1
+        '                End If
+        '                If dig = "0" Then varhichy = ""
+        '            End If
+        '            If makan = 1 Then
+        '                If dig = "9" Then finalstr = finalstr + "و" + " نه "
+        '                If dig = "8" Then finalstr = finalstr + "و" + " هشت "
+        '                If dig = "7" Then finalstr = finalstr + "و" + " هفت "
+        '                If dig = "6" Then finalstr = finalstr + "و" + " شش "
+        '                If dig = "5" Then finalstr = finalstr + "و" + " پنج "
+        '                If dig = "4" Then finalstr = finalstr + "و" + " چهار "
+        '                If dig = "3" Then finalstr = finalstr + "و" + " سه "
+        '                If dig = "2" Then finalstr = finalstr + "و" + " دو "
+        '                If dig = "1" Then finalstr = finalstr + "و" + " يک "
+        '                If dig = "0" Then varhichy = ""
+        '            End If
+        '        Next
+        '        If Mid(finalstr, 1, 1) = "و" Then
+        '            finalstr = Mid(finalstr, 2, Len(finalstr))
+        '        End If
+        '        Return finalstr
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
         'تابع تکرار کردن يک کاراکتر يا رشته
-        Public Shared Function RepeatStr(ByVal Str As String, ByVal Counts As Int16) As String
-            Dim myStr As String = ""
-            Try
-                For loopx As Int16 = 1 To Counts
-                    myStr += Str
-                Next
-                Return myStr
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function RepeatStr(ByVal Str As String, ByVal Counts As Int16) As String
+        '    Dim myStr As String = ""
+        '    Try
+        '        For loopx As Int16 = 1 To Counts
+        '            myStr += Str
+        '        Next
+        '        Return myStr
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
         'تابع برعکس کردن يک رشته
-        Public Shared Function RevertStr(ByVal strr As String) As String
-            Dim mystr As String
-            Try
-                For loopx As Int16 = strr.Length To 1 Step -1
-                    mystr = mystr + Mid(strr, loopx, 1)
-                Next
-                Return mystr
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function RevertStr(ByVal strr As String) As String
+        '    Dim mystr As String
+        '    Try
+        '        For loopx As Int16 = strr.Length To 1 Step -1
+        '            mystr = mystr + Mid(strr, loopx, 1)
+        '        Next
+        '        Return mystr
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
         'روتين برگرداندن وضعيت کليد کپس لوک با استفاده از API
         Private Declare Function GetKeyState Lib "user32.dll" (ByVal nVirtKey As Long) As Int16
-        Public Shared Function Getcapslockvz() As Boolean
-            Try
-                If (GetKeyState(&H14) And &H1) Then
-                    Return True
-                Else
-                    Return False
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function Getcapslockvz() As Boolean
+        '    Try
+        '        If (GetKeyState(&H14) And &H1) Then
+        '            Return True
+        '        Else
+        '            Return False
+        '        End If
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
         'روتين تغيير زبان صفحه کليد با استفاده از API
-        Public Shared Function Setkeyboardlayout(ByVal YourInputLanguageType As R2Enums.InputLanguageType) As Boolean
-            Try
-                Return SetKeybLayout(YourInputLanguageType)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function Setkeyboardlayout(ByVal YourInputLanguageType As R2Enums.InputLanguageType) As Boolean
+        '    Try
+        '        Return SetKeybLayout(YourInputLanguageType)
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function Setkeyboardlayout(ByVal layout As String) As Boolean
-            Try
-                Return SetKeybLayout(IIf(layout = "English", R2Enums.InputLanguageType.English, R2Enums.InputLanguageType.Persian))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function Setkeyboardlayout(ByVal layout As String) As Boolean
+        '    Try
+        '        Return SetKeybLayout(IIf(layout = "English", R2Enums.InputLanguageType.English, R2Enums.InputLanguageType.Persian))
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
 
         Private Declare Function LoadKeyboardLayout Lib "user32" Alias "LoadKeyboardLayoutA" (ByVal pwszKLID As String, ByVal flags As Integer) As Integer
-        Private Shared Function SetKeybLayout(YourInputLanguageType As R2Enums.InputLanguageType) As Boolean
-            Try
-                Dim mypwszKLID As String = IIf(YourInputLanguageType = R2Enums.InputLanguageType.English, "00000409", "00000429")
-                Dim myload As String = LoadKeyboardLayout(mypwszKLID, &H1)
-                If myload = "" Then
-                    Return False
-                Else
-                    Return True
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Private Shared Function SetKeybLayout(YourInputLanguageType As R2Enums.InputLanguageType) As Boolean
+        '    Try
+        '        Dim mypwszKLID As String = IIf(YourInputLanguageType = R2Enums.InputLanguageType.English, "00000409", "00000429")
+        '        Dim myload As String = LoadKeyboardLayout(mypwszKLID, &H1)
+        '        If myload = "" Then
+        '            Return False
+        '        Else
+        '            Return True
+        '        End If
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
 
         'حذف نقطه از مقادير عددي که بعد از نقطه 0 است
-        Public Shared Function R2ErasePoint(ByVal mypointdg As Double) As String
-            Dim mydg As String = Trim(Str(mypointdg))
-            If InStr(".", mydg) <= 0 Then Return mydg
-            If Len(mydg < 3) Then Return mydg
-            If (Mid(mydg, Len(mydg) - 1, 1) = ".") And (Mid(mydg, Len(mydg), 1) = "0") Then
-                Return Mid(mydg, 1, Len(mydg) - 2)
-            Else
-                Return mydg
-            End If
-        End Function
+        'Public Shared Function R2ErasePoint(ByVal mypointdg As Double) As String
+        '    Dim mydg As String = Trim(Str(mypointdg))
+        '    If InStr(".", mydg) <= 0 Then Return mydg
+        '    If Len(mydg < 3) Then Return mydg
+        '    If (Mid(mydg, Len(mydg) - 1, 1) = ".") And (Mid(mydg, Len(mydg), 1) = "0") Then
+        '        Return Mid(mydg, 1, Len(mydg) - 2)
+        '    Else
+        '        Return mydg
+        '    End If
+        'End Function
         'تابع کامادار کردن يک رشته عددي
         Public Shared Function R2MakeCamaYourDigit(ByVal xdig As UInt64) As String
             Dim myDigit As String
@@ -734,19 +734,19 @@ Namespace PublicProc
             End Try
         End Function
         'تفسير منفي يا مثبت بودن يك مبلغ
-        Public Shared Function ParseSignDigitToSignString(ByVal YourDig As Int64) As String
-            Try
-                If YourDig < 0 Then Return R2MakeCamaYourDigit(Math.Abs(YourDig)) + "-"
-                If YourDig > 0 Then Return R2MakeCamaYourDigit(Math.Abs(YourDig))
-                If YourDig = 0 Then Return R2MakeCamaYourDigit(Math.Abs(YourDig))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function ParseSignDigitToSignString(ByVal YourDig As Int64) As String
+        '    Try
+        '        If YourDig < 0 Then Return R2MakeCamaYourDigit(Math.Abs(YourDig)) + "-"
+        '        If YourDig > 0 Then Return R2MakeCamaYourDigit(Math.Abs(YourDig))
+        '        If YourDig = 0 Then Return R2MakeCamaYourDigit(Math.Abs(YourDig))
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function GetInvertColor(YourColor As Color) As Color
-            Return Color.FromArgb(YourColor.ToArgb() Xor &HFFFFFF)
-        End Function
+        'Public Shared Function GetInvertColor(YourColor As Color) As Color
+        '    Return Color.FromArgb(YourColor.ToArgb() Xor &HFFFFFF)
+        'End Function
 
         Private Shared DaDiff As New SqlClient.SqlDataAdapter
         Private Shared DsDiff As New DataSet
@@ -1187,93 +1187,93 @@ Namespace ComputerMessagesManagement
     Public Class R2CoreMClassComputerMessagesManager
 
         Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
-            _DateTimeService = YourDateTimeService
-        End Sub
+        'Public Sub New(YourDateTimeService As IR2DateTimeService)
+        '    _DateTimeService = YourDateTimeService
+        'End Sub
 
-        Public Sub SendComputerMessage(YourComputerMessage As R2StandardComputerMessageStructure)
-            Try
-                Dim InstanceComputers = New R2CoreMClassComputersManager(_DateTimeService)
-                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
-                SabtComputerMessage(New R2StandardComputerMessageStructure(0, YourComputerMessage.CMNote, YourComputerMessage.CMType, True, False, InstanceComputers.GetNSSCurrentComputer.MId, InstanceSoftwareUsers.GetNSSSystemUser.UserId, _DateTimeService.GetCurrentDateTimeMilladi(), _DateTimeService.GetCurrentShamsiDate(), _DateTimeService.GetCurrentTime(), YourComputerMessage.DataStruct))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
+        'Public Sub SendComputerMessage(YourComputerMessage As R2StandardComputerMessageStructure)
+        '    Try
+        '        Dim InstanceComputers = New R2CoreMClassComputersManager(_DateTimeService)
+        '        Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+        '        SabtComputerMessage(New R2StandardComputerMessageStructure(0, YourComputerMessage.CMNote, YourComputerMessage.CMType, True, False, InstanceComputers.GetNSSCurrentComputer.MId, InstanceSoftwareUsers.GetNSSSystemUser.UserId, _DateTimeService.GetCurrentDateTimeMilladi(), _DateTimeService.GetCurrentShamsiDate(), _DateTimeService.GetCurrentTime(), YourComputerMessage.DataStruct))
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
 
-        Private Sub SabtComputerMessage(YourComputerMessage As R2StandardComputerMessageStructure)
-            Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                Cmdsql.Connection.Open()
-                Cmdsql.CommandText = "Insert Into R2Primary.dbo.TblComputerMessages(CMNote,CMType,CMActive,CMAccessed,ComputerId,UserId,DateTimeMilladi,DateShamsi,Time,Data1,Data2,Data3,Data4,Data5) values('" & YourComputerMessage.CMNote & "'," & YourComputerMessage.CMType & "," & IIf(YourComputerMessage.CMActive = True, 1, 0) & "," & IIf(YourComputerMessage.CMAccessed = True, 1, 0) & "," & YourComputerMessage.ComputerId & "," & YourComputerMessage.UserId & ",'" & YourComputerMessage.DateTimeMilladi & "','" & YourComputerMessage.DateShamsi & "','" & YourComputerMessage.Time & "','" & YourComputerMessage.DataStruct.Data1 & "','" & YourComputerMessage.DataStruct.Data2 & "','" & YourComputerMessage.DataStruct.Data3 & "','" & YourComputerMessage.DataStruct.Data4 & "','" & YourComputerMessage.DataStruct.Data5 & "')"
-                Cmdsql.ExecuteNonQuery()
-                Cmdsql.Connection.Close()
-            Catch ex As Exception
-                If Cmdsql.Connection.State <> ConnectionState.Closed Then Cmdsql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
+        'Private Sub SabtComputerMessage(YourComputerMessage As R2StandardComputerMessageStructure)
+        '    Dim Cmdsql As New SqlClient.SqlCommand
+        '    Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+        '    Try
+        '        Cmdsql.Connection.Open()
+        '        Cmdsql.CommandText = "Insert Into R2Primary.dbo.TblComputerMessages(CMNote,CMType,CMActive,CMAccessed,ComputerId,UserId,DateTimeMilladi,DateShamsi,Time,Data1,Data2,Data3,Data4,Data5) values('" & YourComputerMessage.CMNote & "'," & YourComputerMessage.CMType & "," & IIf(YourComputerMessage.CMActive = True, 1, 0) & "," & IIf(YourComputerMessage.CMAccessed = True, 1, 0) & "," & YourComputerMessage.ComputerId & "," & YourComputerMessage.UserId & ",'" & YourComputerMessage.DateTimeMilladi & "','" & YourComputerMessage.DateShamsi & "','" & YourComputerMessage.Time & "','" & YourComputerMessage.DataStruct.Data1 & "','" & YourComputerMessage.DataStruct.Data2 & "','" & YourComputerMessage.DataStruct.Data3 & "','" & YourComputerMessage.DataStruct.Data4 & "','" & YourComputerMessage.DataStruct.Data5 & "')"
+        '        Cmdsql.ExecuteNonQuery()
+        '        Cmdsql.Connection.Close()
+        '    Catch ex As Exception
+        '        If Cmdsql.Connection.State <> ConnectionState.Closed Then Cmdsql.Connection.Close()
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
 
 
     End Class
 
-    Public NotInheritable Class R2CoreMClassComputerMessagesManagement
-        Private Shared _DateTimeService As New R2DateTimeService
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
+    'Public NotInheritable Class R2CoreMClassComputerMessagesManagement
+    '    Private Shared _DateTimeService As New R2DateTimeService
+    '    Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
 
-        Public Shared Function GetNSSComputerMessageType(YourCMTypeId As Int64) As R2StandardComputerMessageTypeStructure
-            Try
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblComputerMessageTypes Where CMTypeId=" & YourCMTypeId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
-                    Throw New GetNSSException
-                Else
-                    Return New R2StandardComputerMessageTypeStructure(Ds.Tables(0).Rows(0).Item("CMTypeId"), Ds.Tables(0).Rows(0).Item("CMTypeName").trim, Ds.Tables(0).Rows(0).Item("CMTypeTitle").trim, Ds.Tables(0).Rows(0).Item("AssemblyDll").trim, Ds.Tables(0).Rows(0).Item("AssemblyPath").trim, Color.FromName(Ds.Tables(0).Rows(0).Item("SpecialColor").trim), Ds.Tables(0).Rows(0).Item("Automation"), Ds.Tables(0).Rows(0).Item("Description").trim, Ds.Tables(0).Rows(0).Item("WorkingGroup"))
-                End If
-            Catch exx As GetNSSException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+    '    Public Shared Function GetNSSComputerMessageType(YourCMTypeId As Int64) As R2StandardComputerMessageTypeStructure
+    '        Try
+    '            Dim Ds As DataSet
+    '            If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblComputerMessageTypes Where CMTypeId=" & YourCMTypeId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+    '                Throw New GetNSSException
+    '            Else
+    '                Return New R2StandardComputerMessageTypeStructure(Ds.Tables(0).Rows(0).Item("CMTypeId"), Ds.Tables(0).Rows(0).Item("CMTypeName").trim, Ds.Tables(0).Rows(0).Item("CMTypeTitle").trim, Ds.Tables(0).Rows(0).Item("AssemblyDll").trim, Ds.Tables(0).Rows(0).Item("AssemblyPath").trim, Color.FromName(Ds.Tables(0).Rows(0).Item("SpecialColor").trim), Ds.Tables(0).Rows(0).Item("Automation"), Ds.Tables(0).Rows(0).Item("Description").trim, Ds.Tables(0).Rows(0).Item("WorkingGroup"))
+    '            End If
+    '        Catch exx As GetNSSException
+    '            Throw exx
+    '        Catch ex As Exception
+    '            Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+    '        End Try
+    '    End Function
 
-        Private Shared Sub SabtComputerMessage(YourComputerMessage As R2StandardComputerMessageStructure)
-            Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                Cmdsql.Connection.Open()
-                Cmdsql.CommandText = "Insert Into R2Primary.dbo.TblComputerMessages(CMNote,CMType,CMActive,CMAccessed,ComputerId,UserId,DateTimeMilladi,DateShamsi,Time,Data1,Data2,Data3,Data4,Data5) values('" & YourComputerMessage.CMNote & "'," & YourComputerMessage.CMType & "," & IIf(YourComputerMessage.CMActive = True, 1, 0) & "," & IIf(YourComputerMessage.CMAccessed = True, 1, 0) & "," & YourComputerMessage.ComputerId & "," & YourComputerMessage.UserId & ",'" & YourComputerMessage.DateTimeMilladi & "','" & YourComputerMessage.DateShamsi & "','" & YourComputerMessage.Time & "','" & YourComputerMessage.DataStruct.Data1 & "','" & YourComputerMessage.DataStruct.Data2 & "','" & YourComputerMessage.DataStruct.Data3 & "','" & YourComputerMessage.DataStruct.Data4 & "','" & YourComputerMessage.DataStruct.Data5 & "')"
-                Cmdsql.ExecuteNonQuery()
-                Cmdsql.Connection.Close()
-            Catch ex As Exception
-                If Cmdsql.Connection.State <> ConnectionState.Closed Then Cmdsql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
+    '    Private Shared Sub SabtComputerMessage(YourComputerMessage As R2StandardComputerMessageStructure)
+    '        Dim Cmdsql As New SqlClient.SqlCommand
+    '        Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+    '        Try
+    '            Cmdsql.Connection.Open()
+    '            Cmdsql.CommandText = "Insert Into R2Primary.dbo.TblComputerMessages(CMNote,CMType,CMActive,CMAccessed,ComputerId,UserId,DateTimeMilladi,DateShamsi,Time,Data1,Data2,Data3,Data4,Data5) values('" & YourComputerMessage.CMNote & "'," & YourComputerMessage.CMType & "," & IIf(YourComputerMessage.CMActive = True, 1, 0) & "," & IIf(YourComputerMessage.CMAccessed = True, 1, 0) & "," & YourComputerMessage.ComputerId & "," & YourComputerMessage.UserId & ",'" & YourComputerMessage.DateTimeMilladi & "','" & YourComputerMessage.DateShamsi & "','" & YourComputerMessage.Time & "','" & YourComputerMessage.DataStruct.Data1 & "','" & YourComputerMessage.DataStruct.Data2 & "','" & YourComputerMessage.DataStruct.Data3 & "','" & YourComputerMessage.DataStruct.Data4 & "','" & YourComputerMessage.DataStruct.Data5 & "')"
+    '            Cmdsql.ExecuteNonQuery()
+    '            Cmdsql.Connection.Close()
+    '        Catch ex As Exception
+    '            If Cmdsql.Connection.State <> ConnectionState.Closed Then Cmdsql.Connection.Close()
+    '            Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+    '        End Try
+    '    End Sub
 
-        Public Shared Sub SendComputerMessage(YourComputerMessage As R2StandardComputerMessageStructure)
-            Try
-                SabtComputerMessage(New R2StandardComputerMessageStructure(0, YourComputerMessage.CMNote, YourComputerMessage.CMType, True, False, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser.UserId, _DateTimeService.GetCurrentDateTimeMilladi(), _DateTimeService.GetCurrentShamsiDate(), _DateTimeService.GetCurrentTime(), YourComputerMessage.DataStruct))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
+    '    Public Shared Sub SendComputerMessage(YourComputerMessage As R2StandardComputerMessageStructure)
+    '        Try
+    '            SabtComputerMessage(New R2StandardComputerMessageStructure(0, YourComputerMessage.CMNote, YourComputerMessage.CMType, True, False, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser.UserId, _DateTimeService.GetCurrentDateTimeMilladi(), _DateTimeService.GetCurrentShamsiDate(), _DateTimeService.GetCurrentTime(), YourComputerMessage.DataStruct))
+    '        Catch ex As Exception
+    '            Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+    '        End Try
+    '    End Sub
 
-        Public Shared Sub DeactiveComputerMessage(YourNSS As R2StandardComputerMessageStructure)
-            Dim CmdSql As New SqlCommand
-            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.CommandText = "Update R2Primary.dbo.TblComputerMessages Set CMActive=0 Where PrimaryId= " & YourNSS.PrimaryId & ""
-                CmdSql.ExecuteNonQuery()
-                CmdSql.Connection.Close()
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-    End Class
+    '    Public Shared Sub DeactiveComputerMessage(YourNSS As R2StandardComputerMessageStructure)
+    '        Dim CmdSql As New SqlCommand
+    '        CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+    '        Try
+    '            CmdSql.Connection.Open()
+    '            CmdSql.CommandText = "Update R2Primary.dbo.TblComputerMessages Set CMActive=0 Where PrimaryId= " & YourNSS.PrimaryId & ""
+    '            CmdSql.ExecuteNonQuery()
+    '            CmdSql.Connection.Close()
+    '        Catch ex As Exception
+    '            If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+    '            Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+    '        End Try
+    '    End Sub
+    'End Class
 
 End Namespace
 
@@ -1915,282 +1915,282 @@ Namespace HumanResourcesManagement
             Private Shared _R2PrimaryFSWS = New R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
             Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
-            Public Shared Function GetNSSPersonnel(YourPId As Int64) As R2CoreStandardPersonnelStructure
-                Try
-                    Dim DS As DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2Primary.dbo.TblPersonelInf Where PId=" & YourPId & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then
-                        Throw New GetNSSException
-                    End If
-                    Dim NSS As New R2CoreStandardPersonnelStructure
-                    NSS.Active = DS.Tables(0).Rows(0).Item("Active")
-                    NSS.DateShamsiEdit = DS.Tables(0).Rows(0).Item("DateShamsiEdit")
-                    NSS.DateShamsiSabt = DS.Tables(0).Rows(0).Item("DateShamsiSabt")
-                    NSS.DateTimeMilladiEdit = DS.Tables(0).Rows(0).Item("DateTimeMilladiEdit")
-                    NSS.DateTimeMilladiSabt = DS.Tables(0).Rows(0).Item("DateTimeMilladiSabt")
-                    NSS.FingerPrint1 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint"), Byte())
-                    NSS.FingerPrint2 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint2"), Byte())
-                    NSS.FingerPrint3 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint3"), Byte())
-                    NSS.FingerPrint4 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint4"), Byte())
-                    NSS.NationalCode = DS.Tables(0).Rows(0).Item("NationalCode")
-                    NSS.PFatherName = DS.Tables(0).Rows(0).Item("PFatherName")
-                    NSS.PId = DS.Tables(0).Rows(0).Item("PId")
-                    NSS.PIdOther = DS.Tables(0).Rows(0).Item("PIdOther")
-                    NSS.UserIdEdit = DS.Tables(0).Rows(0).Item("UserIdEdit")
-                    NSS.UserIdSabt = DS.Tables(0).Rows(0).Item("UserIdSabt")
-                    NSS.PNameFamily = DS.Tables(0).Rows(0).Item("PNameFamily")
-                    NSS.Tel = DS.Tables(0).Rows(0).Item("Tel")
-                    NSS.Address = DS.Tables(0).Rows(0).Item("Address")
-                    NSS.StartTImeShift = DS.Tables(0).Rows(0).Item("StartTImeShift")
-                    NSS.EndTImeShift = DS.Tables(0).Rows(0).Item("EndTImeShift")
-                    NSS.ShiftMinutes = DS.Tables(0).Rows(0).Item("ShiftMinutes")
-                    Return NSS
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            'Public Shared Function GetNSSPersonnel(YourPId As Int64) As R2CoreStandardPersonnelStructure
+            '    Try
+            '        Dim DS As DataSet
+            '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2Primary.dbo.TblPersonelInf Where PId=" & YourPId & "", 1, DS, New Boolean).GetRecordsCount() = 0 Then
+            '            Throw New GetNSSException
+            '        End If
+            '        Dim NSS As New R2CoreStandardPersonnelStructure
+            '        NSS.Active = DS.Tables(0).Rows(0).Item("Active")
+            '        NSS.DateShamsiEdit = DS.Tables(0).Rows(0).Item("DateShamsiEdit")
+            '        NSS.DateShamsiSabt = DS.Tables(0).Rows(0).Item("DateShamsiSabt")
+            '        NSS.DateTimeMilladiEdit = DS.Tables(0).Rows(0).Item("DateTimeMilladiEdit")
+            '        NSS.DateTimeMilladiSabt = DS.Tables(0).Rows(0).Item("DateTimeMilladiSabt")
+            '        NSS.FingerPrint1 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint"), Byte())
+            '        NSS.FingerPrint2 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint2"), Byte())
+            '        NSS.FingerPrint3 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint3"), Byte())
+            '        NSS.FingerPrint4 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint4"), Byte())
+            '        NSS.NationalCode = DS.Tables(0).Rows(0).Item("NationalCode")
+            '        NSS.PFatherName = DS.Tables(0).Rows(0).Item("PFatherName")
+            '        NSS.PId = DS.Tables(0).Rows(0).Item("PId")
+            '        NSS.PIdOther = DS.Tables(0).Rows(0).Item("PIdOther")
+            '        NSS.UserIdEdit = DS.Tables(0).Rows(0).Item("UserIdEdit")
+            '        NSS.UserIdSabt = DS.Tables(0).Rows(0).Item("UserIdSabt")
+            '        NSS.PNameFamily = DS.Tables(0).Rows(0).Item("PNameFamily")
+            '        NSS.Tel = DS.Tables(0).Rows(0).Item("Tel")
+            '        NSS.Address = DS.Tables(0).Rows(0).Item("Address")
+            '        NSS.StartTImeShift = DS.Tables(0).Rows(0).Item("StartTImeShift")
+            '        NSS.EndTImeShift = DS.Tables(0).Rows(0).Item("EndTImeShift")
+            '        NSS.ShiftMinutes = DS.Tables(0).Rows(0).Item("ShiftMinutes")
+            '        Return NSS
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
-            Public Shared Function GetNSSPersonnel(YourPinCode As String) As R2CoreStandardPersonnelStructure
-                Try
-                    Dim DS As DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2Primary.dbo.TblPersonelInf Where Ltrim(Rtrim(PinCode))='" & YourPinCode & "'", 1, DS, New Boolean).GetRecordsCount() = 0 Then
-                        Throw New GetNSSException
-                    End If
-                    Dim NSS As New R2CoreStandardPersonnelStructure
-                    NSS.Active = DS.Tables(0).Rows(0).Item("Active")
-                    NSS.DateShamsiEdit = DS.Tables(0).Rows(0).Item("DateShamsiEdit")
-                    NSS.DateShamsiSabt = DS.Tables(0).Rows(0).Item("DateShamsiSabt")
-                    NSS.DateTimeMilladiEdit = DS.Tables(0).Rows(0).Item("DateTimeMilladiEdit")
-                    NSS.DateTimeMilladiSabt = DS.Tables(0).Rows(0).Item("DateTimeMilladiSabt")
-                    NSS.FingerPrint1 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint"), Byte())
-                    NSS.FingerPrint2 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint2"), Byte())
-                    NSS.FingerPrint3 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint3"), Byte())
-                    NSS.FingerPrint4 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint4"), Byte())
-                    NSS.NationalCode = DS.Tables(0).Rows(0).Item("NationalCode")
-                    NSS.PFatherName = DS.Tables(0).Rows(0).Item("PFatherName")
-                    NSS.PId = DS.Tables(0).Rows(0).Item("PId")
-                    NSS.PIdOther = DS.Tables(0).Rows(0).Item("PIdOther")
-                    NSS.UserIdEdit = DS.Tables(0).Rows(0).Item("UserIdEdit")
-                    NSS.UserIdSabt = DS.Tables(0).Rows(0).Item("UserIdSabt")
-                    NSS.PNameFamily = DS.Tables(0).Rows(0).Item("PNameFamily")
-                    NSS.Tel = DS.Tables(0).Rows(0).Item("Tel")
-                    NSS.Address = DS.Tables(0).Rows(0).Item("Address")
-                    NSS.StartTImeShift = DS.Tables(0).Rows(0).Item("StartTImeShift")
-                    NSS.EndTImeShift = DS.Tables(0).Rows(0).Item("EndTImeShift")
-                    NSS.ShiftMinutes = DS.Tables(0).Rows(0).Item("ShiftMinutes")
-                    Return NSS
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            'Public Shared Function GetNSSPersonnel(YourPinCode As String) As R2CoreStandardPersonnelStructure
+            '    Try
+            '        Dim DS As DataSet
+            '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2Primary.dbo.TblPersonelInf Where Ltrim(Rtrim(PinCode))='" & YourPinCode & "'", 1, DS, New Boolean).GetRecordsCount() = 0 Then
+            '            Throw New GetNSSException
+            '        End If
+            '        Dim NSS As New R2CoreStandardPersonnelStructure
+            '        NSS.Active = DS.Tables(0).Rows(0).Item("Active")
+            '        NSS.DateShamsiEdit = DS.Tables(0).Rows(0).Item("DateShamsiEdit")
+            '        NSS.DateShamsiSabt = DS.Tables(0).Rows(0).Item("DateShamsiSabt")
+            '        NSS.DateTimeMilladiEdit = DS.Tables(0).Rows(0).Item("DateTimeMilladiEdit")
+            '        NSS.DateTimeMilladiSabt = DS.Tables(0).Rows(0).Item("DateTimeMilladiSabt")
+            '        NSS.FingerPrint1 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint"), Byte())
+            '        NSS.FingerPrint2 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint2"), Byte())
+            '        NSS.FingerPrint3 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint3"), Byte())
+            '        NSS.FingerPrint4 = DirectCast(DS.Tables(0).Rows(0).Item("FingerPrint4"), Byte())
+            '        NSS.NationalCode = DS.Tables(0).Rows(0).Item("NationalCode")
+            '        NSS.PFatherName = DS.Tables(0).Rows(0).Item("PFatherName")
+            '        NSS.PId = DS.Tables(0).Rows(0).Item("PId")
+            '        NSS.PIdOther = DS.Tables(0).Rows(0).Item("PIdOther")
+            '        NSS.UserIdEdit = DS.Tables(0).Rows(0).Item("UserIdEdit")
+            '        NSS.UserIdSabt = DS.Tables(0).Rows(0).Item("UserIdSabt")
+            '        NSS.PNameFamily = DS.Tables(0).Rows(0).Item("PNameFamily")
+            '        NSS.Tel = DS.Tables(0).Rows(0).Item("Tel")
+            '        NSS.Address = DS.Tables(0).Rows(0).Item("Address")
+            '        NSS.StartTImeShift = DS.Tables(0).Rows(0).Item("StartTImeShift")
+            '        NSS.EndTImeShift = DS.Tables(0).Rows(0).Item("EndTImeShift")
+            '        NSS.ShiftMinutes = DS.Tables(0).Rows(0).Item("ShiftMinutes")
+            '        Return NSS
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
-            Public Shared Function IsExistPersonnel(YourNSS As R2CoreStandardPersonnelStructure) As Boolean
-                Try
-                    Dim DS As New DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select PNameFamily from R2Primary.dbo.TblPersonelInf Where NationalCode='" & YourNSS.NationalCode & "'", 1, DS, New Boolean).GetRecordsCount <> 0 Then
-                        Return True
-                    Else
-                        Return False
-                    End If
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            'Public Shared Function IsExistPersonnel(YourNSS As R2CoreStandardPersonnelStructure) As Boolean
+            '    Try
+            '        Dim DS As New DataSet
+            '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select PNameFamily from R2Primary.dbo.TblPersonelInf Where NationalCode='" & YourNSS.NationalCode & "'", 1, DS, New Boolean).GetRecordsCount <> 0 Then
+            '            Return True
+            '        Else
+            '            Return False
+            '        End If
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
-            Public Shared Function InsertPersonnel(YourNSS As R2CoreStandardPersonnelStructure, YourUserNSS As R2CoreStandardSoftwareUserStructure) As Int64
-                Dim CmdSql As SqlCommand = New SqlCommand
-                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-                Try
-                    If IsExistPersonnel(YourNSS) = True Then Throw New Exception("پرسنل با مشخصات مورد نظر قبلا ثبت شده است")
-                    CmdSql.Connection.Open()
-                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                    CmdSql.CommandText = "Select top 1 PId from R2Primary.dbo.TblPersonelInf with (tablockx) Order by PId Desc "
-                    Dim PId As Int64 = CmdSql.ExecuteScalar + 1
-                    CmdSql.CommandText = "Insert Into R2Primary.dbo.TblPersonelInf(PId,PIdOther,PNameFamily,PFatherName,NationalCode,Tel,Address,Active,DateTimeMilladiSabt,DateTimeMilladiEdit,DateShamsiSabt,DateShamsiEdit,UserIdSabt,UserIdEdit,FingerPrint,FingerPrint2,FingerPrint3,FingerPrint4,StartTImeShift,EndTImeShift,ShiftMinutes) Values(" & PId & ",'" & YourNSS.PIdOther & "','" & YourNSS.PNameFamily & "','" & YourNSS.PFatherName & "','" & YourNSS.NationalCode & "','" & YourNSS.Tel & "','" & YourNSS.Address & "'," & IIf(YourNSS.Active, 1, 0) & ",'" & _DateTimeService.GetCurrentDateTimeMilladi() & "','" & _DateTimeService.GetCurrentDateTimeMilladi() & "','" & _DateTimeService.GetCurrentShamsiDate() & "','" & _DateTimeService.GetCurrentShamsiDate() & "'," & YourUserNSS.UserId & "," & YourUserNSS.UserId & ",0,0,0,0,'" & YourNSS.StartTImeShift & "','" & YourNSS.EndTImeShift & "','" & YourNSS.ShiftMinutes & "')"
-                    CmdSql.ExecuteNonQuery()
-                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-                    Return PId
-                Catch ex As Exception
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            'Public Shared Function InsertPersonnel(YourNSS As R2CoreStandardPersonnelStructure, YourUserNSS As R2CoreStandardSoftwareUserStructure) As Int64
+            '    Dim CmdSql As SqlCommand = New SqlCommand
+            '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            '    Try
+            '        If IsExistPersonnel(YourNSS) = True Then Throw New Exception("پرسنل با مشخصات مورد نظر قبلا ثبت شده است")
+            '        CmdSql.Connection.Open()
+            '        CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+            '        CmdSql.CommandText = "Select top 1 PId from R2Primary.dbo.TblPersonelInf with (tablockx) Order by PId Desc "
+            '        Dim PId As Int64 = CmdSql.ExecuteScalar + 1
+            '        CmdSql.CommandText = "Insert Into R2Primary.dbo.TblPersonelInf(PId,PIdOther,PNameFamily,PFatherName,NationalCode,Tel,Address,Active,DateTimeMilladiSabt,DateTimeMilladiEdit,DateShamsiSabt,DateShamsiEdit,UserIdSabt,UserIdEdit,FingerPrint,FingerPrint2,FingerPrint3,FingerPrint4,StartTImeShift,EndTImeShift,ShiftMinutes) Values(" & PId & ",'" & YourNSS.PIdOther & "','" & YourNSS.PNameFamily & "','" & YourNSS.PFatherName & "','" & YourNSS.NationalCode & "','" & YourNSS.Tel & "','" & YourNSS.Address & "'," & IIf(YourNSS.Active, 1, 0) & ",'" & _DateTimeService.GetCurrentDateTimeMilladi() & "','" & _DateTimeService.GetCurrentDateTimeMilladi() & "','" & _DateTimeService.GetCurrentShamsiDate() & "','" & _DateTimeService.GetCurrentShamsiDate() & "'," & YourUserNSS.UserId & "," & YourUserNSS.UserId & ",0,0,0,0,'" & YourNSS.StartTImeShift & "','" & YourNSS.EndTImeShift & "','" & YourNSS.ShiftMinutes & "')"
+            '        CmdSql.ExecuteNonQuery()
+            '        CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            '        Return PId
+            '    Catch ex As Exception
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+            '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            '        End If
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
-            Public Shared Sub UpdatePersonnel(YourNSS As R2CoreStandardPersonnelStructure, YourUserNSS As R2CoreStandardSoftwareUserStructure)
-                Dim CmdSql As SqlCommand = New SqlCommand
-                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-                Try
-                    CmdSql.Connection.Open()
-                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                    CmdSql.CommandText = "Update R2Primary.dbo.TblPersonelInf Set PIdOther='" & YourNSS.PIdOther & "',PNameFamily='" & YourNSS.PNameFamily & "',PFatherName='" & YourNSS.PFatherName & "',NationalCode='" & YourNSS.NationalCode & "',Tel='" & YourNSS.Tel & "',Address='" & YourNSS.Address & "',Active=" & IIf(YourNSS.Active, 1, 0) & ",DateTimeMilladiEdit='" & _DateTimeService.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTimeService.GetCurrentShamsiDate() & "',UserIdEdit=" & YourUserNSS.UserId & ", StartTimeShift='" & YourNSS.StartTImeShift & "',EndTimeShift='" & YourNSS.EndTImeShift & "',ShiftMinutes='" & YourNSS.ShiftMinutes & "' Where PId=" & YourNSS.PId & ""
-                    CmdSql.ExecuteNonQuery()
-                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-                Catch ex As Exception
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Sub
+            'Public Shared Sub UpdatePersonnel(YourNSS As R2CoreStandardPersonnelStructure, YourUserNSS As R2CoreStandardSoftwareUserStructure)
+            '    Dim CmdSql As SqlCommand = New SqlCommand
+            '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            '    Try
+            '        CmdSql.Connection.Open()
+            '        CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+            '        CmdSql.CommandText = "Update R2Primary.dbo.TblPersonelInf Set PIdOther='" & YourNSS.PIdOther & "',PNameFamily='" & YourNSS.PNameFamily & "',PFatherName='" & YourNSS.PFatherName & "',NationalCode='" & YourNSS.NationalCode & "',Tel='" & YourNSS.Tel & "',Address='" & YourNSS.Address & "',Active=" & IIf(YourNSS.Active, 1, 0) & ",DateTimeMilladiEdit='" & _DateTimeService.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTimeService.GetCurrentShamsiDate() & "',UserIdEdit=" & YourUserNSS.UserId & ", StartTimeShift='" & YourNSS.StartTImeShift & "',EndTimeShift='" & YourNSS.EndTImeShift & "',ShiftMinutes='" & YourNSS.ShiftMinutes & "' Where PId=" & YourNSS.PId & ""
+            '        CmdSql.ExecuteNonQuery()
+            '        CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            '    Catch ex As Exception
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+            '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            '        End If
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Sub
 
-            Public Shared Function GetPersonnelImage(YourNSSPersonnel As R2CoreStandardPersonnelStructure, YourNSSUser As R2CoreStandardSoftwareUserStructure) As R2CoreImage
-                Try
-                    Dim bf As BinaryFormatter = New BinaryFormatter()
-                    Dim MS As MemoryStream = New MemoryStream()
-                    bf.Serialize(MS, _R2PrimaryFSWS.WebMethodGetFile(R2CoreRawGroups.PersonnelImages, YourNSSPersonnel.PId.ToString() + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 3), _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword)))
-                    Return New R2CoreImage(MS.ToArray())
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            'Public Shared Function GetPersonnelImage(YourNSSPersonnel As R2CoreStandardPersonnelStructure, YourNSSUser As R2CoreStandardSoftwareUserStructure) As R2CoreImage
+            '    Try
+            '        Dim bf As BinaryFormatter = New BinaryFormatter()
+            '        Dim MS As MemoryStream = New MemoryStream()
+            '        bf.Serialize(MS, _R2PrimaryFSWS.WebMethodGetFile(R2CoreRawGroups.PersonnelImages, YourNSSPersonnel.PId.ToString() + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 3), _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword)))
+            '        Return New R2CoreImage(MS.ToArray())
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
-            Public Shared Sub SavePersonnelImage(YourNSSPersonnel As R2CoreStandardPersonnelStructure, YourPersonnelImage As R2CoreImage, YourNSSUser As R2CoreStandardSoftwareUserStructure)
-                Try
-                    _R2PrimaryFSWS.WebMethodSaveFile(R2CoreRawGroups.PersonnelImages, YourNSSPersonnel.PId.ToString() + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 3), YourPersonnelImage.GetImageByte(), _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword))
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Sub
+            'Public Shared Sub SavePersonnelImage(YourNSSPersonnel As R2CoreStandardPersonnelStructure, YourPersonnelImage As R2CoreImage, YourNSSUser As R2CoreStandardSoftwareUserStructure)
+            '    Try
+            '        _R2PrimaryFSWS.WebMethodSaveFile(R2CoreRawGroups.PersonnelImages, YourNSSPersonnel.PId.ToString() + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 3), YourPersonnelImage.GetImageByte(), _R2PrimaryFSWS.WebMethodLogin(YourNSSUser.UserShenaseh, YourNSSUser.UserPassword))
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Sub
 
-            Public Shared Function CreateListOfPersonnel(YourActiveStatus As Boolean) As List(Of R2CoreStandardPersonnelStructure)
-                Try
-                    Dim DS As DataSet
-                    If YourActiveStatus = True Then InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblPersonelInf Where Active=1 Order By PNameFamily", 1, DS, New Boolean)
-                    If YourActiveStatus = False Then InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblPersonelInf Order By PNameFamily", 1, DS, New Boolean)
-                    Dim ListOfNSS As List(Of R2CoreStandardPersonnelStructure) = New List(Of R2CoreStandardPersonnelStructure)()
-                    For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
-                        ListOfNSS.Add(New R2CoreStandardPersonnelStructure(DS.Tables(0).Rows(Loopx).Item("PId"), DS.Tables(0).Rows(Loopx).Item("PIdOther"), DS.Tables(0).Rows(Loopx).Item("PNameFamily"), DS.Tables(0).Rows(Loopx).Item("PFatherName"), DS.Tables(0).Rows(Loopx).Item("NationalCode"), DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("Tel"), DS.Tables(0).Rows(Loopx).Item("Address"), DS.Tables(0).Rows(Loopx).Item("UserIdSabt"), DS.Tables(0).Rows(Loopx).Item("UserIdEdit"), DS.Tables(0).Rows(Loopx).Item("DateTimeMilladiSabt"), DS.Tables(0).Rows(Loopx).Item("DateTimeMilladiEdit"), DS.Tables(0).Rows(Loopx).Item("DateShamsiSabt"), DS.Tables(0).Rows(Loopx).Item("DateShamsiEdit"), DS.Tables(0).Rows(Loopx).Item("FingerPrint"), DS.Tables(0).Rows(Loopx).Item("FingerPrint2"), DS.Tables(0).Rows(Loopx).Item("FingerPrint3"), DS.Tables(0).Rows(Loopx).Item("FingerPrint4"), DS.Tables(0).Rows(Loopx).Item("StartTImeShift"), DS.Tables(0).Rows(Loopx).Item("EndTImeShift"), DS.Tables(0).Rows(Loopx).Item("ShiftMinutes")))
-                    Next
-                    Return ListOfNSS
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            'Public Shared Function CreateListOfPersonnel(YourActiveStatus As Boolean) As List(Of R2CoreStandardPersonnelStructure)
+            '    Try
+            '        Dim DS As DataSet
+            '        If YourActiveStatus = True Then InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblPersonelInf Where Active=1 Order By PNameFamily", 1, DS, New Boolean)
+            '        If YourActiveStatus = False Then InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblPersonelInf Order By PNameFamily", 1, DS, New Boolean)
+            '        Dim ListOfNSS As List(Of R2CoreStandardPersonnelStructure) = New List(Of R2CoreStandardPersonnelStructure)()
+            '        For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+            '            ListOfNSS.Add(New R2CoreStandardPersonnelStructure(DS.Tables(0).Rows(Loopx).Item("PId"), DS.Tables(0).Rows(Loopx).Item("PIdOther"), DS.Tables(0).Rows(Loopx).Item("PNameFamily"), DS.Tables(0).Rows(Loopx).Item("PFatherName"), DS.Tables(0).Rows(Loopx).Item("NationalCode"), DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("Tel"), DS.Tables(0).Rows(Loopx).Item("Address"), DS.Tables(0).Rows(Loopx).Item("UserIdSabt"), DS.Tables(0).Rows(Loopx).Item("UserIdEdit"), DS.Tables(0).Rows(Loopx).Item("DateTimeMilladiSabt"), DS.Tables(0).Rows(Loopx).Item("DateTimeMilladiEdit"), DS.Tables(0).Rows(Loopx).Item("DateShamsiSabt"), DS.Tables(0).Rows(Loopx).Item("DateShamsiEdit"), DS.Tables(0).Rows(Loopx).Item("FingerPrint"), DS.Tables(0).Rows(Loopx).Item("FingerPrint2"), DS.Tables(0).Rows(Loopx).Item("FingerPrint3"), DS.Tables(0).Rows(Loopx).Item("FingerPrint4"), DS.Tables(0).Rows(Loopx).Item("StartTImeShift"), DS.Tables(0).Rows(Loopx).Item("EndTImeShift"), DS.Tables(0).Rows(Loopx).Item("ShiftMinutes")))
+            '        Next
+            '        Return ListOfNSS
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
-            Public Shared Sub SavePersonnelFingerPrints(YourNSSPersonnel As R2CoreStandardPersonnelStructure, YourWFP As R2CorePersonnelWhichFingerPrint, YourTemplate As Byte())
-                Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-                Try
-                    Dim P As SqlClient.SqlParameter = New SqlClient.SqlParameter("@FPTemplate", SqlDbType.VarBinary)
-                    P.Value = YourTemplate
-                    CmdSql.Parameters.Add(P)
-                    CmdSql.Connection.Open()
-                    If YourWFP = R2CorePersonnelWhichFingerPrint.FP1 Then
-                        CmdSql.CommandText = "Update R2Primary.dbo.TblPersonelInf Set FingerPrint=@FPTemplate where PId=" & YourNSSPersonnel.PId & ""
-                    ElseIf YourWFP = R2CorePersonnelWhichFingerPrint.FP2 Then
-                        CmdSql.CommandText = "Update R2Primary.dbo.TblPersonelInf Set FingerPrint2=@FPTemplate where PId=" & YourNSSPersonnel.PId & ""
-                    ElseIf YourWFP = R2CorePersonnelWhichFingerPrint.FP3 Then
-                        CmdSql.CommandText = "Update R2Primary.dbo.TblPersonelInf Set FingerPrint3=@FPTemplate where PId=" & YourNSSPersonnel.PId & ""
-                    ElseIf YourWFP = R2CorePersonnelWhichFingerPrint.FP4 Then
-                        CmdSql.CommandText = "Update R2Primary.dbo.TblPersonelInf Set FingerPrint4=@FPTemplate where PId=" & YourNSSPersonnel.PId & ""
-                    End If
-                    CmdSql.ExecuteNonQuery()
-                    CmdSql.Connection.Close()
-                Catch ex As Exception
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Sub
+            'Public Shared Sub SavePersonnelFingerPrints(YourNSSPersonnel As R2CoreStandardPersonnelStructure, YourWFP As R2CorePersonnelWhichFingerPrint, YourTemplate As Byte())
+            '    Dim CmdSql As New SqlClient.SqlCommand
+            '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            '    Try
+            '        Dim P As SqlClient.SqlParameter = New SqlClient.SqlParameter("@FPTemplate", SqlDbType.VarBinary)
+            '        P.Value = YourTemplate
+            '        CmdSql.Parameters.Add(P)
+            '        CmdSql.Connection.Open()
+            '        If YourWFP = R2CorePersonnelWhichFingerPrint.FP1 Then
+            '            CmdSql.CommandText = "Update R2Primary.dbo.TblPersonelInf Set FingerPrint=@FPTemplate where PId=" & YourNSSPersonnel.PId & ""
+            '        ElseIf YourWFP = R2CorePersonnelWhichFingerPrint.FP2 Then
+            '            CmdSql.CommandText = "Update R2Primary.dbo.TblPersonelInf Set FingerPrint2=@FPTemplate where PId=" & YourNSSPersonnel.PId & ""
+            '        ElseIf YourWFP = R2CorePersonnelWhichFingerPrint.FP3 Then
+            '            CmdSql.CommandText = "Update R2Primary.dbo.TblPersonelInf Set FingerPrint3=@FPTemplate where PId=" & YourNSSPersonnel.PId & ""
+            '        ElseIf YourWFP = R2CorePersonnelWhichFingerPrint.FP4 Then
+            '            CmdSql.CommandText = "Update R2Primary.dbo.TblPersonelInf Set FingerPrint4=@FPTemplate where PId=" & YourNSSPersonnel.PId & ""
+            '        End If
+            '        CmdSql.ExecuteNonQuery()
+            '        CmdSql.Connection.Close()
+            '    Catch ex As Exception
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Sub
 
-            Public Shared Function GetNumberOfEnterExitAtThisDay(ByVal YourNSSPersonnel As R2CoreStandardPersonnelStructure) As Int64
-                Try
-                    Dim DS As DataSet
-                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "SELECT COUNT(*) AS CCount FROM R2Primary.dbo.TblPersonelAttendance WHERE (PId=" & YourNSSPersonnel.PId & ")  AND (DateShamsi ='" & _DateTimeService.GetCurrentShamsiDate & "')", 1, DS, New Boolean)
-                    Return DS.Tables(0).Rows(0).Item("ccount")
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            'Public Shared Function GetNumberOfEnterExitAtThisDay(ByVal YourNSSPersonnel As R2CoreStandardPersonnelStructure) As Int64
+            '    Try
+            '        Dim DS As DataSet
+            '        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "SELECT COUNT(*) AS CCount FROM R2Primary.dbo.TblPersonelAttendance WHERE (PId=" & YourNSSPersonnel.PId & ")  AND (DateShamsi ='" & _DateTimeService.GetCurrentShamsiDate & "')", 1, DS, New Boolean)
+            '        Return DS.Tables(0).Rows(0).Item("ccount")
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
-            Public Shared Function GetTotalNumberOfPersonnelRegistered(YourActiveStatus As Boolean) As Int64
-                Try
-                    Dim DS As DataSet
-                    If YourActiveStatus = True Then InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Count(*) as CCount from R2Primary.dbo.TblPersonelInf Where Active=1", 1, DS, New Boolean)
-                    If YourActiveStatus = False Then InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Count(*) as CCount from R2Primary.dbo.TblPersonelInf", 1, DS, New Boolean)
-                    Return DS.Tables(0).Rows(0).Item("CCount")
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            'Public Shared Function GetTotalNumberOfPersonnelRegistered(YourActiveStatus As Boolean) As Int64
+            '    Try
+            '        Dim DS As DataSet
+            '        If YourActiveStatus = True Then InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Count(*) as CCount from R2Primary.dbo.TblPersonelInf Where Active=1", 1, DS, New Boolean)
+            '        If YourActiveStatus = False Then InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Count(*) as CCount from R2Primary.dbo.TblPersonelInf", 1, DS, New Boolean)
+            '        Return DS.Tables(0).Rows(0).Item("CCount")
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
-            Public Shared Function IdentificationPersonnel(YourTemplate As Byte(), YourSecurityLevel As Decimal, YourTemplateType As Int64) As R2CoreStandardPersonnelStructure
-                Try
-                    'ایجاد آرایه کلیه اثر انگشت های پرسنل
-                    Dim LstNSSPersonnel As List(Of R2CoreStandardPersonnelStructure) = CreateListOfPersonnel(True)
-                    Dim TemplateArray As Byte()() = New Byte(LstNSSPersonnel.Count * 4)() {}
-                    Dim TemplateArraySize As Integer() = New Integer(LstNSSPersonnel.Count * 4) {}
-                    Dim TemplateNumber As Integer = 0
-                    Dim CCounter As Integer = 0
-                    For Loopx As Int32 = 0 To LstNSSPersonnel.Count - 1
-                        TemplateArray(CCounter) = LstNSSPersonnel(Loopx).FingerPrint1
-                        TemplateArraySize(CCounter) = TemplateArray(CCounter).Length
-                        TemplateNumber += 1
-                        TemplateArray(CCounter + 1) = LstNSSPersonnel(Loopx).FingerPrint2
-                        TemplateArraySize(CCounter + 1) = TemplateArray(CCounter + 1).Length
-                        TemplateNumber += 1
-                        TemplateArray(CCounter + 2) = LstNSSPersonnel(Loopx).FingerPrint3
-                        TemplateArraySize(CCounter + 2) = TemplateArray(CCounter + 2).Length
-                        TemplateNumber += 1
-                        TemplateArray(CCounter + 3) = LstNSSPersonnel(Loopx).FingerPrint4
-                        TemplateArraySize(CCounter + 3) = TemplateArray(CCounter + 3).Length
-                        TemplateNumber += 1
-                        CCounter += 4
-                    Next
-                    'تشخیص هویت
-                    Dim myIndex4 As Integer
-                    If R2Core.FingerPrintsManagement.SupremaSystem.R2CoreFingerPrintMClassSupremaManagement.VerificationOneTemplateByArray(YourTemplate, YourTemplate.Length, TemplateArray, TemplateArraySize, TemplateNumber, YourSecurityLevel, YourTemplateType, True, myIndex4) = True Then
-                        Dim myIndex As Integer = Int(myIndex4 / 4)
-                        Return LstNSSPersonnel(myIndex)
-                    Else
-                        Return Nothing
-                    End If
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            'Public Shared Function IdentificationPersonnel(YourTemplate As Byte(), YourSecurityLevel As Decimal, YourTemplateType As Int64) As R2CoreStandardPersonnelStructure
+            '    Try
+            '        'ایجاد آرایه کلیه اثر انگشت های پرسنل
+            '        Dim LstNSSPersonnel As List(Of R2CoreStandardPersonnelStructure) = CreateListOfPersonnel(True)
+            '        Dim TemplateArray As Byte()() = New Byte(LstNSSPersonnel.Count * 4)() {}
+            '        Dim TemplateArraySize As Integer() = New Integer(LstNSSPersonnel.Count * 4) {}
+            '        Dim TemplateNumber As Integer = 0
+            '        Dim CCounter As Integer = 0
+            '        For Loopx As Int32 = 0 To LstNSSPersonnel.Count - 1
+            '            TemplateArray(CCounter) = LstNSSPersonnel(Loopx).FingerPrint1
+            '            TemplateArraySize(CCounter) = TemplateArray(CCounter).Length
+            '            TemplateNumber += 1
+            '            TemplateArray(CCounter + 1) = LstNSSPersonnel(Loopx).FingerPrint2
+            '            TemplateArraySize(CCounter + 1) = TemplateArray(CCounter + 1).Length
+            '            TemplateNumber += 1
+            '            TemplateArray(CCounter + 2) = LstNSSPersonnel(Loopx).FingerPrint3
+            '            TemplateArraySize(CCounter + 2) = TemplateArray(CCounter + 2).Length
+            '            TemplateNumber += 1
+            '            TemplateArray(CCounter + 3) = LstNSSPersonnel(Loopx).FingerPrint4
+            '            TemplateArraySize(CCounter + 3) = TemplateArray(CCounter + 3).Length
+            '            TemplateNumber += 1
+            '            CCounter += 4
+            '        Next
+            '        'تشخیص هویت
+            '        Dim myIndex4 As Integer
+            '        If R2Core.FingerPrintsManagement.SupremaSystem.R2CoreFingerPrintMClassSupremaManagement.VerificationOneTemplateByArray(YourTemplate, YourTemplate.Length, TemplateArray, TemplateArraySize, TemplateNumber, YourSecurityLevel, YourTemplateType, True, myIndex4) = True Then
+            '            Dim myIndex As Integer = Int(myIndex4 / 4)
+            '            Return LstNSSPersonnel(myIndex)
+            '        Else
+            '            Return Nothing
+            '        End If
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
-            Public Shared Sub InsertPersonnelPrecent(YourNSSPersonnel As R2CoreStandardPersonnelStructure)
-                Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-                Try
-                    CmdSql.Connection.Open()
-                    CmdSql.CommandText = "Insert Into R2Primary.dbo.TblPersonelAttendance(PId,DateTimeMilladi,DateShamsi,Time,Flag) values(" & YourNSSPersonnel.PId & ",'" & _DateTimeService.GetCurrentDateTimeMilladi & "','" & _DateTimeService.GetCurrentShamsiDate & "','" & _DateTimeService.GetCurrentTime & "',1)"
-                    CmdSql.ExecuteNonQuery()
-                    CmdSql.Connection.Close()
-                Catch ex As Exception
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Sub
+            'Public Shared Sub InsertPersonnelPrecent(YourNSSPersonnel As R2CoreStandardPersonnelStructure)
+            '    Dim CmdSql As New SqlClient.SqlCommand
+            '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            '    Try
+            '        CmdSql.Connection.Open()
+            '        CmdSql.CommandText = "Insert Into R2Primary.dbo.TblPersonelAttendance(PId,DateTimeMilladi,DateShamsi,Time,Flag) values(" & YourNSSPersonnel.PId & ",'" & _DateTimeService.GetCurrentDateTimeMilladi & "','" & _DateTimeService.GetCurrentShamsiDate & "','" & _DateTimeService.GetCurrentTime & "',1)"
+            '        CmdSql.ExecuteNonQuery()
+            '        CmdSql.Connection.Close()
+            '    Catch ex As Exception
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Sub
 
-            Public Shared Sub InsertPersonnelPrecentAtThisDateTime(YourNSSPersonnel As R2CoreStandardPersonnelStructure, YourDateTime As R2CoreDateAndTime)
-                Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-                Try
-                    CmdSql.Connection.Open()
-                    CmdSql.CommandText = "Insert Into R2Primary.dbo.TblPersonelAttendance(PId,DateTimeMilladi,DateShamsi,Time,Flag) values(" & YourNSSPersonnel.PId & ",'" & YourDateTime.DateTimeMilladi.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) & "','" & YourDateTime.ShamsiDate & "','" & YourDateTime.Time & "',1)"
-                    CmdSql.ExecuteNonQuery()
-                    CmdSql.Connection.Close()
-                Catch ex As Exception
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Sub
+            'Public Shared Sub InsertPersonnelPrecentAtThisDateTime(YourNSSPersonnel As R2CoreStandardPersonnelStructure, YourDateTime As R2CoreDateAndTime)
+            '    Dim CmdSql As New SqlClient.SqlCommand
+            '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            '    Try
+            '        CmdSql.Connection.Open()
+            '        CmdSql.CommandText = "Insert Into R2Primary.dbo.TblPersonelAttendance(PId,DateTimeMilladi,DateShamsi,Time,Flag) values(" & YourNSSPersonnel.PId & ",'" & YourDateTime.DateTimeMilladi.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) & "','" & YourDateTime.ShamsiDate & "','" & YourDateTime.Time & "',1)"
+            '        CmdSql.ExecuteNonQuery()
+            '        CmdSql.Connection.Close()
+            '    Catch ex As Exception
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Sub
 
-            Public Shared Function GetPersonnelEnterExit(YourNSSPersonnel As R2CoreStandardPersonnelStructure) As List(Of String)
-                Try
-                    Dim Lst As New List(Of String)
-                    Dim DS As DataSet
-                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select DateShamsi,Time from R2Primary.dbo.TblPersonelAttendance Where PId=" & YourNSSPersonnel.PId & "order by DateTimeMilladi Desc", 1, DS, New Boolean)
-                    For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
-                        Lst.Add(DS.Tables(0).Rows(Loopx).Item("DateShamsi").trim + "    " + DS.Tables(0).Rows(Loopx).Item("Time").trim)
-                    Next
-                    Return Lst
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            'Public Shared Function GetPersonnelEnterExit(YourNSSPersonnel As R2CoreStandardPersonnelStructure) As List(Of String)
+            '    Try
+            '        Dim Lst As New List(Of String)
+            '        Dim DS As DataSet
+            '        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select DateShamsi,Time from R2Primary.dbo.TblPersonelAttendance Where PId=" & YourNSSPersonnel.PId & "order by DateTimeMilladi Desc", 1, DS, New Boolean)
+            '        For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+            '            Lst.Add(DS.Tables(0).Rows(Loopx).Item("DateShamsi").trim + "    " + DS.Tables(0).Rows(Loopx).Item("Time").trim)
+            '        Next
+            '        Return Lst
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
             Public Shared Sub ReportingInformationProviderPersonnelEnterExitReport(YourDateTime1 As R2CoreDateAndTime, YourDateTime2 As R2CoreDateAndTime)
                 Dim CmdSql As New SqlClient.SqlCommand
@@ -2220,122 +2220,122 @@ Namespace HumanResourcesManagement
                 End Try
             End Sub
 
-            Public Shared Sub PersonelFunctionCalculate(YourNSSPersonel As R2CoreStandardPersonnelStructure, YourDateTime As R2CoreDateAndTime)
-                Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-                Try
-                    'لیست روزهای ماه مورد نظر
-                    Dim InstancePersianCalendar = New R2CoreInstanceDateAndTimePersianCalendarManager(_DateTimeService)
-                    Dim Lst = InstancePersianCalendar.GetforThisMonth(YourDateTime.ShamsiDate)
-                    CmdSql.Connection.Open()
-                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                    CmdSql.CommandText = "Delete R2PrimaryReports.dbo.TblPersonelFunction" : CmdSql.ExecuteNonQuery()
-                    Dim JamFunctionMinutes = 0
-                    Dim JamOverTimeWorkMinutes = 0
-                    For Loopx As Int64 = 0 To Lst.Count - 1
-                        Dim DateShamsi = Lst(Loopx).DateShamsi
-                        Dim PCTypePersian = IIf(Lst(Loopx).PCType = 1, "تعطیل", "عادی")
-                        Dim DSPersonnelAttendance As New DataSet
-                        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
-                            "Select * From R2Primary.dbo.TblPersonelAttendance where PId=" & YourNSSPersonel.PId & " and DateShamsi='" & DateShamsi & "' Order By DateTimeMilladi ", 3600, DSPersonnelAttendance, New Boolean)
-                        If DSPersonnelAttendance.Tables(0).Rows.Count = 0 Then
-                            Dim FunctionMinutes = 0
-                            Dim OverTimeWorkMinutes = 0
-                            If Lst(Loopx).PCType = PersianCalendarType.Holiday Then FunctionMinutes = YourNSSPersonel.ShiftMinutes
-                            CmdSql.CommandText = "Insert into R2PrimaryReports.dbo.TblPersonelFunction (PId,DateShamsi,PCType,In1,Out1,In2,Out2,FunctionMinutes,JamFunctionMinutes,JamFunctionDays,OverTimeWorkMinutes,JamOverTimeWorkMinutes,JamOverTimeWorkDays,StartTimeShift,EndTimeShift,ShiftMinutes,PersonelName) Values(" & YourNSSPersonel.PId & ",'" & DateShamsi & "','" & PCTypePersian & "','" & _DateTimeService.Get6ZeroTime & "','" & _DateTimeService.Get6ZeroTime & "','" & _DateTimeService.Get6ZeroTime & "','" & _DateTimeService.Get6ZeroTime & "'," & FunctionMinutes & ",0,0," & OverTimeWorkMinutes & ",0,0,'" & YourNSSPersonel.StartTImeShift & "','" & YourNSSPersonel.EndTImeShift & "'," & YourNSSPersonel.ShiftMinutes & ",'" & YourNSSPersonel.PNameFamily & "')"
-                            CmdSql.ExecuteNonQuery()
-                            JamFunctionMinutes += FunctionMinutes
-                            JamOverTimeWorkMinutes += OverTimeWorkMinutes
-                        ElseIf DSPersonnelAttendance.Tables(0).Rows.Count = 1 Then
-                            Dim In1 = DSPersonnelAttendance.Tables(0).Rows(0).Item("Time").ToString
-                            Dim FunctionMinutes = 0
-                            Dim OverTimeWorkMinutes = 0
-                            If Lst(Loopx).PCType = PersianCalendarType.Holiday Then FunctionMinutes = YourNSSPersonel.ShiftMinutes
-                            CmdSql.CommandText = "Insert into R2PrimaryReports.dbo.TblPersonelFunction (PId,DateShamsi,PCType,In1,Out1,In2,Out2,FunctionMinutes,JamFunctionMinutes,JamFunctionDays,OverTimeWorkMinutes,JamOverTimeWorkMinutes,JamOverTimeWorkDays,StartTimeShift,EndTimeShift,ShiftMinutes,PersonelName) Values(" & YourNSSPersonel.PId & ",'" & DateShamsi & "','" & PCTypePersian & "','" & In1 & "','" & _DateTimeService.Get6ZeroTime & "','" & _DateTimeService.Get6ZeroTime & "','" & _DateTimeService.Get6ZeroTime & "'," & FunctionMinutes & ",0,0," & OverTimeWorkMinutes & ",0,0,'" & YourNSSPersonel.StartTImeShift & "','" & YourNSSPersonel.EndTImeShift & "'," & YourNSSPersonel.ShiftMinutes & ",'" & YourNSSPersonel.PNameFamily & "')"
-                            CmdSql.ExecuteNonQuery()
-                            JamFunctionMinutes += FunctionMinutes
-                            JamOverTimeWorkMinutes += OverTimeWorkMinutes
-                        ElseIf DSPersonnelAttendance.Tables(0).Rows.Count = 2 Then
-                            Dim In1 = DSPersonnelAttendance.Tables(0).Rows(0).Item("Time").ToString
-                            Dim In1DT = Convert.ToDateTime(DSPersonnelAttendance.Tables(0).Rows(0).Item("DateTimeMilladi"))
-                            Dim Out1 = DSPersonnelAttendance.Tables(0).Rows(1).Item("Time").ToString
-                            Dim Out1DT = Convert.ToDateTime(DSPersonnelAttendance.Tables(0).Rows(1).Item("DateTimeMilladi"))
-                            Dim FunctionMinutes = 0
-                            Dim OverTimeWorkMinutes = 0
-                            If Lst(Loopx).PCType = PersianCalendarType.Holiday Then
-                                FunctionMinutes = YourNSSPersonel.ShiftMinutes
-                                OverTimeWorkMinutes = Out1DT.Subtract(In1DT).TotalMinutes
-                            Else
-                                FunctionMinutes = Out1DT.Subtract(In1DT).TotalMinutes
-                                If In1 < YourNSSPersonel.StartTImeShift Then FunctionMinutes = (TimeSpan.Parse(Out1.ToString) - TimeSpan.Parse(YourNSSPersonel.StartTImeShift)).TotalMinutes
-                                If Out1 > YourNSSPersonel.EndTImeShift Then FunctionMinutes = (TimeSpan.Parse(YourNSSPersonel.EndTImeShift) - TimeSpan.Parse(YourNSSPersonel.StartTImeShift)).TotalMinutes
-                                Dim OverTimeWorkMinutesTemp = (TimeSpan.Parse(Out1.ToString) - TimeSpan.Parse(YourNSSPersonel.EndTImeShift)).TotalMinutes
-                                OverTimeWorkMinutes = IIf(OverTimeWorkMinutesTemp < 0, 0, OverTimeWorkMinutesTemp)
-                            End If
-                            CmdSql.CommandText = "Insert into R2PrimaryReports.dbo.TblPersonelFunction (PId,DateShamsi,PCType,In1,Out1,In2,Out2,FunctionMinutes,JamFunctionMinutes,JamFunctionDays,OverTimeWorkMinutes,JamOverTimeWorkMinutes,JamOverTimeWorkDays,StartTimeShift,EndTimeShift,ShiftMinutes,PersonelName) Values(" & YourNSSPersonel.PId & ",'" & DateShamsi & "','" & PCTypePersian & "','" & In1 & "','" & Out1 & "','" & _DateTimeService.Get6ZeroTime & "','" & _DateTimeService.Get6ZeroTime & "'," & FunctionMinutes & ",0,0," & OverTimeWorkMinutes & ",0,0,'" & YourNSSPersonel.StartTImeShift & "','" & YourNSSPersonel.EndTImeShift & "'," & YourNSSPersonel.ShiftMinutes & ",'" & YourNSSPersonel.PNameFamily & "')"
-                            CmdSql.ExecuteNonQuery()
-                            JamFunctionMinutes += FunctionMinutes
-                            JamOverTimeWorkMinutes += OverTimeWorkMinutes
-                        ElseIf DSPersonnelAttendance.Tables(0).Rows.Count = 3 Then
-                            Dim In1 = DSPersonnelAttendance.Tables(0).Rows(0).Item("Time").ToString
-                            Dim In1DT = Convert.ToDateTime(DSPersonnelAttendance.Tables(0).Rows(0).Item("DateTimeMilladi"))
-                            Dim Out1 = DSPersonnelAttendance.Tables(0).Rows(1).Item("Time").ToString
-                            Dim Out1DT = Convert.ToDateTime(DSPersonnelAttendance.Tables(0).Rows(1).Item("DateTimeMilladi"))
-                            Dim In2 = DSPersonnelAttendance.Tables(0).Rows(2).Item("Time").ToString
-                            Dim FunctionMinutes = 0
-                            Dim OverTimeWorkMinutes = 0
-                            If Lst(Loopx).PCType = PersianCalendarType.Holiday Then
-                                FunctionMinutes = YourNSSPersonel.ShiftMinutes
-                                OverTimeWorkMinutes = Out1DT.Subtract(In1DT).TotalMinutes
-                            Else
-                                FunctionMinutes = Out1DT.Subtract(In1DT).TotalMinutes
-                                If In1 < YourNSSPersonel.StartTImeShift Then FunctionMinutes = (TimeSpan.Parse(Out1.ToString) - TimeSpan.Parse(YourNSSPersonel.StartTImeShift)).TotalMinutes
-                                If Out1 > YourNSSPersonel.EndTImeShift Then FunctionMinutes = (TimeSpan.Parse(YourNSSPersonel.EndTImeShift) - TimeSpan.Parse(YourNSSPersonel.StartTImeShift)).TotalMinutes
-                                Dim OverTimeWorkMinutesTemp = (TimeSpan.Parse(Out1.ToString) - TimeSpan.Parse(YourNSSPersonel.EndTImeShift)).TotalMinutes
-                                OverTimeWorkMinutes = IIf(OverTimeWorkMinutesTemp < 0, 0, OverTimeWorkMinutesTemp)
-                            End If
-                            CmdSql.CommandText = "Insert into R2PrimaryReports.dbo.TblPersonelFunction (PId,DateShamsi,PCType,In1,Out1,In2,Out2,FunctionMinutes,JamFunctionMinutes,JamFunctionDays,OverTimeWorkMinutes,JamOverTimeWorkMinutes,JamOverTimeWorkDays,StartTimeShift,EndTimeShift,ShiftMinutes,PersonelName) Values(" & YourNSSPersonel.PId & ",'" & DateShamsi & "','" & PCTypePersian & "','" & In1 & "','" & Out1 & "','" & In2 & "','" & _DateTimeService.Get6ZeroTime & "'," & FunctionMinutes & ",0,0," & OverTimeWorkMinutes & ",0,0,'" & YourNSSPersonel.StartTImeShift & "','" & YourNSSPersonel.EndTImeShift & "'," & YourNSSPersonel.ShiftMinutes & ",'" & YourNSSPersonel.PNameFamily & "')"
-                            CmdSql.ExecuteNonQuery()
-                            JamFunctionMinutes += FunctionMinutes
-                            JamOverTimeWorkMinutes += OverTimeWorkMinutes
-                        ElseIf DSPersonnelAttendance.Tables(0).Rows.Count >= 4 Then
-                            Dim In1 = DSPersonnelAttendance.Tables(0).Rows(0).Item("Time").ToString
-                            Dim In1DT = Convert.ToDateTime(DSPersonnelAttendance.Tables(0).Rows(0).Item("DateTimeMilladi"))
-                            Dim Out1 = DSPersonnelAttendance.Tables(0).Rows(1).Item("Time").ToString
-                            Dim Out1DT = Convert.ToDateTime(DSPersonnelAttendance.Tables(0).Rows(1).Item("DateTimeMilladi"))
-                            Dim In2 = DSPersonnelAttendance.Tables(0).Rows(2).Item("Time").ToString
-                            Dim Out2 = DSPersonnelAttendance.Tables(0).Rows(3).Item("Time").ToString
-                            Dim Out2DT = Convert.ToDateTime(DSPersonnelAttendance.Tables(0).Rows(3).Item("DateTimeMilladi"))
-                            Dim FunctionMinutes = 0
-                            Dim OverTimeWorkMinutes = 0
-                            If Lst(Loopx).PCType = PersianCalendarType.Holiday Then
-                                FunctionMinutes = YourNSSPersonel.ShiftMinutes
-                                OverTimeWorkMinutes = Out1DT.Subtract(In1DT).TotalMinutes
-                            Else
-                                FunctionMinutes = Out2DT.Subtract(In1DT).TotalMinutes
-                                If In1 < YourNSSPersonel.StartTImeShift Then FunctionMinutes = (TimeSpan.Parse(Out2.ToString) - TimeSpan.Parse(YourNSSPersonel.StartTImeShift)).TotalMinutes
-                                If Out1 > YourNSSPersonel.EndTImeShift Then FunctionMinutes = (TimeSpan.Parse(YourNSSPersonel.EndTImeShift) - TimeSpan.Parse(YourNSSPersonel.StartTImeShift)).TotalMinutes
-                                Dim OverTimeWorkMinutesTemp = (TimeSpan.Parse(Out2.ToString) - TimeSpan.Parse(YourNSSPersonel.EndTImeShift)).TotalMinutes
-                                OverTimeWorkMinutes = IIf(OverTimeWorkMinutesTemp < 0, 0, OverTimeWorkMinutesTemp)
-                            End If
-                            CmdSql.CommandText = "Insert into R2PrimaryReports.dbo.TblPersonelFunction (PId,DateShamsi,PCType,In1,Out1,In2,Out2,FunctionMinutes,JamFunctionMinutes,JamFunctionDays,OverTimeWorkMinutes,JamOverTimeWorkMinutes,JamOverTimeWorkDays,StartTimeShift,EndTimeShift,ShiftMinutes,PersonelName) Values(" & YourNSSPersonel.PId & ",'" & DateShamsi & "','" & PCTypePersian & "','" & In1 & "','" & Out1 & "','" & In2 & "','" & Out2 & "'," & FunctionMinutes & ",0,0," & OverTimeWorkMinutes & ",0,0,'" & YourNSSPersonel.StartTImeShift & "','" & YourNSSPersonel.EndTImeShift & "'," & YourNSSPersonel.ShiftMinutes & ",'" & YourNSSPersonel.PNameFamily & "')"
-                            CmdSql.ExecuteNonQuery()
-                            JamFunctionMinutes += FunctionMinutes
-                            JamOverTimeWorkMinutes += OverTimeWorkMinutes
-                        End If
-                    Next
-                    Dim JamFunctionDays = JamFunctionMinutes / YourNSSPersonel.ShiftMinutes
-                    Dim JamOverTimeWorkDays = JamOverTimeWorkMinutes / YourNSSPersonel.ShiftMinutes
-                    CmdSql.CommandText = "Update R2PrimaryReports.dbo.TblPersonelFunction Set JamFunctionMinutes=" & JamFunctionMinutes & ",JamFunctionDays=" & JamFunctionDays & ",JamOverTimeWorkMinutes=" & JamOverTimeWorkMinutes & ",JamOverTimeWorkDays=" & JamOverTimeWorkDays & ""
-                    CmdSql.ExecuteNonQuery()
-                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-                Catch ex As Exception
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Sub
+            'Public Shared Sub PersonelFunctionCalculate(YourNSSPersonel As R2CoreStandardPersonnelStructure, YourDateTime As R2CoreDateAndTime)
+            '    Dim CmdSql As New SqlClient.SqlCommand
+            '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            '    Try
+            '        'لیست روزهای ماه مورد نظر
+            '        Dim InstancePersianCalendar = New R2CoreInstanceDateAndTimePersianCalendarManager(_DateTimeService)
+            '        Dim Lst = InstancePersianCalendar.GetforThisMonth(YourDateTime.ShamsiDate)
+            '        CmdSql.Connection.Open()
+            '        CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+            '        CmdSql.CommandText = "Delete R2PrimaryReports.dbo.TblPersonelFunction" : CmdSql.ExecuteNonQuery()
+            '        Dim JamFunctionMinutes = 0
+            '        Dim JamOverTimeWorkMinutes = 0
+            '        For Loopx As Int64 = 0 To Lst.Count - 1
+            '            Dim DateShamsi = Lst(Loopx).DateShamsi
+            '            Dim PCTypePersian = IIf(Lst(Loopx).PCType = 1, "تعطیل", "عادی")
+            '            Dim DSPersonnelAttendance As New DataSet
+            '            InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+            '                "Select * From R2Primary.dbo.TblPersonelAttendance where PId=" & YourNSSPersonel.PId & " and DateShamsi='" & DateShamsi & "' Order By DateTimeMilladi ", 3600, DSPersonnelAttendance, New Boolean)
+            '            If DSPersonnelAttendance.Tables(0).Rows.Count = 0 Then
+            '                Dim FunctionMinutes = 0
+            '                Dim OverTimeWorkMinutes = 0
+            '                If Lst(Loopx).PCType = PersianCalendarType.Holiday Then FunctionMinutes = YourNSSPersonel.ShiftMinutes
+            '                CmdSql.CommandText = "Insert into R2PrimaryReports.dbo.TblPersonelFunction (PId,DateShamsi,PCType,In1,Out1,In2,Out2,FunctionMinutes,JamFunctionMinutes,JamFunctionDays,OverTimeWorkMinutes,JamOverTimeWorkMinutes,JamOverTimeWorkDays,StartTimeShift,EndTimeShift,ShiftMinutes,PersonelName) Values(" & YourNSSPersonel.PId & ",'" & DateShamsi & "','" & PCTypePersian & "','" & _DateTimeService.Get6ZeroTime & "','" & _DateTimeService.Get6ZeroTime & "','" & _DateTimeService.Get6ZeroTime & "','" & _DateTimeService.Get6ZeroTime & "'," & FunctionMinutes & ",0,0," & OverTimeWorkMinutes & ",0,0,'" & YourNSSPersonel.StartTImeShift & "','" & YourNSSPersonel.EndTImeShift & "'," & YourNSSPersonel.ShiftMinutes & ",'" & YourNSSPersonel.PNameFamily & "')"
+            '                CmdSql.ExecuteNonQuery()
+            '                JamFunctionMinutes += FunctionMinutes
+            '                JamOverTimeWorkMinutes += OverTimeWorkMinutes
+            '            ElseIf DSPersonnelAttendance.Tables(0).Rows.Count = 1 Then
+            '                Dim In1 = DSPersonnelAttendance.Tables(0).Rows(0).Item("Time").ToString
+            '                Dim FunctionMinutes = 0
+            '                Dim OverTimeWorkMinutes = 0
+            '                If Lst(Loopx).PCType = PersianCalendarType.Holiday Then FunctionMinutes = YourNSSPersonel.ShiftMinutes
+            '                CmdSql.CommandText = "Insert into R2PrimaryReports.dbo.TblPersonelFunction (PId,DateShamsi,PCType,In1,Out1,In2,Out2,FunctionMinutes,JamFunctionMinutes,JamFunctionDays,OverTimeWorkMinutes,JamOverTimeWorkMinutes,JamOverTimeWorkDays,StartTimeShift,EndTimeShift,ShiftMinutes,PersonelName) Values(" & YourNSSPersonel.PId & ",'" & DateShamsi & "','" & PCTypePersian & "','" & In1 & "','" & _DateTimeService.Get6ZeroTime & "','" & _DateTimeService.Get6ZeroTime & "','" & _DateTimeService.Get6ZeroTime & "'," & FunctionMinutes & ",0,0," & OverTimeWorkMinutes & ",0,0,'" & YourNSSPersonel.StartTImeShift & "','" & YourNSSPersonel.EndTImeShift & "'," & YourNSSPersonel.ShiftMinutes & ",'" & YourNSSPersonel.PNameFamily & "')"
+            '                CmdSql.ExecuteNonQuery()
+            '                JamFunctionMinutes += FunctionMinutes
+            '                JamOverTimeWorkMinutes += OverTimeWorkMinutes
+            '            ElseIf DSPersonnelAttendance.Tables(0).Rows.Count = 2 Then
+            '                Dim In1 = DSPersonnelAttendance.Tables(0).Rows(0).Item("Time").ToString
+            '                Dim In1DT = Convert.ToDateTime(DSPersonnelAttendance.Tables(0).Rows(0).Item("DateTimeMilladi"))
+            '                Dim Out1 = DSPersonnelAttendance.Tables(0).Rows(1).Item("Time").ToString
+            '                Dim Out1DT = Convert.ToDateTime(DSPersonnelAttendance.Tables(0).Rows(1).Item("DateTimeMilladi"))
+            '                Dim FunctionMinutes = 0
+            '                Dim OverTimeWorkMinutes = 0
+            '                If Lst(Loopx).PCType = PersianCalendarType.Holiday Then
+            '                    FunctionMinutes = YourNSSPersonel.ShiftMinutes
+            '                    OverTimeWorkMinutes = Out1DT.Subtract(In1DT).TotalMinutes
+            '                Else
+            '                    FunctionMinutes = Out1DT.Subtract(In1DT).TotalMinutes
+            '                    If In1 < YourNSSPersonel.StartTImeShift Then FunctionMinutes = (TimeSpan.Parse(Out1.ToString) - TimeSpan.Parse(YourNSSPersonel.StartTImeShift)).TotalMinutes
+            '                    If Out1 > YourNSSPersonel.EndTImeShift Then FunctionMinutes = (TimeSpan.Parse(YourNSSPersonel.EndTImeShift) - TimeSpan.Parse(YourNSSPersonel.StartTImeShift)).TotalMinutes
+            '                    Dim OverTimeWorkMinutesTemp = (TimeSpan.Parse(Out1.ToString) - TimeSpan.Parse(YourNSSPersonel.EndTImeShift)).TotalMinutes
+            '                    OverTimeWorkMinutes = IIf(OverTimeWorkMinutesTemp < 0, 0, OverTimeWorkMinutesTemp)
+            '                End If
+            '                CmdSql.CommandText = "Insert into R2PrimaryReports.dbo.TblPersonelFunction (PId,DateShamsi,PCType,In1,Out1,In2,Out2,FunctionMinutes,JamFunctionMinutes,JamFunctionDays,OverTimeWorkMinutes,JamOverTimeWorkMinutes,JamOverTimeWorkDays,StartTimeShift,EndTimeShift,ShiftMinutes,PersonelName) Values(" & YourNSSPersonel.PId & ",'" & DateShamsi & "','" & PCTypePersian & "','" & In1 & "','" & Out1 & "','" & _DateTimeService.Get6ZeroTime & "','" & _DateTimeService.Get6ZeroTime & "'," & FunctionMinutes & ",0,0," & OverTimeWorkMinutes & ",0,0,'" & YourNSSPersonel.StartTImeShift & "','" & YourNSSPersonel.EndTImeShift & "'," & YourNSSPersonel.ShiftMinutes & ",'" & YourNSSPersonel.PNameFamily & "')"
+            '                CmdSql.ExecuteNonQuery()
+            '                JamFunctionMinutes += FunctionMinutes
+            '                JamOverTimeWorkMinutes += OverTimeWorkMinutes
+            '            ElseIf DSPersonnelAttendance.Tables(0).Rows.Count = 3 Then
+            '                Dim In1 = DSPersonnelAttendance.Tables(0).Rows(0).Item("Time").ToString
+            '                Dim In1DT = Convert.ToDateTime(DSPersonnelAttendance.Tables(0).Rows(0).Item("DateTimeMilladi"))
+            '                Dim Out1 = DSPersonnelAttendance.Tables(0).Rows(1).Item("Time").ToString
+            '                Dim Out1DT = Convert.ToDateTime(DSPersonnelAttendance.Tables(0).Rows(1).Item("DateTimeMilladi"))
+            '                Dim In2 = DSPersonnelAttendance.Tables(0).Rows(2).Item("Time").ToString
+            '                Dim FunctionMinutes = 0
+            '                Dim OverTimeWorkMinutes = 0
+            '                If Lst(Loopx).PCType = PersianCalendarType.Holiday Then
+            '                    FunctionMinutes = YourNSSPersonel.ShiftMinutes
+            '                    OverTimeWorkMinutes = Out1DT.Subtract(In1DT).TotalMinutes
+            '                Else
+            '                    FunctionMinutes = Out1DT.Subtract(In1DT).TotalMinutes
+            '                    If In1 < YourNSSPersonel.StartTImeShift Then FunctionMinutes = (TimeSpan.Parse(Out1.ToString) - TimeSpan.Parse(YourNSSPersonel.StartTImeShift)).TotalMinutes
+            '                    If Out1 > YourNSSPersonel.EndTImeShift Then FunctionMinutes = (TimeSpan.Parse(YourNSSPersonel.EndTImeShift) - TimeSpan.Parse(YourNSSPersonel.StartTImeShift)).TotalMinutes
+            '                    Dim OverTimeWorkMinutesTemp = (TimeSpan.Parse(Out1.ToString) - TimeSpan.Parse(YourNSSPersonel.EndTImeShift)).TotalMinutes
+            '                    OverTimeWorkMinutes = IIf(OverTimeWorkMinutesTemp < 0, 0, OverTimeWorkMinutesTemp)
+            '                End If
+            '                CmdSql.CommandText = "Insert into R2PrimaryReports.dbo.TblPersonelFunction (PId,DateShamsi,PCType,In1,Out1,In2,Out2,FunctionMinutes,JamFunctionMinutes,JamFunctionDays,OverTimeWorkMinutes,JamOverTimeWorkMinutes,JamOverTimeWorkDays,StartTimeShift,EndTimeShift,ShiftMinutes,PersonelName) Values(" & YourNSSPersonel.PId & ",'" & DateShamsi & "','" & PCTypePersian & "','" & In1 & "','" & Out1 & "','" & In2 & "','" & _DateTimeService.Get6ZeroTime & "'," & FunctionMinutes & ",0,0," & OverTimeWorkMinutes & ",0,0,'" & YourNSSPersonel.StartTImeShift & "','" & YourNSSPersonel.EndTImeShift & "'," & YourNSSPersonel.ShiftMinutes & ",'" & YourNSSPersonel.PNameFamily & "')"
+            '                CmdSql.ExecuteNonQuery()
+            '                JamFunctionMinutes += FunctionMinutes
+            '                JamOverTimeWorkMinutes += OverTimeWorkMinutes
+            '            ElseIf DSPersonnelAttendance.Tables(0).Rows.Count >= 4 Then
+            '                Dim In1 = DSPersonnelAttendance.Tables(0).Rows(0).Item("Time").ToString
+            '                Dim In1DT = Convert.ToDateTime(DSPersonnelAttendance.Tables(0).Rows(0).Item("DateTimeMilladi"))
+            '                Dim Out1 = DSPersonnelAttendance.Tables(0).Rows(1).Item("Time").ToString
+            '                Dim Out1DT = Convert.ToDateTime(DSPersonnelAttendance.Tables(0).Rows(1).Item("DateTimeMilladi"))
+            '                Dim In2 = DSPersonnelAttendance.Tables(0).Rows(2).Item("Time").ToString
+            '                Dim Out2 = DSPersonnelAttendance.Tables(0).Rows(3).Item("Time").ToString
+            '                Dim Out2DT = Convert.ToDateTime(DSPersonnelAttendance.Tables(0).Rows(3).Item("DateTimeMilladi"))
+            '                Dim FunctionMinutes = 0
+            '                Dim OverTimeWorkMinutes = 0
+            '                If Lst(Loopx).PCType = PersianCalendarType.Holiday Then
+            '                    FunctionMinutes = YourNSSPersonel.ShiftMinutes
+            '                    OverTimeWorkMinutes = Out1DT.Subtract(In1DT).TotalMinutes
+            '                Else
+            '                    FunctionMinutes = Out2DT.Subtract(In1DT).TotalMinutes
+            '                    If In1 < YourNSSPersonel.StartTImeShift Then FunctionMinutes = (TimeSpan.Parse(Out2.ToString) - TimeSpan.Parse(YourNSSPersonel.StartTImeShift)).TotalMinutes
+            '                    If Out1 > YourNSSPersonel.EndTImeShift Then FunctionMinutes = (TimeSpan.Parse(YourNSSPersonel.EndTImeShift) - TimeSpan.Parse(YourNSSPersonel.StartTImeShift)).TotalMinutes
+            '                    Dim OverTimeWorkMinutesTemp = (TimeSpan.Parse(Out2.ToString) - TimeSpan.Parse(YourNSSPersonel.EndTImeShift)).TotalMinutes
+            '                    OverTimeWorkMinutes = IIf(OverTimeWorkMinutesTemp < 0, 0, OverTimeWorkMinutesTemp)
+            '                End If
+            '                CmdSql.CommandText = "Insert into R2PrimaryReports.dbo.TblPersonelFunction (PId,DateShamsi,PCType,In1,Out1,In2,Out2,FunctionMinutes,JamFunctionMinutes,JamFunctionDays,OverTimeWorkMinutes,JamOverTimeWorkMinutes,JamOverTimeWorkDays,StartTimeShift,EndTimeShift,ShiftMinutes,PersonelName) Values(" & YourNSSPersonel.PId & ",'" & DateShamsi & "','" & PCTypePersian & "','" & In1 & "','" & Out1 & "','" & In2 & "','" & Out2 & "'," & FunctionMinutes & ",0,0," & OverTimeWorkMinutes & ",0,0,'" & YourNSSPersonel.StartTImeShift & "','" & YourNSSPersonel.EndTImeShift & "'," & YourNSSPersonel.ShiftMinutes & ",'" & YourNSSPersonel.PNameFamily & "')"
+            '                CmdSql.ExecuteNonQuery()
+            '                JamFunctionMinutes += FunctionMinutes
+            '                JamOverTimeWorkMinutes += OverTimeWorkMinutes
+            '            End If
+            '        Next
+            '        Dim JamFunctionDays = JamFunctionMinutes / YourNSSPersonel.ShiftMinutes
+            '        Dim JamOverTimeWorkDays = JamOverTimeWorkMinutes / YourNSSPersonel.ShiftMinutes
+            '        CmdSql.CommandText = "Update R2PrimaryReports.dbo.TblPersonelFunction Set JamFunctionMinutes=" & JamFunctionMinutes & ",JamFunctionDays=" & JamFunctionDays & ",JamOverTimeWorkMinutes=" & JamOverTimeWorkMinutes & ",JamOverTimeWorkDays=" & JamOverTimeWorkDays & ""
+            '        CmdSql.ExecuteNonQuery()
+            '        CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            '    Catch ex As Exception
+            '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+            '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            '        End If
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Sub
 
         End Class
 

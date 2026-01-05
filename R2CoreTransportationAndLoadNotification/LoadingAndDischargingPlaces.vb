@@ -13,10 +13,9 @@ Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.EntityRelationManagement
 Imports R2Core.ExceptionManagement
+Imports R2Core.GeneralConfiguration
 Imports R2Core.PublicProc
-Imports R2Core.R2PrimaryFileSharingWS
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
-Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
 Imports R2Core.SiteIsBusy
 Imports R2Core.SMS.Exceptions
 Imports R2Core.SMS.SMSHandling
@@ -25,6 +24,7 @@ Imports R2Core.SoftwareUserManagement
 Imports R2Core.SQLInjectionPrevention
 Imports R2CoreParkingSystem.MoneyWalletManagement
 Imports R2CoreTransportationAndLoadNotification.ConfigurationsManagement
+Imports R2CoreTransportationAndLoadNotification.GeneralConfiguration
 Imports R2CoreTransportationAndLoadNotification.LoadingAndDischargingPlaces.Exceptions
 
 
@@ -150,218 +150,218 @@ Namespace LoadingAndDischargingPlaces
         Private _LoadingPlaceEquivalent = "مبدا بارگیری"
         Private _DischargingPlaceEquivalent = "محل تخلیه"
 
-        Public Function GetNSSLoadingAndDischargingPlace(YourLoadingAndDischargingPlaceId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure
-            Try
-                Dim NSS As R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure = Nothing
-                Dim Ds As New DataSet
-                If YourImmediately Then
-                    Dim Da As New SqlClient.SqlDataAdapter
-                    Da.SelectCommand = New SqlCommand("Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Where LADPlaceId=" & YourLoadingAndDischargingPlaceId & "")
-                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-                    If Da.Fill(Ds) <> 0 Then NSS = New R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure(Ds.Tables(0).Rows(0).Item("LADPlaceId"), Ds.Tables(0).Rows(0).Item("LADPlaceTitle").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceTel").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceAddress").TRIM, Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi").trim, Ds.Tables(0).Rows(0).Item("Time").trim, Ds.Tables(0).Rows(0).Item("UserId"), Ds.Tables(0).Rows(0).Item("LoadingActive"), Ds.Tables(0).Rows(0).Item("DischargingActive"), Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Deleted"))
-                Else
-                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Where LADPlaceId=" & YourLoadingAndDischargingPlaceId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New LoadingAndDischargingPlaceNotFoundException
-                    NSS = New R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure(Ds.Tables(0).Rows(0).Item("LADPlaceId"), Ds.Tables(0).Rows(0).Item("LADPlaceTitle").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceTel").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceAddress").TRIM, Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi").trim, Ds.Tables(0).Rows(0).Item("Time").trim, Ds.Tables(0).Rows(0).Item("UserId"), Ds.Tables(0).Rows(0).Item("LoadingActive"), Ds.Tables(0).Rows(0).Item("DischargingActive"), Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Deleted"))
-                End If
-                Return NSS
-            Catch ex As LoadingAndDischargingPlaceNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function GetNSSLoadingAndDischargingPlace(YourLoadingAndDischargingPlaceId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure
+        '    Try
+        '        Dim NSS As R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure = Nothing
+        '        Dim Ds As New DataSet
+        '        If YourImmediately Then
+        '            Dim Da As New SqlClient.SqlDataAdapter
+        '            Da.SelectCommand = New SqlCommand("Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Where LADPlaceId=" & YourLoadingAndDischargingPlaceId & "")
+        '            Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+        '            If Da.Fill(Ds) <> 0 Then NSS = New R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure(Ds.Tables(0).Rows(0).Item("LADPlaceId"), Ds.Tables(0).Rows(0).Item("LADPlaceTitle").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceTel").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceAddress").TRIM, Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi").trim, Ds.Tables(0).Rows(0).Item("Time").trim, Ds.Tables(0).Rows(0).Item("UserId"), Ds.Tables(0).Rows(0).Item("LoadingActive"), Ds.Tables(0).Rows(0).Item("DischargingActive"), Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Deleted"))
+        '        Else
+        '            If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Where LADPlaceId=" & YourLoadingAndDischargingPlaceId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New LoadingAndDischargingPlaceNotFoundException
+        '            NSS = New R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure(Ds.Tables(0).Rows(0).Item("LADPlaceId"), Ds.Tables(0).Rows(0).Item("LADPlaceTitle").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceTel").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceAddress").TRIM, Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi").trim, Ds.Tables(0).Rows(0).Item("Time").trim, Ds.Tables(0).Rows(0).Item("UserId"), Ds.Tables(0).Rows(0).Item("LoadingActive"), Ds.Tables(0).Rows(0).Item("DischargingActive"), Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Deleted"))
+        '        End If
+        '        Return NSS
+        '    Catch ex As LoadingAndDischargingPlaceNotFoundException
+        '        Throw ex
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Function GetUnActiveLoadingAndDischargingPlaces() As List(Of R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure)
-            Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
-                Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure)
-                Dim DS As DataSet = Nothing
-                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Where (LoadingActive=0 or DischargingActive=0) and Deleted=0 Order By LADPlaceTitle", 300, DS, New Boolean)
-                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
-                    Lst.Add(New R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure(DS.Tables(0).Rows(Loopx).Item("LADPlaceId"), DS.Tables(0).Rows(Loopx).Item("LADPlaceTitle").TRIM, DS.Tables(0).Rows(0).Item("LADPlaceTel").TRIM, DS.Tables(0).Rows(0).Item("LADPlaceAddress").TRIM, DS.Tables(0).Rows(Loopx).Item("DateTimeMilladi"), DS.Tables(0).Rows(Loopx).Item("DateShamsi").trim, DS.Tables(0).Rows(Loopx).Item("Time").trim, DS.Tables(0).Rows(Loopx).Item("UserId"), DS.Tables(0).Rows(Loopx).Item("LoadingActive"), DS.Tables(0).Rows(Loopx).Item("DischargingActive"), DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
-                Next
-                Return Lst
-            Catch ex As SqlInjectionException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function GetUnActiveLoadingAndDischargingPlaces() As List(Of R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure)
+        '    Try
+        '        Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+        '        Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure)
+        '        Dim DS As DataSet = Nothing
+        '        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Where (LoadingActive=0 or DischargingActive=0) and Deleted=0 Order By LADPlaceTitle", 300, DS, New Boolean)
+        '        For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+        '            Lst.Add(New R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure(DS.Tables(0).Rows(Loopx).Item("LADPlaceId"), DS.Tables(0).Rows(Loopx).Item("LADPlaceTitle").TRIM, DS.Tables(0).Rows(0).Item("LADPlaceTel").TRIM, DS.Tables(0).Rows(0).Item("LADPlaceAddress").TRIM, DS.Tables(0).Rows(Loopx).Item("DateTimeMilladi"), DS.Tables(0).Rows(Loopx).Item("DateShamsi").trim, DS.Tables(0).Rows(Loopx).Item("Time").trim, DS.Tables(0).Rows(Loopx).Item("UserId"), DS.Tables(0).Rows(Loopx).Item("LoadingActive"), DS.Tables(0).Rows(Loopx).Item("DischargingActive"), DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
+        '        Next
+        '        Return Lst
+        '    Catch ex As SqlInjectionException
+        '        Throw ex
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Function GetLoadingAndDischargingPlaces_SearchforLeftCharacters(YourSearchString As String) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure)
-            Try
-                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
-                InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
-                Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure)
-                Dim DS As DataSet = Nothing
-                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Where Left(LADPlaceTitle," & YourSearchString.Length & ")='" & YourSearchString.Replace("ی", "ي").Replace("ک", "ك") & "' and ViewFlag=1 and Deleted=0 Order By LADPlaceTitle", 300, DS, New Boolean)
-                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
-                    Lst.Add(New R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure(DS.Tables(0).Rows(Loopx).Item("LADPlaceId"), DS.Tables(0).Rows(Loopx).Item("LADPlaceTitle").TRIM, DS.Tables(0).Rows(0).Item("LADPlaceTel").TRIM, DS.Tables(0).Rows(0).Item("LADPlaceAddress").TRIM, DS.Tables(0).Rows(Loopx).Item("DateTimeMilladi"), DS.Tables(0).Rows(Loopx).Item("DateShamsi").trim, DS.Tables(0).Rows(Loopx).Item("Time").trim, DS.Tables(0).Rows(Loopx).Item("UserId"), DS.Tables(0).Rows(0).Item("LoadingActive"), DS.Tables(0).Rows(0).Item("DischargingActive"), DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
-                Next
-                Return Lst
-            Catch ex As SqlInjectionException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function GetLoadingAndDischargingPlaces_SearchforLeftCharacters(YourSearchString As String) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure)
+        '    Try
+        '        Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+        '        InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
+        '        Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure)
+        '        Dim DS As DataSet = Nothing
+        '        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Where Left(LADPlaceTitle," & YourSearchString.Length & ")='" & YourSearchString.Replace("ی", "ي").Replace("ک", "ك") & "' and ViewFlag=1 and Deleted=0 Order By LADPlaceTitle", 300, DS, New Boolean)
+        '        For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+        '            Lst.Add(New R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure(DS.Tables(0).Rows(Loopx).Item("LADPlaceId"), DS.Tables(0).Rows(Loopx).Item("LADPlaceTitle").TRIM, DS.Tables(0).Rows(0).Item("LADPlaceTel").TRIM, DS.Tables(0).Rows(0).Item("LADPlaceAddress").TRIM, DS.Tables(0).Rows(Loopx).Item("DateTimeMilladi"), DS.Tables(0).Rows(Loopx).Item("DateShamsi").trim, DS.Tables(0).Rows(Loopx).Item("Time").trim, DS.Tables(0).Rows(Loopx).Item("UserId"), DS.Tables(0).Rows(0).Item("LoadingActive"), DS.Tables(0).Rows(0).Item("DischargingActive"), DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
+        '        Next
+        '        Return Lst
+        '    Catch ex As SqlInjectionException
+        '        Throw ex
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Sub LoadingAndDischargingPlaceDelete(YourNSSLADPlace As R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.CommandText = "Update  R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Set Deleted=1 Where LADPlaceId=" & YourNSSLADPlace.LADPlaceId & ""
-                CmdSql.ExecuteNonQuery()
-                CmdSql.Connection.Close()
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
+        'Public Sub LoadingAndDischargingPlaceDelete(YourNSSLADPlace As R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure)
+        '    Dim CmdSql As New SqlClient.SqlCommand
+        '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+        '    Try
+        '        CmdSql.Connection.Open()
+        '        CmdSql.CommandText = "Update  R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Set Deleted=1 Where LADPlaceId=" & YourNSSLADPlace.LADPlaceId & ""
+        '        CmdSql.ExecuteNonQuery()
+        '        CmdSql.Connection.Close()
+        '    Catch ex As Exception
+        '        If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
 
-        Public Sub LoadingPlaceChangeActiveStatus(YourNSSLADPlace As R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                Dim CurrentStatus = GetNSSLoadingAndDischargingPlace(YourNSSLADPlace.LADPlaceId, True).LoadingActive
-                If CurrentStatus Then
-                    CmdSql.Connection.Open()
-                    CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Set LoadingActive=0 Where LADPlaceId=" & YourNSSLADPlace.LADPlaceId & ""
-                    CmdSql.ExecuteNonQuery()
-                    CmdSql.Connection.Close()
-                Else
-                    CmdSql.Connection.Open()
-                    CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Set LoadingActive=1 Where LADPlaceId=" & YourNSSLADPlace.LADPlaceId & ""
-                    CmdSql.ExecuteNonQuery()
-                    CmdSql.Connection.Close()
-                End If
-                'ارسال اس ام اس
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
-                SendSMSLoadingAndDischargingPLacesChangeStatus(YourNSSLADPlace.LADPlaceTitle, _LoadingPlaceEquivalent, InstancePublicProcedures.GetBooleanVariablePersianEquivalent(Not CurrentStatus))
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
+        'Public Sub LoadingPlaceChangeActiveStatus(YourNSSLADPlace As R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure)
+        '    Dim CmdSql As New SqlClient.SqlCommand
+        '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+        '    Try
+        '        Dim CurrentStatus = GetNSSLoadingAndDischargingPlace(YourNSSLADPlace.LADPlaceId, True).LoadingActive
+        '        If CurrentStatus Then
+        '            CmdSql.Connection.Open()
+        '            CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Set LoadingActive=0 Where LADPlaceId=" & YourNSSLADPlace.LADPlaceId & ""
+        '            CmdSql.ExecuteNonQuery()
+        '            CmdSql.Connection.Close()
+        '        Else
+        '            CmdSql.Connection.Open()
+        '            CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Set LoadingActive=1 Where LADPlaceId=" & YourNSSLADPlace.LADPlaceId & ""
+        '            CmdSql.ExecuteNonQuery()
+        '            CmdSql.Connection.Close()
+        '        End If
+        '        'ارسال اس ام اس
+        '        Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+        '        SendSMSLoadingAndDischargingPLacesChangeStatus(YourNSSLADPlace.LADPlaceTitle, _LoadingPlaceEquivalent, InstancePublicProcedures.GetBooleanVariablePersianEquivalent(Not CurrentStatus))
+        '    Catch ex As Exception
+        '        If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
 
-        Public Sub DischargingPlaceChangeActiveStatus(YourNSSLADPlace As R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                Dim CurrentStatus = GetNSSLoadingAndDischargingPlace(YourNSSLADPlace.LADPlaceId, True).DischargingActive
-                If CurrentStatus Then
-                    CmdSql.Connection.Open()
-                    CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Set DischargingActive=0 Where LADPlaceId=" & YourNSSLADPlace.LADPlaceId & ""
-                    CmdSql.ExecuteNonQuery()
-                    CmdSql.Connection.Close()
-                Else
-                    CmdSql.Connection.Open()
-                    CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Set DischargingActive=1 Where LADPlaceId=" & YourNSSLADPlace.LADPlaceId & ""
-                    CmdSql.ExecuteNonQuery()
-                    CmdSql.Connection.Close()
-                End If
-                'ارسال اس ام اس
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
-                SendSMSLoadingAndDischargingPLacesChangeStatus(YourNSSLADPlace.LADPlaceTitle, _DischargingPlaceEquivalent, InstancePublicProcedures.GetBooleanVariablePersianEquivalent(Not CurrentStatus))
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
+        'Public Sub DischargingPlaceChangeActiveStatus(YourNSSLADPlace As R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure)
+        '    Dim CmdSql As New SqlClient.SqlCommand
+        '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+        '    Try
+        '        Dim CurrentStatus = GetNSSLoadingAndDischargingPlace(YourNSSLADPlace.LADPlaceId, True).DischargingActive
+        '        If CurrentStatus Then
+        '            CmdSql.Connection.Open()
+        '            CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Set DischargingActive=0 Where LADPlaceId=" & YourNSSLADPlace.LADPlaceId & ""
+        '            CmdSql.ExecuteNonQuery()
+        '            CmdSql.Connection.Close()
+        '        Else
+        '            CmdSql.Connection.Open()
+        '            CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Set DischargingActive=1 Where LADPlaceId=" & YourNSSLADPlace.LADPlaceId & ""
+        '            CmdSql.ExecuteNonQuery()
+        '            CmdSql.Connection.Close()
+        '        End If
+        '        'ارسال اس ام اس
+        '        Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+        '        SendSMSLoadingAndDischargingPLacesChangeStatus(YourNSSLADPlace.LADPlaceTitle, _DischargingPlaceEquivalent, InstancePublicProcedures.GetBooleanVariablePersianEquivalent(Not CurrentStatus))
+        '    Catch ex As Exception
+        '        If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
 
-        Private Sub SendSMSLoadingAndDischargingPLacesChangeStatus(YourLoadingDischargingPlaceTitle As String, YourLoadingDischargingNote As String, YourStatus As String)
-            Try
-                Dim InstanceMoneyWallet = New R2CoreParkingSystemInstanceMoneyWalletManager
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
-                'کنترل فعال بودن سرویس اس ام اس
-                If Not InstanceConfiguration.GetConfigBoolean(R2CoreConfigurations.SmsSystemSetting, 0) Then Throw New SmsSystemIsDisabledException
-                'کاربران
-                Dim TargetUsers = InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotification.ConfigurationsManagement.R2CoreTransportationAndLoadNotificationConfigurations.LoadingDischargingPlaces, 2).Split("-")
-                Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
-                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
-                For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
-                    LstSoftwareUsers.Add(InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(TargetUsers(LoopxUsers))))
-                Next
-                'کانتنت پیام
-                Dim myData = New SMSCreationData
-                myData.Data1 = YourLoadingDischargingPlaceTitle
-                myData.Data2 = YourLoadingDischargingNote
-                myData.Data3 = YourStatus
-                'ارسال اس ام اس
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
-                Dim SMSResult = InstanceSMSHandling.SendSMS(LstSoftwareUsers, R2CoreTransportationAndLoadNotification.SMS.SMSTypes.R2CoreTransportationAndLoadNotificationSMSTypes.LoadingAndDischargingPLacesChangeStatus, InstanceSMSHandling.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
-                Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
-                If Not SMSResultAnalyze = String.Empty Then Throw New LoadingAndDischargingSendSMSFailedException
-            Catch ex As LoadingAndDischargingSendSMSFailedException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
+        'Private Sub SendSMSLoadingAndDischargingPLacesChangeStatus(YourLoadingDischargingPlaceTitle As String, YourLoadingDischargingNote As String, YourStatus As String)
+        '    Try
+        '        Dim InstanceMoneyWallet = New R2CoreParkingSystemInstanceMoneyWalletManager
+        '        Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
+        '        'کنترل فعال بودن سرویس اس ام اس
+        '        If Not InstanceGeneralConfiguration.GetBooleanConfiguration(R2CoreGeneralConfigurations.SmsSystemSetting, 0) Then Throw New SmsSystemIsDisabledException
+        '        'کاربران
+        '        Dim TargetUsers = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreTransportationAndLoadNotificationConfigurations.LoadingDischargingPlaces, 2).Split("-")
+        '        Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
+        '        Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+        '        For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
+        '            LstSoftwareUsers.Add(InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(TargetUsers(LoopxUsers))))
+        '        Next
+        '        'کانتنت پیام
+        '        Dim myData = New SMSCreationData
+        '        myData.Data1 = YourLoadingDischargingPlaceTitle
+        '        myData.Data2 = YourLoadingDischargingNote
+        '        myData.Data3 = YourStatus
+        '        'ارسال اس ام اس
+        '        Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
+        '        Dim SMSResult = InstanceSMSHandling.SendSMS(LstSoftwareUsers, R2CoreTransportationAndLoadNotification.SMS.SMSTypes.R2CoreTransportationAndLoadNotificationSMSTypes.LoadingAndDischargingPLacesChangeStatus, InstanceSMSHandling.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
+        '        Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
+        '        If Not SMSResultAnalyze = String.Empty Then Throw New LoadingAndDischargingSendSMSFailedException
+        '    Catch ex As LoadingAndDischargingSendSMSFailedException
+        '        Throw ex
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
 
-        Public Function LoadingAndDischargingPlaceRegister(YourNSSLADPlace As R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure, YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure) As Int64
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                If YourNSSLADPlace.LADPlaceTitle = String.Empty Then Return Nothing
-                CmdSql.Connection.Open()
-                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                Dim D = _DateTimeService.GetCurrentDateAndTime
-                If YourNSSLADPlace.LADPlaceId = 0 Then
-                    CmdSql.CommandText = "Select Top 1 LADPlaceId From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces with (tablockx) Order By LADPlaceId Desc"
-                    Dim LADPlaceIdNew As Int64 = CmdSql.ExecuteScalar() + 1
-                    YourNSSLADPlace.LADPlaceId = LADPlaceIdNew
-                    CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces(LADPlaceId,LADPlaceTitle,DateTimeMilladi,DateShamsi,Time,UserId,LoadingActive,DischargingActive,ViewFlag,Deleted)
-                                            Values(" & LADPlaceIdNew & ",'" & YourNSSLADPlace.LADPlaceTitle & "','" & D.DateTimeMilladi & "','" & D.ShamsiDate & "','" & D.Time & "'," & YourNSSSoftwareUser.UserId & ",1,1,1,0)"
-                    CmdSql.ExecuteNonQuery()
-                Else
-                    CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Set LADPlaceTitle='" & YourNSSLADPlace.LADPlaceTitle & "' Where LADPlaceId=" & YourNSSLADPlace.LADPlaceId & ""
-                    CmdSql.ExecuteNonQuery()
-                End If
-                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-                Return YourNSSLADPlace.LADPlaceId
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function LoadingAndDischargingPlaceRegister(YourNSSLADPlace As R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure, YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure) As Int64
+        '    Dim CmdSql As New SqlClient.SqlCommand
+        '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+        '    Try
+        '        If YourNSSLADPlace.LADPlaceTitle = String.Empty Then Return Nothing
+        '        CmdSql.Connection.Open()
+        '        CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+        '        Dim D = _DateTimeService.GetCurrentDateAndTime
+        '        If YourNSSLADPlace.LADPlaceId = 0 Then
+        '            CmdSql.CommandText = "Select Top 1 LADPlaceId From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces with (tablockx) Order By LADPlaceId Desc"
+        '            Dim LADPlaceIdNew As Int64 = CmdSql.ExecuteScalar() + 1
+        '            YourNSSLADPlace.LADPlaceId = LADPlaceIdNew
+        '            CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces(LADPlaceId,LADPlaceTitle,DateTimeMilladi,DateShamsi,Time,UserId,LoadingActive,DischargingActive,ViewFlag,Deleted)
+        '                                    Values(" & LADPlaceIdNew & ",'" & YourNSSLADPlace.LADPlaceTitle & "','" & D.DateTimeMilladi & "','" & D.ShamsiDate & "','" & D.Time & "'," & YourNSSSoftwareUser.UserId & ",1,1,1,0)"
+        '            CmdSql.ExecuteNonQuery()
+        '        Else
+        '            CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Set LADPlaceTitle='" & YourNSSLADPlace.LADPlaceTitle & "' Where LADPlaceId=" & YourNSSLADPlace.LADPlaceId & ""
+        '            CmdSql.ExecuteNonQuery()
+        '        End If
+        '        CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+        '        Return YourNSSLADPlace.LADPlaceId
+        '    Catch ex As Exception
+        '        If CmdSql.Connection.State <> ConnectionState.Closed Then
+        '            CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+        '        End If
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Function IsActiveLoadingPlace(YourLoadingPlaceId As Int64) As Boolean
-            Try
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Where LADPlaceId=" & YourLoadingPlaceId & "", 300, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New LoadingAndDischargingPlaceNotFoundException
-                Dim NSS = New R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure(Ds.Tables(0).Rows(0).Item("LADPlaceId"), Ds.Tables(0).Rows(0).Item("LADPlaceTitle").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceTel").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceAddress").TRIM, Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi").trim, Ds.Tables(0).Rows(0).Item("Time").trim, Ds.Tables(0).Rows(0).Item("UserId"), Ds.Tables(0).Rows(0).Item("LoadingActive"), Ds.Tables(0).Rows(0).Item("DischargingActive"), Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Deleted"))
-                If NSS.LoadingActive = False Then
-                    Return False
-                Else
-                    Return True
-                End If
-            Catch ex As LoadingAndDischargingPlaceNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function IsActiveLoadingPlace(YourLoadingPlaceId As Int64) As Boolean
+        '    Try
+        '        Dim Ds As DataSet
+        '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Where LADPlaceId=" & YourLoadingPlaceId & "", 300, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New LoadingAndDischargingPlaceNotFoundException
+        '        Dim NSS = New R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure(Ds.Tables(0).Rows(0).Item("LADPlaceId"), Ds.Tables(0).Rows(0).Item("LADPlaceTitle").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceTel").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceAddress").TRIM, Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi").trim, Ds.Tables(0).Rows(0).Item("Time").trim, Ds.Tables(0).Rows(0).Item("UserId"), Ds.Tables(0).Rows(0).Item("LoadingActive"), Ds.Tables(0).Rows(0).Item("DischargingActive"), Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Deleted"))
+        '        If NSS.LoadingActive = False Then
+        '            Return False
+        '        Else
+        '            Return True
+        '        End If
+        '    Catch ex As LoadingAndDischargingPlaceNotFoundException
+        '        Throw ex
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Function IsActiveDischargingPlace(YourDischargingPlaceId As Int64) As Boolean
-            Try
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Where LADPlaceId=" & YourDischargingPlaceId & "", 300, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New LoadingAndDischargingPlaceNotFoundException
-                Dim NSS = New R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure(Ds.Tables(0).Rows(0).Item("LADPlaceId"), Ds.Tables(0).Rows(0).Item("LADPlaceTitle").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceTel").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceAddress").TRIM, Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi").trim, Ds.Tables(0).Rows(0).Item("Time").trim, Ds.Tables(0).Rows(0).Item("UserId"), Ds.Tables(0).Rows(0).Item("LoadingActive"), Ds.Tables(0).Rows(0).Item("DischargingActive"), Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Deleted"))
-                If NSS.DischargingActive = False Then
-                    Return False
-                Else
-                    Return True
-                End If
-            Catch ex As LoadingAndDischargingPlaceNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function IsActiveDischargingPlace(YourDischargingPlaceId As Int64) As Boolean
+        '    Try
+        '        Dim Ds As DataSet
+        '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Where LADPlaceId=" & YourDischargingPlaceId & "", 300, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New LoadingAndDischargingPlaceNotFoundException
+        '        Dim NSS = New R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure(Ds.Tables(0).Rows(0).Item("LADPlaceId"), Ds.Tables(0).Rows(0).Item("LADPlaceTitle").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceTel").TRIM, Ds.Tables(0).Rows(0).Item("LADPlaceAddress").TRIM, Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi").trim, Ds.Tables(0).Rows(0).Item("Time").trim, Ds.Tables(0).Rows(0).Item("UserId"), Ds.Tables(0).Rows(0).Item("LoadingActive"), Ds.Tables(0).Rows(0).Item("DischargingActive"), Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Deleted"))
+        '        If NSS.DischargingActive = False Then
+        '            Return False
+        '        Else
+        '            Return True
+        '        End If
+        '    Catch ex As LoadingAndDischargingPlaceNotFoundException
+        '        Throw ex
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
 
     End Class
@@ -457,11 +457,14 @@ Namespace LoadingAndDischargingPlaces
                 If YourRawLoadingAndDischargingPlace.LADPlaceTitle = String.Empty Then Throw New DataEntryException
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                Dim D = _DateTimeService.GetCurrentDateAndTime
                 CmdSql.CommandText = "Select Top 1 LADPlaceId From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces with (tablockx) Order By LADPlaceId Desc"
                 Dim LADPlaceIdNew As Int64 = CmdSql.ExecuteScalar() + 1
                 CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces(LADPlaceId,LADPlaceTitle,LADPlaceTel,LADPlaceAddress,DateTimeMilladi,DateShamsi,Time,UserId,LoadingActive,DischargingActive,ViewFlag,Deleted)
-                                            Values(" & LADPlaceIdNew & ",'" & YourRawLoadingAndDischargingPlace.LADPlaceTitle & "','" & YourRawLoadingAndDischargingPlace.LADPlaceTel & "','" & YourRawLoadingAndDischargingPlace.LADPlaceAddress & "','" & D.DateTimeMilladi & "','" & D.ShamsiDate & "','" & D.Time & "'," & InstanceSoftwareUsers.GetSystemUserId & ",1,1,1,0)"
+                                            Values(@LADPlaceId,@LADPlaceTitle,@LADPlaceTel,@LADPlaceAddress,convert(varchar, getdate(), 20),R2Primary.DBO.BPTCOGregorianToPersian(GETDATE()),convert(varchar, getdate(), 8)," & InstanceSoftwareUsers.GetSystemUserId & ",1,1,1,0)"
+                CmdSql.Parameters.Add("@LADPlaceId", SqlDbType.BigInt ).Value =LADPlaceIdNew
+                CmdSql.Parameters.Add("@LADPlaceTitle", SqlDbType.NVarChar ).Value =YourRawLoadingAndDischargingPlace.LADPlaceTitle
+                CmdSql.Parameters.Add("@LADPlaceTel", SqlDbType.NVarChar ).Value =YourRawLoadingAndDischargingPlace.LADPlaceTel
+                CmdSql.Parameters.Add("@LADPlaceAddress", SqlDbType.NVarChar).Value = YourRawLoadingAndDischargingPlace.LADPlaceAddress
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 Return LADPlaceIdNew
@@ -484,7 +487,11 @@ Namespace LoadingAndDischargingPlaces
             Try
                 If YourLoadingAndDischargingPlace.LADPlaceTitle = String.Empty Then Throw New DataEntryException
                 CmdSql.Connection.Open()
-                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Set LADPlaceTitle='" & YourLoadingAndDischargingPlace.LADPlaceTitle & "',LADPlaceTel='" & YourLoadingAndDischargingPlace.LADPlaceTel & "',LADPlaceAddress='" & YourLoadingAndDischargingPlace.LADPlaceAddress & "' Where LADPlaceId=" & YourLoadingAndDischargingPlace.LADPlaceId & ""
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces Set LADPlaceTitle=@LADPlaceTitle,LADPlaceTel=@LADPlaceTel,LADPlaceAddress=@LADPlaceAddress Where LADPlaceId=@LADPlaceId"
+                CmdSql.Parameters.Add("@LADPlaceTitle", SqlDbType.NVarChar).Value = YourLoadingAndDischargingPlace.LADPlaceTitle
+                CmdSql.Parameters.Add("@LADPlaceTel", SqlDbType.NVarChar).Value = YourLoadingAndDischargingPlace.LADPlaceTel
+                CmdSql.Parameters.Add("@LADPlaceAddress", SqlDbType.NVarChar).Value = YourLoadingAndDischargingPlace.LADPlaceAddress
+                CmdSql.Parameters.Add("@LADPlaceId", SqlDbType.BigInt).Value = YourLoadingAndDischargingPlace.LADPlaceId
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Connection.Close()
             Catch ex As DataEntryException
@@ -566,9 +573,9 @@ Namespace LoadingAndDischargingPlaces
 
         Public Sub SendLoadingAndDischargingPLacesChangeStatusSMS(YourLoadingDischargingPlaceTitle As String, YourLoadingDischargingNote As String, YourStatus As String)
             Try
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 'کاربران
-                Dim TargetUsers = InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.LoadingDischargingPlaces, 2).Split("-")
+                Dim TargetUsers = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.LoadingDischargingPlaces, 2).Split("-")
                 Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
                 Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1

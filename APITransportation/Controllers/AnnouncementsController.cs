@@ -410,5 +410,98 @@ namespace APITransportation.Controllers
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
 
+        [HttpPost]
+        [Route("api/GetAllAnnouncementRelationProvinces")]
+        public HttpResponseMessage GetAllAnnouncementRelationProvinces([FromBody] APICommonSessionId Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var SessionId = Content.SessionId;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(InstanceAnnouncements.GetAllAnnouncementRelationProvinces(true), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
+        [Route("api/AnnouncementSubGroupRelationProvinceRegistering")]
+        public HttpResponseMessage AnnouncementSubGroupRelationProvinceRegistering([FromBody] APITransportationSessionIdProvinceIdAnnouncementSubGroupId Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var SessionId = Content.SessionId;
+                var ProvinceId = Content.ProvinceId;
+                var AnnouncementSGId = Content.AnnouncementSubGroupId;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
+                InstanceAnnouncements.AnnouncementSubGroupRelationProvinceRegistering(ProvinceId, AnnouncementSGId);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
+        [Route("api/AnnouncementSubGroupRelationProvinceDeleting")]
+        public HttpResponseMessage AnnouncementSubGroupRelationProvinceDeleting([FromBody] APITransportationSessionIdProvinceIdAnnouncementSubGroupId Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var SessionId = Content.SessionId;
+                var ProvinceId = Content.ProvinceId;
+                var AnnouncementSGId = Content.AnnouncementSubGroupId;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
+                InstanceAnnouncements.AnnouncementSubGroupRelationProvinceDeleting(ProvinceId, AnnouncementSGId);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
     }
 }

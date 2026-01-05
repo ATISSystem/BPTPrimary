@@ -11,6 +11,7 @@ Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
+Imports R2Core.GeneralConfiguration
 Imports R2Core.PublicProc
 Imports R2Core.SoftwareUserManagement
 
@@ -63,7 +64,9 @@ Namespace Carousels
 
         Public Function GetCarousel(YourCId As Int64, YourSoftwareUser As R2CoreSoftwareUser) As Byte()
             Try
-                Return _WS.WebMethodGetFile(RawGroups.R2CoreRawGroups.Carousels, YourCId.ToString + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 0), _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
+
+                Return _WS.WebMethodGetFile(RawGroups.R2CoreRawGroups.Carousels, YourCId.ToString + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreConfigurations.JPGBitmap, 0), _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
             Catch ex As SoapException
                 Throw ex
             Catch ex As Exception
@@ -75,6 +78,8 @@ Namespace Carousels
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
+
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
                 CmdSql.CommandText = "Select Top 1 CId From R2Primary.dbo.TblCarousels with (tablockx) Order By CId Desc"
@@ -82,9 +87,12 @@ Namespace Carousels
                 CmdSql.CommandText = "Select IDENT_CURRENT('R2Primary.dbo.TblCarousels') "
                 Dim CIdNew As Int64 = CmdSql.ExecuteScalar() + 1
                 CmdSql.CommandText = "Insert Into R2Primary.dbo.TblCarousels(CTitle,URL,Description,DateTimeMilladi,ShamsiDate,Time,Active,ViewFlag,Deleted)
-                                      Values('" & YourCarousel.CTitle & "','" & YourCarousel.URL & "','" & YourCarousel.Description & "',convert(varchar, getdate(), 20),R2Primary.DBO.BPTCOGregorianToPersian(GETDATE()),convert(varchar, getdate(), 8),1,1,0)"
+                                      Values(@CTitle,@URL,@Description,convert(varchar, getdate(), 20),R2Primary.DBO.BPTCOGregorianToPersian(GETDATE()),convert(varchar, getdate(), 8),1,1,0)"
+                CmdSql.Parameters.Add("@CTitle", SqlDbType.NVarChar).Value = YourCarousel.CTitle
+                CmdSql.Parameters.Add("@URL", SqlDbType.NVarChar).Value = YourCarousel.URL
+                CmdSql.Parameters.Add("@Description", SqlDbType.NVarChar).Value = YourCarousel.Description
                 CmdSql.ExecuteNonQuery()
-                _WS.WebMethodSaveFile(RawGroups.R2CoreRawGroups.Carousels, CIdNew.ToString + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 0), YourCarousel.Picture, _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
+                _WS.WebMethodSaveFile(RawGroups.R2CoreRawGroups.Carousels, CIdNew.ToString + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreConfigurations.JPGBitmap, 0), YourCarousel.Picture, _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 CarouselsCachePreparing(YourSoftwareUser)
             Catch ex As SoapException
@@ -100,13 +108,19 @@ Namespace Carousels
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
+
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Update R2Primary.dbo.TblCarousels Set CTitle='" & YourCarousel.CTitle & "',URL='" & YourCarousel.URL & "',Description='" & YourCarousel.Description & "' Where CId=" & YourCarousel.CId & ""
+                CmdSql.CommandText = "Update R2Primary.dbo.TblCarousels Set CTitle=@CTitle,URL=@URL,Description=@Description Where CId=@CId"
+                CmdSql.Parameters.Add("@CTitle", SqlDbType.NVarChar).Value = YourCarousel.CTitle
+                CmdSql.Parameters.Add("@URL", SqlDbType.NVarChar).Value = YourCarousel.URL
+                CmdSql.Parameters.Add("@Description", SqlDbType.NVarChar).Value = YourCarousel.Description
+                CmdSql.Parameters.Add("@CId", SqlDbType.BigInt).Value = YourCarousel.CId
                 CmdSql.ExecuteNonQuery()
                 If YourCarousel.Picture IsNot Nothing Then
-                    _WS.WebMethodDeleteFile(RawGroups.R2CoreRawGroups.Carousels, YourCarousel.CId.ToString + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 0), _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
-                    _WS.WebMethodSaveFile(RawGroups.R2CoreRawGroups.Carousels, YourCarousel.CId.ToString + R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.JPGBitmap, 0), YourCarousel.Picture, _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
+                    _WS.WebMethodDeleteFile(RawGroups.R2CoreRawGroups.Carousels, YourCarousel.CId.ToString + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreConfigurations.JPGBitmap, 0), _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
+                    _WS.WebMethodSaveFile(RawGroups.R2CoreRawGroups.Carousels, YourCarousel.CId.ToString + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreConfigurations.JPGBitmap, 0), YourCarousel.Picture, _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
                 End If
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 CarouselsCachePreparing(YourSoftwareUser)
@@ -125,7 +139,8 @@ Namespace Carousels
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Update R2Primary.dbo.TblCarousels Set Active=0, Deleted = 1 Where CId=" & YourCarouselId & ""
+                CmdSql.CommandText = "Update R2Primary.dbo.TblCarousels Set Active=0, Deleted = 1 Where CId=@CId"
+                CmdSql.Parameters.Add("@CId", SqlDbType.BigInt).Value = YourCarouselId
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 CarouselsCachePreparing(YourSoftwareUser)
@@ -144,7 +159,9 @@ Namespace Carousels
             Try
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Update R2Primary.dbo.TblCarousels Set Active=" & IIf(YourActive, 1, 0) & " Where CId=" & YourCarouselId & ""
+                CmdSql.CommandText = "Update R2Primary.dbo.TblCarousels Set Active=@Active Where CId=@CId"
+                CmdSql.Parameters.Add("@Active", SqlDbType.Bit).Value = IIf(YourActive, 1, 0)
+                CmdSql.Parameters.Add("@CId", SqlDbType.BigInt).Value = YourCarouselId
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 CarouselsCachePreparing(YourSoftwareUser)
@@ -176,8 +193,10 @@ Namespace Carousels
             Try
                 Dim InstanceCache = New R2CoreCacheManager(_DateTimeService)
                 Dim Carousel = InstanceCache.GetCache(InstanceCache.GetCacheType(R2CoreCacheTypes.Carousel).CacheTypeName, R2CoreCatchDataBases.Carousels).ToString
-                If Carousel Is Nothing Then Throw New Exception
+                If Carousel Is Nothing Then Throw New AnyNotFoundException
                 Return Carousel
+            Catch ex As AnyNotFoundException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try

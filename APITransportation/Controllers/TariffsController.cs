@@ -73,8 +73,8 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/TariffsRegistering")]
-        public HttpResponseMessage TariffsRegistering([FromBody] APITransportationSessionIdTariffs Content)
+        [Route("api/TariffRegistering")]
+        public HttpResponseMessage TariffRegistering([FromBody] APITransportationSessionIdTariff Content)
         {
             try
             {
@@ -82,12 +82,12 @@ namespace APITransportation.Controllers
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var SessionId = Content.SessionId;
-                var Tariffs = Content.Tariffs;
+                var Tariff = Content.Tariff;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService);
-                InstanceTransportTariffs.TariffsRegistering(Tariffs);
+                InstanceTransportTariffs.TariffRegistering(Tariff);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -170,8 +170,8 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/TariffsDeleting")]
-        public HttpResponseMessage TariffsDeleting([FromBody] APITransportationSessionIdTariffs Content)
+        [Route("api/TariffDeleting")]
+        public HttpResponseMessage TariffDeleting([FromBody] APITransportationSessionIdTariff Content)
         {
             try
             {
@@ -179,12 +179,12 @@ namespace APITransportation.Controllers
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var SessionId = Content.SessionId;
-                var Tariffs = Content.Tariffs;
+                var Tariff = Content.Tariff;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService);
-                InstanceTransportTariffs.TariffsDeleting(Tariffs);
+                InstanceTransportTariffs.TariffDeleting(Tariff);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -202,8 +202,8 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
-        [Route("api/TariffsEditing")]
-        public HttpResponseMessage TariffsEditing([FromBody] APITransportationSessionIdTariffs Content)
+        [Route("api/TariffEditing")]
+        public HttpResponseMessage TariffEditing([FromBody] APITransportationSessionIdTariff Content)
         {
             try
             {
@@ -211,12 +211,12 @@ namespace APITransportation.Controllers
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var SessionId = Content.SessionId;
-                var Tariffs = Content.Tariffs;
+                var Tariff = Content.Tariff;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService);
-                InstanceTransportTariffs.TariffsEditing(Tariffs);
+                InstanceTransportTariffs.TariffEditing(Tariff);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;

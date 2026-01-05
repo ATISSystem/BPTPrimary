@@ -9,6 +9,7 @@ Imports R2Core.ConfigurationManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
+Imports R2Core.GeneralConfiguration
 Imports R2Core.LoggingManagement
 Imports R2Core.SecurityAlgorithmsManagement.AESAlgorithms
 Imports R2Core.SecurityAlgorithmsManagement.Captcha
@@ -39,25 +40,13 @@ Namespace SessionManagement
 
     End Class
 
-    Public Class R2CoreStandardSessionCaptchaWordStructure
-
-        Public Sub New()
-            MyBase.New()
-            _SessionId = String.Empty
-            _Captcha = String.Empty
-        End Sub
-
-        Public Sub New(YourSessionId As String, YourCaptcha As String)
-            _SessionId = YourSessionId
-            _Captcha = YourCaptcha
-        End Sub
-
+    Public Class R2CoreSessionIdCaptchaWord
         Public Property SessionId As String
         Public Property Captcha As String
-
     End Class
 
     Public Class R2CoreSessionManager
+
         Private _DateTimeService As R2DateTimeService
 
         Public Sub New()
@@ -84,16 +73,16 @@ Namespace SessionManagement
         Public Function StartSession() As R2CoreStandardSessionCaptchaBitMapStructure
             Try
                 Dim InstanceCaptcha = New R2CoreInstanceCaptchaManager
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 Dim InstanceCache = New R2CoreCacheManager(_DateTimeService)
 
-                Dim CaptchaWord = InstanceCaptcha.GenerateFakeWordNumeric(InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 6))
+                Dim CaptchaWord = InstanceCaptcha.GenerateFakeWordNumeric(InstanceGeneralConfiguration.GetInt64Configuration(R2CoreGeneralConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 6))
 
                 Dim CaptchaBitMap = InstanceCaptcha.GetCaptcha(CaptchaWord)
 
                 Dim SessionId = GetNewSessionId()
 
-                InstanceCache.SetCache(InstanceCache.GetCacheType(R2CoreCacheTypes.Session).CacheTypeName + SessionId, New R2CoreStandardSessionCaptchaWordStructure(SessionId, CaptchaWord), R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions, False)
+                InstanceCache.SetCache(InstanceCache.GetCacheType(R2CoreCacheTypes.Session).CacheTypeName + SessionId, New R2CoreSessionIdCaptchaWord With {.SessionId = SessionId, .Captcha = CaptchaWord}, R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions, False)
                 Return New R2CoreStandardSessionCaptchaBitMapStructure(SessionId, CaptchaBitMap)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -116,6 +105,25 @@ Namespace SessionManagement
             End Try
         End Function
 
+        Public Sub ConfirmSession(YourSessionId As String, YourCaptchaWord As String)
+            Try
+                Dim InstanceCache = New Caching.R2CoreCacheManager(_DateTimeService)
+                Dim CachKey = InstanceCache.GetCacheType(Caching.R2CoreCacheTypes.Session).CacheTypeName + YourSessionId
+                Dim Value = InstanceCache.GetCache(CachKey, R2CoreCatchDataBases.SoftwareUserSessions).ToString
+                If Value Is Nothing Then Throw New SessionOverException
+                Dim Content = JsonConvert.DeserializeObject(Of R2CoreSessionIdCaptchaWord)(Value)
+                If YourCaptchaWord <> Content.Captcha Then Throw New CaptchaInvalidException
+            Catch ex As CaptchaInvalidException
+                Throw ex
+            Catch ex As SessionOverException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+
+
 
     End Class
 
@@ -128,5 +136,13 @@ Namespace SessionManagement
         End Sub
     End Class
 
+    Public Class CaptchaInvalidException
+        Inherits BPTException
+
+        Public Sub New()
+            _Message = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.CaptchaInvalid).MsgContent
+            _MessageCode = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.CaptchaInvalid).MsgId
+        End Sub
+    End Class
 
 End Namespace

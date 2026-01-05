@@ -110,7 +110,8 @@ namespace UnitTestR2Core
             try
             {
                 var Instance = new R2Core.SoftwareUserManagement.R2CoreSoftwareUsersManager(new R2DateTimeService(),new SoftwareUserService (21));
-                var x = Instance.RegisteringSoftwareUser(new R2Core.SoftwareUserManagement.R2CoreRawSoftwareUserStructure() { UserId = 0, MobileNumber = "09138031812", UserName = "خسروی", UserTypeId = 1 }, false,21);
+                var xcv = new R2Core.SoftwareUserManagement.R2CoreSoftWareUserSecurity();
+                var x = Instance.RegisteringSoftwareUser(new R2Core.SoftwareUserManagement.R2CoreRawSoftwareUserStructure() { UserId = 0, MobileNumber = "09138031812", UserName = "خسروی", UserTypeId = 1 }, false,21,ref xcv );
                 Console.WriteLine(x);
             }
             catch (DataBaseException ex)

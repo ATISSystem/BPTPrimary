@@ -43,12 +43,11 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetCities")]
-        public HttpResponseMessage GetCities()
+        public HttpResponseMessage GetCities([FromBody] APITransportationSessionIdSearchString Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APICommonSessionIdSearchString>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
@@ -73,14 +72,43 @@ namespace APITransportation.Controllers
         }
 
         [HttpPost]
+        [Route("api/GetProvinces")]
+        public HttpResponseMessage GetProvinces([FromBody] APITransportationSessionIdSearchString Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var SessionId = Content.SessionId;
+                var SearchString = Content.SearchString;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager(_DateTimeService);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(InstanceProvincesAndCities.GetListOfProvinces_SearchIntroCharacters(SearchString, true), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
         [Route("api/ChangeActivateStatusOfProvince")]
-        public HttpResponseMessage ChangeActivateStatusOfProvince()
+        public HttpResponseMessage ChangeActivateStatusOfProvince([FromBody] APITransportationSessionIdProvinceIdProvinceActive Content )
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdProvinceIdProvinceActive>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var ProvinceId = Content.ProvinceId;
                 var ProvineActive = Content.ProvinceActive;
@@ -104,13 +132,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/ChangeActivateStatusOfCity")]
-        public HttpResponseMessage ChangeActivateStatusOfCity()
+        public HttpResponseMessage ChangeActivateStatusOfCity([FromBody] APITransportationSessionIdCityIdCityActive Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdCityIdCityActive>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var CityId = Content.CityId;
                 var CityActive = Content.CityActive;

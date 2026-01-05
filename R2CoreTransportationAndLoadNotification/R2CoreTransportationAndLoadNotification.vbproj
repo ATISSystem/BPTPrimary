@@ -163,6 +163,7 @@
     <Compile Include="Caching.vb" />
     <Compile Include="Calendars.vb" />
     <Compile Include="Configurations.vb" />
+    <Compile Include="DriverSelfDeclaration.vb" />
     <Compile Include="FactoriesAndProductionCenters.vb" />
     <Compile Include="LoadAllocation.vb" />
     <Compile Include="LoadAnnouncementPlaces.vb" />
@@ -173,6 +174,8 @@
     <Compile Include="LoadSedimentation.vb" />
     <Compile Include="LoadSources.vb" />
     <Compile Include="LoadTargets.vb" />
+    <Compile Include="Logging.vb" />
+    <Compile Include="Permissions.vb" />
     <Compile Include="PredefinedMessages.vb" />
     <Compile Include="PubSubMessages.vb" />
     <Compile Include="R2CoreTransportationAndLoadNotification-Partial.vb" />
@@ -202,6 +205,7 @@
     <Compile Include="Trucks.vb" />
     <Compile Include="TrucksNativeness.vb" />
     <Compile Include="TurnCancellation.vb" />
+    <Compile Include="TurnCosts.vb" />
     <Compile Include="TurnRegisteringRequests.vb" />
     <Compile Include="Turns.vb" />
     <Compile Include="Web References\RmtoWS\Reference.vb">

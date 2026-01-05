@@ -8,7 +8,9 @@ using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
 using R2Core.PredefinedMessagesManagement;
+using R2Core.SecurityAlgorithmsManagement.Exceptions;
 using R2Core.SessionManagement;
+using R2Core.SQLInjectionPrevention;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,9 +57,12 @@ namespace APICarousels.Controllers
                 response.Content = new StringContent(InstanceCarousels.GetCarousels(AllCarouselsFlag), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (SqlInjectionException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SoapException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
+
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }

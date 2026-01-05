@@ -39,7 +39,7 @@ Namespace LoadAllocations
                 Dim InstanceLoadAllocation = New R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService)
                 Dim InstanceSequentialTurns = New R2CoreTransportationAndLoadNotificationSequentialTurnsManager()
                 Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService)
-                Dim InstanceTruckNativeness = New R2CoreTransportationAndLoadNotificationsTruckNativenessManager
+                Dim InstanceTruckNativeness = New R2CoreTransportationAndLoadNotificationsTruckNativenessManager(_DateTimeService)
 
                 Dim Load = InstanceLoad.GetLoadSimpleModel(YourLoadId, False)
                 Dim SeqTId As Int64

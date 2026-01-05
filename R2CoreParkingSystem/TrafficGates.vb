@@ -7,6 +7,7 @@ Imports R2Core.PublicProc
 Imports R2CoreParkingSystem.TrafficCosts
 Imports System.Data.SqlClient
 Imports System.Reflection
+
 Namespace TrafficGates
 
     'BPTChanged
@@ -31,11 +32,13 @@ Namespace TrafficGates
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager()
 
                 Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select GateId,GateTitle,GateLocation,Active
                     from R2PrimaryParkingSystem.dbo.TblTrafficGates
-                    Order By GateId for JSON AUTO", 32767, DS, New Boolean)
+                    Order By GateId for JSON AUTO", 32767, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
                 Return InstancePublicProcedures.GetIntegratedJson(DS)
+            Catch ex As AnyNotFoundException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try

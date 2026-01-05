@@ -7,10 +7,12 @@ Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
+Imports R2Core.GeneralConfiguration
 Imports R2Core.PredefinedMessagesManagement
-Imports R2CoreTransportationAndLoadNotification.ConfigurationsManagement
+Imports R2Core.SecurityAlgorithmsManagement.Exceptions
+Imports R2Core.SQLInjectionPrevention
+Imports R2CoreParkingSystem.GeneralConfiguration
 Imports R2CoreTransportationAndLoadNotification.PredefinedMessages
-Imports R2CoreTransportationAndLoadNotification.PredefinedMessagesManagement
 Imports R2CoreTransportationAndLoadNotification.Trucks
 Imports R2CoreTransportationAndLoadNotification.Trucks.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TrucksNativeness.Exceptions
@@ -86,8 +88,14 @@ Namespace TrucksNativeness
 
     Public Class R2CoreTransportationAndLoadNotificationsTruckNativenessManager
 
-        Private _DateTimeService As New R2DateTimeService
-        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
+        Private InstanceSqlDataBox As R2CoreSqlDataBOXManager
+        Private _DateTimeService As IR2DateTimeService
+
+        Public Sub New(YourDateTimeService As IR2DateTimeService)
+            _DateTimeService = YourDateTimeService
+            InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
+        End Sub
+
 
         Public Function GetNSSTruckNativeness(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationsTruckNativenessStructure
             Try
@@ -104,7 +112,7 @@ Namespace TrucksNativeness
                 Else
                     'If R2ClassSqlDataBOXManagement.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select CarNativenessTypeId,CarNativenessExpireDate From  dbtransport.dbo.TbCar Where nIDCar=" & YourNSSTruck.NSSCar.nIdCar & "", 3600, Ds).GetRecordsCount() = 0 Then Throw New TruckNotFoundException
                     Dim DSCarsNativeness As New DataSet
-                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Case nIDCar,CarNativenessTypeId,CarNativenessExpireDate From  dbtransport.dbo.TbCar", 3600, DSCarsNativeness, New Boolean)
+                    InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Case nIDCar,CarNativenessTypeId,CarNativenessExpireDate From  dbtransport.dbo.TbCar", 3600, DSCarsNativeness, New Boolean)
                     Dim DR() = DSCarsNativeness.Tables(0).Select("nIDCar=" + YourNSSTruck.NSSCar.nIdCar)
                     NSS.TruckNativenessTypeId = Convert.ToInt64(DR(0).Item("CarNativenessTypeId"))
                     NSS.TruckNativenessExpireDate = New R2CoreDateAndTime With {.ShamsiDate = DR(0).Item("CarNativenessExpireDate").trim}
@@ -120,7 +128,7 @@ Namespace TrucksNativeness
         Public Function GetNSSTruckNativenessType(YourTruckNativenessTypeId As Int64) As R2CoreTransportationAndLoadNotificationStandardTruckNativenessTypeStructure
             Try
                 Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckNativenessTypes Where NId=" & YourTruckNativenessTypeId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TruckNativenessTypeNotFoundException
+                If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckNativenessTypes Where NId=" & YourTruckNativenessTypeId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TruckNativenessTypeNotFoundException
                 Dim NSS = New R2CoreTransportationAndLoadNotificationStandardTruckNativenessTypeStructure(Ds.Tables(0).Rows(0).Item("NId"), Ds.Tables(0).Rows(0).Item("NName").TRIM, Ds.Tables(0).Rows(0).Item("NTitle").TRIM, Color.FromName(Ds.Tables(0).Rows(0).Item("NColor").TRIM), Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi"), Ds.Tables(0).Rows(0).Item("Time"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Deleted"))
                 Return NSS
             Catch ex As TruckNativenessTypeNotFoundException
@@ -160,7 +168,7 @@ Namespace TrucksNativeness
                     If Da.Fill(DS) <= 0 Then Throw New TruckNotFoundException
                     NSS = New R2CoreTransportationAndLoadNotificationsTruckNativenessExtendedStructure With {.TruckNativenessTypeId = DS.Tables(0).Rows(0).Item("CarNativenessTypeId"), .TruckNativenessExpireDate = DS.Tables(0).Rows(0).Item("CarNativenessExpireDate").trim, .TruckNativenessTypeTitle = DS.Tables(0).Rows(0).Item("NTItle").trim}
                 Else
-                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                    If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                              "Select Cars.CarNativenessTypeId,Cars.CarNativenessExpireDate ,TruckNativenessTypes.NTItle  from DBTransport.dbo.TbCar as Cars
                                   Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTruckNativenessTypes as TruckNativenessTypes On Cars.CarNativenessTypeId=TruckNativenessTypes.NId 
                               Where Cars.nIDCar=" & YourTruckId & " and Cars.ViewFlag=1 and TruckNativenessTypes.Deleted=0", 3600, DS, New Boolean).GetRecordsCount <> 0 Then
@@ -181,12 +189,12 @@ Namespace TrucksNativeness
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
-                Dim InstanceTruckNativeness = New R2CoreTransportationAndLoadNotificationsTruckNativenessManager
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
+                Dim InstanceTruckNativeness = New R2CoreTransportationAndLoadNotificationsTruckNativenessManager(_DateTimeService)
                 Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationInstanceTrucksManager
                 Dim NSSTruck = InstanceTrucks.GetNSSTruck(YourTruckId)
                 'کنترل تغییر وضعیت بومی گری ناوگان بومی با پلاک بومی - که البته امکان پذیر نیست
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
-                Dim IndigenousTrucks() = InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.IndigenousTrucks, 1).Split("-")
+                Dim IndigenousTrucks() = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreParkingSystemGeneralConfigurations.IndigenousCars, 1).Split("-")
                 If IndigenousTrucks.Contains(NSSTruck.NSSCar.StrCarSerialNo) Then Throw New IndigenousTruckChangeNativnessFailedException
                 'تغییر وضعیت بومی گری
                 Dim newTruckNativenessTypeId = TrucksNativeness.TruckNativenessTypes.None
@@ -200,7 +208,10 @@ Namespace TrucksNativeness
                 End If
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Update dbtransport.dbo.TbCar Set CarNativenessTypeId=" & newTruckNativenessTypeId & ",CarNativenessExpireDate='" & YourTruckNativenessExpireDate & "' Where nIdCar=" & NSSTruck.NSSCar.nIdCar & ""
+                CmdSql.CommandText = "Update dbtransport.dbo.TbCar Set CarNativenessTypeId=@CarNativenessTypeId,CarNativenessExpireDate=@CarNativenessExpireDate Where nIdCar=@nIdCar"
+                CmdSql.Parameters.Add("@CarNativenessTypeId", SqlDbType.Int).Value = newTruckNativenessTypeId
+                CmdSql.Parameters.Add("@CarNativenessExpireDate", SqlDbType.NVarChar).Value = YourTruckNativenessExpireDate
+                CmdSql.Parameters.Add("@nIdCar", SqlDbType.BigInt).Value = NSSTruck.NSSCar.nIdCar
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 TruckNativeness.TruckNativenessExpireDate = YourTruckNativenessExpireDate
@@ -226,10 +237,13 @@ Namespace TrucksNativeness
 
         Public Function IsTruckIndigenous(YourTruck As R2CoreTransportationAndLoadNotificationTruck) As Boolean
             Try
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourTruck.Pelak)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourTruck.Serial)
+
                 If YourTruck Is Nothing Then Throw New TruckNotFoundException
                 Dim Ds As DataSet = Nothing
-                Dim InstanceConfiguration = New R2CoreConfigurationsManager(_DateTimeService)
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                   "Select CarNativenessTypeId,CarNativenessExpireDate from DBtransport.dbo.TbCar
                    Where StrCarNo='" & YourTruck.Pelak & "' and StrCarSerialNo='" & YourTruck.Serial & "'", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
                     Throw New TruckNotFoundException
@@ -245,6 +259,8 @@ Namespace TrucksNativeness
                 Else
                     Return False
                 End If
+            Catch ex As SqlInjectionException
+                Throw ex
             Catch ex As TruckNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -263,6 +279,32 @@ Namespace TrucksNativeness
             End Try
         End Function
 
+        Public Function GetTruckNativenessTypes(YourImmediately As Boolean) As String
+            Try
+                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager()
+
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                        "Select NId as TruckNativenessTypeId,NTItle as TruckNativenessTypeTitle 
+                         from R2PrimaryTransportationAndLoadNotification.dbo.TblTruckNativenessTypes 
+                         Where Active=1 Order By NId for Json Path")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                        "Select NId as TruckNativenessTypeId,NTItle as TruckNativenessTypeTitle 
+                         from R2PrimaryTransportationAndLoadNotification.dbo.TblTruckNativenessTypes 
+                         Where Active=1 Order By NId for Json Path", 32767, Ds, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + "." + ex.Message)
+            End Try
+        End Function
     End Class
 
     Namespace Exceptions

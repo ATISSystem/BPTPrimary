@@ -118,8 +118,11 @@
     <Compile Include="Accounting.vb" />
     <Compile Include="Caching.vb" />
     <Compile Include="Cars.vb" />
+    <Compile Include="Configurations.vb" />
     <Compile Include="EntityRelations.vb" />
+    <Compile Include="Logging.vb" />
     <Compile Include="MoneyWallet.vb" />
+    <Compile Include="Permissions.vb" />
     <Compile Include="ProvincesAndCities.vb" />
     <Compile Include="R2CoreParkingSystem.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />

@@ -1,7 +1,9 @@
 ﻿using PayanehClassLibrary.ConfigurationManagement;
+using PayanehClassLibrary.GeneralConfiguration;
 using PayanehClassLibrary.TruckersAssociationControllingMoneyWallet;
 using R2Core.ConfigurationManagement;
 using R2Core.DateTimeProvider;
+using R2Core.GeneralConfiguration;
 using R2Core.SMS.SMSSendRecive;
 using R2Core.SoftwareUserManagement;
 using System;
@@ -48,9 +50,9 @@ namespace TruckersAssociationControllingMoneyWalletAutomatedJob
                 {
                     try
                     {
-                        var InstanceConfiguration = new R2CoreConfigurationsManager(_DateTimeService);
+                        var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(_SystemUser);
-                        _AutomatedJobsTimer.Interval = InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TruckersAssociationControllingMoneyWallet, 8) * 1000;
+                        _AutomatedJobsTimer.Interval = InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWallet, 8) * 1000;
                         _FailStatus = false;
                         EventLog.WriteEntry("TruckersAssociationControllingMoneyWalletAutomatedJob", "TruckersAssociationControllingMoneyWalletAutomatedJob.Interval=" + _AutomatedJobsTimer.Interval.ToString(), EventLogEntryType.SuccessAudit);
                     }
@@ -63,7 +65,7 @@ namespace TruckersAssociationControllingMoneyWalletAutomatedJob
                 }
 
                 try
-                { InstanceTruckersAssociationControllingMoneyWallet.ControllingMoneyWalletAccounting(_SystemUser.UserId ); }
+                { InstanceTruckersAssociationControllingMoneyWallet.ControllingMoneyWalletAccounting(_SystemUser.UserId); }
                 catch (Exception ex)
                 { EventLog.WriteEntry("TruckersAssociationControllingMoneyWalletAutomatedJob", "ControllingMoneyWalletAccounting:" + ex.Message.ToString(), EventLogEntryType.Error); }
 

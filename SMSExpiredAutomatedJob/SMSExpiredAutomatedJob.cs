@@ -1,6 +1,7 @@
 ﻿using R2Core.CachHelper;
 using R2Core.ConfigurationManagement;
 using R2Core.DateTimeProvider;
+using R2Core.GeneralConfiguration;
 using R2Core.PubSubMessaging;
 using R2Core.SMS.SMSHandling;
 using R2Core.SMS.SMSSendRecive;
@@ -48,9 +49,9 @@ namespace SMSExpiredAutomatedJob
                 {
                     try
                     {
-                        var InstanceConfiguration = new R2CoreInstanceConfigurationManager(_DateTimeService);
+                        var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(_SystemUser);
-                        _AutomatedJobsTimer.Interval = InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.SmsSystemSetting, 19) * 1000;
+                        _AutomatedJobsTimer.Interval = InstanceGeneralConfiguration.GetInt64Configuration(R2CoreGeneralConfigurations.SmsSystemSetting, 19) * 1000;
                         _FailStatus = false;
                         EventLog.WriteEntry("SMSExpiredAutomatedJob", "SMSExpiredAutomatedJob.Interval=" + _AutomatedJobsTimer.Interval.ToString(), EventLogEntryType.SuccessAudit);
                     }

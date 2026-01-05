@@ -4,6 +4,7 @@ using APITransportation.Models.TransportCompanies;
 using APITransportation.Models.Truck;
 using APITransportation.Models.TruckDriver;
 using Newtonsoft.Json;
+using PayanehClassLibrary.TransportCompanies;
 using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
@@ -92,6 +93,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTransportCompanies.GetTransportCompany(TCId, true)), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (TransportCompanyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -122,6 +125,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTransportCompanies.GetTransportCompanyfromSoftwareUser(User, false)), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (TransportCompanyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -144,12 +149,12 @@ namespace APITransportation.Controllers
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var SessionId = Content.SessionId;
-                var TC = Content.RawTransportCompany;
+                var RawTC = Content.RawTransportCompany;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationTransportCompaniesManager(_DateTimeService);
-                InstanceTransportCompanies.EditTransportCompany(TC);
+                InstanceTransportCompanies.EditTransportCompany(RawTC);
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;

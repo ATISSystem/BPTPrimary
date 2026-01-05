@@ -133,6 +133,7 @@ Namespace LoaderTypes
             Try
                 Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
+
                 Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
@@ -239,11 +240,76 @@ Namespace LoaderTypes
 
         Public Function GetLoaderTypeRelationAnnouncementSubGroups(YourImmediately As Boolean) As String
             Try
+                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
 
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                        "Select LoaderTypes.LoaderTypeId,LoaderTypes.LoaderTypeTitle,AnnouncementSubGroups.AnnouncementSGId,AnnouncementSubGroups.AnnouncementSGTitle,Announcements.AnnouncementId,Announcements.AnnouncementTitle 
+                         from R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroupsRelationLoaderTypes as AnnouncementSubGroupsRelationLoaderTypes On LoaderTypes.LoaderTypeId=AnnouncementSubGroupsRelationLoaderTypes.LoaderTypeId 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On AnnouncementSubGroupsRelationLoaderTypes.AnnouncementSGId=AnnouncementSubGroups.AnnouncementSGId 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as AnnouncementsRelationAnnouncementSubGroups On AnnouncementSubGroups.AnnouncementSGId=AnnouncementsRelationAnnouncementSubGroups.AnnouncementSGId 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On AnnouncementsRelationAnnouncementSubGroups.AnnouncementId=Announcements.AnnouncementId 
+                         Order By AnnouncementSubGroupsRelationLoaderTypes.LoaderTypeId ,Announcements.AnnouncementId, AnnouncementSubGroups.AnnouncementSGId for JSON Path")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                        "Select LoaderTypes.LoaderTypeId,LoaderTypes.LoaderTypeTitle,AnnouncementSubGroups.AnnouncementSGId,AnnouncementSubGroups.AnnouncementSGTitle,Announcements.AnnouncementId,Announcements.AnnouncementTitle 
+                         from R2PrimaryTransportationAndLoadNotification.dbo.TblLoaderTypes as LoaderTypes
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroupsRelationLoaderTypes as AnnouncementSubGroupsRelationLoaderTypes On LoaderTypes.LoaderTypeId=AnnouncementSubGroupsRelationLoaderTypes.LoaderTypeId 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On AnnouncementSubGroupsRelationLoaderTypes.AnnouncementSGId=AnnouncementSubGroups.AnnouncementSGId 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as AnnouncementsRelationAnnouncementSubGroups On AnnouncementSubGroups.AnnouncementSGId=AnnouncementsRelationAnnouncementSubGroups.AnnouncementSGId 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On AnnouncementsRelationAnnouncementSubGroups.AnnouncementId=Announcements.AnnouncementId 
+                         Order By AnnouncementSubGroupsRelationLoaderTypes.LoaderTypeId ,Announcements.AnnouncementId, AnnouncementSubGroups.AnnouncementSGId for JSON Path", 32767, Ds, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As SqlInjectionException
+                Throw ex
             Catch ex As Exception
-
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Function
+
+        Public Sub LoaderTypeRelationAnnouncementSubGroupRegistering(YourLoaderTypeId As Int64, YourAnnouncementSubGroupId As Int64)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroupsRelationLoaderTypes(AnnouncementSGId,LoaderTypeId) 
+                                          Values(" & YourAnnouncementSubGroupId & "," & YourLoaderTypeId & ")"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub LoaderTypeRelationAnnouncementSubGroupDeleting(YourLoaderTypeId As Int64, YourAnnouncementSubGroupId As Int64)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroupsRelationLoaderTypes
+                                      Where AnnouncementSGId=" & YourAnnouncementSubGroupId & " and LoaderTypeId=" & YourLoaderTypeId & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
 
     End Class
 

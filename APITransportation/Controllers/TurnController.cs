@@ -17,6 +17,7 @@ using R2CoreTransportationAndLoadNotification.TruckDrivers;
 using R2CoreTransportationAndLoadNotification.Trucks;
 using R2CoreTransportationAndLoadNotification.TrucksNativeness;
 using R2CoreTransportationAndLoadNotification.Turns;
+using R2CoreTransportationAndLoadNotification.Turns.Exceptions;
 using R2CoreTransportationAndLoadNotification.Turns.TurnAccounting;
 using System;
 using System.Collections.Generic;
@@ -65,6 +66,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(InstanceTurns.GetTop10TruckTurns(TruckId, true), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (TurnNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -96,6 +99,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(InstanceTurns.GetTop5TruckTurns(User.UserId), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (TurnNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -208,6 +213,36 @@ namespace APITransportation.Controllers
 
         }
 
+        [HttpPost]
+        [Route("api/GetAllTurnStatuses")]
+        public HttpResponseMessage GetAllTurnStatuses([FromBody] APICommonSessionId Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var SessionId = Content.SessionId;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceTurns = new R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService);
+                
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(InstanceTurns.GetAllTurnStatuses(true), Encoding.UTF8, "application/json"); 
+                return response;
+            }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoapException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+
+
+        }
 
 
 

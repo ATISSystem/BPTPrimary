@@ -13,22 +13,24 @@ Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.EntityRelationManagement
 Imports R2Core.ExceptionManagement
+Imports R2Core.GeneralConfiguration
 Imports R2Core.LoggingManagement
+Imports R2Core.MoneyWallet.Exceptions
 Imports R2Core.MoneyWallet.MoneyWallet
 Imports R2Core.PermissionManagement
 Imports R2Core.PermissionManagement.Exceptions
 Imports R2Core.PredefinedMessagesManagement
 Imports R2Core.PublicProc
-Imports R2Core.R2PrimaryFileSharingWS
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
-Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
 Imports R2Core.SiteIsBusy
 Imports R2Core.SMS.Exceptions
 Imports R2Core.SMS.SMSHandling
 Imports R2Core.SMS.SMSTypes.Exceptions
 Imports R2Core.SoftwareUserManagement
 Imports R2Core.SoftwareUserManagement.Exceptions
+Imports R2Core.SQLInjectionPrevention
 Imports R2CoreTransportationAndLoadNotification.ConfigurationsManagement
+Imports R2CoreTransportationAndLoadNotification.GeneralConfiguration
 Imports R2CoreTransportationAndLoadNotification.SMS.SMSTypes
 Imports R2CoreTransportationAndLoadNotification.SoftwareUserManagement
 Imports R2CoreTransportationAndLoadNotification.SoftwareUserManagement.Exceptions
@@ -53,17 +55,55 @@ Namespace FactoriesAndProductionCentersManagement
         Private _DateTimeService As New R2DateTimeService
         Private InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
 
-        Public Function HasFactoryAndProductionCenterMoneyWallet(YourFactoryAndProductionCenterId As Int64) As Boolean
+        Public Function HasFactoryAndProductionCenterMoneyWallet(YourFactoryAndProductionCenterId As Int64, YourImmediately As Boolean) As Boolean
             Try
-                Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                Dim DS As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                       "Select Top 1 MoneyWallets.CardId from R2Primary.dbo.TblRFIDCards as MoneyWallets 
+                          Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationMoneyWallets as FPCRMoneyWallets On MoneyWallets.CardId=FPCRMoneyWallets.CardId 
+                        Where MoneyWallets.Active=1 and FPCRMoneyWallets.RelationActive=1 and FPCRMoneyWallets.FPCId=" & YourFactoryAndProductionCenterId & "")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(DS) <= 0 Then Return False Else Return True
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                        "Select Top 1 MoneyWallets.CardId from R2Primary.dbo.TblRFIDCards as MoneyWallets 
                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationMoneyWallets as FPCRMoneyWallets On MoneyWallets.CardId=FPCRMoneyWallets.CardId 
                         Where MoneyWallets.Active=1 and FPCRMoneyWallets.RelationActive=1 and FPCRMoneyWallets.FPCId=" & YourFactoryAndProductionCenterId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then
-                    Return False
-                Else
-                    Return True
+                        Return False
+                    Else
+                        Return True
+                    End If
                 End If
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetFactoryAndProductionCenterMoneyWallet(YourFactoryAndProductionCenterId As Int64, YourImmediately As Boolean) As R2CoreMoneyWallet
+            Try
+                Dim DS As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                       "Select Top 1 MoneyWallets.CardId as MoneyWalletId,MoneyWallets.CardNo as MoneyWalletCode,MoneyWallets.Charge as Balance from R2Primary.dbo.TblRFIDCards as MoneyWallets 
+                          Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationMoneyWallets as FPCRMoneyWallets On MoneyWallets.CardId=FPCRMoneyWallets.CardId 
+                        Where MoneyWallets.Active=1 and FPCRMoneyWallets.RelationActive=1 and FPCRMoneyWallets.FPCId=" & YourFactoryAndProductionCenterId & "")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(DS) <= 0 Then Throw New MoneyWalletNotFoundException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                       "Select Top 1 MoneyWallets.CardId as MoneyWalletId,MoneyWallets.CardNo as MoneyWalletCode,MoneyWallets.Charge as Balance from R2Primary.dbo.TblRFIDCards as MoneyWallets 
+                          Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationMoneyWallets as FPCRMoneyWallets On MoneyWallets.CardId=FPCRMoneyWallets.CardId 
+                        Where MoneyWallets.Active=1 and FPCRMoneyWallets.RelationActive=1 and FPCRMoneyWallets.FPCId=" & YourFactoryAndProductionCenterId & "", 3600, DS, New Boolean).GetRecordsCount() = 0 Then
+                        Throw New MoneyWalletNotFoundException
+                    End If
+                End If
+                Return New R2CoreMoneyWallet With {.MoneyWalletId = DS.Tables(0).Rows(0).Item("MoneyWalletId"), .MoneyWalletCode = DS.Tables(0).Rows(0).Item("MoneyWalletCode"), .Balance = DS.Tables(0).Rows(0).Item("Balance")}
+                Throw New MoneyWalletNotFoundException
+            Catch ex As MoneyWalletNotFoundException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -71,6 +111,9 @@ Namespace FactoriesAndProductionCentersManagement
 
         Public Function GetFactoriesAndProductionCenters_SearchIntroCharacters(YourSearchString As String, YourImmediately As Boolean) As String
             Try
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
+
                 Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
@@ -94,6 +137,8 @@ Namespace FactoriesAndProductionCentersManagement
                         for json auto", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
                 End If
                 Return InstancePublicProcedures.GetIntegratedJson(DS)
+            Catch ex As SqlInjectionException
+                Throw ex
             Catch ex As AnyNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -139,7 +184,14 @@ Namespace FactoriesAndProductionCentersManagement
                 CmdSql.CommandText = "Select Top 1 FPCId From R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters with (tablockx) Order By FPCId Desc"
                 Dim FPCIdNew As Int64 = CmdSql.ExecuteScalar() + 1
                 CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters(FPCId,FPCTitle,FPCTel,FPCAddress,FPCManagerMobileNumber,FPCManagerNameFamily,EmailAddress,ViewFlag,Active,Deleted)
-                                            Values(" & FPCIdNew & ",'" & YourRawFactoryAndProductionCenter.FPCTitle & "','" & YourRawFactoryAndProductionCenter.FPCTel & "','" & YourRawFactoryAndProductionCenter.FPCAddress & "','" & YourRawFactoryAndProductionCenter.FPCManagerMobileNumber & "','" & YourRawFactoryAndProductionCenter.FPCManagerNameFamily & "','" & YourRawFactoryAndProductionCenter.EmailAddress & "',1,1,0)"
+                                      Values(@FPCId,@FPCTitle,@FPCTel,@FPCAddress,@FPCManagerMobileNumber,@FPCManagerNameFamily,@EmailAddress,1,1,0)"
+                CmdSql.Parameters.Add("@FPCId", SqlDbType.BigInt).Value = FPCIdNew
+                CmdSql.Parameters.Add("@FPCTitle", SqlDbType.NVarChar).Value = YourRawFactoryAndProductionCenter.FPCTitle
+                CmdSql.Parameters.Add("@FPCTel", SqlDbType.NVarChar).Value = YourRawFactoryAndProductionCenter.FPCTel
+                CmdSql.Parameters.Add("@FPCAddress", SqlDbType.NVarChar).Value = YourRawFactoryAndProductionCenter.FPCAddress
+                CmdSql.Parameters.Add("@FPCManagerMobileNumber", SqlDbType.NVarChar).Value = YourRawFactoryAndProductionCenter.FPCManagerMobileNumber
+                CmdSql.Parameters.Add("@FPCManagerNameFamily", SqlDbType.NVarChar).Value = YourRawFactoryAndProductionCenter.FPCManagerNameFamily
+                CmdSql.Parameters.Add("@EmailAddress", SqlDbType.NVarChar).Value = YourRawFactoryAndProductionCenter.EmailAddress
                 CmdSql.ExecuteNonQuery()
 
                 Dim UserId As Int64 = Int64.MinValue
@@ -150,28 +202,19 @@ Namespace FactoriesAndProductionCentersManagement
                     CmdSql.ExecuteNonQuery()
                     CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationSoftwareUsers(FPCId,UserId) Values(" & FPCIdNew & "," & UserId & ")"
                     CmdSql.ExecuteNonQuery()
+                    'اعطای دسترسی های کاربر
+                    InstanceSoftwareUsers.RegisteringSoftwareUserWebProcessesByUserType(UserId)
+                    'اعطای مجوز
+                    InstanceSoftwareUsers.RegisteringSoftwareUserPermissionsByUserType(UserId)
                 Else
                     'ایجاد کاربر
-                    UserId = InstanceSoftwareUsers.RegisteringSoftwareUser(New R2CoreRawSoftwareUserStructure With {.UserId = Nothing, .MobileNumber = YourRawFactoryAndProductionCenter.FPCManagerMobileNumber, .UserActive = True, .UserName = YourRawFactoryAndProductionCenter.FPCTitle, .UserTypeId = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.FactoriesAndProductionCenters}, False, InstanceSoftwareUsers.GetSystemUser.UserId)
+                    UserId = InstanceSoftwareUsers.RegisteringSoftwareUser(New R2CoreRawSoftwareUserStructure With {.UserId = Nothing, .MobileNumber = YourRawFactoryAndProductionCenter.FPCManagerMobileNumber, .UserActive = True, .UserName = YourRawFactoryAndProductionCenter.FPCTitle, .UserTypeId = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.FactoriesAndProductionCenters}, False, InstanceSoftwareUsers.GetSystemUser.UserId, Nothing)
                     CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationSoftwareUsers(FPCId,UserId) Values(" & FPCIdNew & "," & UserId & ")"
                     CmdSql.ExecuteNonQuery()
-                    'ایجاد دسترسی ها
-                    Dim ComposeSearchString As String = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.FactoriesAndProductionCenters.ToString + ":"
-                    Dim AllofProcessGroupsIds As String()
-                    Dim AllofProcessesIds As String()
-                    'به دست آوردن لیست فرآیندهای وب قابل دسترسی , ارسال به مدیریت مجوز
-                    Dim AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesAccessWebProcesses), ";")
-                    If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
-                        AllofProcessesIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                        R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, UserId, AllofProcessesIds)
-                    End If
-                    'به دست آوردن لیست گروههای فرآیند وب و ارسال آن به مدیریت روابط نهادی
-                    AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesRelationWebProcessGroups), ";")
-                    If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
-                        AllofProcessGroupsIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                        R2CoreMClassEntityRelationManagement.RegisteringEntityRelations(R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup, UserId, AllofProcessGroupsIds)
-                    End If
-
+                    'اعطای دسترسی های کاربر
+                    InstanceSoftwareUsers.RegisteringSoftwareUserWebProcessesByUserType(UserId)
+                    'اعطای مجوز
+                    InstanceSoftwareUsers.RegisteringSoftwareUserPermissionsByUserType(UserId)
                     ' کیف پول 
                     'ایجاد کیف پول کاربر
                     Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager(_DateTimeService)
@@ -229,19 +272,31 @@ Namespace FactoriesAndProductionCentersManagement
             Dim CmdSql As SqlCommand = New SqlCommand
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
+                Dim UserId = GetSoftwareUserIdfromFactoryAndProductionCenterId(YourFPCId, True)
+                Dim MoneyWalletId = GetFactoryAndProductionCenterMoneyWallet(YourFPCId, True).MoneyWalletId
                 CmdSql.Connection.Open()
-                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters Set Deleted=0
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters Set Deleted=1
                                       Where FPCId=" & YourFPCId & ""
                 CmdSql.ExecuteNonQuery()
-                CmdSql.Connection.Close()
+                CmdSql.CommandText = "Update R2Primary.dbo.TblSoftwareUsers Set Deleted=1
+                                      Where UserId=" & UserId & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.CommandText = "Update R2Primary.dbo.TblRFIDCards Set Active=0 Where CardId=" & MoneyWalletId & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
             Catch ex As SqlException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                 Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As DataBaseException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
                 Throw ex
             Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Sub
@@ -250,14 +305,22 @@ Namespace FactoriesAndProductionCentersManagement
             Dim CmdSql As SqlCommand = New SqlCommand
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
+
                 Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(New R2DateTimeService, Nothing)
                 If YourRawFactoryAndProductionCenter.FPCTitle = String.Empty Then Throw New DataEntryException
 
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCenters 
-                                      Set FPCTitle='" & YourRawFactoryAndProductionCenter.FPCTitle & "',FPCTel='" & YourRawFactoryAndProductionCenter.FPCTel & "',FPCAddress='" & YourRawFactoryAndProductionCenter.FPCAddress & "',FPCManagerNameFamily='" & YourRawFactoryAndProductionCenter.FPCManagerNameFamily & "',FPCManagerMobileNumber='" & YourRawFactoryAndProductionCenter.FPCManagerMobileNumber & "',EmailAddress='" & YourRawFactoryAndProductionCenter.EmailAddress & "'
-                                      Where FPCId=" & YourRawFactoryAndProductionCenter.FPCId & ""
+                                      Set FPCTitle=@FPCTitle,FPCTel=@FPCTel,FPCAddress=@FPCAddress,FPCManagerNameFamily=@FPCManagerNameFamily,FPCManagerMobileNumber=@FPCManagerMobileNumber,EmailAddress=@EmailAddress Where FPCId=@FPCId"
+                CmdSql.Parameters.Add("@FPCTitle", SqlDbType.NVarChar).Value = YourRawFactoryAndProductionCenter.FPCTitle
+                CmdSql.Parameters.Add("@FPCTel", SqlDbType.NVarChar).Value = YourRawFactoryAndProductionCenter.FPCTel
+                CmdSql.Parameters.Add("@FPCAddress", SqlDbType.NVarChar).Value = YourRawFactoryAndProductionCenter.FPCAddress
+                CmdSql.Parameters.Add("@FPCManagerNameFamily", SqlDbType.NVarChar).Value = YourRawFactoryAndProductionCenter.FPCManagerNameFamily
+                CmdSql.Parameters.Add("@FPCManagerMobileNumber", SqlDbType.NVarChar).Value = YourRawFactoryAndProductionCenter.FPCManagerMobileNumber
+                CmdSql.Parameters.Add("@EmailAddress", SqlDbType.NVarChar).Value = YourRawFactoryAndProductionCenter.EmailAddress
+                CmdSql.Parameters.Add("@FPCId", SqlDbType.BigInt).Value = YourRawFactoryAndProductionCenter.FPCId
                 CmdSql.ExecuteNonQuery()
 
                 Dim UserId As Int64 = Int64.MinValue
@@ -273,20 +336,20 @@ Namespace FactoriesAndProductionCentersManagement
                     Dim AllofProcessGroupsIds As String()
                     Dim AllofProcessesIds As String()
                     'به دست آوردن لیست فرآیندهای وب قابل دسترسی و ارسال به مدیریت مجوز
-                    Dim AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesAccessWebProcesses), ";")
+                    Dim AllofSoftwareUserTypes = Split(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.SoftwareUserTypesAccessWebProcesses, 0), ";")
                     If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
                         AllofProcessesIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
                         R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, UserId, AllofProcessesIds)
                     End If
                     'به دست آوردن لیست گروههای فرآیند وب و ارسال آن به مدیریت روابط نهادی
-                    AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesRelationWebProcessGroups), ";")
+                    AllofSoftwareUserTypes = Split(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.SoftwareUserTypesRelationWebProcessGroups, 0), ";")
                     If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
                         AllofProcessGroupsIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
                         R2CoreMClassEntityRelationManagement.RegisteringEntityRelations(R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup, UserId, AllofProcessGroupsIds)
                     End If
                 Else
                     'ایجاد کاربر
-                    UserId = InstanceSoftwareUsers.RegisteringSoftwareUser(New R2CoreRawSoftwareUserStructure With {.UserId = Nothing, .MobileNumber = YourRawFactoryAndProductionCenter.FPCManagerMobileNumber, .UserActive = True, .UserName = YourRawFactoryAndProductionCenter.FPCTitle, .UserTypeId = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.FactoriesAndProductionCenters}, False, InstanceSoftwareUsers.GetSystemUser.UserId)
+                    UserId = InstanceSoftwareUsers.RegisteringSoftwareUser(New R2CoreRawSoftwareUserStructure With {.UserId = Nothing, .MobileNumber = YourRawFactoryAndProductionCenter.FPCManagerMobileNumber, .UserActive = True, .UserName = YourRawFactoryAndProductionCenter.FPCTitle, .UserTypeId = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.FactoriesAndProductionCenters}, False, InstanceSoftwareUsers.GetSystemUser.UserId, Nothing)
 
                     CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblFactoriesAndProductionCentersRelationSoftwareUsers
                                           Where UserId=" & UserId & " or FPCId=" & YourRawFactoryAndProductionCenter.FPCId & ""
@@ -299,20 +362,20 @@ Namespace FactoriesAndProductionCentersManagement
                     Dim AllofProcessGroupsIds As String()
                     Dim AllofProcessesIds As String()
                     'به دست آوردن لیست فرآیندهای وب قابل دسترسی و ارسال به مدیریت مجوز
-                    Dim AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesAccessWebProcesses), ";")
+                    Dim AllofSoftwareUserTypes = Split(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.SoftwareUserTypesAccessWebProcesses, 0), ";")
                     If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
                         AllofProcessesIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
                         R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, UserId, AllofProcessesIds)
                     End If
                     'به دست آوردن لیست گروههای فرآیند وب و ارسال آن به مدیریت روابط نهادی
-                    AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesRelationWebProcessGroups), ";")
+                    AllofSoftwareUserTypes = Split(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.SoftwareUserTypesRelationWebProcessGroups, 0), ";")
                     If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
                         AllofProcessGroupsIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
                         R2CoreMClassEntityRelationManagement.RegisteringEntityRelations(R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup, UserId, AllofProcessGroupsIds)
                     End If
 
                     'بررسی کیف پول 
-                    Dim HasMoneyWallet = HasFactoryAndProductionCenterMoneyWallet(YourRawFactoryAndProductionCenter.FPCId)
+                    Dim HasMoneyWallet = HasFactoryAndProductionCenterMoneyWallet(YourRawFactoryAndProductionCenter.FPCId, True)
                     If Not HasMoneyWallet Then
                         'ایجاد کیف پول کاربر
                         Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager(_DateTimeService)
@@ -438,9 +501,9 @@ Namespace FactoriesAndProductionCentersManagement
 
         Public Sub SendFactoryAndProductionCenterChangeActiveStatusSMS(YourFPCTitle As String, YourStatus As String)
             Try
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 'کاربران
-                Dim TargetUsers = InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 9).Split("-")
+                Dim TargetUsers = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.BaseTransportationAndLoadNotificationSetting, 9).Split("-")
                 Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
                 Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1

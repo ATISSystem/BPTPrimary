@@ -2,8 +2,10 @@
 using PayanehClassLibrary.TurnsCancellation;
 using R2Core.ConfigurationManagement;
 using R2Core.DateTimeProvider;
+using R2Core.GeneralConfiguration;
 using R2Core.SoftwareUserManagement;
 using R2CoreTransportationAndLoadNotification.ConfigurationsManagement;
+using R2CoreTransportationAndLoadNotification.GeneralConfiguration;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -48,9 +50,9 @@ namespace TurnsRegisteringAutomatedJob
                 {
                     try
                     {
-                        var InstanceConfiguration = new R2CoreConfigurationsManager(_DateTimeService);
+                        var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(_SystemUser);
-                        _AutomatedJobsTimer.Interval = InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTurnRegisteringSetting,0) * 1000;
+                        _AutomatedJobsTimer.Interval = InstanceGeneralConfiguration.GetInt64Configuration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.AutomaticTurnRegistering,0) * 1000;
                         _FailStatus = false;
                         EventLog.WriteEntry("TurnsRegisteringAutomatedJob", "TurnsRegisteringAutomatedJob.Interval=" + _AutomatedJobsTimer.Interval.ToString(), EventLogEntryType.SuccessAudit);
                     }

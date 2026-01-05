@@ -14,6 +14,8 @@ Imports R2CoreParkingSystem.TrafficCardsManagement
 Imports R2CoreParkingSystem.AccountingManagement.ExceptionManagement
 Imports R2Core.DateTimeProvider
 Imports R2CoreParkingSystem.MoneyWalletManagement
+Imports R2Core.SQLInjectionPrevention
+Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 
 
 Namespace AccountingManagement
@@ -402,7 +404,7 @@ Namespace AccountingManagement
             End Try
         End Sub
 
-        Public Function GetMoneyWalletTransactions(YourMoneyWalletIdCard As Int64) As String
+        Public Function GetMoneyWalletTransactions(YourMoneyWalletId As Int64) As String
             Try
                 Dim Ds As DataSet
                 Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
@@ -411,12 +413,14 @@ Namespace AccountingManagement
                       from R2Primary.dbo.TblAccounting as Accounting
                         Inner Join  R2Primary.dbo.TblAccountingCodingTypes as Accountings On Accounting.EEAccountingProcessType=Accountings.ACode
                         Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Accounting.UserIdA=SoftwareUsers.UserId
-                      Where Accounting.CardId=" & YourMoneyWalletIdCard & "
+                      Where Accounting.CardId=" & YourMoneyWalletId & "
                       Order by Accounting.DateMilladiA Desc
                       for json path", 300, Ds, New Boolean).GetRecordsCount = 0 Then
                     Throw New AnyNotFoundException
                 End If
                 Return InstancePublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As SqlInjectionException
+                Throw ex
             Catch ex As AnyNotFoundException
                 Throw ex
             Catch ex As Exception

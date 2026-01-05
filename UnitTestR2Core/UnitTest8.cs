@@ -87,8 +87,8 @@ namespace LoadCapacitor
             var InstanceSMSHandler = new R2CoreSMSHandlerManager(new R2DateTimeService(), null);
             InstanceSMSHandler.SMSGarbageCollector();
 
-            var InstanceConfiguration = new R2CoreInstanceConfigurationManager(new R2DateTimeService());
-            var x6 = InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.SmsSystemSetting, 19) * 1000;
+            //var InstanceConfiguration = new R2CoreInstanceConfigurationManager(new R2DateTimeService());
+            //var x6 = InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.SmsSystemSetting, 19) * 1000;
 
             //var iNSTANCEAPIHelper = new R2CoreAPIHelperManager();
             //iNSTANCEAPIHelper.GetAPIDateTime();

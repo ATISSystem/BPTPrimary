@@ -5,10 +5,15 @@ Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
+Imports R2Core.ExceptionManagement
 Imports R2Core.PublicProc
+Imports R2Core.SecurityAlgorithmsManagement.Exceptions
+Imports R2Core.SMS.SMSTypes
+Imports R2Core.SQLInjectionPrevention
 Imports R2CoreTransportationAndLoadNotification.Announcements
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad
 Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters.Exceptions
+Imports System.Data.SqlClient
 Imports System.Reflection
 Imports System.Text
 
@@ -261,6 +266,12 @@ Namespace TransportTariffsParameters
     End Namespace
 
     'BPTChanged
+    Public Class R2CoreTransportationAndLoadNotificationTPTParams
+        Public Property TPTPId As Int64
+        Public Property TPTPTitle As String
+    End Class
+
+    'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationTPTParamsDetails
         Public Property TPTPDId As Int64
         Public Property TPTPTitle As String
@@ -275,12 +286,21 @@ Namespace TransportTariffsParameters
         Public Property AnnouncementSGId As Int64
         Public Property TPTPId As Int64
         Public Property Mblgh As Int64
-        Public Property DateTimeMilladi As DateTime
-        Public Property DateShamsi As String
-        Public Property Time As String
         Public Property RelationActive As Boolean
         Public Property Checked As Boolean
         Public Property TPTPTitle As String
+    End Class
+
+
+    'BPTChanged
+    Public Class R2CoreTransportationAndLoadNotificationTransportTariffsParametersDetail
+        Public TPTPDId As Int64
+        Public TPTPId As Int64
+        Public TPTPTitle As String
+        Public AnnouncementSGId As Int64
+        Public AnnouncementSGTitle As String
+        Public Cost As Int64
+        Public Active As Boolean
     End Class
 
     'BPTChanged
@@ -385,7 +405,7 @@ Namespace TransportTariffsParameters
                        Where Details.TPTPDId=" & YourTPTPDId & "", 32767, DS, New Boolean).GetRecordsCount = 0 Then
                     Throw New TransportPriceTariffParameterDetailNotFoundException
                 End If
-                Return New R2CoreTransportationAndLoadNotificationTransportTariffsParametersDetails With {.TPTPDId = DS.Tables(0).Rows(0).Item("TPTPDId"), .AnnouncementSGId = DS.Tables(0).Rows(0).Item("AHSGId"), .TPTPId = DS.Tables(0).Rows(0).Item("TPTPId"), .Mblgh = DS.Tables(0).Rows(0).Item("Mblgh"), .DateTimeMilladi = DS.Tables(0).Rows(0).Item("DateTimeMilladi"), .DateShamsi = DS.Tables(0).Rows(0).Item("DateShamsi"), .Time = DS.Tables(0).Rows(0).Item("Time"), .RelationActive = DS.Tables(0).Rows(0).Item("RelationActive"), .TPTPTitle = DS.Tables(0).Rows(0).Item("TPTPTitle").trim, .Checked = False}
+                Return New R2CoreTransportationAndLoadNotificationTransportTariffsParametersDetails With {.TPTPDId = DS.Tables(0).Rows(0).Item("TPTPDId"), .AnnouncementSGId = DS.Tables(0).Rows(0).Item("AHSGId"), .TPTPId = DS.Tables(0).Rows(0).Item("TPTPId"), .Mblgh = DS.Tables(0).Rows(0).Item("Mblgh"), .RelationActive = DS.Tables(0).Rows(0).Item("RelationActive"), .TPTPTitle = DS.Tables(0).Rows(0).Item("TPTPTitle").trim, .Checked = False}
             Catch ex As TransportPriceTariffParameterDetailNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -470,6 +490,204 @@ Namespace TransportTariffsParameters
                 Next
                 Return Lst
             Catch ex As TransportPriceTariffParameterDetailNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Function GetTransportPriceTarrifParametersJSON(YourImmediately As Boolean) As String
+            Try
+                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlClient.SqlCommand(
+                        "Select TPTPId,TPTPTitle from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters
+                         Where Active=1 order by TPTPId for JSON Path")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                        "Select TPTPId,TPTPTitle from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters 
+                         Where Active=1 order by TPTPId for JSON Path", 32767, Ds, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Sub TransportPriceTarrifParameterRegistering(YourTPTP As R2CoreTransportationAndLoadNotificationTPTParams)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                CmdSql.CommandText = "Select Top 1 TPTPId from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters with (tablockx) Order By TPTPId Desc"
+                Dim newTPTPId = CmdSql.ExecuteScalar + 1
+                CmdSql.ExecuteNonQuery()
+                CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters(TPTPId,TPTPTitle)
+                                      Values(@TPTPId,@TPTPTitle)"
+                CmdSql.Parameters.Add("@TPTPId", SqlDbType.BigInt ).Value =newTPTPId
+                CmdSql.Parameters.Add("@TPTPTitle", SqlDbType.NVarChar).Value = YourTPTP.TPTPTitle
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub TransportPriceTarrifParameterEditing(YourTPTP As R2CoreTransportationAndLoadNotificationTPTParams)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters Set TPTPTitle=@TPTPTitle Where TPTPId=@TPTPId"
+                CmdSql.Parameters.Add("@TPTPTitle", SqlDbType.NVarChar).Value = YourTPTP.TPTPTitle
+                CmdSql.Parameters.Add("@TPTPId", SqlDbType.BigInt).Value = YourTPTP.TPTPId
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub TransportPriceTarrifParameterDeleting(YourTPTPId As Int64)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Delete  R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters  Where TPTPId=" & YourTPTPId & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Function GetTransportPriceTarrifParametersDetailsJSON(YourImmediately As Boolean) As String
+            Try
+                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlClient.SqlCommand(
+                        "Select TPTPDetails.TPTPDId,TPTPs.TPTPId,TPTPs.TPTPTitle,Announcements.AnnouncementId,Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGId,AnnouncementSubGroups.AnnouncementSGTitle,TPTPDetails.Mblgh as Cost ,TPTPDetails.RelationActive as Active
+                         from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails as TPTPDetails
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters as TPTPs On TPTPDetails.TPTPId=TPTPs.TPTPId 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On TPTPDetails.AHSGId=AnnouncementSubGroups.AnnouncementSGId 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as AnnouncementsRelationAnnouncementSubGroups On AnnouncementSubGroups.AnnouncementSGId=AnnouncementsRelationAnnouncementSubGroups.AnnouncementSGId 
+					       Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On AnnouncementsRelationAnnouncementSubGroups.AnnouncementId=Announcements.AnnouncementId 
+                         Where TPTPDetails.RelationActive =1
+                         Order By TPTPs.TPTPTitle for JSON Path")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                        "Select TPTPDetails.TPTPDId,TPTPs.TPTPId,TPTPs.TPTPTitle,Announcements.AnnouncementId,Announcements.AnnouncementTitle,AnnouncementSubGroups.AnnouncementSGId,AnnouncementSubGroups.AnnouncementSGTitle,TPTPDetails.Mblgh as Cost,TPTPDetails.RelationActive as Active
+                         from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails as TPTPDetails
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters as TPTPs On TPTPDetails.TPTPId=TPTPs.TPTPId 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AnnouncementSubGroups On TPTPDetails.AHSGId=AnnouncementSubGroups.AnnouncementSGId 
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsRelationAnnouncementSubGroups as AnnouncementsRelationAnnouncementSubGroups On AnnouncementSubGroups.AnnouncementSGId=AnnouncementsRelationAnnouncementSubGroups.AnnouncementSGId 
+					       Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as Announcements On AnnouncementsRelationAnnouncementSubGroups.AnnouncementId=Announcements.AnnouncementId 
+                         Where TPTPDetails.RelationActive =1
+                         Order By TPTPs.TPTPTitle for JSON Path", 32767, Ds, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Sub TransportPriceTarrifParameterDetailRegistering(YourTPTPDetail As R2CoreTransportationAndLoadNotificationTransportTariffsParametersDetail)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails Set RelationActive=0 
+                                      Where AHSGId=" & YourTPTPDetail.AnnouncementSGId & " and TPTPId=" & YourTPTPDetail.TPTPId & " and RelationActive=1"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails(AHSGId,TPTPId,Mblgh)
+                                      Values(" & YourTPTPDetail.AnnouncementSGId & "," & YourTPTPDetail.TPTPId & "," & YourTPTPDetail.Cost & ")"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub TransportPriceTarrifParameterDetailEditing(YourTPTPDetail As R2CoreTransportationAndLoadNotificationTransportTariffsParametersDetail)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails 
+                                      Set TPTPId=" & YourTPTPDetail.TPTPId & ",AHSGId=" & YourTPTPDetail.AnnouncementSGId & ",Mblgh=" & YourTPTPDetail.Cost & ",RelationActive=" & YourTPTPDetail.Active & "
+                                      Where TPTPDId=" & YourTPTPDetail.TPTPDId & ""
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Function GetTPTParams_SearchIntroCharacters(YourSearchString As String, YourImmediately As Boolean) As List(Of R2CoreTransportationAndLoadNotificationTPTParams)
+            Try
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
+
+
+                Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationTPTParams)
+                Dim DS As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                       "Select TPTPId, TPTPTitle From R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters
+                        Where TPTPTitle Like '%" & YourSearchString & "%' and Active=1 Order By TPTPTitle")
+                    Da.SelectCommand.Connection = R2PrimarySMSSystemSqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(DS) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySMSSystemSqlConnection.GetSubscriptionDBConnection,
+                       "Select TPTPId, TPTPTitle From R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters
+                        Where TPTPTitle Like '%" & YourSearchString & "%' and Active=1 Order By TPTPTitle", 32767, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                End If
+                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+                    Lst.Add(New R2CoreTransportationAndLoadNotificationTPTParams With {.TPTPId = DS.Tables(0).Rows(Loopx).Item("TPTPId"), .TPTPTitle = DS.Tables(0).Rows(Loopx).Item("TPTPTitle")})
+                Next
+                Return Lst
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As SqlInjectionException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)

@@ -41,12 +41,11 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetProducts")]
-        public HttpResponseMessage GetProducts()
+        public HttpResponseMessage GetProducts([FromBody] APICommonSessionIdSearchString Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APICommonSessionIdSearchString>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var SearchString = Content.SearchString;
 
@@ -72,13 +71,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/ChangeActivateStatusOfProductType")]
-        public HttpResponseMessage ChangeActivateStatusOfProductType()
+        public HttpResponseMessage ChangeActivateStatusOfProductType([FromBody] APITransportationSessionIdProductTypeIdProductTypeActive Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdProductTypeIdProductTypeActive>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var ProductTypeId = Content.ProductTypeId;
                 var ProductTypeActive = Content.ProductTypeActive;
@@ -104,13 +102,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/ChangeActivateStatusOfProduct")]
-        public HttpResponseMessage ChangeActivateStatusOfProduct()
+        public HttpResponseMessage ChangeActivateStatusOfProduct([FromBody] APITransportationSessionIdProductIdProductActive Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdProductIdProductActive>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var ProductId = Content.ProductId;
                 var ProductActive = Content.ProductActive;

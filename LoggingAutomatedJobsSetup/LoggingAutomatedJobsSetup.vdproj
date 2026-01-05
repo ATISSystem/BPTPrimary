@@ -22,13 +22,13 @@
         "Entry"
         {
         "MsmKey" = "8:_0A4446876D25F38EAC256F98EDF9B312"
-        "OwnerKey" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
+        "OwnerKey" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_10F967E9792C4203D2D75DF0CA6A3D7A"
-        "OwnerKey" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
+        "OwnerKey" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -52,7 +52,7 @@
         "Entry"
         {
         "MsmKey" = "8:_26BEC2DBA39665E30EA32357883393BA"
-        "OwnerKey" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
+        "OwnerKey" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -70,13 +70,7 @@
         "Entry"
         {
         "MsmKey" = "8:_3A9C46C1698280894A8F3C53C190ED28"
-        "OwnerKey" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
-        "OwnerKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -88,7 +82,7 @@
         "Entry"
         {
         "MsmKey" = "8:_721B47771AC55EC591165D58E7DAFBE1"
-        "OwnerKey" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
+        "OwnerKey" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -106,7 +100,7 @@
         "Entry"
         {
         "MsmKey" = "8:_9EF714780FD5EA062F31177884D78C3D"
-        "OwnerKey" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
+        "OwnerKey" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -118,7 +112,7 @@
         "Entry"
         {
         "MsmKey" = "8:_B056C0C00F1EB1C5358753277CF047C5"
-        "OwnerKey" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
+        "OwnerKey" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -148,7 +142,7 @@
         "Entry"
         {
         "MsmKey" = "8:_BB9314865806E3B1D58894B4C6ED6AA0"
-        "OwnerKey" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
+        "OwnerKey" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -172,13 +166,13 @@
         "Entry"
         {
         "MsmKey" = "8:_BF665AAA74BD6D03854648F16654C476"
-        "OwnerKey" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
+        "OwnerKey" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_E7811DEA5433F55D2C76C9DBB21134AB"
-        "OwnerKey" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
+        "OwnerKey" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -195,8 +189,14 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_F07401C6BC12D6F34456D7E176BCC488"
-        "OwnerKey" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
+        "OwnerKey" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -208,7 +208,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
+        "OwnerKey" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -355,59 +355,59 @@
     {
         "CustomAction"
         {
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_2DF70A7A7815455487C16BEEF27F56BD"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_3BE33D0D754640DCAFEF31CB29F853C2"
             {
             "Name" = "8:Primary output from LoggingAutomatedJobs (Active)"
             "Condition" = "8:"
-            "Object" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
+            "Object" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
             "FileType" = "3:2"
             "InstallAction" = "3:4"
             "Arguments" = "8:"
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
-            "Identifier" = "8:_170657FB_1546_4B2D_8709_FF7F6E5674BF"
+            "Identifier" = "8:_FEF04C53_A74F_4CE2_B2BA_65B98FC8D9CE"
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:"
             }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_5FC5BC00C05C4CB3838FC1176545BCB3"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_AB3C65138F884DFCA16FD83F908F2683"
             {
             "Name" = "8:Primary output from LoggingAutomatedJobs (Active)"
             "Condition" = "8:"
-            "Object" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
-            "FileType" = "3:2"
-            "InstallAction" = "3:3"
-            "Arguments" = "8:"
-            "EntryPoint" = "8:"
-            "Sequence" = "3:1"
-            "Identifier" = "8:_22D348CA_8E8E_41CD_BCBB_BA1347869EEF"
-            "InstallerClass" = "11:TRUE"
-            "CustomActionData" = "8:"
-            }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_B6FDE359742349589DDA8A0585FCBB86"
-            {
-            "Name" = "8:Primary output from LoggingAutomatedJobs (Active)"
-            "Condition" = "8:"
-            "Object" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
-            "FileType" = "3:2"
-            "InstallAction" = "3:2"
-            "Arguments" = "8:"
-            "EntryPoint" = "8:"
-            "Sequence" = "3:1"
-            "Identifier" = "8:_5B569698_37EC_40FA_8304_CD58E32EF15C"
-            "InstallerClass" = "11:TRUE"
-            "CustomActionData" = "8:"
-            }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_E9C401DDB097413A953A49FABA0BFDC6"
-            {
-            "Name" = "8:Primary output from LoggingAutomatedJobs (Active)"
-            "Condition" = "8:"
-            "Object" = "8:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
+            "Object" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
             "FileType" = "3:2"
             "InstallAction" = "3:1"
             "Arguments" = "8:"
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
-            "Identifier" = "8:_CF737FCB_AB85_4204_BFC9_889C5A563125"
+            "Identifier" = "8:_9469654F_E4E1_44A3_ACBD_FF28E95093AC"
+            "InstallerClass" = "11:TRUE"
+            "CustomActionData" = "8:"
+            }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_BC3781BBB0974438A43C0AFAB2A4A3FE"
+            {
+            "Name" = "8:Primary output from LoggingAutomatedJobs (Active)"
+            "Condition" = "8:"
+            "Object" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
+            "FileType" = "3:2"
+            "InstallAction" = "3:3"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_D4A822D0_3E5E_49F1_BD1C_66A9C6218240"
+            "InstallerClass" = "11:TRUE"
+            "CustomActionData" = "8:"
+            }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_CFC561841E1949338DE71CA7E0292863"
+            {
+            "Name" = "8:Primary output from LoggingAutomatedJobs (Active)"
+            "Condition" = "8:"
+            "Object" = "8:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
+            "FileType" = "3:2"
+            "InstallAction" = "3:2"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_006A6855_CB33_4FB5_8596_F9D10D567C45"
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:"
             }
@@ -974,7 +974,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:LoggingAutomatedJobs"
         "ProductCode" = "8:{8D3C8D31-8C41-4EB3-8D56-6CFBF60E0285}"
-        "PackageCode" = "8:{6868C1C8-5860-4901-AC88-EBFFE1BA38DD}"
+        "PackageCode" = "8:{227B2745-00D5-4F93-BAFF-684995713D16}"
         "UpgradeCode" = "8:{7E066956-4E41-4218-BBC6-5D616A6E7FA3}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -1493,7 +1493,7 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_3CFFFDAB48B84E2FA24DF4B9EE83E36C"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_EB90CA0AF5CD4A60B1ECA70F5D3845B6"
             {
             "SourcePath" = "8:..\\LoggingAutomatedJobs\\obj\\Debug\\LoggingAutomatedJobs.exe"
             "TargetName" = "8:"

@@ -7,9 +7,11 @@ using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
+using R2Core.LoggingManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
 using R2CoreParkingSystem.ProvincesAndCities;
+using R2CoreTransportationAndLoadNotification.Logging;
 using R2CoreTransportationAndLoadNotification.Trucks;
 using R2CoreTransportationAndLoadNotification.Turns.SequentialTurns;
 using System;
@@ -19,6 +21,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Services.Protocols;
@@ -30,10 +33,18 @@ namespace APITransportation.Controllers
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
         private R2DateTimeService _DateTimeService;
+        private ILogger _loggerService;
+        private Networking _Networking;
+
 
         public SequentialTurnsController()
         {
-            try { _DateTimeService = new R2DateTimeService(); }
+            try
+            {
+                _DateTimeService = new R2DateTimeService(); 
+                _loggerService = new R2Core.LoggingManagement.R2CorenLogService();
+                _Networking = new Networking();
+            }
             catch (FileNotExistException ex)
             { throw ex; }
             catch (Exception ex)
@@ -397,6 +408,9 @@ namespace APITransportation.Controllers
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
                 InstanceSequentialTurns.SequentialTurnRelationAnnouncementSubGroupRegistering(SequentialTurnId, AnnouncementSGId);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.SequentialTurnRelationAnnouncementSubGroupRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(AnnouncementSGId)+":"+ AnnouncementSGId, MessageDetail2=nameof(SequentialTurnId)+":"+ SequentialTurnId, UserId = User.UserId });
+
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -411,5 +425,17 @@ namespace APITransportation.Controllers
             catch (Exception ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
+
+        public class Networking
+        {
+            public Networking() { }
+
+            public string GetClientIpAddress(System.Web.HttpContext YourHttpContext)
+            { return HttpContext.Current.Request.UserHostAddress; }
+
+        }
+
     }
 }
+
+

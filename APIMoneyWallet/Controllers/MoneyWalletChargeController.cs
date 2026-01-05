@@ -6,6 +6,7 @@ using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
+using R2Core.GeneralConfiguration;
 using R2Core.MonetaryCreditSupplySources;
 using R2Core.MoneyWallet.PaymentRequests;
 using R2Core.SecurityAlgorithmsManagement.AESAlgorithms;
@@ -87,12 +88,11 @@ namespace APIMoneyWalletAndTraffic.Controllers
                 var SessionId = Content.SessionId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
-                //throw new Exception("123456");
 
                 var InstanceMoneyWalletCharge = new R2CoreParkingSystemMoneyWalletChargeManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceMoneyWalletCharge.GetDefaultAmounts(), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(InstanceMoneyWalletCharge.GetDefaultAmounts(false), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (PaymentWebServiceConnectingException ex)
@@ -124,7 +124,7 @@ namespace APIMoneyWalletAndTraffic.Controllers
                 var InstanceMoneyWalletCharge = new R2CoreParkingSystemMoneyWalletChargeManager(_DateTimeService);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(InstanceMoneyWalletCharge.GetMoneyWalletChargeRecords(MoneyWalletId), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(InstanceMoneyWalletCharge.GetMoneyWalletChargeRecords(MoneyWalletId,false), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (PaymentWebServiceConnectingException ex)
@@ -216,6 +216,7 @@ namespace APIMoneyWalletAndTraffic.Controllers
         {
             try
             {
+                var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
                 Int64 MonetarySupplySource = R2CoreMonetaryCreditSupplySources.AqayepardakhtPaymentGate;
                 string Authority = transid;
 
@@ -232,12 +233,12 @@ namespace APIMoneyWalletAndTraffic.Controllers
 
                     var InstancePaymentRequests = new R2CoreInstansePaymentRequestsManager(_DateTimeService);
                     var NSSPaymentRequest = InstancePaymentRequests.GetNSSPayment(PayId);
+                    if (NSSPaymentRequest.VerificationErrors == "2") { return; }
                     while ((NSSPaymentRequest.RefId == string.Empty) & (NSSPaymentRequest.VerificationErrors == string.Empty))
                     { System.Threading.Thread.Sleep(500); NSSPaymentRequest = InstancePaymentRequests.GetNSSPayment(PayId); }
                     if (NSSPaymentRequest.RefId != string.Empty)
                     {
                         var InstanceAES = new AESAlgorithmsManager();
-                        var InstanceConfiguration = new R2CoreInstanceConfigurationManager(_DateTimeService);
                         var NSSSoftwareUser = InstanceSoftwareUsers.GetNSSUser(NSSPaymentRequest.SoftwareUserId);
                         var NSSTrafficCard = InstanceTrafficCards.GetNSSTerafficCard(NSSSoftwareUser);
                         Int64 CurrentCharge = InstanceMoneyWallets.GetMoneyWalletCharge(NSSTrafficCard);
@@ -245,7 +246,7 @@ namespace APIMoneyWalletAndTraffic.Controllers
 
 
                         if ((NSSPaymentRequest.Amount == 200000) || (NSSPaymentRequest.Amount == 300000))
-                        { InstanceMoneyWalletCharge.SabtCharge(new R2StandardMoneyWalletChargeStructure(NSSTrafficCard, NSSPaymentRequest.Amount, InstanceSoftwareUsers.GetNSSSelfGoverningChargingSoftwareUser().UserId, "", _DateTimeService.GetCurrentDateTimeMilladi(), _DateTimeService.GetCurrentShamsiDate(), NSSPaymentRequest.Amount + CurrentCharge, 0, _DateTimeService.GetCurrentTime())); }
+                        { InstanceMoneyWalletCharge.SabtCharge(new R2StandardMoneyWalletChargeStructure(NSSTrafficCard, NSSPaymentRequest.Amount, InstanceGeneralConfiguration.GetInt64Configuration(R2CoreGeneralConfigurations.DefaultConfigurationOfSoftwareUserSecurity,13 ), "", _DateTimeService.GetCurrentDateTimeMilladi(), _DateTimeService.GetCurrentShamsiDate(), NSSPaymentRequest.Amount + CurrentCharge, 0, _DateTimeService.GetCurrentTime())); }
                         else
                         { InstanceMoneyWalletCharge.SabtCharge(new R2StandardMoneyWalletChargeStructure(NSSTrafficCard, NSSPaymentRequest.Amount, InstanceSoftwareUsers.GetNSSSystemUser().UserId, "", _DateTimeService.GetCurrentDateTimeMilladi(), _DateTimeService.GetCurrentShamsiDate(), NSSPaymentRequest.Amount + CurrentCharge, 0, _DateTimeService.GetCurrentTime())); }
 

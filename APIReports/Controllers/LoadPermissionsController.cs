@@ -1,4 +1,5 @@
 ﻿using APICommon;
+using APICommon.Models;
 using APIReports.Models.LoadPermissions;
 using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
@@ -7,6 +8,7 @@ using R2Core.ExceptionManagement;
 using R2Core.SessionManagement;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.Exceptions;
 using R2CoreTransportationAndLoadNotification.LoadPermission;
+using R2CoreTransportationAndLoadNotification.TransportCompanies.Exceptions;
 using R2CoreTransportationAndLoadNotification.TransportTariffsParameters.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -83,6 +85,35 @@ namespace APIReports.Controllers
                 response.Content = new StringContent(InstanceLoadPermission.GetLoadPermissions(LoadId), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (AnyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SessionOverException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (Exception ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
+        }
+
+        [HttpPost]
+        [Route("api/GetTransportCompany100LastLoadPermissions")]
+        public HttpResponseMessage GetTransportCompany100LastLoadPermissions([FromBody] APICommonSessionId  Content)
+        {
+            try
+            {
+                var InstanceSession = new R2CoreSessionManager();
+                var SessionId = Content.SessionId;
+
+                var User = InstanceSession.ConfirmSession(SessionId);
+
+                var InstanceLoadPermission = new R2CoreTransportationAndLoadNotificationLoadPermissionManager(_DateTimeService);
+
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(InstanceLoadPermission.GetTransportCompany100LastLoadPermissions(User), Encoding.UTF8, "application/json");
+                return response;
+            }
+            catch(TransportCompanyNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)

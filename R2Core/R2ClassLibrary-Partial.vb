@@ -44,34 +44,13 @@ Imports R2Core.MonetarySupply
 Imports R2Core.Email.Exceptions
 Imports R2Core.PermissionManagement
 Imports R2Core.SiteIsBusy.Exceptions
-Imports R2Core.SMS.SMSTypes.Exceptions
-Imports R2Core.SMS.SMSTypes
-Imports R2Core.SMS.SMSHandling.Exceptions
-Imports R2Core.SMS.SMSSendRecive
-Imports R2Core.SMS.SMSOwners.Exceptions
-Imports R2Core.SMS.SMSOwners
-Imports R2Core.SMS.SendSMSCodes.Exceptions
-Imports R2Core.SMS.SendSMSCodes
-Imports R2Core.SMS.RecivedSMSCodes.Exceptions
-Imports R2Core.SMS.RecivedSMSCodes
-Imports R2Core.SMS.SMSHandling
-Imports R2Core.DateAndTimeManagement.CalendarManagement.PersianCalendar
-Imports R2Core.SecurityAlgorithmsManagement.Captcha
-Imports R2Core.SecurityAlgorithmsManagement.Hashing
-Imports System.Web
-Imports R2Core.Caching
-Imports StackExchange.Redis
-Imports RestSharp.Serialization.Json
-Imports Newtonsoft.Json.Linq
-Imports R2Core.MoneyWallet.Exceptions
 
 Imports System.Data.SqlClient
-Imports System.Security.Policy
-Imports R2Core.PublicProc
-Imports System.Net.Http
 Imports log4net.Appender.RollingFileAppender
 Imports R2Core.DateTimeProvider
 Imports R2Core.SQLInjectionPrevention
+Imports R2Core.GeneralConfiguration
+Imports R2Core.ConfigurationOfDevices
 
 Namespace MonetarySupply
 
@@ -243,59 +222,59 @@ Namespace MonetaryCreditSupplySources
             End Try
         End Function
 
-        Public Function GetMonetaryCreditSupplySources() As List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
-            Try
-                Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblMonetaryCreditSupplySources Where ViewFlag=1 and Active=1 and Deleted=0 ", 3600, DS, New Boolean)
-                Dim Lst As New List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
-                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
-                    Lst.Add(New R2CoreStandardMonetaryCreditSupplySourceStructure(DS.Tables(0).Rows(Loopx).Item("MCSSId"), DS.Tables(0).Rows(Loopx).Item("MCSSName").trim, DS.Tables(0).Rows(Loopx).Item("MCSSTitle").trim, Color.FromName(DS.Tables(0).Rows(Loopx).Item("MCSSColor").trim), DS.Tables(0).Rows(Loopx).Item("AssemblyPath").trim, DS.Tables(0).Rows(Loopx).Item("AssemblyDll").trim, DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
-                Next
-                Return Lst
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function GetMonetaryCreditSupplySources() As List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
+        '    Try
+        '        Dim DS As DataSet
+        '        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblMonetaryCreditSupplySources Where ViewFlag=1 and Active=1 and Deleted=0 ", 3600, DS, New Boolean)
+        '        Dim Lst As New List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
+        '        For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+        '            Lst.Add(New R2CoreStandardMonetaryCreditSupplySourceStructure(DS.Tables(0).Rows(Loopx).Item("MCSSId"), DS.Tables(0).Rows(Loopx).Item("MCSSName").trim, DS.Tables(0).Rows(Loopx).Item("MCSSTitle").trim, Color.FromName(DS.Tables(0).Rows(Loopx).Item("MCSSColor").trim), DS.Tables(0).Rows(Loopx).Item("AssemblyPath").trim, DS.Tables(0).Rows(Loopx).Item("AssemblyDll").trim, DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
+        '        Next
+        '        Return Lst
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Function GetThisComputerDefaultNSS(YourConfigurationIndex As Int16) As R2CoreStandardMonetaryCreditSupplySourceStructure
-            Try
-                Dim InstanceConfigurationOfComputers As New R2CoreMClassConfigurationOfComputersManager(_DateTimeService)
-                Dim InstanceComputers As New R2CoreMClassComputersManager(_DateTimeService)
-                Dim ConfigValue As String = InstanceConfigurationOfComputers.GetConfigString(R2CoreConfigurations.MonetaryCreditSupplySources, InstanceComputers.GetNSSCurrentComputer.MId, YourConfigurationIndex)
-                Return GetNSSMonetaryCreditSupplySource(ConfigValue.Split("@")(0))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function GetThisComputerDefaultNSS(YourConfigurationIndex As Int16) As R2CoreStandardMonetaryCreditSupplySourceStructure
+        '    Try
+        '        Dim InstanceConfigurationOfDevices = New R2CoreConfigurationOfDevicesManager(_DateTimeService)
+        '        Dim InstanceComputers As New R2CoreMClassComputersManager(_DateTimeService)
+        '        Dim ConfigValue As String = InstanceConfigurationOfDevices.GetStringConfiguration(R2CoreConfigurations.MonetaryCreditSupplySources, InstanceComputers.GetNSSCurrentComputer.MId, YourConfigurationIndex)
+        '        Return GetNSSMonetaryCreditSupplySource(ConfigValue.Split("@")(0))
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Function GetThisComputerCollectionBitMap(YourConfigurationIndex As Int16) As List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
-            Try
-                Dim InstanceConfigurationOfComputers As New R2CoreMClassConfigurationOfComputersManager(_DateTimeService)
-                Dim InstanceComputers As New R2CoreMClassComputersManager(_DateTimeService)
-                Dim Lst As New List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
-                Dim ConfigValue As String = InstanceConfigurationOfComputers.GetConfigString(R2CoreConfigurations.MonetaryCreditSupplySources, InstanceComputers.GetNSSCurrentComputer.MId, YourConfigurationIndex)
-                Dim Bitmap() As String = ConfigValue.Split("@")(1).Split("-")
-                For Loopx As Int16 = 0 To Bitmap.Count - 1
-                    Dim NSS As R2CoreStandardMonetaryCreditSupplySourceStructure = GetNSSMonetaryCreditSupplySource(Bitmap(Loopx).Split(":")(0))
-                    NSS.Active = Bitmap(Loopx).Split(":")(1)
-                    Lst.Add(NSS)
-                Next
-                Return Lst
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function GetThisComputerCollectionBitMap(YourConfigurationIndex As Int16) As List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
+        '    Try
+        '        Dim InstanceConfigurationOfComputers As New R2CoreMClassConfigurationOfComputersManager(_DateTimeService)
+        '        Dim InstanceComputers As New R2CoreMClassComputersManager(_DateTimeService)
+        '        Dim Lst As New List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
+        '        Dim ConfigValue As String = InstanceConfigurationOfComputers.GetConfigString(R2CoreConfigurations.MonetaryCreditSupplySources, InstanceComputers.GetNSSCurrentComputer.MId, YourConfigurationIndex)
+        '        Dim Bitmap() As String = ConfigValue.Split("@")(1).Split("-")
+        '        For Loopx As Int16 = 0 To Bitmap.Count - 1
+        '            Dim NSS As R2CoreStandardMonetaryCreditSupplySourceStructure = GetNSSMonetaryCreditSupplySource(Bitmap(Loopx).Split(":")(0))
+        '            NSS.Active = Bitmap(Loopx).Split(":")(1)
+        '            Lst.Add(NSS)
+        '        Next
+        '        Return Lst
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Function GetMonetaryCreditSupplySourceInstance(YourNSS As R2CoreStandardMonetaryCreditSupplySourceStructure, YourAmount As Int64) As R2CoreMonetaryCreditSupplySource
-            Try
-                Dim AssemblyClassName As String = YourNSS.AssemblyPath
-                Dim Instance As Object = Activator.CreateInstance(Type.GetType(AssemblyClassName), New Object() {YourAmount})
-                'Dim Instance As Object = Activator.CreateInstance(Type.GetType("R2Core.MonetaryCreditSupplySources.ZarrinPalPaymentGate.R2CoreZarrinPalPaymentGate,R2Core"), New Object() {YourAmount})
-                Return Instance
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function GetMonetaryCreditSupplySourceInstance(YourNSS As R2CoreStandardMonetaryCreditSupplySourceStructure, YourAmount As Int64) As R2CoreMonetaryCreditSupplySource
+        '    Try
+        '        Dim AssemblyClassName As String = YourNSS.AssemblyPath
+        '        Dim Instance As Object = Activator.CreateInstance(Type.GetType(AssemblyClassName), New Object() {YourAmount})
+        '        'Dim Instance As Object = Activator.CreateInstance(Type.GetType("R2Core.MonetaryCreditSupplySources.ZarrinPalPaymentGate.R2CoreZarrinPalPaymentGate,R2Core"), New Object() {YourAmount})
+        '        Return Instance
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
     End Class
 
@@ -304,59 +283,59 @@ Namespace MonetaryCreditSupplySources
         Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
 
-        Public Shared Function GetNSSMonetaryCreditSupplySource(YourMCSSId As String) As R2CoreStandardMonetaryCreditSupplySourceStructure
-            Try
-                Dim Ds As New DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblMonetaryCreditSupplySources Where MCSSId=" & YourMCSSId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
-                    Throw New GetNSSException
-                Else
-                    Return New R2CoreStandardMonetaryCreditSupplySourceStructure(Ds.Tables(0).Rows(0).Item("MCSSId"), Ds.Tables(0).Rows(0).Item("MCSSName").trim, Ds.Tables(0).Rows(0).Item("MCSSTitle").trim, Color.FromName(Ds.Tables(0).Rows(0).Item("MCSSColor").trim), Ds.Tables(0).Rows(0).Item("AssemblyPath").trim, Ds.Tables(0).Rows(0).Item("AssemblyDll").trim, Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("Deleted"))
-                End If
-            Catch exx As GetNSSException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetNSSMonetaryCreditSupplySource(YourMCSSId As String) As R2CoreStandardMonetaryCreditSupplySourceStructure
+        '    Try
+        '        Dim Ds As New DataSet
+        '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblMonetaryCreditSupplySources Where MCSSId=" & YourMCSSId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+        '            Throw New GetNSSException
+        '        Else
+        '            Return New R2CoreStandardMonetaryCreditSupplySourceStructure(Ds.Tables(0).Rows(0).Item("MCSSId"), Ds.Tables(0).Rows(0).Item("MCSSName").trim, Ds.Tables(0).Rows(0).Item("MCSSTitle").trim, Color.FromName(Ds.Tables(0).Rows(0).Item("MCSSColor").trim), Ds.Tables(0).Rows(0).Item("AssemblyPath").trim, Ds.Tables(0).Rows(0).Item("AssemblyDll").trim, Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("Deleted"))
+        '        End If
+        '    Catch exx As GetNSSException
+        '        Throw exx
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function GetMonetaryCreditSupplySources() As List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
-            Try
-                Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblMonetaryCreditSupplySources Where ViewFlag=1 and Active=1 and Deleted=0 ", 3600, DS, New Boolean)
-                Dim Lst As New List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
-                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
-                    Lst.Add(New R2CoreStandardMonetaryCreditSupplySourceStructure(DS.Tables(0).Rows(Loopx).Item("MCSSId"), DS.Tables(0).Rows(Loopx).Item("MCSSName").trim, DS.Tables(0).Rows(Loopx).Item("MCSSTitle").trim, Color.FromName(DS.Tables(0).Rows(Loopx).Item("MCSSColor").trim), DS.Tables(0).Rows(Loopx).Item("AssemblyPath").trim, DS.Tables(0).Rows(Loopx).Item("AssemblyDll").trim, DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
-                Next
-                Return Lst
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetMonetaryCreditSupplySources() As List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
+        '    Try
+        '        Dim DS As DataSet
+        '        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblMonetaryCreditSupplySources Where ViewFlag=1 and Active=1 and Deleted=0 ", 3600, DS, New Boolean)
+        '        Dim Lst As New List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
+        '        For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+        '            Lst.Add(New R2CoreStandardMonetaryCreditSupplySourceStructure(DS.Tables(0).Rows(Loopx).Item("MCSSId"), DS.Tables(0).Rows(Loopx).Item("MCSSName").trim, DS.Tables(0).Rows(Loopx).Item("MCSSTitle").trim, Color.FromName(DS.Tables(0).Rows(Loopx).Item("MCSSColor").trim), DS.Tables(0).Rows(Loopx).Item("AssemblyPath").trim, DS.Tables(0).Rows(Loopx).Item("AssemblyDll").trim, DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
+        '        Next
+        '        Return Lst
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function GetThisComputerDefaultNSS(YourConfigurationIndex As Int16) As R2CoreStandardMonetaryCreditSupplySourceStructure
-            Try
-                Dim ConfigValue As String = R2CoreMClassConfigurationOfComputersManagement.GetConfigString(R2CoreConfigurations.MonetaryCreditSupplySources, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, YourConfigurationIndex)
-                Return GetNSSMonetaryCreditSupplySource(ConfigValue.Split("@")(0))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetThisComputerDefaultNSS(YourConfigurationIndex As Int16) As R2CoreStandardMonetaryCreditSupplySourceStructure
+        '    Try
+        '        Dim ConfigValue As String = R2CoreMClassConfigurationOfComputersManagement.GetConfigString(R2CoreConfigurations.MonetaryCreditSupplySources, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, YourConfigurationIndex)
+        '        Return GetNSSMonetaryCreditSupplySource(ConfigValue.Split("@")(0))
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function GetThisComputerCollectionBitMap(YourConfigurationIndex As Int16) As List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
-            Try
-                Dim Lst As New List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
-                Dim ConfigValue As String = R2CoreMClassConfigurationOfComputersManagement.GetConfigString(R2CoreConfigurations.MonetaryCreditSupplySources, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, YourConfigurationIndex)
-                Dim Bitmap() As String = ConfigValue.Split("@")(1).Split("-")
-                For Loopx As Int16 = 0 To Bitmap.Count - 1
-                    Dim NSS As R2CoreStandardMonetaryCreditSupplySourceStructure = GetNSSMonetaryCreditSupplySource(Bitmap(Loopx).Split(":")(0))
-                    NSS.Active = Bitmap(Loopx).Split(":")(1)
-                    Lst.Add(NSS)
-                Next
-                Return Lst
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetThisComputerCollectionBitMap(YourConfigurationIndex As Int16) As List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
+        '    Try
+        '        Dim Lst As New List(Of R2CoreStandardMonetaryCreditSupplySourceStructure)
+        '        Dim ConfigValue As String = R2CoreMClassConfigurationOfComputersManagement.GetConfigString(R2CoreConfigurations.MonetaryCreditSupplySources, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, YourConfigurationIndex)
+        '        Dim Bitmap() As String = ConfigValue.Split("@")(1).Split("-")
+        '        For Loopx As Int16 = 0 To Bitmap.Count - 1
+        '            Dim NSS As R2CoreStandardMonetaryCreditSupplySourceStructure = GetNSSMonetaryCreditSupplySource(Bitmap(Loopx).Split(":")(0))
+        '            NSS.Active = Bitmap(Loopx).Split(":")(1)
+        '            Lst.Add(NSS)
+        '        Next
+        '        Return Lst
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
         Public Shared Function GetMonetaryCreditSupplySourceInstance(YourNSS As R2CoreStandardMonetaryCreditSupplySourceStructure, YourAmount As Int64) As R2CoreMonetaryCreditSupplySource
             Try
@@ -478,16 +457,17 @@ Namespace MonetaryCreditSupplySources
                 Public WithEvents _PCPOS As PcPosBusiness = New PcPosBusiness
                 Public WithEvents _SearchPos As PcPosDiscovery = New PcPosDiscovery
                 Public Event SearchAsyncCompleted(ResultCount As Int16, Description As String)
+                Public _DeviceId As Int64
 
-                Public Sub New(YourAmount As Int64, YourDateTimeService As IR2DateTimeService)
+                Public Sub New(YourAmount As Int64, YourDateTimeService As IR2DateTimeService, YourDeviceId As Int64)
                     MyBase.New(YourAmount, YourDateTimeService)
+                    _DeviceId = YourDeviceId
                 End Sub
 
-                Public ReadOnly Property GetTargetPosIPAddress As String
+                Public ReadOnly Property GetTargetPosIPAddress(YourDeviceId As Int64) As String
                     Get
-                        Dim InstanceConfigurationOfComputers As New R2CoreMClassConfigurationOfComputersManager(_DateTimeService)
-                        Dim InstanceComputers As New R2CoreMClassComputersManager(_DateTimeService)
-                        Return InstanceConfigurationOfComputers.GetConfigString(R2CoreConfigurations.AttachedPoses, InstanceComputers.GetNSSCurrentComputer.MId, 0)
+                        Dim InstanceConfigurationOfDevices = New R2CoreConfigurationOfDevicesManager(_DateTimeService)
+                        Return InstanceConfigurationOfDevices.GetStringConfiguration(R2CoreConfigurationsOfDevices.AttachedPoses, YourDeviceId, 0)
                     End Get
                 End Property
 
@@ -508,7 +488,7 @@ Namespace MonetaryCreditSupplySources
 
                 Public Function SearchPCPosAsync()
                     Try
-                        _SearchPos.SearchPcPosByIp(100, 2000, GetTargetPosIPAddress)
+                        _SearchPos.SearchPcPosByIp(100, 2000, GetTargetPosIPAddress(_DeviceId))
                     Catch ex As Exception
                         Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
                     End Try
@@ -546,7 +526,7 @@ Namespace MonetaryCreditSupplySources
 
                 Public Overrides Sub Initialize()
                     Try
-                        TargetedPosDevice.IpAddress = GetTargetPosIPAddress
+                        TargetedPosDevice.IpAddress = GetTargetPosIPAddress(_DeviceId)
                         TargetedPosDevice.Port = 8888
                         'SearchPCPosAsync()
                     Catch ex As Exception
@@ -620,16 +600,16 @@ Namespace MonetaryCreditSupplySources
 
             Public Overrides Sub DoCreditSupply()
                 Try
-                    Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                    Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                     Dim requesturl As String
                     If (_Amount = 200000) Then
-                        requesturl = InstanceConfiguration.GetConfigString(R2CoreConfigurations.ZarrinPalPaymentGate, 1) + InstanceConfiguration.GetConfigString(R2CoreConfigurations.ZarrinPalPaymentGate, 0) + "&amount=" + _Amount.ToString() +
-                        "&callback_url=" + InstanceConfiguration.GetConfigString(R2CoreConfigurations.ZarrinPalPaymentGate, 3) +
+                        requesturl = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ZarrinPalPaymentGate, 1) + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ZarrinPalPaymentGate, 0) + "&amount=" + _Amount.ToString() +
+                        "&callback_url=" + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ZarrinPalPaymentGate, 3) +
                         "&description=" + "پرداخت خودگردان" +
                         "&metadata[0]=" + String.Empty + "& metadata[1]=" + String.Empty
                     Else
-                        requesturl = InstanceConfiguration.GetConfigString(R2CoreConfigurations.ZarrinPalPaymentGate, 1) + InstanceConfiguration.GetConfigString(R2CoreConfigurations.ZarrinPalPaymentGate, 0) + "&amount=" + _Amount.ToString() +
-                        "&callback_url=" + InstanceConfiguration.GetConfigString(R2CoreConfigurations.ZarrinPalPaymentGate, 3) +
+                        requesturl = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ZarrinPalPaymentGate, 1) + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ZarrinPalPaymentGate, 0) + "&amount=" + _Amount.ToString() +
+                        "&callback_url=" + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ZarrinPalPaymentGate, 3) +
                         "&description=" + "درخواست پرداخت-زرین پال-آتیس" +
                         "&metadata[0]=" + String.Empty + "& metadata[1]=" + String.Empty
                     End If
@@ -664,12 +644,12 @@ Namespace MonetaryCreditSupplySources
 
             Public Overrides Sub DoVerification(YourAuthority As String)
                 Try
-                    Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                    Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                     Dim url As String = String.Empty
                     If (_Amount = 200000) Then
-                        url = InstanceConfiguration.GetConfigString(R2CoreConfigurations.ZarrinPalPaymentGate, 4) + InstanceConfiguration.GetConfigString(R2CoreConfigurations.ZarrinPalPaymentGate, 0) + "&amount=" + _Amount.ToString() + "&authority=" + YourAuthority
+                        url = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ZarrinPalPaymentGate, 4) + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ZarrinPalPaymentGate, 0) + "&amount=" + _Amount.ToString() + "&authority=" + YourAuthority
                     Else
-                        url = InstanceConfiguration.GetConfigString(R2CoreConfigurations.ZarrinPalPaymentGate, 4) + InstanceConfiguration.GetConfigString(R2CoreConfigurations.ZarrinPalPaymentGate, 0) + "&amount=" + _Amount.ToString() + "&authority=" + YourAuthority
+                        url = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ZarrinPalPaymentGate, 4) + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ZarrinPalPaymentGate, 0) + "&amount=" + _Amount.ToString() + "&authority=" + YourAuthority
                     End If
                     Dim client = New RestClient(url)
                     client.Timeout = -1
@@ -715,9 +695,9 @@ Namespace MonetaryCreditSupplySources
 
             Public Overrides Sub DoCreditSupply()
                 Try
-                    Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                    Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                     Dim Merchant As ShepaMerchant.Merchant = New ShepaMerchant.Merchant
-                    Dim Data = Merchant.requestToken(InstanceConfiguration.GetConfigString(R2CoreConfigurations.ShepaPaymentGate, 0), _Amount.ToString(), InstanceConfiguration.GetConfigString(R2CoreConfigurations.ShepaPaymentGate, 3), "", "", "", "0", "", "")
+                    Dim Data = Merchant.requestToken(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ShepaPaymentGate, 0), _Amount.ToString(), InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ShepaPaymentGate, 3), "", "", "", "0", "", "")
                     If Data.success Then
                         _SupplyReport = Data.result.token
                         _MonetarySupplyType = MonetarySupply.MonetarySupplyType.PaymentRequest
@@ -738,9 +718,9 @@ Namespace MonetaryCreditSupplySources
 
             Public Overrides Sub DoVerification(YourAuthority As String)
                 Try
-                    Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                    Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                     Dim Merchant As ShepaMerchant.Merchant = New ShepaMerchant.Merchant
-                    Dim responce = Merchant.verifyPayment(InstanceConfiguration.GetConfigString(R2CoreConfigurations.ShepaPaymentGate, 0), YourAuthority, _Amount.ToString())
+                    Dim responce = Merchant.verifyPayment(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ShepaPaymentGate, 0), YourAuthority, _Amount.ToString())
                     If responce.success Then
                         _SupplyReport = responce.result.refid
                         _MonetarySupplyType = MonetarySupply.MonetarySupplyType.VerificationRequest
@@ -775,12 +755,10 @@ Namespace MonetaryCreditSupplySources
 
             Public Overrides Sub DoCreditSupply()
                 Try
-                    'Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
-
-                    Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                    Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                     Dim requesturl As String
-                    requesturl = InstanceConfiguration.GetConfigString(R2CoreConfigurations.AqayepardakhtPaymentGate, 1) + "&pin=" + InstanceConfiguration.GetConfigString(R2CoreConfigurations.AqayepardakhtPaymentGate, 0) + "&amount=" + (_Amount / 10).ToString() +
-                    "&callback=" + InstanceConfiguration.GetConfigString(R2CoreConfigurations.AqayepardakhtPaymentGate, 3) +
+                    requesturl = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.AqayepardakhtPaymentGate, 1) + "&pin=" + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.AqayepardakhtPaymentGate, 0) + "&amount=" + (_Amount / 10).ToString() +
+                    "&callback=" + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.AqayepardakhtPaymentGate, 3) +
                     "&description=" + "پرداخت آتیس"
                     Dim client = New RestClient(requesturl)
                     client.Timeout = -1
@@ -812,11 +790,10 @@ Namespace MonetaryCreditSupplySources
 
             Public Overrides Sub DoVerification(YourAuthority As String)
                 Try
-                    'Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
-                    Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                    Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
 
                     Dim url As String = String.Empty
-                    url = InstanceConfiguration.GetConfigString(R2CoreConfigurations.AqayepardakhtPaymentGate, 4) + "&pin=" + InstanceConfiguration.GetConfigString(R2CoreConfigurations.AqayepardakhtPaymentGate, 0) + "&amount=" + (_Amount / 10).ToString() + "&transid=" + YourAuthority
+                    url = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.AqayepardakhtPaymentGate, 4) + "&pin=" + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.AqayepardakhtPaymentGate, 0) + "&amount=" + (_Amount / 10).ToString() + "&transid=" + YourAuthority
                     Dim client = New RestClient(url)
                     client.Timeout = -1
                     Dim request = New RestRequest(Method.POST)
@@ -904,72 +881,72 @@ Namespace MonetarySettingTools
 
         Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
 
-        Public Shared Function GetNSSMonetarySettingTool(YourMSTId As String) As R2CoreStandardMonetarySettingToolStructure
-            Try
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblMonetarySettingTools  Where MSTId=" & YourMSTId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
-                    Throw New GetNSSException
-                Else
-                    Return New R2CoreStandardMonetarySettingToolStructure(Ds.Tables(0).Rows(0).Item("MSTId"), Ds.Tables(0).Rows(0).Item("MSTName").trim, Ds.Tables(0).Rows(0).Item("MSTTitle").trim, Color.FromName(Ds.Tables(0).Rows(0).Item("MSTColor").trim), Ds.Tables(0).Rows(0).Item("AssemblyPath").trim, Ds.Tables(0).Rows(0).Item("AssemblyDll").trim, Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("Deleted"))
-                End If
-            Catch exx As GetNSSException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetNSSMonetarySettingTool(YourMSTId As String) As R2CoreStandardMonetarySettingToolStructure
+        '    Try
+        '        Dim Ds As DataSet
+        '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblMonetarySettingTools  Where MSTId=" & YourMSTId & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
+        '            Throw New GetNSSException
+        '        Else
+        '            Return New R2CoreStandardMonetarySettingToolStructure(Ds.Tables(0).Rows(0).Item("MSTId"), Ds.Tables(0).Rows(0).Item("MSTName").trim, Ds.Tables(0).Rows(0).Item("MSTTitle").trim, Color.FromName(Ds.Tables(0).Rows(0).Item("MSTColor").trim), Ds.Tables(0).Rows(0).Item("AssemblyPath").trim, Ds.Tables(0).Rows(0).Item("AssemblyDll").trim, Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Active"), Ds.Tables(0).Rows(0).Item("Deleted"))
+        '        End If
+        '    Catch exx As GetNSSException
+        '        Throw exx
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function GetMonetarySettingTools() As List(Of R2CoreStandardMonetarySettingToolStructure)
-            Try
-                Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblMonetarySettingTools Where ViewFlag=1 and Active=1 and Deleted=0", 3600, DS, New Boolean)
-                Dim Lst As New List(Of R2CoreStandardMonetarySettingToolStructure)
-                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
-                    Lst.Add(New R2CoreStandardMonetarySettingToolStructure(DS.Tables(0).Rows(Loopx).Item("MSTId"), DS.Tables(0).Rows(Loopx).Item("MSTName").trim, DS.Tables(0).Rows(Loopx).Item("MSTTitle").trim, Color.FromName(DS.Tables(0).Rows(Loopx).Item("MSTColor").trim), DS.Tables(0).Rows(Loopx).Item("AssemblyPath").trim, DS.Tables(0).Rows(Loopx).Item("AssemblyDll").trim, DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
-                Next
-                Return Lst
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetMonetarySettingTools() As List(Of R2CoreStandardMonetarySettingToolStructure)
+        '    Try
+        '        Dim DS As DataSet
+        '        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select * from R2Primary.dbo.TblMonetarySettingTools Where ViewFlag=1 and Active=1 and Deleted=0", 3600, DS, New Boolean)
+        '        Dim Lst As New List(Of R2CoreStandardMonetarySettingToolStructure)
+        '        For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+        '            Lst.Add(New R2CoreStandardMonetarySettingToolStructure(DS.Tables(0).Rows(Loopx).Item("MSTId"), DS.Tables(0).Rows(Loopx).Item("MSTName").trim, DS.Tables(0).Rows(Loopx).Item("MSTTitle").trim, Color.FromName(DS.Tables(0).Rows(Loopx).Item("MSTColor").trim), DS.Tables(0).Rows(Loopx).Item("AssemblyPath").trim, DS.Tables(0).Rows(Loopx).Item("AssemblyDll").trim, DS.Tables(0).Rows(Loopx).Item("ViewFlag"), DS.Tables(0).Rows(Loopx).Item("Active"), DS.Tables(0).Rows(Loopx).Item("Deleted")))
+        '        Next
+        '        Return Lst
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function GetThisComputerDefaultNSS(YourConfigurationIndex As Int16) As R2CoreStandardMonetarySettingToolStructure
-            Try
-                Dim ConfigValue As String = R2CoreMClassConfigurationOfComputersManagement.GetConfigString(R2CoreConfigurations.MonetarySettingTools, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, YourConfigurationIndex)
-                Return GetNSSMonetarySettingTool(ConfigValue.Split("@")(0))
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetThisComputerDefaultNSS(YourConfigurationIndex As Int16) As R2CoreStandardMonetarySettingToolStructure
+        '    Try
+        '        Dim ConfigValue As String = R2CoreMClassConfigurationOfComputersManagement.GetConfigString(R2CoreConfigurations.MonetarySettingTools, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, YourConfigurationIndex)
+        '        Return GetNSSMonetarySettingTool(ConfigValue.Split("@")(0))
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function GetThisComputerCollectionBitMap(YourConfigurationIndex As Int16) As List(Of R2CoreStandardMonetarySettingToolStructure)
-            Try
-                Dim Lst As New List(Of R2CoreStandardMonetarySettingToolStructure)
-                Dim ConfigValue As String = R2CoreMClassConfigurationOfComputersManagement.GetConfigString(R2CoreConfigurations.MonetarySettingTools, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, YourConfigurationIndex)
-                Dim Bitmap() As String = ConfigValue.Split("@")(1).Split("-")
-                For Loopx As Int16 = 0 To Bitmap.Count - 1
-                    Dim NSS As R2CoreStandardMonetarySettingToolStructure = GetNSSMonetarySettingTool(Bitmap(Loopx).Split(":")(0))
-                    NSS.Active = Bitmap(Loopx).Split(":")(1)
-                    Lst.Add(NSS)
-                Next
-                Return Lst
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetThisComputerCollectionBitMap(YourConfigurationIndex As Int16) As List(Of R2CoreStandardMonetarySettingToolStructure)
+        '    Try
+        '        Dim Lst As New List(Of R2CoreStandardMonetarySettingToolStructure)
+        '        Dim ConfigValue As String = R2CoreMClassConfigurationOfComputersManagement.GetConfigString(R2CoreConfigurations.MonetarySettingTools, R2CoreMClassComputersManagement.GetNSSCurrentComputer.MId, YourConfigurationIndex)
+        '        Dim Bitmap() As String = ConfigValue.Split("@")(1).Split("-")
+        '        For Loopx As Int16 = 0 To Bitmap.Count - 1
+        '            Dim NSS As R2CoreStandardMonetarySettingToolStructure = GetNSSMonetarySettingTool(Bitmap(Loopx).Split(":")(0))
+        '            NSS.Active = Bitmap(Loopx).Split(":")(1)
+        '            Lst.Add(NSS)
+        '        Next
+        '        Return Lst
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function GetMonetarySettingToolInstrumentInstance(YourNSS As R2CoreStandardMonetarySettingToolStructure) As Object
-            Try
-                Dim PathDll As String = Application.StartupPath + "\" + YourNSS.AssemblyDll.Trim
-                Dim Assembly_ As Assembly = Assembly.LoadFrom(PathDll)
-                Dim ProjAndForm As String = YourNSS.AssemblyPath.Trim()
-                Dim FormInstanceType = Assembly_.GetType(ProjAndForm)
-                Dim objForm = CType(Activator.CreateInstance(FormInstanceType), Object)
-                Return objForm
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetMonetarySettingToolInstrumentInstance(YourNSS As R2CoreStandardMonetarySettingToolStructure) As Object
+        '    Try
+        '        Dim PathDll As String = Application.StartupPath + "\" + YourNSS.AssemblyDll.Trim
+        '        Dim Assembly_ As Assembly = Assembly.LoadFrom(PathDll)
+        '        Dim ProjAndForm As String = YourNSS.AssemblyPath.Trim()
+        '        Dim FormInstanceType = Assembly_.GetType(ProjAndForm)
+        '        Dim objForm = CType(Activator.CreateInstance(FormInstanceType), Object)
+        '        Return objForm
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
     End Class
 
@@ -1136,6 +1113,7 @@ Namespace SecurityAlgorithmsManagement
 
             Private ValidChars As String = "%$#@^&!~()-+*=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
             Private ValidAlphabetic As String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            Private ValidOTP As String = "123456789"
 
             Public Function GenerateRandomString(YourLength As Int32) As String
                 Try
@@ -1171,6 +1149,19 @@ Namespace SecurityAlgorithmsManagement
                         SBVerificationCode.Append(VerificationCodeValidChars(Random.Next(0, VerificationCodeValidChars.Length - 1)))
                     Next
                     Return SBVerificationCode.ToString()
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
+            End Function
+
+            Public Function GenerateOTPCode(YourLength As Int32) As String
+                Try
+                    Dim Random As Random = New Random(DateTime.UtcNow.Millisecond)
+                    Dim SBOTPCode = New StringBuilder()
+                    For Loopi As Int32 = 0 To YourLength - 1
+                        SBOTPCode.Append(ValidOTP(Random.Next(0, ValidOTP.Length - 1)))
+                    Next
+                    Return SBOTPCode.ToString()
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
                 End Try
@@ -1502,6 +1493,12 @@ Namespace SecurityAlgorithmsManagement
             Private dtDetails As DataTable
             Private PreviousPassword As String = ""
 
+            Public ReadOnly Property VeryWeak As String = "Very Weak"
+            Public ReadOnly Property Weak As String = "Weak"
+            Public ReadOnly Property Good As String = "Good"
+            Public ReadOnly Property Strong As String = "Strong"
+            Public ReadOnly Property VeryStrong As String = "Very Strong"
+
             Public Sub SetPassword(pwd As String)
                 If (PreviousPassword <> pwd) Then
                     PreviousPassword = pwd
@@ -1794,7 +1791,10 @@ Namespace SecurityAlgorithmsManagement
                 Return newstring
             End Function
 
+
+
         End Class
+
 
 
     End Namespace
@@ -1903,7 +1903,11 @@ Namespace PredefinedMessagesManagement
         Public Shared ReadOnly WebServiceConnectingException As Int64 = 31
         Public Shared ReadOnly UserHasAlreadyBeenAuthenticated As Int64 = 32
         Public Shared ReadOnly PleaseReTryException As Int64 = 33
-        Public Shared ReadOnly InformationSentSuccessfully As Int64 = 34
+        Public Shared ReadOnly NewUserPasswordSentSuccessfully As Int64 = 34
+        Public Shared ReadOnly PleaseEnterOTPCode As Int64 = 35
+        Public Shared ReadOnly OTPCodeInvalid As Int64 = 36
+
+
 
     End Class
 
@@ -2402,205 +2406,6 @@ Namespace EntityRelationManagement
 
 End Namespace
 
-Namespace PermissionManagement
-
-    Public MustInherit Class R2CorePermissionTypes
-        Public Shared ReadOnly None As Int64 = 0
-        Public Shared ReadOnly SoftwareUsersAccessMobileProcesses As Int64 = 1
-        Public Shared ReadOnly SoftwareUsersAccessWebProcesses As Int64 = 2
-        Public Shared ReadOnly UserCanSendSoftwareUserShenasehPasswordViaSMS As Int64 = 7
-        Public Shared ReadOnly UserCanViewAndPrintUserShenasehPassword As Int64 = 8
-        Public Shared ReadOnly UserCanInject123VerificationCodeforAppActivation As Int64 = 9
-        Public Shared ReadOnly SoftwareUserCanActivateUnactivateSMSOwner As Int64 = 22
-        Public Shared ReadOnly UserCanChargeSMSControllingMoneyWallet As Int64 = 30
-    End Class
-
-    Public Class R2StandardPermissionTypeStructure
-        Inherits BaseStandardClass.R2StandardStructure
-
-        Public Sub New()
-            MyBase.New()
-            PTId = Int64.MinValue
-            PTName = String.Empty
-            PTTitle = String.Empty
-            PTColor = Color.White
-            EntityTableId1 = Int64.MinValue
-            EntityTableId2 = Int64.MinValue
-            Description = String.Empty
-            UserId = Int64.MinValue
-            DateTimeMilladi = Now
-            DateShamsi = String.Empty
-            ViewFlag = Boolean.FalseString
-            Active = Boolean.FalseString
-            Deleted = Boolean.FalseString
-        End Sub
-
-        Public Sub New(YourPTId As Int64, YourPTName As String, YourPTTitle As String, YourPTColor As Color, YourEntityTableId1 As Int64, YourEntityTableId2 As Int64, YourDescription As String, YourUserId As Int64, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
-            MyBase.New(YourPTId, YourPTName)
-            PTId = YourPTId
-            PTName = YourPTName
-            PTTitle = YourPTTitle
-            PTColor = YourPTColor
-            EntityTableId1 = YourEntityTableId1
-            EntityTableId2 = YourEntityTableId2
-            Description = YourDescription
-            UserId = YourUserId
-            DateTimeMilladi = YourDateTimeMilladi
-            DateShamsi = YourDateShamsi
-            ViewFlag = YourViewFlag
-            Active = YourActive
-            Deleted = YourDeleted
-        End Sub
-
-        Public Property PTId As Int64
-        Public Property PTName As String
-        Public Property PTTitle As String
-        Public Property PTColor As Color
-        Public Property EntityTableId1 As Int64
-        Public Property EntityTableId2 As Int64
-        Public Property Description As String
-        Public Property UserId As Int64
-        Public Property DateTimeMilladi As DateTime
-        Public Property DateShamsi As String
-        Public Property ViewFlag As Boolean
-        Public Property Active As Boolean
-        Public Property Deleted As Boolean
-
-    End Class
-
-    Public Class R2StandardPermissionStructure
-        Inherits BaseStandardClass.R2StandardStructure
-
-        Public Sub New()
-            MyBase.New()
-            PId = Int64.MinValue
-            EntityIdFirst = Int64.MinValue
-            EntityIdSecond = Int64.MinValue
-            PermissionTypeId = Int64.MinValue
-            RelationActive = Boolean.FalseString
-        End Sub
-
-        Public Sub New(YourPId As Int64, YourEntityIdFirst As Int64, YourEntityIdSecond As Int64, YourPermissionTypeId As Int64, YourRelationActive As Boolean)
-            MyBase.New(YourPId, String.Empty)
-            PId = YourPId
-            EntityIdFirst = YourEntityIdFirst
-            EntityIdSecond = YourEntityIdSecond
-            PermissionTypeId = YourPermissionTypeId
-            RelationActive = YourRelationActive
-        End Sub
-
-        Public Property PId As Int64
-        Public Property EntityIdFirst As Int64
-        Public Property EntityIdSecond As Int64
-        Public Property PermissionTypeId As Int64
-        Public Property RelationActive As Boolean
-
-    End Class
-
-    Public Class R2CoreInstansePermissionsManager
-
-        Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
-
-        Public Function ExistPermission(YourPermissionTypeId As Int64, YourEntityIdFirst As Int64, YourEntityIdSecond As Int64) As Boolean
-            Try
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
-                      "Select * from R2Primary.dbo.TblPermissions as Permissions 
-                       Where Permissions.PermissionTypeId=" & YourPermissionTypeId & " and Permissions.RelationActive=1 and Permissions.EntityIdFirst=" & YourEntityIdFirst & " and Permissions.EntityIdSecond=" & YourEntityIdSecond & "", 32767, Ds, New Boolean).GetRecordsCount() = 0 Then
-                    Return False
-                Else
-                    Return True
-                End If
-            Catch ex As PermissionException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-    End Class
-
-    Public NotInheritable Class R2CoreMClassPermissionsManagement
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
-
-        Public Shared Sub RegisteringPermissions(YourPermissionTypeId As Int64, YourEntityIdFirst As Int64, YourEntityIdsSecond As String())
-            Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                Cmdsql.Connection.Open()
-                Cmdsql.Transaction = Cmdsql.Connection.BeginTransaction
-                Cmdsql.CommandText = "Delete R2Primary.dbo.TblPermissions Where PermissionTypeId=" & YourPermissionTypeId & " and EntityIdFirst=" & YourEntityIdFirst & ""
-                Cmdsql.ExecuteNonQuery()
-                For Loopx As Int64 = 0 To YourEntityIdsSecond.Count - 1
-                    Cmdsql.CommandText = "Insert Into R2Primary.dbo.TblPermissions(EntityIdFirst,EntityIdSecond,PermissionTypeId,RelationActive) 
-                                          Values(" & YourEntityIdFirst & "," & YourEntityIdsSecond(Loopx) & "," & YourPermissionTypeId & ",1)"
-                    Cmdsql.ExecuteNonQuery()
-                Next
-                Cmdsql.Transaction.Commit() : Cmdsql.Connection.Close()
-            Catch ex As Exception
-                If Cmdsql.Connection.State <> ConnectionState.Closed Then
-                    Cmdsql.Transaction.Rollback() : Cmdsql.Connection.Close()
-                End If
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-        Public Shared Function ExistPermission(YourPermissionTypeId As Int64, YourEntityIdFirst As Int64, YourEntityIdSecond As Int64) As Boolean
-            Try
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
-                      "Select * from R2Primary.dbo.TblPermissions as Permissions 
-                       Where Permissions.PermissionTypeId=" & YourPermissionTypeId & " and Permissions.RelationActive=1 and Permissions.EntityIdFirst=" & YourEntityIdFirst & " and Permissions.EntityIdSecond=" & YourEntityIdSecond & "", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then
-                    Return False
-                Else
-                    Return True
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-    End Class
-
-    Namespace Exceptions
-        Public Class PermissionException
-            Inherits ApplicationException
-            Public Overrides ReadOnly Property Message As String
-                Get
-                    Return "مجوز دسترسی وجود ندارد"
-                End Get
-            End Property
-        End Class
-
-    End Namespace
-
-    'BPTChanged
-    Public Class R2CorePermissionsManager
-
-        Private InstanseSqlDataBOX = New R2CoreSqlDataBOXManager(New R2DateTimeService)
-
-        Public Function ExistPermission(YourPermissionTypeId As Int64, YourEntityIdFirst As Int64, YourEntityIdSecond As Int64) As Boolean
-            Try
-                Dim Ds As DataSet
-                If InstanseSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
-                      "Select * from R2Primary.dbo.TblPermissions as Permissions 
-                       Where Permissions.PermissionTypeId=" & YourPermissionTypeId & " and Permissions.RelationActive=1 and Permissions.EntityIdFirst=" & YourEntityIdFirst & " and Permissions.EntityIdSecond=" & YourEntityIdSecond & "", 32767, Ds, New Boolean).GetRecordsCount() = 0 Then
-                    Return False
-                Else
-                    Return True
-                End If
-            Catch ex As PermissionException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-    End Class
-
-
-End Namespace
-
 Namespace MobileProcessesManagement
 
     Public MustInherit Class R2CoreMobileProcesses
@@ -2724,86 +2529,86 @@ Namespace MobileProcessesManagement
 
         Private InstanseSqlDataBOX = New R2CoreSqlDataBOXManager(New R2DateTimeService)
 
-        Public Function GetMobileProcesses(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure) As List(Of R2StandardMobileProcessStructure)
-            Try
-                Dim Ds As DataSet
-                If InstanseSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
-                             "Select PId,PName,PTitle,TargetMobilePage,TargetMobilePageDelegate,Description,PForeColor,PBackColor 
-                              from R2Primary.dbo.TblSoftwareUsers as SoftwareUser
-                                 Inner Join R2Primary.dbo.TblEntityRelations as SoftwareUserMobileProcessGroup On SoftwareUser.UserId=SoftwareUserMobileProcessGroup.E1 
-                                 Inner Join R2Primary.dbo.TblMobileProcessGroups as MobileProcessGroup On SoftwareUserMobileProcessGroup.E2=MobileProcessGroup.PGId 
-                                 Inner Join R2Primary.dbo.TblEntityRelations as MobileProcessGroupMobileProcess On MobileProcessGroup.PGId=MobileProcessGroupMobileProcess.E1  
-                                 Inner Join R2Primary.dbo.TblMobileProcesses as MobileProcesses On MobileProcessGroupMobileProcess.E2=MobileProcesses.PId 
-                              Where SoftwareUser.UserId=" & YourNSSSoftwareUser.UserId & " and SoftwareUser.UserActive=1 and SoftwareUser.Deleted=0 and SoftwareUserMobileProcessGroup.ERTypeId=" & R2CoreEntityRelationTypes.SoftwareUser_MobileProcessGroup & "
-                                    and SoftwareUserMobileProcessGroup.RelationActive=1 and  MobileProcessGroup.ViewFlag=1 and  MobileProcessGroup.Active=1 and MobileProcessGroup.Deleted=0 and MobileProcessGroupMobileProcess.ERTypeId=" & R2CoreEntityRelationTypes.MobileProcessGroup_MobileProcess & " 
-                                    and MobileProcessGroupMobileProcess.RelationActive=1 and MobileProcesses.ViewFlag=1 and MobileProcesses.Active=1 and MobileProcesses.Deleted=0 
-                              Order By MobileProcessGroup.PGId,MobileProcesses.PId ", 32000, Ds, New Boolean).GetRecordsCount <> 0 Then
-                    Dim Lst As New List(Of R2StandardMobileProcessStructure)
-                    For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
-                        Dim NSS As New R2StandardMobileProcessStructure
-                        NSS.PId = Ds.Tables(0).Rows(Loopx).Item("PId")
-                        NSS.PName = Ds.Tables(0).Rows(Loopx).Item("PName")
-                        NSS.PTitle = "  " + Ds.Tables(0).Rows(Loopx).Item("PTitle").ToString().Trim
-                        NSS.TargetMobilePage = Ds.Tables(0).Rows(Loopx).Item("TargetMobilePage").trim
-                        NSS.TargetMobilePageDelegate = Ds.Tables(0).Rows(Loopx).Item("TargetMobilePageDelegate").trim
-                        NSS.Description = Ds.Tables(0).Rows(Loopx).Item("Description").trim
-                        NSS.PForeColor = Color.FromName(Ds.Tables(0).Rows(Loopx).Item("PForeColor").trim)
-                        NSS.PBackColor = Color.FromName(Ds.Tables(0).Rows(Loopx).Item("PBackColor").trim)
-                        Lst.Add(NSS)
-                    Next
-                    Return Lst
-                Else
-                    Throw New SoftwareUserHasNotAnyMobileProcessPermissionException
-                End If
-            Catch exx As SoftwareUserHasNotAnyMobileProcessPermissionException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function GetMobileProcesses(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure) As List(Of R2StandardMobileProcessStructure)
+        '    Try
+        '        Dim Ds As DataSet
+        '        If InstanseSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+        '                     "Select PId,PName,PTitle,TargetMobilePage,TargetMobilePageDelegate,Description,PForeColor,PBackColor 
+        '                      from R2Primary.dbo.TblSoftwareUsers as SoftwareUser
+        '                         Inner Join R2Primary.dbo.TblEntityRelations as SoftwareUserMobileProcessGroup On SoftwareUser.UserId=SoftwareUserMobileProcessGroup.E1 
+        '                         Inner Join R2Primary.dbo.TblMobileProcessGroups as MobileProcessGroup On SoftwareUserMobileProcessGroup.E2=MobileProcessGroup.PGId 
+        '                         Inner Join R2Primary.dbo.TblEntityRelations as MobileProcessGroupMobileProcess On MobileProcessGroup.PGId=MobileProcessGroupMobileProcess.E1  
+        '                         Inner Join R2Primary.dbo.TblMobileProcesses as MobileProcesses On MobileProcessGroupMobileProcess.E2=MobileProcesses.PId 
+        '                      Where SoftwareUser.UserId=" & YourNSSSoftwareUser.UserId & " and SoftwareUser.UserActive=1 and SoftwareUser.Deleted=0 and SoftwareUserMobileProcessGroup.ERTypeId=" & R2CoreEntityRelationTypes.SoftwareUser_MobileProcessGroup & "
+        '                            and SoftwareUserMobileProcessGroup.RelationActive=1 and  MobileProcessGroup.ViewFlag=1 and  MobileProcessGroup.Active=1 and MobileProcessGroup.Deleted=0 and MobileProcessGroupMobileProcess.ERTypeId=" & R2CoreEntityRelationTypes.MobileProcessGroup_MobileProcess & " 
+        '                            and MobileProcessGroupMobileProcess.RelationActive=1 and MobileProcesses.ViewFlag=1 and MobileProcesses.Active=1 and MobileProcesses.Deleted=0 
+        '                      Order By MobileProcessGroup.PGId,MobileProcesses.PId ", 32000, Ds, New Boolean).GetRecordsCount <> 0 Then
+        '            Dim Lst As New List(Of R2StandardMobileProcessStructure)
+        '            For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
+        '                Dim NSS As New R2StandardMobileProcessStructure
+        '                NSS.PId = Ds.Tables(0).Rows(Loopx).Item("PId")
+        '                NSS.PName = Ds.Tables(0).Rows(Loopx).Item("PName")
+        '                NSS.PTitle = "  " + Ds.Tables(0).Rows(Loopx).Item("PTitle").ToString().Trim
+        '                NSS.TargetMobilePage = Ds.Tables(0).Rows(Loopx).Item("TargetMobilePage").trim
+        '                NSS.TargetMobilePageDelegate = Ds.Tables(0).Rows(Loopx).Item("TargetMobilePageDelegate").trim
+        '                NSS.Description = Ds.Tables(0).Rows(Loopx).Item("Description").trim
+        '                NSS.PForeColor = Color.FromName(Ds.Tables(0).Rows(Loopx).Item("PForeColor").trim)
+        '                NSS.PBackColor = Color.FromName(Ds.Tables(0).Rows(Loopx).Item("PBackColor").trim)
+        '                Lst.Add(NSS)
+        '            Next
+        '            Return Lst
+        '        Else
+        '            Throw New SoftwareUserHasNotAnyMobileProcessPermissionException
+        '        End If
+        '    Catch exx As SoftwareUserHasNotAnyMobileProcessPermissionException
+        '        Throw exx
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
     End Class
 
     Public NotInheritable Class R2CoreMClassMobileProcessesManagement
         Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
 
-        Public Shared Function GetMobileProcesses(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure) As List(Of R2StandardMobileProcessStructure)
-            Try
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
-                             "Select PId,PName,PTitle,TargetMobilePage,TargetMobilePageDelegate,Description,PForeColor,PBackColor 
-                              from R2Primary.dbo.TblSoftwareUsers as SoftwareUser
-                                 Inner Join R2Primary.dbo.TblEntityRelations as SoftwareUserMobileProcessGroup On SoftwareUser.UserId=SoftwareUserMobileProcessGroup.E1 
-                                 Inner Join R2Primary.dbo.TblMobileProcessGroups as MobileProcessGroup On SoftwareUserMobileProcessGroup.E2=MobileProcessGroup.PGId 
-                                 Inner Join R2Primary.dbo.TblEntityRelations as MobileProcessGroupMobileProcess On MobileProcessGroup.PGId=MobileProcessGroupMobileProcess.E1  
-                                 Inner Join R2Primary.dbo.TblMobileProcesses as MobileProcesses On MobileProcessGroupMobileProcess.E2=MobileProcesses.PId 
-                              Where SoftwareUser.UserId=" & YourNSSSoftwareUser.UserId & " and SoftwareUser.UserActive=1 and SoftwareUser.Deleted=0 and SoftwareUserMobileProcessGroup.ERTypeId=" & R2CoreEntityRelationTypes.SoftwareUser_MobileProcessGroup & "
-                                    and SoftwareUserMobileProcessGroup.RelationActive=1 and  MobileProcessGroup.ViewFlag=1 and  MobileProcessGroup.Active=1 and MobileProcessGroup.Deleted=0 and MobileProcessGroupMobileProcess.ERTypeId=" & R2CoreEntityRelationTypes.MobileProcessGroup_MobileProcess & " 
-                                    and MobileProcessGroupMobileProcess.RelationActive=1 and MobileProcesses.ViewFlag=1 and MobileProcesses.Active=1 and MobileProcesses.Deleted=0 
-                              Order By MobileProcessGroup.PGId,MobileProcesses.PId ", 3600, Ds, New Boolean).GetRecordsCount <> 0 Then
-                    Dim Lst As New List(Of R2StandardMobileProcessStructure)
-                    For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
-                        Dim NSS As New R2StandardMobileProcessStructure
-                        NSS.PId = Ds.Tables(0).Rows(Loopx).Item("PId")
-                        NSS.PName = Ds.Tables(0).Rows(Loopx).Item("PName")
-                        NSS.PTitle = "  " + Ds.Tables(0).Rows(Loopx).Item("PTitle").ToString().Trim
-                        NSS.TargetMobilePage = Ds.Tables(0).Rows(Loopx).Item("TargetMobilePage").trim
-                        NSS.TargetMobilePageDelegate = Ds.Tables(0).Rows(Loopx).Item("TargetMobilePageDelegate").trim
-                        NSS.Description = Ds.Tables(0).Rows(Loopx).Item("Description").trim
-                        NSS.PForeColor = Color.FromName(Ds.Tables(0).Rows(Loopx).Item("PForeColor").trim)
-                        NSS.PBackColor = Color.FromName(Ds.Tables(0).Rows(Loopx).Item("PBackColor").trim)
-                        Lst.Add(NSS)
-                    Next
-                    Return Lst
-                Else
-                    Throw New SoftwareUserHasNotAnyMobileProcessPermissionException
-                End If
-            Catch exx As SoftwareUserHasNotAnyMobileProcessPermissionException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetMobileProcesses(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure) As List(Of R2StandardMobileProcessStructure)
+        '    Try
+        '        Dim Ds As DataSet
+        '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+        '                     "Select PId,PName,PTitle,TargetMobilePage,TargetMobilePageDelegate,Description,PForeColor,PBackColor 
+        '                      from R2Primary.dbo.TblSoftwareUsers as SoftwareUser
+        '                         Inner Join R2Primary.dbo.TblEntityRelations as SoftwareUserMobileProcessGroup On SoftwareUser.UserId=SoftwareUserMobileProcessGroup.E1 
+        '                         Inner Join R2Primary.dbo.TblMobileProcessGroups as MobileProcessGroup On SoftwareUserMobileProcessGroup.E2=MobileProcessGroup.PGId 
+        '                         Inner Join R2Primary.dbo.TblEntityRelations as MobileProcessGroupMobileProcess On MobileProcessGroup.PGId=MobileProcessGroupMobileProcess.E1  
+        '                         Inner Join R2Primary.dbo.TblMobileProcesses as MobileProcesses On MobileProcessGroupMobileProcess.E2=MobileProcesses.PId 
+        '                      Where SoftwareUser.UserId=" & YourNSSSoftwareUser.UserId & " and SoftwareUser.UserActive=1 and SoftwareUser.Deleted=0 and SoftwareUserMobileProcessGroup.ERTypeId=" & R2CoreEntityRelationTypes.SoftwareUser_MobileProcessGroup & "
+        '                            and SoftwareUserMobileProcessGroup.RelationActive=1 and  MobileProcessGroup.ViewFlag=1 and  MobileProcessGroup.Active=1 and MobileProcessGroup.Deleted=0 and MobileProcessGroupMobileProcess.ERTypeId=" & R2CoreEntityRelationTypes.MobileProcessGroup_MobileProcess & " 
+        '                            and MobileProcessGroupMobileProcess.RelationActive=1 and MobileProcesses.ViewFlag=1 and MobileProcesses.Active=1 and MobileProcesses.Deleted=0 
+        '                      Order By MobileProcessGroup.PGId,MobileProcesses.PId ", 3600, Ds, New Boolean).GetRecordsCount <> 0 Then
+        '            Dim Lst As New List(Of R2StandardMobileProcessStructure)
+        '            For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
+        '                Dim NSS As New R2StandardMobileProcessStructure
+        '                NSS.PId = Ds.Tables(0).Rows(Loopx).Item("PId")
+        '                NSS.PName = Ds.Tables(0).Rows(Loopx).Item("PName")
+        '                NSS.PTitle = "  " + Ds.Tables(0).Rows(Loopx).Item("PTitle").ToString().Trim
+        '                NSS.TargetMobilePage = Ds.Tables(0).Rows(Loopx).Item("TargetMobilePage").trim
+        '                NSS.TargetMobilePageDelegate = Ds.Tables(0).Rows(Loopx).Item("TargetMobilePageDelegate").trim
+        '                NSS.Description = Ds.Tables(0).Rows(Loopx).Item("Description").trim
+        '                NSS.PForeColor = Color.FromName(Ds.Tables(0).Rows(Loopx).Item("PForeColor").trim)
+        '                NSS.PBackColor = Color.FromName(Ds.Tables(0).Rows(Loopx).Item("PBackColor").trim)
+        '                Lst.Add(NSS)
+        '            Next
+        '            Return Lst
+        '        Else
+        '            Throw New SoftwareUserHasNotAnyMobileProcessPermissionException
+        '        End If
+        '    Catch exx As SoftwareUserHasNotAnyMobileProcessPermissionException
+        '        Throw exx
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
 
 
@@ -2836,73 +2641,6 @@ Namespace MobileProcessesManagement
 End Namespace
 
 Namespace WhatsAppMessenger
-
-End Namespace
-
-Namespace RequesterManagement
-
-    Public MustInherit Class R2CoreRequesterTypes
-        Public Shared ReadOnly None As Int64 = 0
-        Public Shared ReadOnly Desktop As Int64 = 1
-        Public Shared ReadOnly Web As Int64 = 2
-        Public Shared ReadOnly Mobile As Int64 = 3
-    End Class
-
-    Public MustInherit Class R2CoreRequesters
-        Public Shared ReadOnly None As Int64 = 0
-    End Class
-
-    Public Class R2StandardRequesterStructure
-        Inherits R2StandardStructure
-
-        Public Sub New()
-            MyBase.New()
-            RqId = Int64.MinValue
-            RqName = String.Empty
-            RqTitle = String.Empty
-            RqTypeId = Int64.MinValue
-            Description = String.Empty
-            UserId = Int64.MinValue
-            DateTimeMilladi = Now
-            DateShamsi = String.Empty
-            ViewFlag = Boolean.FalseString
-            Active = Boolean.FalseString
-            Deleted = Boolean.FalseString
-        End Sub
-
-        Public Sub New(ByVal YourRqId As Int64, ByVal YourRqName As String, ByVal YourRqTitle As String, ByVal YourRqTypeId As Int64, ByVal YourDescription As String, YourUserId As Int64, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
-            MyBase.New(YourRqId, YourRqName.Trim())
-            RqId = YourRqId
-            RqName = YourRqName
-            RqTitle = YourRqTitle
-            RqTypeId = YourRqTypeId
-            Description = YourDescription
-            UserId = YourUserId
-            DateTimeMilladi = YourDateTimeMilladi
-            DateShamsi = YourDateShamsi
-            ViewFlag = YourViewFlag
-            Active = YourActive
-            Deleted = YourDeleted
-        End Sub
-
-        Public Property RqId As Int64
-        Public Property RqName As String
-        Public Property RqTitle As String
-        Public Property RqTypeId As Int64
-        Public Property Description As String
-        Public Property UserId As Int64
-        Public Property DateTimeMilladi As DateTime
-        Public Property DateShamsi As String
-        Public Property ViewFlag As Boolean
-        Public Property Active As Boolean
-        Public Property Deleted As Boolean
-
-
-
-
-
-    End Class
-
 
 End Namespace
 
@@ -3182,56 +2920,6 @@ Namespace BlackIPs
                 Get
                     'آی پی در لیست سیاه قرار دارد
                     Return InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.IPISBlack).MsgContent
-                End Get
-            End Property
-        End Class
-
-    End Namespace
-
-
-End Namespace
-
-Namespace Email
-
-    Public Class R2CoreEmailManager
-
-        Private _DateTimeService As New R2DateTimeService
-
-        Public Sub SendEmailWithTXTTypeAttachment(YourReciever As String, YourAttachment As StringBuilder, YourSubject As String, YourBody As String, YourAttachmentFileName As String)
-            Try
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
-                If Not InstanceConfiguration.GetConfigBoolean(R2CoreConfigurations.EmailSystem, 0) Then Throw New R2CoreEmailSystemIsNotActiveException
-
-                Dim myByteArray = System.Text.Encoding.UTF8.GetBytes(YourAttachment.ToString)
-                Dim ms = New MemoryStream(myByteArray)
-                Dim Credentials = New System.Net.NetworkCredential(InstanceConfiguration.GetConfigString(R2CoreConfigurations.EmailSystem, 2), InstanceConfiguration.GetConfigString(R2CoreConfigurations.EmailSystem, 3))
-                Dim SmtpClient = New SmtpClient()
-                SmtpClient.Host = InstanceConfiguration.GetConfigString(R2CoreConfigurations.EmailSystem, 1)
-                SmtpClient.Port = 587
-                SmtpClient.EnableSsl = True
-                SmtpClient.Credentials = Credentials
-                Dim mail = New MailMessage()
-                mail.From = New MailAddress(InstanceConfiguration.GetConfigString(R2CoreConfigurations.EmailSystem, 2))
-                mail.To.Add(YourReciever)
-                mail.Attachments.Add(New Attachment(ms, YourAttachmentFileName))
-                mail.Subject = YourSubject
-                mail.Body = YourBody
-                SmtpClient.Send(mail)
-            Catch ex As R2CoreEmailSystemIsNotActiveException
-                Throw ex
-            Catch ex As Exception
-                Throw ex
-            End Try
-        End Sub
-
-    End Class
-
-    Namespace Exceptions
-        Public Class R2CoreEmailSystemIsNotActiveException
-            Inherits ApplicationException
-            Public Overrides ReadOnly Property Message As String
-                Get
-                    Return "سرویس ایمیل غیر فعال است"
                 End Get
             End Property
         End Class

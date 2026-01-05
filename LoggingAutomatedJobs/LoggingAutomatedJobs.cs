@@ -3,6 +3,7 @@ using R2Core.CachHelper;
 using R2Core.ConfigurationManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
+using R2Core.GeneralConfiguration;
 using R2Core.LoggingManagement;
 using R2Core.PubSubMessaging;
 using R2Core.SoftwareUserManagement;
@@ -11,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.ServiceProcess;
@@ -26,13 +28,17 @@ namespace LoggingAutomatedJobs
         private System.Timers.Timer _AutomatedJobsTimer = new System.Timers.Timer();
         private bool _FailStatus = true;
         private ISubscriber _Subscriber = null;
-        private R2DateTimeService  _DateTimeService;
+        private R2DateTimeService _DateTimeService;
+        private R2CoreLoggingManager _Logger;
+        private RedisConnectorHelper _RCH;
 
         public LoggingAutomatedJobs()
         {
             InitializeComponent();
             _DateTimeService = new R2DateTimeService();
             _AutomatedJobsTimer.Elapsed += _AutomatedJobsTimer_Elapsed;
+            _Logger = new R2CoreLoggingManager();
+            _RCH = new RedisConnectorHelper();
         }
 
         private void _AutomatedJobsTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -47,10 +53,10 @@ namespace LoggingAutomatedJobs
                 {
                     try
                     {
-                        var InstanceConfiguration = new R2CoreInstanceConfigurationManager(_DateTimeService);
+                        var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
                         var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(1));
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(InstanceSoftwareUsers.GetSystemUser());
-                        _AutomatedJobsTimer.Interval = InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.LoggingAutomatedJobsSetting, 0) * 1000;
+                        _AutomatedJobsTimer.Interval = InstanceGeneralConfiguration.GetInt64Configuration(R2CoreGeneralConfigurations.LoggingAutomatedJobsSetting, 0) * 1000;
                         _FailStatus = false;
                         EventLog.WriteEntry("LoggingAutomatedJobs", "LoggingAutomatedJobs.Interval=" + _AutomatedJobsTimer.Interval.ToString(), EventLogEntryType.SuccessAudit);
                     }
@@ -79,7 +85,7 @@ namespace LoggingAutomatedJobs
         void Logger(StackExchange.Redis.RedisChannel channel, StackExchange.Redis.RedisValue value)
         {
             try
-            { R2CoreLoggingManager.Logger(value); }
+            { _Logger.Logger(value); }
             catch (Exception ex)
             { throw ex; }
         }
@@ -97,7 +103,7 @@ namespace LoggingAutomatedJobs
                 _AutomatedJobsTimer.Enabled = true;
                 _AutomatedJobsTimer.Start();
 
-                _Subscriber = RedisConnectorHelper.Connection.GetSubscriber();
+                _Subscriber = _RCH.Connection.GetSubscriber();
                 _Subscriber.Subscribe(R2CorePubSubChannels.Logging, new Action<StackExchange.Redis.RedisChannel, StackExchange.Redis.RedisValue>(Logger));
 
                 EventLog.WriteEntry("LoggingAutomatedJobs", "LoggingAutomatedJobs Start ...", EventLogEntryType.SuccessAudit);

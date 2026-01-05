@@ -157,9 +157,11 @@
     <Compile Include="DataBases.vb" />
     <Compile Include="DateAndTime.vb" />
     <Compile Include="Devices.vb" />
+    <Compile Include="Email.vb" />
     <Compile Include="Exceptions.vb" />
     <Compile Include="Logging.vb" />
     <Compile Include="Networking.vb" />
+    <Compile Include="Permissions.vb" />
     <Compile Include="RawGroups.vb" />
     <Compile Include="MoneyWallets.vb" />
     <Compile Include="R2ClassLibrary-Partial.vb" />
@@ -179,6 +181,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Requesters.vb" />
     <Compile Include="RFIDCards.vb" />
     <Compile Include="Sessions.vb" />
     <Compile Include="SMS.vb" />

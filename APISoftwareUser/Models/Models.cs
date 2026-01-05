@@ -32,10 +32,10 @@ namespace APISoftwareUser.Models
         public string SoftwareUserMobileNumber;
     }
 
-    public class APISoftwareUserSessionIdVerificationCode
+    public class APISoftwareUserSessionIdOTPCode
     {
         public String SessionId;
-        public string VerificationCode;
+        public string OTPCode;
     }
 
     public class APISoftwareUserSessionIdSoftwareUserIdWPGId
@@ -58,4 +58,21 @@ namespace APISoftwareUser.Models
     {
         public string SoftwareUserMobileNumber;
     }
+
+    public class APISoftwareUserSessionIdSoftwareUserMobileNumberCaptcha
+    {
+        public String SessionId;
+        public string SoftwareUserMobileNumber;
+        public string Captcha;
+    }
+
+    public class APISoftwareUserSessionIdSoftwareUserIdOldPasswordNewPassword
+    {
+        public String SessionId;
+        public Int64 SoftwareUserId;
+        public String OldPassword;
+        public String NewPassword;
+    }
+
+
 }

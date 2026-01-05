@@ -30,6 +30,8 @@ Public Class R2PrimaryFileSharingWebService
     Public Function WebMethodLogin(YourUserShenaseh As String, YourUserPassword As String) As Int64
         Try
             Return _ExchangeKeyManager.Login(YourUserShenaseh, YourUserPassword)
+        Catch ex As SqlInjectionException
+            Throw GetSoapExeption(ex)
         Catch ex As Exception When TypeOf (ex) Is UserIsNotActiveException OrElse TypeOf (ex) Is UserNotExistException OrElse TypeOf (ex) Is GetNSSException
             Throw GetSoapExeption(ex)
         Catch ex As Exception

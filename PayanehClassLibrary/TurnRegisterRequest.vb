@@ -29,6 +29,9 @@ Imports R2CoreTransportationAndLoadNotification.TurnRegisterRequest
 Imports R2Core.DatabaseManagement
 Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
 Imports R2Core.DateTimeProvider
+Imports R2CoreTransportationAndLoadNotification.TurnCosts
+Imports R2Core.GeneralConfiguration
+Imports R2CoreTransportationAndLoadNotification.GeneralConfiguration
 
 
 Namespace TurnRegisterRequest
@@ -97,19 +100,19 @@ Namespace TurnRegisterRequest
         '    End Try
         'End Sub
 
-        Public Function IsMoneyWalletInventoryIsEnoughForTurnRegistering(YourNSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure) As Boolean
-            Try
-                Dim InstanceMoneyWallet = New R2CoreParkingSystemInstanceMoneyWalletManager
-                Dim InstanceCarTruckNobat = New PayanehClassLibraryMClassCarTruckNobatManager
-                If InstanceMoneyWallet.GetMoneyWalletCharge(YourNSSTrafficCard) < InstanceCarTruckNobat.GetHazinehSodoorNobat(YourNSSTrafficCard) Then
-                    Return False
-                Else
-                    Return True
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function IsMoneyWalletInventoryIsEnoughForTurnRegistering(YourNSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure) As Boolean
+        '    Try
+        '        Dim InstanceMoneyWallet = New R2CoreParkingSystemInstanceMoneyWalletManager
+        '        Dim InstanceCarTruckNobat = New PayanehClassLibraryMClassCarTruckNobatManager
+        '        If InstanceMoneyWallet.GetMoneyWalletCharge(YourNSSTrafficCard) < InstanceCarTruckNobat.GetHazinehSodoorNobat(YourNSSTrafficCard) Then
+        '            Return False
+        '        Else
+        '            Return True
+        '        End If
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
         'Public Function RealTimeTurnRegisterRequest(YourNSSSeqT As R2CoreTransportationAndLoadNotificationStandardSequentialTurnStructure, YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure, YourTurnPrintRedirect As Boolean, YourMoneyWalletInventoryControl As Boolean, ByRef YourTurnId As Int64, YourRequesterId As Int64, YourTurnType As TurnType, YourUserNSS As R2CoreStandardSoftwareUserStructure, YourTWSForce As Boolean) As Int64
         '    Try
@@ -386,7 +389,8 @@ Namespace TurnRegisterRequest
             Try
                 Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(_DateTimeService)
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService)
-                Dim TurnCost = InstanceTurns.GetTurnCost(YourSequentialTurnId, False)
+                Dim InstanceTurnCost = New R2CoreTransportationAndLoadNotificationTurnCostManager(_DateTimeService)
+                Dim TurnCost = InstanceTurnCost.GetTurnCost(YourSequentialTurnId, False)
                 If InstanceMoneyWallet.GetMoneyWalletCharge(InstanceMoneyWallet.GetMoneyWalletfromCarId(YourTruckId, False).MoneyWalletId) < TurnCost.TotalCost Then
                     Return False
                 Else
@@ -450,7 +454,7 @@ Namespace TurnRegisterRequest
 
         Public Function ReserveTurnRegisterRequest(YourRequesterId As Int64, YourTurnType As TurnType, YourSoftwareUserId As Int64) As Int64
             Try
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService)
                 'کنترل مجوز
                 Dim InstancePermissions = New R2CoreInstansePermissionsManager
@@ -458,7 +462,7 @@ Namespace TurnRegisterRequest
                 If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.RequesterCanRequestReserveTurnRegistering, YourRequesterId, 0) Then Throw New RequesterCanNotRequestReserveTurnRegisteringException
                 'ثبت درخواست صدور نوبت رزرو
                 Dim InstanceTurnRegisterRequest = New R2CoreTransportationAndLoadNotificationTurnRegisterRequestManager(_DateTimeService)
-                Dim TurnRegisterRequestId = InstanceTurnRegisterRequest.TurnRegisterRequestRegistering(New R2CoreTransportationAndLoadNotificationTurnRegisterRequest With {.TRRId = Nothing, .TRRTypeId = TurnRegisterRequestTypes.Reserve, .TruckId = InstanceConfiguration.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 1), .Description = InstanceTurnRegisterRequest.GetTurnRegisterRequestType(TurnRegisterRequestTypes.Reserve).TRRTypeTitle, .UserId = YourSoftwareUserId, .RequesterId = YourRequesterId, .DateTimeMilladi = Nothing, .DateShamsi = Nothing, .Time = Nothing}, Nothing, YourSoftwareUserId, YourRequesterId)
+                Dim TurnRegisterRequestId = InstanceTurnRegisterRequest.TurnRegisterRequestRegistering(New R2CoreTransportationAndLoadNotificationTurnRegisterRequest With {.TRRId = Nothing, .TRRTypeId = TurnRegisterRequestTypes.Reserve, .TruckId = InstanceGeneralConfiguration.GetInt64Configuration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.BaseTransportationAndLoadNotificationSetting, 1), .Description = InstanceTurnRegisterRequest.GetTurnRegisterRequestType(TurnRegisterRequestTypes.Reserve).TRRTypeTitle, .UserId = YourSoftwareUserId, .RequesterId = YourRequesterId, .DateTimeMilladi = Nothing, .DateShamsi = Nothing, .Time = Nothing}, Nothing, YourSoftwareUserId, YourRequesterId)
                 'ثبت نوبت
                 Dim TurnId = InstanceTurns.GetReserveTurn(TurnRegisterRequestId, YourTurnType, YourSoftwareUserId)
                 'ثبت رابطه نوبت با درخواست صدور نوبت از طریق فضانام مدیریت روابط نهادی

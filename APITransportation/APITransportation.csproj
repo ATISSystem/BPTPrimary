@@ -201,7 +201,9 @@
     <Compile Include="Controllers\TravelTimesController.cs" />
     <Compile Include="Controllers\TruckController.cs" />
     <Compile Include="Controllers\TruckDriverController.cs" />
+    <Compile Include="Controllers\TruckNativenessController.cs" />
     <Compile Include="Controllers\TurnController.cs" />
+    <Compile Include="Controllers\TurnCostsController.cs" />
     <Compile Include="Controllers\TurnRegisterRequestController.cs" />
     <Compile Include="Controllers\TWSController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />

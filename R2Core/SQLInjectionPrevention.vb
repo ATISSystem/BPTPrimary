@@ -3,6 +3,7 @@
 
 Imports R2Core.ConfigurationManagement
 Imports R2Core.DateTimeProvider
+Imports R2Core.GeneralConfiguration
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports System.Reflection
 
@@ -17,8 +18,9 @@ Namespace SQLInjectionPrevention
 
         Public Sub GeneralAuthorization(YourParam As String)
             Try
-                Dim InstanceConfiguration = New R2CoreConfigurationsManager(_DateTimeService)
-                Dim SqlInjectionPreventionKeywords = Split(InstanceConfiguration.GetConfigString(R2CoreConfigurations.SqlInjectionPrevention, 0), " ")
+                If YourParam.Trim = String.Empty Then Return
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
+                Dim SqlInjectionPreventionKeywords = Split(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.SqlInjectionPrevention, 0), " ")
                 Dim Wanted = YourParam.ToLower().Split(" ")
                 For Each Str As String In Wanted
                     If SqlInjectionPreventionKeywords.Any(Function(s) Str.Equals(s)) Or (New String() {";"}).Any(Function(s) Str.Equals(s)) Then

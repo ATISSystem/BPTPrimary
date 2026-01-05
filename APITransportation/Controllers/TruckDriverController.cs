@@ -16,6 +16,7 @@ using R2Core.WebProcessesManagement;
 using R2CoreParkingSystem.Drivers;
 using R2CoreParkingSystem.SMS.SMSOwners;
 using R2CoreTransportationAndLoadNotification.TruckDrivers;
+using R2CoreTransportationAndLoadNotification.TruckDrivers.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -80,14 +81,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetTruckDriverfromWebSite")]
-        public HttpResponseMessage GetTruckDriverfromWebSite()
+        public HttpResponseMessage GetTruckDriverfromWebSite([FromBody] APITransportationSessionIdTruckDriverNationalCode Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckDriverNationalCode>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckDriverNationalCode = Content.TruckDriverNationalCode;
 
@@ -97,6 +97,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTruckDrivers.GetTruckDriverfromNationalCode(TruckDriverNationalCode, true)), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (TruckDriverNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -124,6 +126,8 @@ namespace APITransportation.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceTruckDrivers.GetTruckDriverBySoftwareUser(User.UserId, false)), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (TruckDriverNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -136,7 +140,7 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/TruckDriverRegisteringMobileNumber")]
-        public HttpResponseMessage TruckDriverRegisteringMobileNumber()
+        public HttpResponseMessage TruckDriverRegisteringMobileNumber([FromBody] APITransportationSessionIdTruckDriverIdMobileNumber Content)
         {
             try
             {
@@ -144,7 +148,6 @@ namespace APITransportation.Controllers
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckDriverIdMobileNumber>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckDriverId = Content.TruckDriverId;
                 var MobileNumber = Content.MobileNumber;
@@ -169,13 +172,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/ActivateTruckDriverSMSOwner")]
-        public HttpResponseMessage ActivateTruckDriverSMSOwner()
+        public HttpResponseMessage ActivateTruckDriverSMSOwner([FromBody] APITransportationSessionIdTruckDriverId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckDriverId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckDriverId = Convert.ToInt64(Content.TruckDriverId);
 
@@ -199,13 +201,12 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/ResetTruckDriverUserPassword")]
-        public HttpResponseMessage ResetTruckDriverUserPassword()
+        public HttpResponseMessage ResetTruckDriverUserPassword([FromBody] APITransportationSessionIdTruckDriverId Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
 
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckDriverId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckDriverId = Convert.ToInt64(Content.TruckDriverId);
 
@@ -229,14 +230,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/SendWebSiteLink")]
-        public HttpResponseMessage SendWebSiteLink()
+        public HttpResponseMessage SendWebSiteLink([FromBody] APITransportationSessionIdTruckDriverId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
 
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckDriverId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckDriverId = Convert.ToInt64(Content.TruckDriverId);
 

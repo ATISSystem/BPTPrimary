@@ -27,6 +27,11 @@ using System.Net.Http;
 using System.Net;
 using System.Text;
 using R2Core.RFIDCards;
+using R2CoreTransportationAndLoadNotification.TruckDrivers;
+using R2CoreTransportationAndLoadNotification.TransportTariffsParameters;
+using R2Core.GeneralConfiguration;
+using R2Core.SMS.SMSHandling;
+using R2Core.SMS.GeneralAnnounceSMS;
 
 namespace UnitTestR2Core
 {
@@ -38,19 +43,58 @@ namespace UnitTestR2Core
         [TestMethod]
         public void TestMethod1()
         {
-            var xcvf = new R2CoreRFIDCardsManager(_DateTimeService );
+            var InstanceGeneralAnnounceSMS = new R2CoreGeneralAnnounceSMSManager(_DateTimeService);
+            var InstanceSMSHandler = new R2CoreSMSHandlerManager(_DateTimeService, null);
+            var InstanceCarousels = new R2CoreCarouselsManager(_DateTimeService);
+            var instanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, null);
+
+            var xcxc=instanceSoftwareUsers.GetUser("F49B1141",true ); 
+
+            InstanceSMSHandler.SendSMSFree("09132043148",new SMSCreationData { Data1="123" } ,12);
+
+            var SoftwareUserTypes = instanceSoftwareUsers.GetSoftwareUserTypes(true);
+
+
+            InstanceCarousels.CarouselChangeActiveStatus(4, false, null);
+
+            InstanceGeneralAnnounceSMS.RequestGeneralAnnounceSMS(3, "1234567890");
+            var SMSResult = InstanceGeneralAnnounceSMS.SendGeneralAnnounceSMS(3, "1234567890", "88o6We~8H%@5*~r");
+            var ProgressInf = InstanceGeneralAnnounceSMS.GetProgressInf("88o6We~8H%@5*~r");
+
+
+            //var ins = new R2CoreSMSHandlerManager(_DateTimeService,null );
+            //ins.SendBulkSMS(12,3,new SMSCreationData { Data1="123" });
+
+
+
+            //var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
+            //var ConfigTime = TimeSpan.Parse(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreConfigurations.SmsSystemSetting, 9)).Ticks;
+
+            var intsdf = new R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService);
+            intsdf.TransportPriceTarrifParameterDetailRegistering(new R2CoreTransportationAndLoadNotificationTransportTariffsParametersDetail { TPTPDId = 0, TPTPId = 1, AnnouncementSGId = 7, Active = true, Cost = 0, AnnouncementSGTitle = "", TPTPTitle = "" });
+
+
+            var xrf = new R2CoreSoftwareUsersManager(_DateTimeService, null);
+
+            var xzcx = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
+            xzcx.RegisteringTruckDriverMobileNumber(144543, "09130903148");
+
+
+            xrf.RegisteringSoftwareUserPermissionsByUserType(25);
+
+            var xcvf = new R2CoreRFIDCardsManager(_DateTimeService);
             xcvf.RFIDCardRegistering("WWWWWW01", 21);
 
             var InstanceMoneyWalletCharge = new R2CoreParkingSystemMoneyWalletChargeManager(_DateTimeService);
-                        InstanceMoneyWalletCharge.GetDefaultAmounts();
- 
+            InstanceMoneyWalletCharge.GetDefaultAmounts(true);
+
             var insss = new R2CoreTransportationAndLoadNotificationConfigurationOfLoadAnnouncementManager(_DateTimeService);
-            insss.ConfigurationOfLoadAnnouncementRegistering(new R2CoreTransportationAndLoadNotificationRawConfigurationOfLoadAnnouncement { COLAId= 1,COLAName="LoadAnnounceTimeCycle",COLATitle="زمانبندی اعلام بار",AnnouncementId=3, AnnouncementSGId=14,COLAIndex= 0,     COLAIndexTitle="ساعات",Description= "اعلام بار انباری برون شهری",COLAValue="11:00:00-10:00:00-12:00:00-14:00:00" });
-        
-            
-            var soft = new R2CoreSoftwareUsersManager(_DateTimeService,null );
-                        var cm = new R2CoreCarouselsManager(_DateTimeService);
-            cm.CarouselEditing(new R2CoreCarousel  { CId = 1, URL = "", Description = "", CTitle = "", Active = true , Picture = null }, soft.GetSystemUser());
+            insss.ConfigurationOfLoadAnnouncementRegistering(new R2CoreTransportationAndLoadNotificationRawConfigurationOfLoadAnnouncement { COLAId = 1, COLAName = "LoadAnnounceTimeCycle", COLATitle = "زمانبندی اعلام بار", AnnouncementId = 3, AnnouncementSGId = 14, COLAIndex = 0, COLAIndexTitle = "ساعات", Description = "اعلام بار انباری برون شهری", COLAValue = "11:00:00-10:00:00-12:00:00-14:00:00" });
+
+
+            var soft = new R2CoreSoftwareUsersManager(_DateTimeService, null);
+            var cm = new R2CoreCarouselsManager(_DateTimeService);
+            cm.CarouselEditing(new R2CoreCarousel { CId = 1, URL = "", Description = "", CTitle = "", Active = true, Picture = null }, soft.GetSystemUser());
 
 
 
@@ -60,29 +104,29 @@ namespace UnitTestR2Core
 
 
             var xty = new R2CoreCacheManager(_DateTimeService);
-            xty.GetCache("",0);
+            xty.GetCache("", 0);
 
 
 
             var InstancePermissions = new R2CorePermissionsManager();
-            if( InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.LoadAllocationUseTimeHandlingByLoadStatus, 1, 0))
+            if (InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.LoadAllocationUseTimeHandlingByLoadStatus, 1, 0))
             { }
 
 
-var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService);
+            var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService);
             InstanceTrucks.SetComposedTruckInf(198707, 143545, 6, 0);
 
 
             try
             {
-                R2CoreSMSSendingManager InstanceSMSSending=new R2CoreSMSSendingManager(_DateTimeService );
+                R2CoreSMSSendingManager InstanceSMSSending = new R2CoreSMSSendingManager(_DateTimeService);
                 InstanceSMSSending.Sending();
             }
             catch (Exception ex)
             { EventLog.WriteEntry("SMSSendingAutomatedJob", "Sending:" + ex.Message.ToString(), EventLogEntryType.Error); }
 
             var xcvb = new R2CoreParkingSystemTrafficManager(_DateTimeService);
-            var y = xcvb.GetTrafficRecords(90);
+            var y = xcvb.GetTrafficRecords(90, true);
 
 
             var InstanceSession = new R2Core.SessionManagement.R2CoreSessionManager();

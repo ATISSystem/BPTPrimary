@@ -17,83 +17,28 @@ Imports R2Core.PermissionManagement
 Imports R2Core.PermissionManagement.Exceptions
 Imports R2Core.PredefinedMessagesManagement
 Imports R2Core.PublicProc
-Imports R2Core.R2PrimaryFileSharingWS
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
-Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
 Imports R2Core.SiteIsBusy
 Imports R2Core.SMS.Exceptions
 Imports R2Core.SMS.SMSHandling
 Imports R2Core.SMS.SMSTypes.Exceptions
 Imports R2Core.SoftwareUserManagement
 Imports R2Core.SoftwareUserManagement.Exceptions
-Imports R2Core.WebProcessesManagement.Exceptions
-Imports R2CoreGUI
-Imports R2CoreParkingSystem.BlackList
-Imports R2CoreParkingSystem.Cars
-Imports R2CoreParkingSystem.ProvincesAndCities
-Imports R2CoreParkingSystem.ProvincesAndCities.Execption
-Imports R2CoreParkingSystem.Drivers
-Imports R2CoreParkingSystem.EntityRelations
 Imports R2CoreParkingSystem.MoneyWalletManagement
 Imports R2CoreParkingSystem.SoftwareUsersManagement
 Imports R2CoreParkingSystem.TrafficCardsManagement
-Imports R2CoreParkingSystem.TrafficCardsManagement.ExceptionManagement
-Imports R2CoreTransportationAndLoadNotification.Announcements
-Imports R2CoreTransportationAndLoadNotification.Announcements.Exceptions
-Imports R2CoreTransportationAndLoadNotification.AnnouncementTiming
-Imports R2CoreTransportationAndLoadNotification.CalendarManagement.SpecializedPersianCalendar
-Imports R2CoreTransportationAndLoadNotification.ConfigurationsManagement
-Imports R2CoreTransportationAndLoadNotification.DriverSelfDeclaration.Exceptions
-Imports R2CoreTransportationAndLoadNotification.FileShareRawGroupsManagement
-Imports R2CoreTransportationAndLoadNotification.LoadAllocation
-Imports R2CoreTransportationAndLoadNotification.LoadAllocation.Exceptions
-Imports R2CoreTransportationAndLoadNotification.LoadAllocation.FailedLoadAllocationPrinting
-Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.Exceptions
-Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorAccounting
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad
-Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoadManipulation
-Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoadOtherThanManipulation
-Imports R2CoreTransportationAndLoadNotification.LoaderTypes.Exceptions
-Imports R2CoreTransportationAndLoadNotification.LoadingAndDischargingPlaces
 Imports R2CoreTransportationAndLoadNotification.LoadingAndDischargingPlaces.Exceptions
-Imports R2CoreTransportationAndLoadNotification.LoadPermission
-Imports R2CoreTransportationAndLoadNotification.LoadPermission.Exceptions
-Imports R2CoreTransportationAndLoadNotification.LoadPermission.LoadPermissionPrinting
-Imports R2CoreTransportationAndLoadNotification.LoadSedimentation
-Imports R2CoreTransportationAndLoadNotification.LoadSedimentation.Exceptions
-Imports R2CoreTransportationAndLoadNotification.LoadSources
-Imports R2CoreTransportationAndLoadNotification.LoadSources.Exceptions
-Imports R2CoreTransportationAndLoadNotification.LoadTargets
-Imports R2CoreTransportationAndLoadNotification.LoadTargets.Exceptions
-Imports R2CoreTransportationAndLoadNotification.Logging
-Imports R2CoreTransportationAndLoadNotification.PermissionManagement
-Imports R2CoreTransportationAndLoadNotification.PredefinedMessagesManagement
-Imports R2CoreTransportationAndLoadNotification.RequesterManagement
 Imports R2CoreTransportationAndLoadNotification.SMS.SMSTypes
 Imports R2CoreTransportationAndLoadNotification.SoftwareUserManagement
 Imports R2CoreTransportationAndLoadNotification.SoftwareUserManagement.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TransportCompanies
 Imports R2CoreTransportationAndLoadNotification.TransportCompanies.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TransportTariffs
-Imports R2CoreTransportationAndLoadNotification.TransportTariffs.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters
-Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TruckDrivers
-Imports R2CoreTransportationAndLoadNotification.TruckDrivers.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TruckLoaderTypes.Exceptions
-Imports R2CoreTransportationAndLoadNotification.Trucks
-Imports R2CoreTransportationAndLoadNotification.Trucks.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TrucksNativeness
-Imports R2CoreTransportationAndLoadNotification.TurnAttendance
-Imports R2CoreTransportationAndLoadNotification.TurnAttendance.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TurnCancellation
-Imports R2CoreTransportationAndLoadNotification.Turns
-Imports R2CoreTransportationAndLoadNotification.Turns.Exceptions
-Imports R2CoreTransportationAndLoadNotification.Turns.SequentialTurns
-Imports R2CoreTransportationAndLoadNotification.Turns.SequentialTurns.Exceptions
-Imports R2CoreTransportationAndLoadNotification.TravelTime
 Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
 Imports R2Core.DateTimeProvider
+Imports R2Core.GeneralConfiguration
+Imports R2CoreTransportationAndLoadNotification.GeneralConfiguration
+Imports R2Core.SQLInjectionPrevention
 
 
 
@@ -341,11 +286,11 @@ Namespace TransportCompanies
         Private Sub SendSMSTransportCompanyChangeActiveStatus(YourTCTitle As String, YourStatus As String)
             Try
                 Dim InstanceMoneyWallet = New R2CoreParkingSystemInstanceMoneyWalletManager
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 'کنترل فعال بودن سرویس اس ام اس
-                If Not InstanceConfiguration.GetConfigBoolean(R2CoreConfigurations.SmsSystemSetting, 0) Then Throw New SmsSystemIsDisabledException
+                If Not InstanceGeneralConfiguration.GetBooleanConfiguration(R2CoreGeneralConfigurations.SmsSystemSetting, 0) Then Throw New SmsSystemIsDisabledException
                 'کاربران
-                Dim TargetUsers = InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 6).Split("-")
+                Dim TargetUsers = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.BaseTransportationAndLoadNotificationSetting, 6).Split("-")
                 Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
                 Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
@@ -457,30 +402,30 @@ Namespace TransportCompanies
                 Dim ComposeSearchString As String = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.TransportCompany.ToString + ":"
                 Dim AllofProcessGroupsIds As String()
                 Dim AllofProcessesIds As String()
-                Dim AllofSoftwareUserTypes As String() = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesAccessMobileProcesses), ";")
-                If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
-                    AllofProcessesIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                    R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessMobileProcesses, myUserId, AllofProcessesIds)
-                End If
+                'Dim AllofSoftwareUserTypes As String() = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesAccessMobileProcesses), ";")
+                'If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
+                '    AllofProcessesIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
+                '    R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessMobileProcesses, myUserId, AllofProcessesIds)
+                'End If
                 'به دست آوردن لیست گروههای فرآیند موبایلی برای نوع کاربر شرکت حمل و نقل و ارسال آن به مدیریت روابط نهادی
-                AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesRelationMobileProcessGroups), ";")
-                If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
-                    AllofProcessGroupsIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                    R2CoreMClassEntityRelationManagement.RegisteringEntityRelations(R2CoreEntityRelationTypes.SoftwareUser_MobileProcessGroup, myUserId, AllofProcessGroupsIds)
-                End If
+                'AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesRelationMobileProcessGroups), ";")
+                'If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
+                '    AllofProcessGroupsIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
+                '    R2CoreMClassEntityRelationManagement.RegisteringEntityRelations(R2CoreEntityRelationTypes.SoftwareUser_MobileProcessGroup, myUserId, AllofProcessGroupsIds)
+                'End If
                 'به دست آوردن لیست فرآیندهای وب قابل دسترسی برای نوع کاربر شرکت حمل و نقل و ارسال به مدیریت مجوز
-                ComposeSearchString = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.TransportCompany.ToString + ":"
-                AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesAccessWebProcesses), ";")
-                If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
-                    AllofProcessesIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                    R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, myUserId, AllofProcessesIds)
-                End If
+                'ComposeSearchString = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.TransportCompany.ToString + ":"
+                'AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesAccessWebProcesses), ";")
+                'If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
+                '    AllofProcessesIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
+                '    R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, myUserId, AllofProcessesIds)
+                'End If
                 'به دست آوردن لیست گروههای فرآیند وب برای نوع کاربر شرکت حمل و نقل و ارسال آن به مدیریت روابط نهادی
-                AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesRelationWebProcessGroups), ";")
-                If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
-                    AllofProcessGroupsIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                    R2CoreMClassEntityRelationManagement.RegisteringEntityRelations(R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup, myUserId, AllofProcessGroupsIds)
-                End If
+                'AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesRelationWebProcessGroups), ";")
+                'If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
+                '    AllofProcessGroupsIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
+                '    R2CoreMClassEntityRelationManagement.RegisteringEntityRelations(R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup, myUserId, AllofProcessGroupsIds)
+                'End If
                 Return myTCId
             Catch ex As SoftwareUserMobileNumberAlreadyExistException
                 Throw ex
@@ -528,29 +473,29 @@ Namespace TransportCompanies
                     Dim AllofProcessesIds As String()
                     Dim AllofProcessGroupsIds As String()
                     Dim ComposeSearchString As String = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.TransportCompany.ToString + ":"
-                    Dim AllofSoftwareUserTypes As String() = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesAccessMobileProcesses), ";")
-                    If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
-                        AllofProcessesIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                        R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessMobileProcesses, myUserId, AllofProcessesIds)
-                    End If
+                    'Dim AllofSoftwareUserTypes As String() = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesAccessMobileProcesses), ";")
+                    'If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
+                    '    AllofProcessesIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
+                    '    R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessMobileProcesses, myUserId, AllofProcessesIds)
+                    'End If
                     'به دست آوردن لیست گروههای فرآیند موبایلی برای نوع کاربر شرکت حمل و نقل و ارسال آن به مدیریت روابط نهادی
-                    AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesRelationMobileProcessGroups), ";")
-                    If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
-                        AllofProcessGroupsIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                        R2CoreMClassEntityRelationManagement.RegisteringEntityRelations(R2CoreEntityRelationTypes.SoftwareUser_MobileProcessGroup, myUserId, AllofProcessGroupsIds)
-                    End If
+                    'AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesRelationMobileProcessGroups), ";")
+                    'If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
+                    '    AllofProcessGroupsIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
+                    '    R2CoreMClassEntityRelationManagement.RegisteringEntityRelations(R2CoreEntityRelationTypes.SoftwareUser_MobileProcessGroup, myUserId, AllofProcessGroupsIds)
+                    'End If
                     'به دست آوردن لیست فرآیندهای وب قابل دسترسی برای نوع کاربر شرکت حمل و نقل و ارسال به مدیریت مجوز
-                    AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesAccessWebProcesses), ";")
-                    If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
-                        AllofProcessesIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                        R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, myUserId, AllofProcessesIds)
-                    End If
+                    'AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesAccessWebProcesses), ";")
+                    'If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
+                    '    AllofProcessesIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
+                    '    R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, myUserId, AllofProcessesIds)
+                    'End If
                     'به دست آوردن لیست گروههای فرآیند وب برای نوع کاربر شرکت حمل و نقل و ارسال آن به مدیریت روابط نهادی
-                    AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesRelationWebProcessGroups), ";")
-                    If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
-                        AllofProcessGroupsIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                        R2CoreMClassEntityRelationManagement.RegisteringEntityRelations(R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup, myUserId, AllofProcessGroupsIds)
-                    End If
+                    'AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesRelationWebProcessGroups), ";")
+                    'If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
+                    '    AllofProcessGroupsIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
+                    '    R2CoreMClassEntityRelationManagement.RegisteringEntityRelations(R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup, myUserId, AllofProcessGroupsIds)
+                    'End If
                 Catch ex As Exception
                     If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                     Throw ex
@@ -753,6 +698,9 @@ Namespace TransportCompanies
 
         Public Function GetTransportCompanies_SearchIntroCharacters(YourSearchString As String, YourImmediately As Boolean) As String
             Try
+                Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+                InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
+
                 Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
 
                 Dim DS As New DataSet
@@ -781,6 +729,8 @@ Namespace TransportCompanies
                         for json path", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
                 End If
                 Return InstancePublicProcedures.GetIntegratedJson(DS)
+            Catch ex As SqlInjectionException
+                Throw ex
             Catch ex As AnyNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -868,8 +818,12 @@ Namespace TransportCompanies
                 CmdSql.Connection.Open()
                 CmdSql.Transaction = CmdSql.Connection.BeginTransaction
                 CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompanies 
-                                      Set TCTel='" & YourTransportCompany.TCTel & "',TCManagerNameFamily='" & YourTransportCompany.TCManagerNameFamily & "',TCManagerMobileNumber='" & YourTransportCompany.TCManagerMobileNumber & "',EmailAddress='" & YourTransportCompany.EmailAddress & "'
-                                      Where TCId=" & YourTransportCompany.TCId & ""
+                                      Set TCTel=@TCTel,TCManagerNameFamily=@TCManagerNameFamily,TCManagerMobileNumber=@TCManagerMobileNumber,EmailAddress=@EmailAddress Where TCId=@TCId"
+                CmdSql.Parameters.Add("@TCTel", SqlDbType.NVarChar).Value = YourTransportCompany.TCTel
+                CmdSql.Parameters.Add("@TCManagerNameFamily", SqlDbType.NVarChar).Value = YourTransportCompany.TCManagerNameFamily
+                CmdSql.Parameters.Add("@TCManagerMobileNumber", SqlDbType.NVarChar).Value = YourTransportCompany.TCManagerMobileNumber
+                CmdSql.Parameters.Add("@EmailAddress", SqlDbType.NVarChar).Value = YourTransportCompany.EmailAddress
+                CmdSql.Parameters.Add("@TCId", SqlDbType.BigInt).Value = YourTransportCompany.TCId
                 CmdSql.ExecuteNonQuery()
 
                 Dim UserId As Int64 = Int64.MinValue
@@ -880,47 +834,22 @@ Namespace TransportCompanies
                     CmdSql.ExecuteNonQuery()
                     CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers(TCId,UserId) Values(" & YourTransportCompany.TCId & "," & UserId & ")"
                     CmdSql.ExecuteNonQuery()
-                    'ایجاد دسترسی ها
-                    Dim ComposeSearchString As String = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.TransportCompany.ToString + ":"
-                    Dim AllofProcessGroupsIds As String()
-                    Dim AllofProcessesIds As String()
-                    'به دست آوردن لیست فرآیندهای وب قابل دسترسی برای نوع کاربر شرکت حمل و نقل و ارسال به مدیریت مجوز
-                    Dim AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesAccessWebProcesses), ";")
-                    If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
-                        AllofProcessesIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                        R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, UserId, AllofProcessesIds)
-                    End If
-                    'به دست آوردن لیست گروههای فرآیند وب برای نوع کاربر شرکت حمل و نقل و ارسال آن به مدیریت روابط نهادی
-                    AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesRelationWebProcessGroups), ";")
-                    If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
-                        AllofProcessGroupsIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                        R2CoreMClassEntityRelationManagement.RegisteringEntityRelations(R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup, UserId, AllofProcessGroupsIds)
-                    End If
+                    'اعطای دسترسی های کاربر
+                    InstanceSoftwareUsers.RegisteringSoftwareUserWebProcessesByUserType(UserId)
+                    'اعطای مجوز
+                    InstanceSoftwareUsers.RegisteringSoftwareUserPermissionsByUserType(UserId)
                 Else
                     'ایجاد کاربر مرتبط به شرکت حمل و نقل
-                    UserId = InstanceSoftwareUsers.RegisteringSoftwareUser(New R2CoreRawSoftwareUserStructure With {.UserId = Nothing, .MobileNumber = YourTransportCompany.TCManagerMobileNumber, .UserActive = True, .UserName = YourTransportCompany.TCTitle, .UserTypeId = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.TransportCompany}, False, InstanceSoftwareUsers.GetSystemUser.UserId)
+                    UserId = InstanceSoftwareUsers.RegisteringSoftwareUser(New R2CoreRawSoftwareUserStructure With {.UserId = Nothing, .MobileNumber = YourTransportCompany.TCManagerMobileNumber, .UserActive = True, .UserName = YourTransportCompany.TCTitle, .UserTypeId = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.TransportCompany}, False, InstanceSoftwareUsers.GetSystemUser.UserId, Nothing)
                     CmdSql.CommandText = "Delete R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers
                                           Where UserId=" & UserId & " or TCId=" & YourTransportCompany.TCId & ""
                     CmdSql.ExecuteNonQuery()
                     CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblTransportCompaniesRelationSoftwareUsers(TCId,UserId) Values(" & YourTransportCompany.TCId & "," & UserId & ")"
                     CmdSql.ExecuteNonQuery()
-                    'ایجاد دسترسی ها
-                    Dim ComposeSearchString As String = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.TransportCompany.ToString + ":"
-                    Dim AllofProcessGroupsIds As String()
-                    Dim AllofProcessesIds As String()
-                    'به دست آوردن لیست فرآیندهای وب قابل دسترسی برای نوع کاربر شرکت حمل و نقل و ارسال به مدیریت مجوز
-                    Dim AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesAccessWebProcesses), ";")
-                    If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
-                        AllofProcessesIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                        R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, UserId, AllofProcessesIds)
-                    End If
-                    'به دست آوردن لیست گروههای فرآیند وب برای نوع کاربر شرکت حمل و نقل و ارسال آن به مدیریت روابط نهادی
-                    AllofSoftwareUserTypes = Split(R2CoreMClassConfigurationManagement.GetConfigString(R2CoreConfigurations.SoftwareUserTypesRelationWebProcessGroups), ";")
-                    If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
-                        AllofProcessGroupsIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                        R2CoreMClassEntityRelationManagement.RegisteringEntityRelations(R2CoreEntityRelationTypes.SoftwareUser_WebProcessGroup, UserId, AllofProcessGroupsIds)
-                    End If
-
+                    'اعطای دسترسی های کاربر
+                    InstanceSoftwareUsers.RegisteringSoftwareUserWebProcessesByUserType(UserId)
+                    'اعطای مجوز
+                    InstanceSoftwareUsers.RegisteringSoftwareUserPermissionsByUserType(UserId)
                     'بررسی کیف پول 
                     Dim HasMoneyWallet = HasTransportCompanyMoneyWallet(YourTransportCompany.TCId)
                     If Not HasMoneyWallet Then
@@ -1082,9 +1011,9 @@ Namespace TransportCompanies
 
         Public Sub SendTransportCompanyChangeActiveStatusSMS(YourTCTitle As String, YourStatus As String)
             Try
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 'کاربران
-                Dim TargetUsers = InstanceConfiguration.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 6).Split("-")
+                Dim TargetUsers = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.BaseTransportationAndLoadNotificationSetting, 6).Split("-")
                 Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
                 Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
                 For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1

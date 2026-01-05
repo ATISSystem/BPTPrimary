@@ -94,6 +94,7 @@ Imports R2CoreTransportationAndLoadNotification.LoadSources
 Imports System.Net
 Imports R2Core.DateTimeProvider
 Imports R2Core.SQLInjectionPrevention
+Imports R2CoreParkingSystem.Logging
 
 Namespace Rmto
     Public MustInherit Class RmtoWebService
@@ -373,21 +374,6 @@ Namespace ReportManagement
 
 End Namespace
 
-Namespace Logging
-
-    Public MustInherit Class R2CoreTransportationAndLoadNotificationLogType
-        Inherits R2CoreLogType
-
-        Public Shared ReadOnly Property LoadCapacitorSedimentingFailed As Int64 = 11
-        Public Shared ReadOnly Property TurnExpirationFailed As Int64 = 12
-        Public Shared ReadOnly Property RmtoWebServiceRequest As Int64 = 13
-        Public Shared ReadOnly Property LoadAllocationsAccessStatistics As Int64 = 14
-        Public Shared ReadOnly Property TransferringTommorowLoads As Int64 = 15
-        Public Shared ReadOnly Property ATISMobileMoneyWalletsCharging As Int64 = 16
-    End Class
-
-End Namespace
-
 Namespace ComputerMessages
 
     Public MustInherit Class R2CoreTransportationAndLoadNotificationComputerMessageTypes
@@ -418,112 +404,112 @@ Namespace TurnAttendance
         Private _DateTimeService As New R2DateTimeService
         Private InstanceSqlDataBox As New R2CoreSqlDataBOXManager(_DateTimeService)
 
-        Public Function IsPresentRegisteredInLast30Minute(YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure, ByVal YourTurnId As UInt64) As Boolean
-            Try
-                Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
-                Dim Ds As DataSet
-                If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 DateTimeMilladi From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") and (DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "') Order By DateTimeMilladi Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
-                    Return False
-                Else
-                    Dim Last30Minute As Int64 = InstanceConfigurationOfAnnouncements.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 1)
-                    If DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), _DateTimeService.GetCurrentDateTimeMilladi) <= Last30Minute Then
-                        Return True
-                    Else
-                        Return False
-                    End If
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function IsPresentRegisteredInLast30Minute(YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure, ByVal YourTurnId As UInt64) As Boolean
+        '    Try
+        '        Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
+        '        Dim Ds As DataSet
+        '        If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 DateTimeMilladi From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") and (DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "') Order By DateTimeMilladi Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
+        '            Return False
+        '        Else
+        '            Dim Last30Minute As Int64 = InstanceConfigurationOfAnnouncements.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 1)
+        '            If DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), _DateTimeService.GetCurrentDateTimeMilladi) <= Last30Minute Then
+        '                Return True
+        '            Else
+        '                Return False
+        '            End If
+        '        End If
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Function GetTurnDateTimeDiferenceToToday(YourTurnId As Int64) As Int64
-            Try
-                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
-                Dim NSSTurn = InstanceTurns.GetNSSTurn(YourTurnId)
-                Dim TurnDateTime As String = _DateTimeService.GetMilladiDateTimeFromShamsiDate(NSSTurn.EnterDate, NSSTurn.EnterTime)
-                Return InstancePublicProcedures.GetDateDiff(DateInterval.Day, TurnDateTime, _DateTimeService.GetCurrentDateTimeMilladi())
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function GetTurnDateTimeDiferenceToToday(YourTurnId As Int64) As Int64
+        '    Try
+        '        Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
+        '        Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+        '        Dim NSSTurn = InstanceTurns.GetNSSTurn(YourTurnId)
+        '        Dim TurnDateTime As String = _DateTimeService.GetMilladiDateTimeFromShamsiDate(NSSTurn.EnterDate, NSSTurn.EnterTime)
+        '        Return InstancePublicProcedures.GetDateDiff(DateInterval.Day, TurnDateTime, _DateTimeService.GetCurrentDateTimeMilladi())
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Function GetTotalNumberOfPresentRegistered(YourTurnId As Int64) As Int64
-            Try
-                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
-                Dim NSSTurn = InstanceTurns.GetNSSTurn(YourTurnId)
-                Dim DS As DataSet
-                Return InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Count(*) AS M From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") And (DateShamsi<>'" & NSSTurn.EnterDate & "') GROUP BY DateShamsi", 1, DS, New Boolean).GetRecordsCount()
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function GetTotalNumberOfPresentRegistered(YourTurnId As Int64) As Int64
+        '    Try
+        '        Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
+        '        Dim NSSTurn = InstanceTurns.GetNSSTurn(YourTurnId)
+        '        Dim DS As DataSet
+        '        Return InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Count(*) AS M From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") And (DateShamsi<>'" & NSSTurn.EnterDate & "') GROUP BY DateShamsi", 1, DS, New Boolean).GetRecordsCount()
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Function GetTotalNumberOfNeededPresent(YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure, ByVal YourTurnId As Int64) As UInt16
-            Try
-                Dim InstanceTruck = New R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService)
-                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
-                Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
-                Dim InstanceTruckNativeness = New R2CoreTransportationAndLoadNotificationsTruckNativenessManager
-                Dim InstanceDateAndTimePersianCalendar = New R2CoreInstanceDateAndTimePersianCalendarManager(_DateTimeService)
-                Dim NSSTruck = InstanceTruck.GetTruck(YourTurnId, False)
-                Dim NSSTurn = InstanceTurns.GetNSSTurn(YourTurnId)
-                'درصورتی که کنترل حاضری سالن مورد نظر غیرفعال باشد تعداد حاضری مورد نیاز 0 است
-                If Not InstanceConfigurationOfAnnouncements.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 0) Then Return 0
-                'درصورتی که در محدوده خاصی زمانی کانفیگ شده عدم کنترل حاضری سالن مورد نظر باشیم تعداد حاضری مورد نیاز 0 است
-                Dim PresentControlStartTime As String = InstanceConfigurationOfAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 3)
-                Dim PresentControlEndTime As String = InstanceConfigurationOfAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 2)
-                If Not ((_DateTimeService.GetCurrentTime() >= PresentControlStartTime) And (_DateTimeService.GetCurrentTime() <= PresentControlEndTime)) Then Return 0
-                'اگر ناوگان بومی باشد یا بومی با پلاک غیربومی باشد تعداد حاضری مورد نیاز از کانفیگ بدست می آید
-                'درغیر اینصورت طبق فرمول پیشنهاد شده انجام می شود
-                If InstanceTruckNativeness.IsTruckIndigenous(NSSTruck) Then
-                    Return InstanceConfigurationOfAnnouncements.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 4)
-                Else
-                    If YourNSSAnnouncementHall.AHId = Announcements.Announcements.Zobi Then
-                        'غير بومي ها در سالن ذوبی به تعداد اختلاف تاريخ صدور مجوز با تاريخ صدور نوبت باید حاضری داشته باشند
-                        Return GetTurnDateTimeDiferenceToToday(YourTurnId) - InstanceDateAndTimePersianCalendar.GetHoliDayNumber(NSSTurn.EnterDate, _DateTimeService.GetCurrentShamsiDate)
-                    ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Anbari Then
-                        Return InstanceConfigurationOfAnnouncements.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 5)
-                    ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Otaghdar Then
-                        Return InstanceConfigurationOfAnnouncements.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 5)
-                    ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Shahri Then
-                        Return InstanceConfigurationOfAnnouncements.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 5)
-                    End If
-                End If
-            Catch ex As AnnouncementsubGroupNotFoundException
-                Throw ex
-            Catch ex As AnnouncementsubGroupRelationTruckNotExistException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function GetTotalNumberOfNeededPresent(YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure, ByVal YourTurnId As Int64) As UInt16
+        '    Try
+        '        Dim InstanceTruck = New R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService)
+        '        Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
+        '        Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
+        '        Dim InstanceTruckNativeness = New R2CoreTransportationAndLoadNotificationsTruckNativenessManager(_DateTimeService)
+        '        Dim InstanceDateAndTimePersianCalendar = New R2CoreInstanceDateAndTimePersianCalendarManager(_DateTimeService)
+        '        Dim NSSTruck = InstanceTruck.GetTruck(YourTurnId, False)
+        '        Dim NSSTurn = InstanceTurns.GetNSSTurn(YourTurnId)
+        '        'درصورتی که کنترل حاضری سالن مورد نظر غیرفعال باشد تعداد حاضری مورد نیاز 0 است
+        '        If Not InstanceConfigurationOfAnnouncements.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 0) Then Return 0
+        '        'درصورتی که در محدوده خاصی زمانی کانفیگ شده عدم کنترل حاضری سالن مورد نظر باشیم تعداد حاضری مورد نیاز 0 است
+        '        Dim PresentControlStartTime As String = InstanceConfigurationOfAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 3)
+        '        Dim PresentControlEndTime As String = InstanceConfigurationOfAnnouncements.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 2)
+        '        If Not ((_DateTimeService.GetCurrentTime() >= PresentControlStartTime) And (_DateTimeService.GetCurrentTime() <= PresentControlEndTime)) Then Return 0
+        '        'اگر ناوگان بومی باشد یا بومی با پلاک غیربومی باشد تعداد حاضری مورد نیاز از کانفیگ بدست می آید
+        '        'درغیر اینصورت طبق فرمول پیشنهاد شده انجام می شود
+        '        If InstanceTruckNativeness.IsTruckIndigenous(NSSTruck) Then
+        '            Return InstanceConfigurationOfAnnouncements.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 4)
+        '        Else
+        '            If YourNSSAnnouncementHall.AHId = Announcements.Announcements.Zobi Then
+        '                'غير بومي ها در سالن ذوبی به تعداد اختلاف تاريخ صدور مجوز با تاريخ صدور نوبت باید حاضری داشته باشند
+        '                Return GetTurnDateTimeDiferenceToToday(YourTurnId) - InstanceDateAndTimePersianCalendar.GetHoliDayNumber(NSSTurn.EnterDate, _DateTimeService.GetCurrentShamsiDate)
+        '            ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Anbari Then
+        '                Return InstanceConfigurationOfAnnouncements.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 5)
+        '            ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Otaghdar Then
+        '                Return InstanceConfigurationOfAnnouncements.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 5)
+        '            ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Shahri Then
+        '                Return InstanceConfigurationOfAnnouncements.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 5)
+        '            End If
+        '        End If
+        '    Catch ex As AnnouncementsubGroupNotFoundException
+        '        Throw ex
+        '    Catch ex As AnnouncementsubGroupRelationTruckNotExistException
+        '        Throw ex
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Function IsAmountOfTurnPresentsEnough(ByVal YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure, ByVal YourTurnId As UInt64) As Boolean
-            Try
-                'آیا آخرین حاضری نوبت در 30 دقیقه یا 3 ساعت اخیر مطابق پیکربندی سیستم ثبت شده است یا نه
-                If IsPresentRegisteredInLast30Minute(YourNSSAnnouncementHall, YourTurnId) = False Then Throw New PresentNotRegisteredInLast30MinuteException
-                'روزی که نوبت صادر شده نیازی به حاضری نیست
-                If GetTurnDateTimeDiferenceToToday(YourTurnId) = 0 Then Return True
-                'کنترل تعداد حاضری نوبت
-                If GetTotalNumberOfPresentRegistered(YourTurnId) >= GetTotalNumberOfNeededPresent(YourNSSAnnouncementHall, YourTurnId) Then
-                    Return True
-                Else
-                    Throw New PresentsNotEnoughException
-                End If
-            Catch ex As AnnouncementsubGroupNotFoundException
-                Throw ex
-            Catch ex As AnnouncementsubGroupRelationTruckNotExistException
-                Throw ex
-            Catch exxx As PresentsNotEnoughException
-                Throw exxx
-            Catch exx As PresentNotRegisteredInLast30MinuteException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function IsAmountOfTurnPresentsEnough(ByVal YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure, ByVal YourTurnId As UInt64) As Boolean
+        '    Try
+        '        'آیا آخرین حاضری نوبت در 30 دقیقه یا 3 ساعت اخیر مطابق پیکربندی سیستم ثبت شده است یا نه
+        '        If IsPresentRegisteredInLast30Minute(YourNSSAnnouncementHall, YourTurnId) = False Then Throw New PresentNotRegisteredInLast30MinuteException
+        '        'روزی که نوبت صادر شده نیازی به حاضری نیست
+        '        If GetTurnDateTimeDiferenceToToday(YourTurnId) = 0 Then Return True
+        '        'کنترل تعداد حاضری نوبت
+        '        If GetTotalNumberOfPresentRegistered(YourTurnId) >= GetTotalNumberOfNeededPresent(YourNSSAnnouncementHall, YourTurnId) Then
+        '            Return True
+        '        Else
+        '            Throw New PresentsNotEnoughException
+        '        End If
+        '    Catch ex As AnnouncementsubGroupNotFoundException
+        '        Throw ex
+        '    Catch ex As AnnouncementsubGroupRelationTruckNotExistException
+        '        Throw ex
+        '    Catch exxx As PresentsNotEnoughException
+        '        Throw exxx
+        '    Catch exx As PresentNotRegisteredInLast30MinuteException
+        '        Throw exx
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
     End Class
 
@@ -531,131 +517,131 @@ Namespace TurnAttendance
         Private Shared _DateTimeService As New R2DateTimeService
         Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
-        Public Shared Function GetTotalNumberOfPresentRegistered(YourTurnId As Int64) As Int64
-            Try
-                Dim NSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure = R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTurn(YourTurnId)
-                Dim DS As DataSet
-                Return InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Count(*) AS M From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") And (DateShamsi<>'" & NSSTurn.EnterDate & "') GROUP BY DateShamsi", 1, DS, New Boolean).GetRecordsCount()
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetTotalNumberOfPresentRegistered(YourTurnId As Int64) As Int64
+        '    Try
+        '        Dim NSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure = R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTurn(YourTurnId)
+        '        Dim DS As DataSet
+        '        Return InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Count(*) AS M From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") And (DateShamsi<>'" & NSSTurn.EnterDate & "') GROUP BY DateShamsi", 1, DS, New Boolean).GetRecordsCount()
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function IsPresentRegisteredInLast30Minute(YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure, ByVal YourTurnId As UInt64) As Boolean
-            Try
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 DateTimeMilladi From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") and (DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "') Order By DateTimeMilladi Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
-                    Return False
-                Else
-                    Dim Last30Minute As Int64 = R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 1)
-                    If DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), _DateTimeService.GetCurrentDateTimeMilladi) <= Last30Minute Then
-                        Return True
-                    Else
-                        Return False
-                    End If
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function IsPresentRegisteredInLast30Minute(YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure, ByVal YourTurnId As UInt64) As Boolean
+        '    Try
+        '        Dim Ds As DataSet
+        '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 DateTimeMilladi From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") and (DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "') Order By DateTimeMilladi Desc", 1, Ds, New Boolean).GetRecordsCount() = 0 Then
+        '            Return False
+        '        Else
+        '            Dim Last30Minute As Int64 = R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 1)
+        '            If DateDiff(DateInterval.Hour, Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), _DateTimeService.GetCurrentDateTimeMilladi) <= Last30Minute Then
+        '                Return True
+        '            Else
+        '                Return False
+        '            End If
+        '        End If
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function GetTurnDateTimeDiferenceToToday(YourTurnId As Int64) As Int64
-            Try
-                Dim NSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure = R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTurn(YourTurnId)
-                Dim TurnDateTime As String = _DateTimeService.GetMilladiDateTimeFromShamsiDate(NSSTurn.EnterDate, NSSTurn.EnterTime)
-                Return R2CoreMClassPublicProcedures.GetDateDiff(DateInterval.Day, TurnDateTime, _DateTimeService.GetCurrentDateTimeMilladi())
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetTurnDateTimeDiferenceToToday(YourTurnId As Int64) As Int64
+        '    Try
+        '        Dim NSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure = R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTurn(YourTurnId)
+        '        Dim TurnDateTime As String = _DateTimeService.GetMilladiDateTimeFromShamsiDate(NSSTurn.EnterDate, NSSTurn.EnterTime)
+        '        Return R2CoreMClassPublicProcedures.GetDateDiff(DateInterval.Day, TurnDateTime, _DateTimeService.GetCurrentDateTimeMilladi())
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function IsPresentsContinuous(ByVal YourTurnId As UInt64) As Boolean
-            Try
-                Dim NSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure = R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTurn(YourTurnId)
-                If GetTotalNumberOfPresentRegistered(YourTurnId) + 1 >= GetTurnDateTimeDiferenceToToday(YourTurnId) - R2CoreDateAndTimePersianCalendarManagement.GetHoliDayNumber(NSSTurn.EnterDate, _DateTimeService.GetCurrentShamsiDate) Then
-                    Return True
-                Else
-                    Return False
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function IsPresentsContinuous(ByVal YourTurnId As UInt64) As Boolean
+        '    Try
+        '        Dim NSSTurn As R2CoreTransportationAndLoadNotificationStandardTurnStructure = R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTurn(YourTurnId)
+        '        If GetTotalNumberOfPresentRegistered(YourTurnId) + 1 >= GetTurnDateTimeDiferenceToToday(YourTurnId) - R2CoreDateAndTimePersianCalendarManagement.GetHoliDayNumber(NSSTurn.EnterDate, _DateTimeService.GetCurrentShamsiDate) Then
+        '            Return True
+        '        Else
+        '            Return False
+        '        End If
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Function IsThisDayTruckDriverPresentRegistered(ByVal YourTurnId As UInt64) As Boolean
-            Try
-                Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") and (DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "')", 1, DS, New Boolean).GetRecordsCount() = 0 Then
-                    Return False
-                Else
-                    Return True
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function IsThisDayTruckDriverPresentRegistered(ByVal YourTurnId As UInt64) As Boolean
+        '    Try
+        '        Dim DS As DataSet
+        '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * From R2PrimaryTransportationAndLoadNotification.dbo.TblTruckDriverPresent Where (NobatId=" & YourTurnId & ") and (DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "')", 1, DS, New Boolean).GetRecordsCount() = 0 Then
+        '            Return False
+        '        Else
+        '            Return True
+        '        End If
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function GetTotalNumberOfNeededPresent(YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure, ByVal YourTurnId As Int64) As UInt16
-            Try
-                Dim InstanceTruckNativeness = New R2CoreTransportationAndLoadNotificationsTruckNativenessManager
-                Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService)
-                Dim NSSTruck = InstanceTrucks.GetTruck(YourTurnId, False)
-                Dim NSSTurn = R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTurn(YourTurnId)
-                'درصورتی که کنترل حاضری سالن مورد نظر غیرفعال باشد تعداد حاضری مورد نیاز 0 است
-                If Not R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 0) Then Return 0
-                'درصورتی که در محدوده خاصی زمانی کانفیگ شده عدم کنترل حاضری سالن مورد نظر باشیم تعداد حاضری مورد نیاز 0 است
-                Dim PresentControlStartTime As String = R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 3)
-                Dim PresentControlEndTime As String = R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 2)
-                If Not ((_DateTimeService.GetCurrentTime() >= PresentControlStartTime) And (_DateTimeService.GetCurrentTime() <= PresentControlEndTime)) Then Return 0
-                'اگر ناوگان بومی باشد یا بومی با پلاک غیربومی باشد تعداد حاضری مورد نیاز از کانفیگ بدست می آید
-                'درغیر اینصورت طبق فرمول پیشنهاد شده انجام می شود
-                If InstanceTruckNativeness.IsTruckIndigenous(NSSTruck) Then
-                    Return R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 4)
-                Else
-                    If YourNSSAnnouncementHall.AHId = Announcements.Announcements.Zobi Then
-                        'غير بومي ها در سالن ذوبی به تعداد اختلاف تاريخ صدور مجوز با تاريخ صدور نوبت باید حاضری داشته باشند
-                        Return GetTurnDateTimeDiferenceToToday(YourTurnId) - R2CoreDateAndTimePersianCalendarManagement.GetHoliDayNumber(NSSTurn.EnterDate, _DateTimeService.GetCurrentShamsiDate)
-                    ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Anbari Then
-                        Return R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 5)
-                    ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Otaghdar Then
-                        Return R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 5)
-                    ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Shahri Then
-                        Return R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 5)
-                    End If
-                End If
-            Catch ex As AnnouncementsubGroupNotFoundException
-                Throw ex
-            Catch ex As AnnouncementsubGroupRelationTruckNotExistException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetTotalNumberOfNeededPresent(YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure, ByVal YourTurnId As Int64) As UInt16
+        '    Try
+        '        Dim InstanceTruckNativeness = New R2CoreTransportationAndLoadNotificationsTruckNativenessManager(_DateTimeService)
+        '        Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService)
+        '        Dim NSSTruck = InstanceTrucks.GetTruck(YourTurnId, False)
+        '        Dim NSSTurn = R2CoreTransportationAndLoadNotificationMClassTurnsManagement.GetNSSTurn(YourTurnId)
+        '        'درصورتی که کنترل حاضری سالن مورد نظر غیرفعال باشد تعداد حاضری مورد نیاز 0 است
+        '        If Not R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 0) Then Return 0
+        '        'درصورتی که در محدوده خاصی زمانی کانفیگ شده عدم کنترل حاضری سالن مورد نظر باشیم تعداد حاضری مورد نیاز 0 است
+        '        Dim PresentControlStartTime As String = R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 3)
+        '        Dim PresentControlEndTime As String = R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigString(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 2)
+        '        If Not ((_DateTimeService.GetCurrentTime() >= PresentControlStartTime) And (_DateTimeService.GetCurrentTime() <= PresentControlEndTime)) Then Return 0
+        '        'اگر ناوگان بومی باشد یا بومی با پلاک غیربومی باشد تعداد حاضری مورد نیاز از کانفیگ بدست می آید
+        '        'درغیر اینصورت طبق فرمول پیشنهاد شده انجام می شود
+        '        If InstanceTruckNativeness.IsTruckIndigenous(NSSTruck) Then
+        '            Return R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 4)
+        '        Else
+        '            If YourNSSAnnouncementHall.AHId = Announcements.Announcements.Zobi Then
+        '                'غير بومي ها در سالن ذوبی به تعداد اختلاف تاريخ صدور مجوز با تاريخ صدور نوبت باید حاضری داشته باشند
+        '                Return GetTurnDateTimeDiferenceToToday(YourTurnId) - R2CoreDateAndTimePersianCalendarManagement.GetHoliDayNumber(NSSTurn.EnterDate, _DateTimeService.GetCurrentShamsiDate)
+        '            ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Anbari Then
+        '                Return R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 5)
+        '            ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Otaghdar Then
+        '                Return R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 5)
+        '            ElseIf YourNSSAnnouncementHall.AHId = Announcements.Announcements.Shahri Then
+        '                Return R2CoreTransportationAndLoadNotificationMClassConfigurationOfAnnouncementsManagement.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsTruckDriverAttendance, YourNSSAnnouncementHall.AHId, 5)
+        '            End If
+        '        End If
+        '    Catch ex As AnnouncementsubGroupNotFoundException
+        '        Throw ex
+        '    Catch ex As AnnouncementsubGroupRelationTruckNotExistException
+        '        Throw ex
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function IsAmountOfTurnPresentsEnough(ByVal YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure, ByVal YourTurnId As UInt64) As Boolean
-            Try
-                'آیا آخرین حاضری نوبت در 30 دقیقه یا 3 ساعت اخیر مطابق پیکربندی سیستم ثبت شده است یا نه
-                If IsPresentRegisteredInLast30Minute(YourNSSAnnouncementHall, YourTurnId) = False Then Throw New PresentNotRegisteredInLast30MinuteException
-                'روزی که نوبت صادر شده نیازی به حاضری نیست
-                If GetTurnDateTimeDiferenceToToday(YourTurnId) = 0 Then Return True
-                'کنترل تعداد حاضری نوبت
-                If GetTotalNumberOfPresentRegistered(YourTurnId) >= GetTotalNumberOfNeededPresent(YourNSSAnnouncementHall, YourTurnId) Then
-                    Return True
-                Else
-                    Throw New PresentsNotEnoughException
-                End If
-            Catch ex As AnnouncementsubGroupNotFoundException
-                Throw ex
-            Catch ex As AnnouncementsubGroupRelationTruckNotExistException
-                Throw ex
-            Catch exxx As PresentsNotEnoughException
-                Throw exxx
-            Catch exx As PresentNotRegisteredInLast30MinuteException
-                Throw exx
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function IsAmountOfTurnPresentsEnough(ByVal YourNSSAnnouncementHall As R2CoreTransportationAndLoadNotificationStandardAnnouncementstructure, ByVal YourTurnId As UInt64) As Boolean
+        '    Try
+        '        'آیا آخرین حاضری نوبت در 30 دقیقه یا 3 ساعت اخیر مطابق پیکربندی سیستم ثبت شده است یا نه
+        '        If IsPresentRegisteredInLast30Minute(YourNSSAnnouncementHall, YourTurnId) = False Then Throw New PresentNotRegisteredInLast30MinuteException
+        '        'روزی که نوبت صادر شده نیازی به حاضری نیست
+        '        If GetTurnDateTimeDiferenceToToday(YourTurnId) = 0 Then Return True
+        '        'کنترل تعداد حاضری نوبت
+        '        If GetTotalNumberOfPresentRegistered(YourTurnId) >= GetTotalNumberOfNeededPresent(YourNSSAnnouncementHall, YourTurnId) Then
+        '            Return True
+        '        Else
+        '            Throw New PresentsNotEnoughException
+        '        End If
+        '    Catch ex As AnnouncementsubGroupNotFoundException
+        '        Throw ex
+        '    Catch ex As AnnouncementsubGroupRelationTruckNotExistException
+        '        Throw ex
+        '    Catch exxx As PresentsNotEnoughException
+        '        Throw exxx
+        '    Catch exx As PresentNotRegisteredInLast30MinuteException
+        '        Throw exx
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
 
 
@@ -794,39 +780,6 @@ Namespace TerraficCardsManagement
 
     End Class
 
-
-End Namespace
-
-Namespace PermissionManagement
-
-    Public MustInherit Class R2CoreTransportationAndLoadNotificationPermissionTypes
-        Inherits R2CoreParkingSystemPermissionTypes
-
-        Public Shared ReadOnly XXX As Int64 = 3
-        Public Shared ReadOnly SoftwareUserCanSedimentingLoad As Int64 = 4
-        Public Shared ReadOnly LoadAllocationUseTimeHandlingByLoadStatus As Int64 = 5
-        Public Shared ReadOnly LoadPermissionUseTimeHandlingByLoadStatus As Int64 = 6
-        Public Shared ReadOnly RequesterCanSendRequestforTurnIssueBySeqT As Int64 = 10
-        Public Shared ReadOnly UserCanRequestReserveTurnRegistering As Int64 = 11
-        Public Shared ReadOnly RequesterCanRequestReserveTurnRegistering As Int64 = 12
-        Public Shared ReadOnly UserCanResuscitationReserveTurn As Int64 = 13
-        Public Shared ReadOnly UserCanRequestEmergencyTurnRegistering As Int64 = 14
-        Public Shared ReadOnly UserCanEditLoadCapacitorLoadAfterLoadAnnounce As Int64 = 15
-        Public Shared ReadOnly RequesterCanSendRequestforTurnIssueByLastLoadPermissioned As Int64 = 16
-        Public Shared ReadOnly SoftwareUserCanExcecuteTurnsCancellation As Int64 = 17
-        Public Shared ReadOnly SoftwareUserCanSendRealTimeTurnRegisteringRequestWithLicensePlate As Int64 = 18
-        Public Shared ReadOnly SoftwareUserCanSendTruckorTruckDriverChangeRequest As Int64 = 19
-        Public Shared ReadOnly SoftwareUserCanExcecuteTurnCancellationWithLicensePlate As Int64 = 20
-        Public Shared ReadOnly SoftwareUserCanViewAnnouncedLoadsReportOrClearanceLoadsReport As Int64 = 21
-        Public Shared ReadOnly SoftwareUserCanDeleteAnyofLoadCapacitorLoad As Int64 = 23
-        Public Shared ReadOnly SoftwareUserCanViewListofAllTransportCompanies As Int64 = 24
-        Public Shared ReadOnly SoftwareUserCanViewListofAllLoadsofLoadCapacitor As Int64 = 25
-        Public Shared ReadOnly SoftwareUserCanViewListofLoadsofLoadCapacitorofOtherUser As Int64 = 26
-        Public Shared ReadOnly SoftwareUserCanEditAnyofLoadCapacitorLoad As Int64 = 27
-        Public Shared ReadOnly SoftwareUserCanCancellingLoadsViaLoadStatus As Int64 = 28
-        Public Shared ReadOnly SoftwareUserCanFreeLiningLoadsViaLoadStatus As Int64 = 29
-        Public Shared ReadOnly UserCanRegisterOrEditLoadsAnyTonaj As Int64 = 31
-    End Class
 
 End Namespace
 

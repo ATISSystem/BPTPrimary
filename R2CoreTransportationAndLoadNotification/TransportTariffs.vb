@@ -236,27 +236,27 @@ Namespace TransportTariffs
             End Try
         End Function
 
-        Public Sub TariffsRegistering(YourTariffs As List(Of R2CoreTransportationAndLoadNotificationTransportTariff))
+        Public Sub TariffRegistering(YourTariff As R2CoreTransportationAndLoadNotificationTransportTariff)
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
-                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                For Loopx As Int64 = 0 To YourTariffs.Count - 1
-                    CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffs(SourceCityId,TargetCityId,LoaderTypeId,GoodId,Tariff,BaseTonnag,CalculationReference,DateShamsi,ViewFlag,Active,Deleted)
-                                          Values(" & YourTariffs(Loopx).SourceCityId & "," & YourTariffs(Loopx).TargetCityId & "," & YourTariffs(Loopx).LoaderTypeId & "," & YourTariffs(Loopx).GoodId & "," & YourTariffs(Loopx).Tariff & "," & YourTariffs(Loopx).BaseTonnag & ",'" & YourTariffs(Loopx).CalculationReference & "','" & _DateTimeService.GetCurrentShamsiDate & "',1,1,0)"
-                    CmdSql.ExecuteNonQuery()
-                Next
-                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+                CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffs(SourceCityId,TargetCityId,LoaderTypeId,GoodId,Tariff,BaseTonnag,CalculationReference,DateShamsi,ViewFlag,Active,Deleted)
+                                      Values(@SourceCityId,@TargetCityId,@LoaderTypeId,@GoodId,@Tariff,@BaseTonnag,@CalculationReference,R2Primary.DBO.BPTCOGregorianToPersian(GETDATE()),1,1,0)"
+                CmdSql.Parameters.Add("@SourceCityId", SqlDbType.BigInt).Value = YourTariff.SourceCityId
+                CmdSql.Parameters.Add("@TargetCityId", SqlDbType.BigInt).Value = YourTariff.TargetCityId
+                CmdSql.Parameters.Add("@LoaderTypeId", SqlDbType.BigInt).Value = YourTariff.LoaderTypeId
+                CmdSql.Parameters.Add("@GoodId", SqlDbType.BigInt).Value = YourTariff.GoodId
+                CmdSql.Parameters.Add("@Tariff", SqlDbType.BigInt).Value = YourTariff.Tariff
+                CmdSql.Parameters.Add("@BaseTonnag", SqlDbType.Decimal).Value = YourTariff.BaseTonnag
+                CmdSql.Parameters.Add("@CalculationReference", SqlDbType.NVarChar).Value = YourTariff.CalculationReference
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
             Catch ex As SqlException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                 Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Sub
@@ -276,7 +276,15 @@ Namespace TransportTariffs
                 'فعال کردن تعرفه های جدید
                 For Loopx As Int64 = 0 To YourTariffs.Count - 1
                     CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffs(SourceCityId,TargetCityId,LoaderTypeId,GoodId,Tariff,BaseTonnag,CalculationReference,DateShamsi,ViewFlag,Active,Deleted)
-                                          Values(" & YourTariffs(Loopx).SourceCityId & "," & YourTariffs(Loopx).TargetCityId & "," & YourTariffs(Loopx).LoaderTypeId & "," & YourTariffs(Loopx).GoodId & "," & YourTariffs(Loopx).Tariff + (YourAddPercentage * YourTariffs(Loopx).Tariff / 100) & "," & YourTariffs(Loopx).BaseTonnag & ",'" & YourTariffs(Loopx).CalculationReference & "','" & _DateTimeService.GetCurrentShamsiDate & "',1,1,0)"
+                                          Values(@SourceCityId,@TargetCityId,@GoodId,@Tariff,@BaseTonnag,@,@,R2Primary.DBO.BPTCOGregorianToPersian(GETDATE()),1,1,0)"
+                    CmdSql.Parameters.Add("@SourceCityId", SqlDbType.BigInt).Value = YourTariffs(Loopx).SourceCityId
+                    CmdSql.Parameters.Add("@TargetCityId", SqlDbType.BigInt).Value = YourTariffs(Loopx).TargetCityId
+                    CmdSql.Parameters.Add("@LoaderTypeId", SqlDbType.BigInt).Value = YourTariffs(Loopx).LoaderTypeId
+                    CmdSql.Parameters.Add("@GoodId", SqlDbType.BigInt).Value = YourTariffs(Loopx).GoodId
+                    CmdSql.Parameters.Add("@Tariff", SqlDbType.BigInt).Value = YourTariffs(Loopx).Tariff + (YourAddPercentage * YourTariffs(Loopx).Tariff / 100)
+                    CmdSql.Parameters.Add("@BaseTonnag", SqlDbType.Decimal).Value = YourTariffs(Loopx).BaseTonnag
+                    CmdSql.Parameters.Add("@CalculationReference", SqlDbType.NVarChar).Value = YourTariffs(Loopx).CalculationReference
+
                     CmdSql.ExecuteNonQuery()
                 Next
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
@@ -319,54 +327,40 @@ Namespace TransportTariffs
             End Try
         End Sub
 
-        Public Sub TariffsDeleting(YourTariffs As List(Of R2CoreTransportationAndLoadNotificationTransportTariff))
+        Public Sub TariffDeleting(YourTariff As R2CoreTransportationAndLoadNotificationTransportTariff)
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
-                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                'حذف کردن تعرفه ها
-                For Loopx As Int64 = 0 To YourTariffs.Count - 1
-                    CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffs Set Deleted=1,Active=0
-                                          Where SourceCityId=" & YourTariffs(Loopx).SourceCityId & " and TargetCityId=" & YourTariffs(Loopx).TargetCityId & " and LoaderTypeId=" & YourTariffs(Loopx).LoaderTypeId & " and GoodId=" & YourTariffs(Loopx).GoodId & " and Active=1"
-                    CmdSql.ExecuteNonQuery()
-                Next
-                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+                'حذف کردن تعرفه
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffs Set Deleted=1,Active=0
+                                      Where SourceCityId=" & YourTariff.SourceCityId & " and TargetCityId=" & YourTariff.TargetCityId & " and LoaderTypeId=" & YourTariff.LoaderTypeId & " and GoodId=" & YourTariff.GoodId & " and Active=1"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
             Catch ex As SqlException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                 Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Sub
 
-        Public Sub TariffsEditing(YourTariffs As List(Of R2CoreTransportationAndLoadNotificationTransportTariff))
+        Public Sub TariffEditing(YourTariff As R2CoreTransportationAndLoadNotificationTransportTariff)
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 CmdSql.Connection.Open()
-                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                'ویرایش کردن تعرفه ها
-                For Loopx As Int64 = 0 To YourTariffs.Count - 1
-                    CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffs Set Tariff=" & YourTariffs(Loopx).Tariff & ",BaseTonnag=" & YourTariffs(Loopx).BaseTonnag & "
-                                          Where SourceCityId=" & YourTariffs(Loopx).SourceCityId & " and TargetCityId=" & YourTariffs(Loopx).TargetCityId & " and LoaderTypeId=" & YourTariffs(Loopx).LoaderTypeId & " and GoodId=" & YourTariffs(Loopx).GoodId & " and Active=1"
-                    CmdSql.ExecuteNonQuery()
-                Next
-                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+                'ویرایش کردن تعرفه
+                CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffs Set Tariff=" & YourTariff.Tariff & ",BaseTonnag=" & YourTariff.BaseTonnag & "
+                                      Where SourceCityId=" & YourTariff.SourceCityId & " and TargetCityId=" & YourTariff.TargetCityId & " and LoaderTypeId=" & YourTariff.LoaderTypeId & " and GoodId=" & YourTariff.GoodId & " and Active=1"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
             Catch ex As SqlException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                 Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Sub

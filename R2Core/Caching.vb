@@ -6,6 +6,7 @@ Imports R2Core.CachHelper
 Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateTimeProvider
+Imports R2Core.GeneralConfiguration
 Imports StackExchange.Redis
 Imports System.CodeDom
 Imports System.Data.SqlClient
@@ -16,9 +17,18 @@ Namespace CachHelper
 
     Public Class RedisConnectorHelper
 
+        Private InstanceGeneralConfiguration As R2CoreGeneralConfigurationManager
+        Private _DateTimeService As R2DateTimeService
+
+
+        Public Sub New()
+            _DateTimeService = New R2DateTimeService
+            InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
+        End Sub
+
         Private ReadOnly Property RedisHost As String
             Get
-                Return R2CoreConfigurationManagement.GetConfigString(R2Core.ConfigurationManagement.R2CoreConfigurations.Caching, 0)
+                Return InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.Caching, 0)
             End Get
         End Property
 
@@ -67,6 +77,7 @@ Namespace Caching
     Public MustInherit Class R2CoreCatchDataBases
         Public Shared ReadOnly Property SoftwareUserSessions As Int64 = 0
         Public Shared ReadOnly Property Carousels As Int64 = 2
+        Public Shared ReadOnly Property GeneralAnnounceSMSRequests As Int64 = 4
     End Class
 
     Public MustInherit Class R2CoreCacheTypes
@@ -74,6 +85,7 @@ Namespace Caching
         Public Shared ReadOnly Property Session As Int64 = 1
         Public Shared ReadOnly Property Carousel As Int64 = 3
         Public Shared ReadOnly Property SoftwareUserVerify As Int64 = 5
+        Public Shared ReadOnly Property GeneralAnnounceSMSRequest As Int64 = 6
     End Class
 
     Public Class R2CoreStandardCacheTypeStructure
@@ -120,7 +132,6 @@ Namespace Caching
         Public Property Deleted As Boolean
 
     End Class
-
 
     Public Class R2CoreCacheManager
 
@@ -229,6 +240,8 @@ Namespace PubSubMessaging
         Public Shared ReadOnly Property None As String = "None"
         Public Shared ReadOnly Property UserAuthenticated As String = "UserAuthenticated"
         Public Shared ReadOnly Property Logging As String = "Logging"
+        Public Shared ReadOnly Property GeneralAnnounceSMSRequest As String = "GeneralAnnounceSMSRequest"
+
     End Class
 
 

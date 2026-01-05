@@ -13,6 +13,7 @@ using R2CoreParkingSystem.SMS.SMSControllingMoneyWallet;
 using R2Core.SMS.SMSSendRecive;
 using R2Core.ConfigurationManagement;
 using System.Timers;
+using R2Core.GeneralConfiguration;
 
 namespace SMSControllingMoneyWalletAutomatedJob
 {
@@ -46,9 +47,9 @@ namespace SMSControllingMoneyWalletAutomatedJob
                 {
                     try
                     {
-                        var InstanceConfiguration = new R2CoreConfigurationsManager(_DateTimeService);
+                        var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(_SystemUser);
-                        _AutomatedJobsTimer.Interval = InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.SmsSystemSetting, 24) * 1000;
+                        _AutomatedJobsTimer.Interval = InstanceGeneralConfiguration.GetInt64Configuration(R2CoreGeneralConfigurations.SmsSystemSetting, 24) * 1000;
                         _FailStatus = false;
                         EventLog.WriteEntry("SMSControllingMoneyWalletAutomatedJob", "SMSControllingMoneyWalletAutomatedJob.Interval=" + _AutomatedJobsTimer.Interval.ToString(), EventLogEntryType.SuccessAudit);
                     }

@@ -68,10 +68,17 @@ Namespace TrafficCosts
             Try
                 Cmdsql.Connection.Open()
                 Cmdsql.Transaction = Cmdsql.Connection.BeginTransaction
-                Cmdsql.CommandText = "Update R2PrimaryParkingSystem.dbo.TblTrafficCosts Set Active=0 Where TrafficCardTypeId=" & YourRawTrafficCost.TrafficCardTypeId & ""
+                Cmdsql.CommandText = "Update R2PrimaryParkingSystem.dbo.TblTrafficCosts Set Active=0 Where TrafficCardTypeId=@TrafficCardTypeId"
+                Cmdsql.Parameters.Add("@TrafficCardTypeId", SqlDbType.BigInt).Value = YourRawTrafficCost.TrafficCardTypeId
                 Cmdsql.ExecuteNonQuery()
                 Cmdsql.CommandText = "Insert Into R2PrimaryParkingSystem.dbo.TblTrafficCosts(TrafficCardTypeId,EntryBaseCost,NoCostStoppageDuration,ExcessStoppageDuration,ExcessStoppageCost,Active)
-                                      Values(" & YourRawTrafficCost.TrafficCardTypeId & "," & YourRawTrafficCost.EntryBaseCost & "," & YourRawTrafficCost.NoCostStoppageDuration & "," & YourRawTrafficCost.ExcessStoppageDuration & "," & YourRawTrafficCost.ExcessStoppageCost & "," & IIf(YourRawTrafficCost.Active, 1, 0) & ")"
+                                      Values(@TrafficCardTypeId,@EntryBaseCost,@NoCostStoppageDuration,@ExcessStoppageDuration,@ExcessStoppageCost,@Active)"
+                Cmdsql.Parameters.Add("@TrafficCardTypeId", SqlDbType.BigInt).Value = YourRawTrafficCost.TrafficCardTypeId
+                Cmdsql.Parameters.Add("@EntryBaseCost", SqlDbType.BigInt).Value = YourRawTrafficCost.EntryBaseCost
+                Cmdsql.Parameters.Add("@NoCostStoppageDuration", SqlDbType.Int).Value = YourRawTrafficCost.NoCostStoppageDuration
+                Cmdsql.Parameters.Add("@ExcessStoppageDuration", SqlDbType.Int).Value = YourRawTrafficCost.ExcessStoppageDuration
+                Cmdsql.Parameters.Add("@ExcessStoppageCost", SqlDbType.BigInt).Value = YourRawTrafficCost.ExcessStoppageCost
+                Cmdsql.Parameters.Add("@Active", SqlDbType.Bit).Value = IIf(YourRawTrafficCost.Active, 1, 0)
                 Cmdsql.ExecuteNonQuery()
                 Cmdsql.Transaction.Commit() : Cmdsql.Connection.Close()
             Catch ex As SqlException

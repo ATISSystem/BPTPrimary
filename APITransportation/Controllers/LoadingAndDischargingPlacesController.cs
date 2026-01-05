@@ -138,14 +138,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/LADPlaceUpdate")]
-        public HttpResponseMessage LADPlaceUpdate()
+        public HttpResponseMessage LADPlaceUpdate([FromBody] APITransportationSessionIdRawLADPlaceInf Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdRawLADPlaceInf>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var RawLADPlaceInf = Content.RawLADPlaceInf;
 
@@ -169,14 +168,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/LADPlaceDelete")]
-        public HttpResponseMessage LADPlaceDelete()
+        public HttpResponseMessage LADPlaceDelete([FromBody] APITransportationSessionIdLADPlaceId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLADPlaceId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var LADPlaceId = Content.LADPlaceId;
 
@@ -200,14 +198,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/LoadingPlaceChangeActiveStatus")]
-        public HttpResponseMessage LoadingPlaceChangeActiveStatus()
+        public HttpResponseMessage LoadingPlaceChangeActiveStatus([FromBody] APITransportationSessionIdLADPlaceId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLADPlaceId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var LADPlaceId = Content.LADPlaceId;
 
@@ -231,14 +228,13 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/DischargingPlaceChangeActiveStatus")]
-        public HttpResponseMessage DischargingPlaceChangeActiveStatus()
+        public HttpResponseMessage DischargingPlaceChangeActiveStatus([FromBody] APITransportationSessionIdLADPlaceId Content)
         {
             try
             {
                 var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdLADPlaceId>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var LADPlaceId = Content.LADPlaceId;
 

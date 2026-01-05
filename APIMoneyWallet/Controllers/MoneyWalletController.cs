@@ -2,11 +2,13 @@
 using APIMoneyWallet.Models;
 using Newtonsoft.Json;
 using PayanehClassLibrary.ConfigurationManagement;
+using PayanehClassLibrary.GeneralConfiguration;
 using R2Core.ConfigurationManagement;
 using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
+using R2Core.GeneralConfiguration;
 using R2Core.MoneyWallet.MoneyWallet;
 using R2Core.SessionManagement;
 using R2CoreParkingSystem.AccountingManagement;
@@ -192,14 +194,14 @@ namespace APIMoneyWalletAndTraffic.Controllers
         {
             try
             {
-                var InstanceConfiguration = new R2CoreInstanceConfigurationManager(_DateTimeService);
+                var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
                 var InstanceMoneyWallet = new R2CoreMoneyWalletManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var MoneyWalletId = InstanceConfiguration.GetConfigInt64(PayanehClassLibraryConfigurations.TruckersAssociationControllingMoneyWallet, 4);
+                var MoneyWalletId = InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWallet, 4);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceMoneyWallet.GetMoneyWallet(MoneyWalletId, false)), Encoding.UTF8, "application/json");
@@ -223,14 +225,14 @@ namespace APIMoneyWalletAndTraffic.Controllers
         {
             try
             {
-                var InstanceConfiguration = new R2CoreInstanceConfigurationManager(_DateTimeService);
+                var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
                 var InstanceMoneyWallet = new R2CoreMoneyWalletManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var MoneyWalletId = InstanceConfiguration.GetConfigInt64(R2CoreConfigurations.SmsSystemSetting, 8);
+                var MoneyWalletId = InstanceGeneralConfiguration.GetInt64Configuration(R2CoreGeneralConfigurations.SmsSystemSetting, 8);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceMoneyWallet.GetMoneyWallet(MoneyWalletId, false)), Encoding.UTF8, "application/json");

@@ -13,6 +13,8 @@ Imports R2Core.DateTimeProvider.Models
 Imports R2Core.ExceptionManagement
 Imports R2Core.Networking
 Imports R2Core.PublicProc
+Imports R2Core.SecurityAlgorithmsManagement.Exceptions
+Imports R2Core.SQLInjectionPrevention
 Imports System.Globalization
 Imports System.IO
 Imports System.Net
@@ -25,7 +27,7 @@ Imports System.Threading.Tasks
 Imports System.Windows.Forms
 Imports System.Xml
 
-
+'BPTChanged
 Namespace DateTimeProvider
 
     Namespace Models
@@ -776,25 +778,25 @@ Namespace DateAndTimeManagement
 
 
     Public NotInheritable Class R2CoreMclassDateAndTimeManagement
-        Public Shared Function GetPersianDaysDiffDate(YourDate1 As String, YourDate2 As String) As Int64
-            Try
-                Dim year1 As Int64 = Convert.ToInt64(YourDate1.Substring(0, 4))
-                Dim month1 As Int64 = Convert.ToInt64(YourDate1.Substring(5, 2))
-                Dim day1 As Int64 = Convert.ToInt64(YourDate1.Substring(8, 2))
+        'Public Shared Function GetPersianDaysDiffDate(YourDate1 As String, YourDate2 As String) As Int64
+        '    Try
+        '        Dim year1 As Int64 = Convert.ToInt64(YourDate1.Substring(0, 4))
+        '        Dim month1 As Int64 = Convert.ToInt64(YourDate1.Substring(5, 2))
+        '        Dim day1 As Int64 = Convert.ToInt64(YourDate1.Substring(8, 2))
 
-                Dim year2 As Int64 = Convert.ToInt64(YourDate2.Substring(0, 4))
-                Dim month2 As Int64 = Convert.ToInt64(YourDate2.Substring(5, 2))
-                Dim day2 As Int64 = Convert.ToInt64(YourDate2.Substring(8, 2))
+        '        Dim year2 As Int64 = Convert.ToInt64(YourDate2.Substring(0, 4))
+        '        Dim month2 As Int64 = Convert.ToInt64(YourDate2.Substring(5, 2))
+        '        Dim day2 As Int64 = Convert.ToInt64(YourDate2.Substring(8, 2))
 
-                Dim Calendar As System.Globalization.PersianCalendar = New System.Globalization.PersianCalendar()
-                Dim dt1 As DateTime = Calendar.ToDateTime(year1, month1, day1, 0, 0, 0, 0)
-                Dim dt2 As DateTime = Calendar.ToDateTime(year2, month2, day2, 0, 0, 0, 0)
-                Dim ts As TimeSpan = dt2.Subtract(dt1)
-                Return ts.Days
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        '        Dim Calendar As System.Globalization.PersianCalendar = New System.Globalization.PersianCalendar()
+        '        Dim dt1 As DateTime = Calendar.ToDateTime(year1, month1, day1, 0, 0, 0, 0)
+        '        Dim dt2 As DateTime = Calendar.ToDateTime(year2, month2, day2, 0, 0, 0, 0)
+        '        Dim ts As TimeSpan = dt2.Subtract(dt1)
+        '        Return ts.Days
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
     End Class
 
     'Public Class R2CoreDateAndTime
@@ -1247,69 +1249,69 @@ Namespace DateAndTimeManagement
 
     Public Class HafteMahManagement
         'روتين پر کردن کمبو هفته 
-        Public Shared Function GetMahNameFromMahCode(ByVal MahCode As String) As String
-            If MahCode.Trim = "10" Then
-                Return "فروردين"
-            ElseIf MahCode.Trim = "11" Then
-                Return "ارديبهشت"
-            ElseIf MahCode.Trim = "12" Then
-                Return "خرداد"
-            ElseIf MahCode.Trim = "13" Then
-                Return "تير"
-            ElseIf MahCode.Trim = "14" Then
-                Return "مرداد"
-            ElseIf MahCode.Trim = "15" Then
-                Return "شهريور"
-            ElseIf MahCode.Trim = "16" Then
-                Return "مهر"
-            ElseIf MahCode.Trim = "17" Then
-                Return "آبان"
-            ElseIf MahCode.Trim = "18" Then
-                Return "آذر"
-            ElseIf MahCode.Trim = "19" Then
-                Return "دي"
-            ElseIf MahCode.Trim = "20" Then
-                Return "بهمن"
-            ElseIf MahCode.Trim = "21" Then
-                Return "اسفند"
-            End If
-        End Function
-        Public Shared Function GetHafteRoozNameFromCode(ByVal RoozCode As String) As String
-            If RoozCode.Trim = "10" Then
-                Return "شنبه"
-            ElseIf RoozCode.Trim = "11" Then
-                Return "يکشنبه"
-            ElseIf RoozCode.Trim = "12" Then
-                Return "دوشنبه"
-            ElseIf RoozCode.Trim = "13" Then
-                Return "سه شنبه"
-            ElseIf RoozCode.Trim = "14" Then
-                Return "چهارشنبه"
-            ElseIf RoozCode.Trim = "15" Then
-                Return "پنجشنبه"
-            ElseIf RoozCode.Trim = "16" Then
-                Return "جمعه"
-            End If
-        End Function
+        'Public Shared Function GetMahNameFromMahCode(ByVal MahCode As String) As String
+        '    If MahCode.Trim = "10" Then
+        '        Return "فروردين"
+        '    ElseIf MahCode.Trim = "11" Then
+        '        Return "ارديبهشت"
+        '    ElseIf MahCode.Trim = "12" Then
+        '        Return "خرداد"
+        '    ElseIf MahCode.Trim = "13" Then
+        '        Return "تير"
+        '    ElseIf MahCode.Trim = "14" Then
+        '        Return "مرداد"
+        '    ElseIf MahCode.Trim = "15" Then
+        '        Return "شهريور"
+        '    ElseIf MahCode.Trim = "16" Then
+        '        Return "مهر"
+        '    ElseIf MahCode.Trim = "17" Then
+        '        Return "آبان"
+        '    ElseIf MahCode.Trim = "18" Then
+        '        Return "آذر"
+        '    ElseIf MahCode.Trim = "19" Then
+        '        Return "دي"
+        '    ElseIf MahCode.Trim = "20" Then
+        '        Return "بهمن"
+        '    ElseIf MahCode.Trim = "21" Then
+        '        Return "اسفند"
+        '    End If
+        'End Function
+        'Public Shared Function GetHafteRoozNameFromCode(ByVal RoozCode As String) As String
+        '    If RoozCode.Trim = "10" Then
+        '        Return "شنبه"
+        '    ElseIf RoozCode.Trim = "11" Then
+        '        Return "يکشنبه"
+        '    ElseIf RoozCode.Trim = "12" Then
+        '        Return "دوشنبه"
+        '    ElseIf RoozCode.Trim = "13" Then
+        '        Return "سه شنبه"
+        '    ElseIf RoozCode.Trim = "14" Then
+        '        Return "چهارشنبه"
+        '    ElseIf RoozCode.Trim = "15" Then
+        '        Return "پنجشنبه"
+        '    ElseIf RoozCode.Trim = "16" Then
+        '        Return "جمعه"
+        '    End If
+        'End Function
         'روتين برگرداندن تعداد روزهاي يک ماه شمسي
-        Public Shared Function GetDaysOfMah(ByVal mahcode As String) As Int16
-            'کد ماه بين 10 تا 21 است يعني فروردين تا اسفند
-            Try
-                Dim mymahcode As String = Trim(mahcode)
-                If (Len(Trim(mahcode)) <> 2) Or (CInt(mahcode) - 9 < 1) Or (CInt(mahcode) - 9 > 12) Then
-                    Throw New Exception("کد ماه شمسي بايد بين اعداد 10 تا 21 باشد")
-                End If
-                If (CInt(mahcode) - 9 >= 1) And (CInt(mahcode) - 9 <= 6) Then
-                    Return 31 : Exit Function
-                End If
-                If (CInt(mahcode) - 9 >= 7) And (CInt(mahcode) - 9 <= 11) Then
-                    Return 30 : Exit Function
-                End If
-                If (CInt(mahcode) - 9 = 12) Then Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.EsfandRooz, 0)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetDaysOfMah(ByVal mahcode As String) As Int16
+        '    'کد ماه بين 10 تا 21 است يعني فروردين تا اسفند
+        '    Try
+        '        Dim mymahcode As String = Trim(mahcode)
+        '        If (Len(Trim(mahcode)) <> 2) Or (CInt(mahcode) - 9 < 1) Or (CInt(mahcode) - 9 > 12) Then
+        '            Throw New Exception("کد ماه شمسي بايد بين اعداد 10 تا 21 باشد")
+        '        End If
+        '        If (CInt(mahcode) - 9 >= 1) And (CInt(mahcode) - 9 <= 6) Then
+        '            Return 31 : Exit Function
+        '        End If
+        '        If (CInt(mahcode) - 9 >= 7) And (CInt(mahcode) - 9 <= 11) Then
+        '            Return 30 : Exit Function
+        '        End If
+        '        If (CInt(mahcode) - 9 = 12) Then Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.EsfandRooz, 0)
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+        '    End Try
+        'End Function
 
 
     End Class
@@ -1424,9 +1426,15 @@ Namespace DateAndTimeManagement
 
                 Public Function GetHoliDayNumber(ByVal YourShamsiDate1 As String, ByVal YourShamsiDate2 As String) As UInteger
                     Try
+                        Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+                        InstanceSQLInjectionPrevention.GeneralAuthorization(YourShamsiDate1)
+                        InstanceSQLInjectionPrevention.GeneralAuthorization(YourShamsiDate2)
+
                         Dim Ds As DataSet
                         InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Count(*) AS Counting from R2Primary.dbo.TblPersianCalendar where (dateshamsi>'" & YourShamsiDate1 & "') and (dateshamsi<'" & YourShamsiDate2 & "')  and PCType=1", 32767, Ds, New Boolean)
                         Return Ds.Tables(0).Rows(0).Item("Counting")
+                    Catch ex As SqlInjectionException
+                        Throw ex
                     Catch ex As Exception
                         Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
                     End Try
@@ -1434,6 +1442,9 @@ Namespace DateAndTimeManagement
 
                 Public Function GetforThisMonth(YourShamsiDate As String) As List(Of R2CorePersianCalendar)
                     Try
+                        Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+                        InstanceSQLInjectionPrevention.GeneralAuthorization(YourShamsiDate)
+
                         Dim DS As New DataSet
                         InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                          "Select * From R2Primary.Dbo.TblPersianCalendar Where SUBSTRING(DateShamsi,1,7)='" & Mid(YourShamsiDate, 1, 7) & "' Order By DateShamsi ", 32767, DS, New Boolean)
@@ -1443,6 +1454,8 @@ Namespace DateAndTimeManagement
                             Lst.Add(PersianCalendar)
                         Next
                         Return Lst
+                    Catch ex As SqlInjectionException
+                        Throw ex
                     Catch ex As Exception
                         Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
                     End Try

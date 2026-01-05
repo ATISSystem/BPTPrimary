@@ -187,6 +187,10 @@
     <Compile Include="Controllers\DevicesController.cs" />
     <Compile Include="Controllers\GeneralConfigurationController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\LoadAllocationConditionsController.cs" />
+    <Compile Include="Controllers\LoadViewConditionsController.cs" />
+    <Compile Include="Controllers\RequestersController.cs" />
+    <Compile Include="Controllers\SMSController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

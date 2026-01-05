@@ -6,7 +6,9 @@ Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
+Imports R2Core.GeneralConfiguration
 Imports R2CoreTransportationAndLoadNotification.ConfigurationsManagement
+Imports R2CoreTransportationAndLoadNotification.GeneralConfiguration
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad
 Imports System.Reflection
 
@@ -41,9 +43,9 @@ Namespace TurnCancellation
         'BPTChanged
         Public Function IsLoadforTurnCancellation(YourLoadTargetCityId As Int64, YourTonaj As Double) As Boolean
             Try
-                Dim InstanceConfigurations As New R2CoreInstanceConfigurationManager(_DateTimeService)
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 If IsLoadTargetforTurnCancellation(YourLoadTargetCityId) Then
-                    If YourTonaj <= InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.DefaultTransportationAndLoadNotificationConfigs, 8) Then
+                    If YourTonaj <= InstanceGeneralConfiguration.GetInt64Configuration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.BaseTransportationAndLoadNotificationSetting, 8) Then
                         Return True
                     Else
                         Return False

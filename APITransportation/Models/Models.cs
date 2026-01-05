@@ -16,6 +16,7 @@ using System.EnterpriseServices.Internal;
 using R2CoreTransportationAndLoadNotification.TransportTariffs;
 using R2CoreTransportationAndLoadNotification.Announcements;
 using R2CoreTransportationAndLoadNotification.Turns.SequentialTurns;
+using R2CoreTransportationAndLoadNotification.TurnCosts;
 
 namespace APITransportation.Models
 {
@@ -111,6 +112,22 @@ namespace APITransportation.Models
 
     }
 
+    namespace TurnCost
+    {
+        public class APITransportationSessionIdRawTurnCost
+        {
+            public String SessionId;
+            public R2CoreTransportationAndLoadNotificationRawTurnCost RawTurnCost;
+        }
+
+        public class APITransportationSessionIdSeqTurnId
+        {
+            public String SessionId;
+            public Int64  SeqTurnId;
+        }
+
+    }
+
     namespace SequentialTurns
     {
         public class APITransportationSessionIdSequentialTurn
@@ -199,6 +216,13 @@ namespace APITransportation.Models
             public Int64 CityId;
             public bool CityActive;
         }
+
+        public class APITransportationSessionIdSearchString
+        {
+            public string SessionId;
+            public string SearchString;
+        }
+
     }
 
     namespace Products
@@ -244,6 +268,14 @@ namespace APITransportation.Models
             public Int64 LoaderTypeId;
         }
 
+        public class APITransportationSessionIdLoaderTypeIdAnnouncementSubGroupId
+        {
+            public String SessionId;
+            public Int64 LoaderTypeId;
+            public Int64 AnnouncementSubGroupId;
+        }
+
+
     }
 
     namespace TravelTimes
@@ -281,6 +313,12 @@ namespace APITransportation.Models
         {
             public String SessionId;
             public List<R2CoreTransportationAndLoadNotificationTransportTariff> Tariffs;
+        }
+
+        public class APITransportationSessionIdTariff
+        {
+            public String SessionId;
+            public R2CoreTransportationAndLoadNotificationTransportTariff Tariff;
         }
 
         public class APITransportationSessionIdTariffsWithAddPercentage
@@ -324,6 +362,14 @@ namespace APITransportation.Models
             public Int64 AnnouncementId;
             public Int64 AnnouncementSubGroupId;
         }
+
+        public class APITransportationSessionIdProvinceIdAnnouncementSubGroupId
+        {
+            public String SessionId;
+            public Int64 ProvinceId;
+            public Int64 AnnouncementSubGroupId;
+        }
+
 
     }
 
