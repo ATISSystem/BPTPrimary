@@ -1,109 +1,63 @@
 ﻿
+Imports System.Data.SqlClient
+Imports System.Reflection
 
-Imports R2Core.ComputersManagement
-Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateTimeProvider
-Imports R2Core.GeneralConfiguration
-Imports R2Core.RFIDCardsManagement.Exceptions
-Imports R2Core.SoftwareUserManagement
-Imports System.Data.SqlClient
-Imports System.Globalization
-Imports System.Reflection
-Imports System.Windows.Forms
+
+Namespace RFIDCards
+
+    'BPTChanged
+    Public Class R2CoreRFIDCardsManager
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+        Private _DateTimeService As IDateTimeService
+
+        Public Sub New(YourDateTimeService As IDateTimeService)
+            Try
+                _DateTimeService = YourDateTimeService
+                InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Function RFIDCardRegistering(YourCardNo As String, YourSoftwareUserId As Int64) As Int64
+            Dim Cmdsql As New SqlClient.SqlCommand
+            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
+            Try
+                Cmdsql.Connection.Open()
+                Cmdsql.Transaction = Cmdsql.Connection.BeginTransaction
+                Cmdsql.CommandText = "Select Top 1 CardId From R2Primary.dbo.TblRFIDCards with (tablockx) Order By CardId Desc"
+                Cmdsql.ExecuteNonQuery()
+                Dim newCardId As Int64 = Cmdsql.ExecuteScalar() + 1
+                Cmdsql.CommandText = "Insert Into R2Primary.dbo.TblRFIDCards(CardId,CardNo,UseriDSabt,UserIdEdit) 
+                                      values(@CardId,@CardNo,@UseriDSabt,@UserIdEdit)"
+                Cmdsql.Parameters.Add("@CardId", SqlDbType.BigInt).Value = newCardId
+                Cmdsql.Parameters.Add("@CardNo", SqlDbType.NVarChar).Value = YourCardNo
+                Cmdsql.Parameters.Add("@UseriDSabt", SqlDbType.BigInt).Value = YourSoftwareUserId
+                Cmdsql.Parameters.Add("@UserIdEdit", SqlDbType.BigInt).Value = YourSoftwareUserId
+                Cmdsql.ExecuteNonQuery()
+                Cmdsql.Transaction.Commit() : Cmdsql.Connection.Close()
+                Return newCardId
+            Catch ex As SqlException
+                If Cmdsql.Connection.State <> ConnectionState.Closed Then Cmdsql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If Cmdsql.Connection.State <> ConnectionState.Closed Then
+                    Cmdsql.Transaction.Rollback() : Cmdsql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+    End Class
+
+
+
+End Namespace
 
 Namespace RFIDCardsManagement
 
-    Public Class R2CoreStandardRFIDCardStructure
-        Inherits BaseStandardClass.R2StandardStructure
-
-        Private _CardId As String
-        Private _CardNo As String
-        Private _Active As Boolean
-        Private _DateTimeMilladiSabt As DateTime
-        Private _DateTimeMilladiEdit As DateTime
-        Private _DateShamsiSabt As String
-        Private _DateShamsiEdit As String
-
-
-
-#Region "Constructing Management"
-        Public Sub New()
-            MyBase.New()
-            _CardId = "" : _CardNo = "" : _Active = False : _DateTimeMilladiSabt = "" : _DateTimeMilladiEdit = "" : _DateShamsiSabt = "" : _DateShamsiEdit = ""
-        End Sub
-        Public Sub New(ByVal CardIdd As String, ByVal CardNoo As String, ByVal Activee As Boolean, ByVal DateTimeMilladiSabtt As DateTime, ByVal DateTimeMilladiEditt As DateTime, ByVal DateShamsiSabtt As String, ByVal DateShamsiEditt As String)
-            MyBase.New(CardIdd, CardNoo)
-            _CardId = CardIdd
-            _CardNo = CardNoo
-            _Active = Activee
-            _DateTimeMilladiSabt = DateTimeMilladiSabtt
-            _DateTimeMilladiEdit = DateTimeMilladiEditt
-            _DateShamsiSabt = DateShamsiSabtt
-            _DateShamsiEdit = DateShamsiEditt
-        End Sub
-#End Region
-#Region "Properting Management"
-        Public Property CardId() As String
-            Get
-                Return _CardId
-            End Get
-            Set(ByVal Value As String)
-                _CardId = Value
-            End Set
-        End Property
-        Public Property CardNo() As String
-            Get
-                Return _CardNo
-            End Get
-            Set(ByVal Value As String)
-                _CardNo = Value
-            End Set
-        End Property
-        Public Property Active() As Boolean
-            Get
-                Return _Active
-            End Get
-            Set(ByVal Value As Boolean)
-                _Active = Value
-            End Set
-        End Property
-        Public Property DateTimeMilladiSabt() As DateTime
-            Get
-                Return _DateTimeMilladiSabt
-            End Get
-            Set(ByVal Value As DateTime)
-                _DateTimeMilladiSabt = Value
-            End Set
-        End Property
-        Public Property DateTimeMilladiEdit() As DateTime
-            Get
-                Return _DateTimeMilladiEdit
-            End Get
-            Set(ByVal Value As DateTime)
-                _DateTimeMilladiEdit = Value
-            End Set
-        End Property
-        Public Property DateShamsiSabt() As String
-            Get
-                Return _DateShamsiSabt
-            End Get
-            Set(ByVal Value As String)
-                _DateShamsiSabt = Value
-            End Set
-        End Property
-        Public Property DateShamsiEdit() As String
-            Get
-                Return _DateShamsiEdit
-            End Get
-            Set(ByVal Value As String)
-                _DateShamsiEdit = Value
-            End Set
-        End Property
-#End Region
-
-
-    End Class
 
     'Public Class R2CoreRFIDCardReader
     '    Public Declare Function MF_GetDLL_Ver Lib "MF_API.dll" (ByRef rVER As Byte) As Short
@@ -340,7 +294,7 @@ Namespace RFIDCardsManagement
     '    Private Shared RFIDCardReader As R2CoreRFIDCardReader = New R2CoreRFIDCardReader
     '    Private Shared _CurrentCardNo As String = Nothing
     '    Private Shared _InterfaceMode As InterfaceMode
-    '    Private Shared _DateTimeService As IR2DateTimeService = New R2DateTimeService
+    '    Private Shared _DateTimeService As IDateTimeService = New R2DateTimeService
 
     '    Public Shared Sub DisposeResources()
     '        ReaderTimer.Stop()
@@ -446,9 +400,9 @@ Namespace RFIDCardsManagement
 
     Public Class R2CoreMClassRFIDCardManagement
 
-        Private Shared _DateTimeService As IR2DateTimeService
+        Private Shared _DateTimeService As IDateTimeService
         Private Shared InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -541,45 +495,3 @@ Namespace RFIDCardsManagement
     End Namespace
 End Namespace
 
-Namespace RFIDCards
-
-    'BPTChanged
-    Public Class R2CoreRFIDCardsManager
-        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
-            _DateTimeService = YourDateTimeService
-            InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
-        End Sub
-
-        Public Function RFIDCardRegistering(YourCardNo As String, YourSoftwareUserId As Int64) As Int64
-            Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
-            Try
-                Cmdsql.Connection.Open()
-                Cmdsql.Transaction = Cmdsql.Connection.BeginTransaction
-                Cmdsql.CommandText = "Select Top 1 CardId From R2Primary.dbo.TblRFIDCards with (tablockx) Order By CardId Desc"
-                Cmdsql.ExecuteNonQuery()
-                Dim newCardId As Int64 = Cmdsql.ExecuteScalar() + 1
-                Cmdsql.CommandText = "Insert Into R2Primary.dbo.TblRFIDCards(CardId,CardNo,UseriDSabt,UserIdEdit) 
-                                      values(@CardId,@CardNo,@UseriDSabt,@UserIdEdit)"
-                Cmdsql.Parameters.Add("@CardId", SqlDbType.BigInt).Value = newCardId
-                Cmdsql.Parameters.Add("@CardNo", SqlDbType.NVarChar).Value = YourCardNo
-                Cmdsql.Parameters.Add("@UseriDSabt", SqlDbType.BigInt).Value = YourSoftwareUserId
-                Cmdsql.Parameters.Add("@UserIdEdit", SqlDbType.BigInt).Value = YourSoftwareUserId
-                Cmdsql.ExecuteNonQuery()
-                Cmdsql.Transaction.Commit() : Cmdsql.Connection.Close()
-                Return newCardId
-            Catch ex As Exception
-                If Cmdsql.Connection.State <> ConnectionState.Closed Then
-                    Cmdsql.Transaction.Rollback() : Cmdsql.Connection.Close()
-                End If
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-    End Class
-
-
-
-End Namespace

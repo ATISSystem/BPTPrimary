@@ -22,6 +22,11 @@ using R2Core.DatabaseManagement;
 using APICommon.Models;
 using R2Core.DateTimeProvider;
 using System.Reflection;
+using R2Core.LoggingManagement;
+using R2CoreTransportationAndLoadNotification.Logging;
+using R2CoreTransportationAndLoadNotification.Turns.SequentialTurns;
+using System.Web;
+using R2CoreParkingSystem.Logging;
 
 
 namespace APITransportation.Controllers
@@ -30,11 +35,18 @@ namespace APITransportation.Controllers
     public class ProvincesAndCitiesController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService;
+        private IDateTimeService _DateTimeService;
+        private ILogger _loggerService;
+        private Networking _Networking;
 
         public ProvincesAndCitiesController()
         {
-            try { _DateTimeService = new R2DateTimeService(); }
+            try
+            {
+                _DateTimeService = new R2DateTimeService();
+                _loggerService = new R2Core.LoggingManagement.R2CorenLogService();
+                _Networking = new Networking();
+            }
             catch (FileNotExistException ex)
             { throw ex; }
             catch (Exception ex)
@@ -103,7 +115,7 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/ChangeActivateStatusOfProvince")]
-        public HttpResponseMessage ChangeActivateStatusOfProvince([FromBody] APITransportationSessionIdProvinceIdProvinceActive Content )
+        public HttpResponseMessage ChangeActivateStatusOfProvince([FromBody] APITransportationSessionIdProvinceIdProvinceActive Content)
         {
             try
             {
@@ -117,6 +129,9 @@ namespace APITransportation.Controllers
 
                 var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager(_DateTimeService);
                 InstanceProvincesAndCities.ChangeActiveStatusOfProvince(ProvinceId, ProvineActive);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreParkingSystemLogTypes.ChangeActivateStatusOfProvince, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(ProvinceId) + ":" + ProvinceId, MessageDetail2 = nameof(ProvineActive) + ":" + ProvineActive, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -146,6 +161,9 @@ namespace APITransportation.Controllers
 
                 var InstanceProvincesAndCities = new R2CoreParkingSystemProvincesAndCitiesManager(_DateTimeService);
                 InstanceProvincesAndCities.ChangeActiveStatusOfCity(CityId, CityActive);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreParkingSystemLogTypes.ChangeActivateStatusOfCity, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(CityId) + ":" + CityId, MessageDetail2 = nameof(CityActive) + ":" + CityActive, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }

@@ -2,6 +2,7 @@
 Imports System.Reflection
 Imports System.Web.Services
 Imports System.Web.Services.Protocols
+Imports System.Xml
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
@@ -270,11 +271,11 @@ Public Class R2PrimaryWebService
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
             R2CoreTransportationAndLoadNotificationReportsManagement.ReportingInformationProviderBillOfLadingControlReport(YourBLCId)
         Catch ex As ExchangeKeyTimeRangePassedException
-            Throw ex
+            Throw GetSoapExeption(ex)
         Catch ex As ExchangeKeyNotExistException
-            Throw ex
+            Throw GetSoapExeption(ex)
         Catch ex As Exception
-            Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            Throw GetSoapExeption(ex)
         End Try
     End Sub
 
@@ -284,11 +285,11 @@ Public Class R2PrimaryWebService
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
             R2CoreTransportationAndLoadNotificationReportsManagement.ReportingInformationProviderBillOfLadingControlInfractionReport(YourBLCIId)
         Catch ex As ExchangeKeyTimeRangePassedException
-            Throw ex
+            Throw GetSoapExeption(ex)
         Catch ex As ExchangeKeyNotExistException
-            Throw ex
+            Throw GetSoapExeption(ex)
         Catch ex As Exception
-            Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            Throw GetSoapExeption(ex)
         End Try
     End Sub
 
@@ -300,11 +301,11 @@ Public Class R2PrimaryWebService
             Dim PayId = InstancePaymentRequests.PaymentRequest(YourMCSSId, YourAmount, YourSoftwareUserId)
             Return PayId
         Catch ex As ExchangeKeyTimeRangePassedException
-            Throw ex
+            Throw GetSoapExeption(ex)
         Catch ex As ExchangeKeyNotExistException
-            Throw ex
+            Throw GetSoapExeption(ex)
         Catch ex As Exception
-            Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            Throw GetSoapExeption(ex)
         End Try
     End Function
 
@@ -316,13 +317,19 @@ Public Class R2PrimaryWebService
             Dim PayId = InstancePaymentRequests.VerificationRequest(YourMCSSId, YourAuthority)
             Return PayId
         Catch ex As ExchangeKeyTimeRangePassedException
-            Throw ex
+            Throw GetSoapExeption(ex)
         Catch ex As ExchangeKeyNotExistException
-            Throw ex
+            Throw GetSoapExeption(ex)
         Catch ex As Exception
-            Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            Throw GetSoapExeption(ex)
         End Try
     End Function
+
+    Private Function GetSoapExeption(YourException As Exception) As SoapException
+        Dim SoapEx As New SoapException(YourException.Message, SoapException.ClientFaultCode, Context.Request.Url.AbsoluteUri, (New XmlDocument).CreateNode(XmlNodeType.Element, SoapException.DetailElementName.Name, SoapException.DetailElementName.Namespace))
+        Return SoapEx
+    End Function
+
 
 
 End Class

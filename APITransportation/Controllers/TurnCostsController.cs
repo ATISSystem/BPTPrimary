@@ -5,8 +5,10 @@ using Newtonsoft.Json;
 using R2Core.DatabaseManagement;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
+using R2Core.LoggingManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
+using R2CoreTransportationAndLoadNotification.Logging;
 using R2CoreTransportationAndLoadNotification.TurnCosts;
 using R2CoreTransportationAndLoadNotification.Turns;
 using System;
@@ -16,6 +18,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Services.Protocols;
@@ -27,10 +30,17 @@ namespace APITransportation.Controllers
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
         private R2DateTimeService _DateTimeService;
+        private ILogger _loggerService;
+        private Networking _Networking;
 
         public TurnCostsController()
         {
-            try { _DateTimeService = new R2DateTimeService(); }
+            try
+            {
+                _DateTimeService = new R2DateTimeService();
+                _loggerService = new R2Core.LoggingManagement.R2CorenLogService();
+                _Networking = new Networking();
+            }
             catch (FileNotExistException ex)
             { throw ex; }
             catch (Exception ex)
@@ -84,6 +94,8 @@ namespace APITransportation.Controllers
                 var InstanceTurnCost = new R2CoreTransportationAndLoadNotificationTurnCostManager(_DateTimeService);
                 InstanceTurnCost.TurnCostRegistering(RawTurnCost);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TurnCostRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawTurnCost.SeqTurnId ) + ":" + RawTurnCost.SeqTurnId  , UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -115,6 +127,8 @@ namespace APITransportation.Controllers
 
                 var InstanceTurnCost = new R2CoreTransportationAndLoadNotificationTurnCostManager(_DateTimeService);
                 InstanceTurnCost.TurnCostDeleting(SeqTurnId);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TurnCostDeleting, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(SeqTurnId) + ":" + SeqTurnId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");

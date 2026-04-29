@@ -1,18 +1,19 @@
 ﻿
 
 
-Imports R2Core.ConfigurationManagement
 Imports R2Core.DateTimeProvider
+Imports R2Core.ExceptionManagement
 Imports R2Core.GeneralConfiguration
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports System.Reflection
+Imports System.Web.Services.Protocols
 
 Namespace SQLInjectionPrevention
 
     Public Class R2CoreSQLInjectionPreventionManager
 
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
         End Sub
 
@@ -35,6 +36,13 @@ Namespace SQLInjectionPrevention
         End Sub
     End Class
 
+    Public Class SqlInjectionException
+        Inherits BPTException
 
+        Public Sub New()
+            _Message = InstancePredefinedMessages.GetPredefinedMessage(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.SqlInjectionException).MsgContent
+            _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.SqlInjectionException).MsgId
+        End Sub
+    End Class
 
 End Namespace

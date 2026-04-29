@@ -16,7 +16,7 @@ Imports R2Core.MoneyWallet.MoneyWallet
 Imports R2Core.PermissionManagement
 Imports R2Core.PermissionManagement.Exceptions
 Imports R2Core.PredefinedMessagesManagement
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SiteIsBusy
 Imports R2Core.SMS.Exceptions
@@ -39,13 +39,13 @@ Imports R2Core.DateTimeProvider
 Imports R2Core.GeneralConfiguration
 Imports R2CoreTransportationAndLoadNotification.GeneralConfiguration
 Imports R2Core.SQLInjectionPrevention
+Imports R2Core.BaseClasses
 
 
 
 Namespace TransportCompanies
 
     Public Class R2CoreTransportationAndLoadNotificationStandardTransportCompanyStructure
-        Inherits R2StandardStructure
 
         Public Sub New()
             MyBase.New()
@@ -64,7 +64,7 @@ Namespace TransportCompanies
         End Sub
 
         Public Sub New(ByVal YourTCId As Int64, YourTCTitle As String, YourTCOrganizationCode As String, YourTCCityId As Int64, YourTColor As String, YourTCTel As String, YourTCManagerNameFamily As String, YourTCManagerMobileNumber As String, YourEmailAddress As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
-            MyBase.New(YourTCId, YourTCTitle)
+            MyBase.New()
             _TCId = YourTCId
             _TCTitle = YourTCTitle
             _TCOrganizationCode = YourTCOrganizationCode
@@ -205,7 +205,7 @@ Namespace TransportCompanies
                     NSSMoneyWallet.Tahvilg = YourNSSTransportCompany.TCManagerNameFamily
                     NSSMoneyWallet.CardType = TerafficCardType.Tereili
                     NSSMoneyWallet.TempCardType = TrafficTempCardType.NoTemp
-                    InstanceTrafficCards.UpdatingTrafficCard(NSSMoneyWallet, R2Core.R2Enums.EditLevel.HighLevel)
+                    InstanceTrafficCards.UpdatingTrafficCard(NSSMoneyWallet, R2CoreEnums.EditLevel.HighLevel)
                 Catch ex As Exception
                     Throw New Exception(ex.Message)
                 End Try
@@ -270,7 +270,7 @@ Namespace TransportCompanies
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
                 'ارسال اس ام اس
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 SendSMSTransportCompanyChangeActiveStatus(TCNSS.TCTitle, InstancePublicProcedures.GetBooleanVariablePersianEquivalent(Not TCNSS.Active))
 
             Catch ex As TransportCompanyNotFoundException
@@ -291,19 +291,19 @@ Namespace TransportCompanies
                 If Not InstanceGeneralConfiguration.GetBooleanConfiguration(R2CoreGeneralConfigurations.SmsSystemSetting, 0) Then Throw New SmsSystemIsDisabledException
                 'کاربران
                 Dim TargetUsers = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.BaseTransportationAndLoadNotificationSetting, 6).Split("-")
-                Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
-                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+                Dim LstSoftwareUsers = New List(Of R2CoreSoftwareUser)
+                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(New R2DateTimeService, New SoftwareUserService)
                 For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
-                    LstSoftwareUsers.Add(InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(TargetUsers(LoopxUsers))))
+                    LstSoftwareUsers.Add(InstanceSoftwareUsers.GetUser(Convert.ToInt64(TargetUsers(LoopxUsers)), False))
                 Next
                 'کانتنت پیام
                 Dim myData = New SMSCreationData
                 myData.Data1 = YourTCTitle
                 myData.Data2 = YourStatus
                 'ارسال اس ام اس
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
-                Dim SMSResult = InstanceSMSHandling.SendSMS(LstSoftwareUsers, R2CoreTransportationAndLoadNotificationSMSTypes.TransportCompanyChangeActiveStatus, InstanceSMSHandling.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
-                Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
+                Dim InstanceSMSHandler = New R2CoreSMSHandlerManager(_DateTimeService, New SoftwareUserService)
+                Dim SMSResult = InstanceSMSHandler.SendSMS(LstSoftwareUsers, R2CoreTransportationAndLoadNotificationSMSTypes.TransportCompanyChangeActiveStatus, InstanceSMSHandler.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
+                Dim SMSResultAnalyze = InstanceSMSHandler.GetSMSResultAnalyze(SMSResult)
                 If Not SMSResultAnalyze = String.Empty Then Throw New LoadingAndDischargingSendSMSFailedException
             Catch ex As LoadingAndDischargingSendSMSFailedException
                 Throw ex
@@ -673,7 +673,7 @@ Namespace TransportCompanies
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
         Private _DateTimeService As New R2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -701,7 +701,7 @@ Namespace TransportCompanies
                 Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
 
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
 
                 Dim DS As New DataSet
                 If YourImmediately Then
@@ -740,7 +740,7 @@ Namespace TransportCompanies
 
         Public Function GetTransportCompanyJSON(YourTCId As Int64, YourImmediate As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
 
                 Dim DS As New DataSet
                 If YourImmediate Then
@@ -996,7 +996,7 @@ Namespace TransportCompanies
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
                 'ارسال اس ام اس
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 SendTransportCompanyChangeActiveStatusSMS(TransportCompany.TCTitle, InstancePublicProcedures.GetBooleanVariablePersianEquivalent(YourActive))
 
             Catch ex As TransportCompanyNotFoundException
@@ -1014,16 +1014,16 @@ Namespace TransportCompanies
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 'کاربران
                 Dim TargetUsers = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.BaseTransportationAndLoadNotificationSetting, 6).Split("-")
-                Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
-                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+                Dim LstSoftwareUsers = New List(Of R2CoreSoftwareUser)
+                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(New R2DateTimeService, New SoftwareUserService)
                 For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
-                    LstSoftwareUsers.Add(InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(TargetUsers(LoopxUsers))))
+                    LstSoftwareUsers.Add(InstanceSoftwareUsers.GetUser(Convert.ToInt64(TargetUsers(LoopxUsers)), False))
                 Next
                 'ارسال اس ام اس
                 Dim myData = New SMSCreationData With {.Data1 = YourTCTitle, .Data2 = YourStatus}
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
-                Dim SMSResult = InstanceSMSHandling.SendSMS(LstSoftwareUsers, R2CoreTransportationAndLoadNotificationSMSTypes.TransportCompanyChangeActiveStatus, InstanceSMSHandling.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
-                Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
+                Dim InstanceSMSHandler = New R2CoreSMSHandlerManager(_DateTimeService, New SoftwareUserService)
+                Dim SMSResult = InstanceSMSHandler.SendSMS(LstSoftwareUsers, R2CoreTransportationAndLoadNotificationSMSTypes.TransportCompanyChangeActiveStatus, InstanceSMSHandler.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
+                Dim SMSResultAnalyze = InstanceSMSHandler.GetSMSResultAnalyze(SMSResult)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try

@@ -1,14 +1,12 @@
 ﻿using APICommon.Models;
 using APIMoneyWallet.Models;
 using Newtonsoft.Json;
-using R2Core.ConfigurationManagement;
 using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
 using R2Core.GeneralConfiguration;
 using R2Core.MonetaryCreditSupplySources;
-using R2Core.MoneyWallet.PaymentRequests;
 using R2Core.SecurityAlgorithmsManagement.AESAlgorithms;
 using R2Core.SessionManagement;
 using R2Core.SoftwareUserManagement;
@@ -35,7 +33,7 @@ namespace APIMoneyWalletAndTraffic.Controllers
     public class MoneyWalletChargeController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService;
+        private IDateTimeService _DateTimeService;
 
         public MoneyWalletChargeController()
         {
@@ -212,61 +210,61 @@ namespace APIMoneyWalletAndTraffic.Controllers
         }
 
         //این متد مخصوص آقای پرداخت است
-        public async Task OnGetCallbackasync(string transid, string cardnumber, string tracking_number)
-        {
-            try
-            {
-                var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
-                Int64 MonetarySupplySource = R2CoreMonetaryCreditSupplySources.AqayepardakhtPaymentGate;
-                string Authority = transid;
+        //public async Task OnGetCallbackasync(string transid, string cardnumber, string tracking_number)
+        //{
+        //    try
+        //    {
+        //        var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
+        //        Int64 MonetarySupplySource = R2CoreMonetaryCreditSupplySources.AqayepardakhtPaymentGate;
+        //        string Authority = transid;
 
-                var InstanceTrafficCards = new R2CoreTransportationAndLoadNotificationInstanceTerraficCardsManager();
-                var InstanceMoneyWallets = new R2CoreParkingSystemInstanceMoneyWalletManager();
-                var InstanceMoneyWalletCharge = new R2CoreParkingSystemInstanceMoneyWalletChargeManager(_DateTimeService);
-                var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
+        //        var InstanceTrafficCards = new R2CoreTransportationAndLoadNotificationInstanceTerraficCardsManager();
+        //        var InstanceMoneyWallets = new R2CoreParkingSystemMoneyWalletManager(_DateTimeService);
+        //        var InstanceMoneyWalletCharge = new R2CoreParkingSystemInstanceMoneyWalletChargeManager(_DateTimeService);
+        //        var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
 
-                if (Authority != "" && Authority != null)
-                {
-                    var WS = new R2Core.R2PrimaryWS.R2PrimaryWebService();
-                    long PayId = long.MinValue;
-                    PayId = WS.WebMethodVerificationRequest(R2CoreMonetaryCreditSupplySources.AqayepardakhtPaymentGate, Authority, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword));
+        //        if (Authority != "" && Authority != null)
+        //        {
+        //            var WS = new R2Core.R2PrimaryWS.R2PrimaryWebService();
+        //            long PayId = long.MinValue;
+        //            PayId = WS.WebMethodVerificationRequest(R2CoreMonetaryCreditSupplySources.AqayepardakhtPaymentGate, Authority, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword));
 
-                    var InstancePaymentRequests = new R2CoreInstansePaymentRequestsManager(_DateTimeService);
-                    var NSSPaymentRequest = InstancePaymentRequests.GetNSSPayment(PayId);
-                    if (NSSPaymentRequest.VerificationErrors == "2") { return; }
-                    while ((NSSPaymentRequest.RefId == string.Empty) & (NSSPaymentRequest.VerificationErrors == string.Empty))
-                    { System.Threading.Thread.Sleep(500); NSSPaymentRequest = InstancePaymentRequests.GetNSSPayment(PayId); }
-                    if (NSSPaymentRequest.RefId != string.Empty)
-                    {
-                        var InstanceAES = new AESAlgorithmsManager();
-                        var NSSSoftwareUser = InstanceSoftwareUsers.GetNSSUser(NSSPaymentRequest.SoftwareUserId);
-                        var NSSTrafficCard = InstanceTrafficCards.GetNSSTerafficCard(NSSSoftwareUser);
-                        Int64 CurrentCharge = InstanceMoneyWallets.GetMoneyWalletCharge(NSSTrafficCard);
-                        InstanceMoneyWallets.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.AddMoney, NSSPaymentRequest.Amount, R2CoreParkingSystemAccountings.ChargeType, NSSSoftwareUser);
+        //            var InstancePaymentRequests = new R2CoreInstansePaymentRequestsManager(_DateTimeService);
+        //            var NSSPaymentRequest = InstancePaymentRequests.GetNSSPayment(PayId);
+        //            if (NSSPaymentRequest.VerificationErrors == "2") { return; }
+        //            while ((NSSPaymentRequest.RefId == string.Empty) & (NSSPaymentRequest.VerificationErrors == string.Empty))
+        //            { System.Threading.Thread.Sleep(500); NSSPaymentRequest = InstancePaymentRequests.GetNSSPayment(PayId); }
+        //            if (NSSPaymentRequest.RefId != string.Empty)
+        //            {
+        //                var InstanceAES = new AESAlgorithmsManager();
+        //                var NSSSoftwareUser = InstanceSoftwareUsers.GetNSSUser(NSSPaymentRequest.SoftwareUserId);
+        //                var NSSTrafficCard = InstanceTrafficCards.GetNSSTerafficCard(NSSSoftwareUser);
+        //                Int64 CurrentCharge = InstanceMoneyWallets.GetMoneyWalletCharge(NSSTrafficCard);
+        //                InstanceMoneyWallets.ActMoneyWalletNextStatus(NSSTrafficCard, BagPayType.AddMoney, NSSPaymentRequest.Amount, R2CoreParkingSystemAccountings.ChargeType, NSSSoftwareUser);
 
 
-                        if ((NSSPaymentRequest.Amount == 200000) || (NSSPaymentRequest.Amount == 300000))
-                        { InstanceMoneyWalletCharge.SabtCharge(new R2StandardMoneyWalletChargeStructure(NSSTrafficCard, NSSPaymentRequest.Amount, InstanceGeneralConfiguration.GetInt64Configuration(R2CoreGeneralConfigurations.DefaultConfigurationOfSoftwareUserSecurity,13 ), "", _DateTimeService.GetCurrentDateTimeMilladi(), _DateTimeService.GetCurrentShamsiDate(), NSSPaymentRequest.Amount + CurrentCharge, 0, _DateTimeService.GetCurrentTime())); }
-                        else
-                        { InstanceMoneyWalletCharge.SabtCharge(new R2StandardMoneyWalletChargeStructure(NSSTrafficCard, NSSPaymentRequest.Amount, InstanceSoftwareUsers.GetNSSSystemUser().UserId, "", _DateTimeService.GetCurrentDateTimeMilladi(), _DateTimeService.GetCurrentShamsiDate(), NSSPaymentRequest.Amount + CurrentCharge, 0, _DateTimeService.GetCurrentTime())); }
+        //                if ((NSSPaymentRequest.Amount == 200000) || (NSSPaymentRequest.Amount == 300000))
+        //                { InstanceMoneyWalletCharge.SabtCharge(new R2StandardMoneyWalletChargeStructure(NSSTrafficCard, NSSPaymentRequest.Amount, InstanceGeneralConfiguration.GetInt64Configuration(R2CoreGeneralConfigurations.DefaultConfigurationOfSoftwareUserSecurity,13 ), "", _DateTimeService.GetCurrentDateTimeMilladi(), _DateTimeService.GetCurrentShamsiDate(), NSSPaymentRequest.Amount + CurrentCharge, 0, _DateTimeService.GetCurrentTime())); }
+        //                else
+        //                { InstanceMoneyWalletCharge.SabtCharge(new R2StandardMoneyWalletChargeStructure(NSSTrafficCard, NSSPaymentRequest.Amount, InstanceSoftwareUsers.GetNSSSystemUser().UserId, "", _DateTimeService.GetCurrentDateTimeMilladi(), _DateTimeService.GetCurrentShamsiDate(), NSSPaymentRequest.Amount + CurrentCharge, 0, _DateTimeService.GetCurrentTime())); }
 
-                        Int64 LastCharge = InstanceMoneyWallets.GetMoneyWalletCharge(NSSTrafficCard);
-                        //ViewBag.IsSuccess = true; ViewBag.RefId = NSSPaymentRequest.RefId;
-                        //ViewBag.Message1 = NSSTrafficCard.CardNo + "  شاخص کیف پول ";
-                        //ViewBag.Message2 = CurrentCharge.ToString() + "  موجودی قبلی ";
-                        //ViewBag.Message3 = NSSPaymentRequest.Amount.ToString() + "  مبلغ شارژ ";
-                        //ViewBag.Message4 = LastCharge.ToString() + "  موجودی نهایی ";
-                    }
-                    else
-                    { /*ViewBag.IsSuccess = false; ViewBag.Message = NSSPaymentRequest.VerificationErrors;*/ }
-                }
-                else
-                {/* ViewBag.IsSuccess = false; ViewBag.Message = "Invalid Input";*/ }
-            }
-            catch (Exception ex)
-            { /*ViewBag.IsSuccess = false; ViewBag.Message = ex.Message;*/ }
-            return;
-        }
+        //                Int64 LastCharge = InstanceMoneyWallets.GetMoneyWalletCharge(NSSTrafficCard);
+        //                //ViewBag.IsSuccess = true; ViewBag.RefId = NSSPaymentRequest.RefId;
+        //                //ViewBag.Message1 = NSSTrafficCard.CardNo + "  شاخص کیف پول ";
+        //                //ViewBag.Message2 = CurrentCharge.ToString() + "  موجودی قبلی ";
+        //                //ViewBag.Message3 = NSSPaymentRequest.Amount.ToString() + "  مبلغ شارژ ";
+        //                //ViewBag.Message4 = LastCharge.ToString() + "  موجودی نهایی ";
+        //            }
+        //            else
+        //            { /*ViewBag.IsSuccess = false; ViewBag.Message = NSSPaymentRequest.VerificationErrors;*/ }
+        //        }
+        //        else
+        //        {/* ViewBag.IsSuccess = false; ViewBag.Message = "Invalid Input";*/ }
+        //    }
+        //    catch (Exception ex)
+        //    { /*ViewBag.IsSuccess = false; ViewBag.Message = ex.Message;*/ }
+        //    return;
+        //}
 
         //public ActionResult PaymentVerification()
         //{

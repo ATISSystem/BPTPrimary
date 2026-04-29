@@ -20,7 +20,7 @@ Imports R2Core.MoneyWallet.MoneyWallet
 Imports R2Core.PermissionManagement
 Imports R2Core.PermissionManagement.Exceptions
 Imports R2Core.PredefinedMessagesManagement
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SiteIsBusy
 Imports R2Core.SMS.Exceptions
@@ -54,6 +54,7 @@ Namespace FactoriesAndProductionCentersManagement
     Public Class R2CoreTransportationAndLoadNotificationFactoriesAndProductionCentersManager
         Private _DateTimeService As New R2DateTimeService
         Private InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+        Private _SoftwareUserService = New R2Core.SoftwareUserManagement.SoftwareUserService
 
         Public Function HasFactoryAndProductionCenterMoneyWallet(YourFactoryAndProductionCenterId As Int64, YourImmediately As Boolean) As Boolean
             Try
@@ -114,7 +115,7 @@ Namespace FactoriesAndProductionCentersManagement
                 Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
 
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -306,6 +307,7 @@ Namespace FactoriesAndProductionCentersManagement
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
+                Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
 
                 Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(New R2DateTimeService, Nothing)
                 If YourRawFactoryAndProductionCenter.FPCTitle = String.Empty Then Throw New DataEntryException
@@ -339,7 +341,7 @@ Namespace FactoriesAndProductionCentersManagement
                     Dim AllofSoftwareUserTypes = Split(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.SoftwareUserTypesAccessWebProcesses, 0), ";")
                     If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
                         AllofProcessesIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                        R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, UserId, AllofProcessesIds)
+                        InstancePermissions.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, UserId, AllofProcessesIds)
                     End If
                     'به دست آوردن لیست گروههای فرآیند وب و ارسال آن به مدیریت روابط نهادی
                     AllofSoftwareUserTypes = Split(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.SoftwareUserTypesRelationWebProcessGroups, 0), ";")
@@ -365,7 +367,7 @@ Namespace FactoriesAndProductionCentersManagement
                     Dim AllofSoftwareUserTypes = Split(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.SoftwareUserTypesAccessWebProcesses, 0), ";")
                     If Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length) <> String.Empty Then
                         AllofProcessesIds = Split(Mid(AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                        R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, UserId, AllofProcessesIds)
+                        InstancePermissions.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, UserId, AllofProcessesIds)
                     End If
                     'به دست آوردن لیست گروههای فرآیند وب و ارسال آن به مدیریت روابط نهادی
                     AllofSoftwareUserTypes = Split(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.SoftwareUserTypesRelationWebProcessGroups, 0), ";")
@@ -474,7 +476,7 @@ Namespace FactoriesAndProductionCentersManagement
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
 
                 'ارسال اس ام اس
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 SendFactoryAndProductionCenterChangeActiveStatusSMS(FactoryAndProductionCenter.FPCTitle, InstancePublicProcedures.GetBooleanVariablePersianEquivalent(Not FactoryAndProductionCenter.Active))
             Catch ex As FactoryAndProductionCenterNotFoundException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then
@@ -504,14 +506,14 @@ Namespace FactoriesAndProductionCentersManagement
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 'کاربران
                 Dim TargetUsers = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.BaseTransportationAndLoadNotificationSetting, 9).Split("-")
-                Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
-                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+                Dim LstSoftwareUsers = New List(Of R2CoreSoftwareUser)
+                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(New R2DateTimeService, New SoftwareUserService)
                 For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
-                    LstSoftwareUsers.Add(InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(TargetUsers(LoopxUsers))))
+                    LstSoftwareUsers.Add(InstanceSoftwareUsers.GetUser(Convert.ToInt64(TargetUsers(LoopxUsers)), False))
                 Next
                 'ارسال اس ام اس
                 Dim myData = New SMSCreationData With {.Data1 = YourFPCTitle, .Data2 = YourStatus}
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
+                Dim InstanceSMSHandling = New R2CoreSMSHandlerManager(_DateTimeService, _SoftwareUserService)
                 Dim SMSResult = InstanceSMSHandling.SendSMS(LstSoftwareUsers, R2CoreTransportationAndLoadNotificationSMSTypes.FactoryAndProductionCenterChangeActiveStatus, InstanceSMSHandling.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
                 Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
             Catch ex As Exception
@@ -525,8 +527,8 @@ Namespace FactoriesAndProductionCentersManagement
         Inherits BPTException
 
         Public Sub New()
-            _Message = InstancePredefinedMessages.GetNSS(R2CoreTransportationAndLoadNotification.PredefinedMessages.R2CoreTransportationAndLoadNotificationPredefinedMessages.FactoryAndProductionCenterNotFoundException).MsgContent
-            _MessageCode = InstancePredefinedMessages.GetNSS(R2CoreTransportationAndLoadNotification.PredefinedMessages.R2CoreTransportationAndLoadNotificationPredefinedMessages.FactoryAndProductionCenterNotFoundException).MsgId
+            _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CoreTransportationAndLoadNotification.PredefinedMessages.R2CoreTransportationAndLoadNotificationPredefinedMessages.FactoryAndProductionCenterNotFoundException).MsgContent
+            _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CoreTransportationAndLoadNotification.PredefinedMessages.R2CoreTransportationAndLoadNotificationPredefinedMessages.FactoryAndProductionCenterNotFoundException).MsgId
         End Sub
     End Class
 

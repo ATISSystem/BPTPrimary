@@ -251,8 +251,8 @@ Namespace SMS
         Public Class R2CoreParkingSystemSMSControllingMoneyWalletManager
 
             Private _InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-            Private _DateTimeService As IR2DateTimeService
-            Public Sub New(YourDateTimeService As IR2DateTimeService)
+            Private _DateTimeService As IDateTimeService
+            Public Sub New(YourDateTimeService As IDateTimeService)
                 Try
                     _DateTimeService = YourDateTimeService
                     _InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
@@ -412,8 +412,8 @@ Namespace SMS
         Public Class R2CoreParkingSystemMClassSMSOwnersManager
 
             Private _SoftwareUserService As ISoftwareUserService
-            Private _DateTimeService As IR2DateTimeService
-            'Public Sub New(YourSoftwareUserService As ISoftwareUserService, YourDateTimeService As IR2DateTimeService)
+            Private _DateTimeService As IDateTimeService
+            'Public Sub New(YourSoftwareUserService As ISoftwareUserService, YourDateTimeService As IDateTimeService)
             '    _SoftwareUserService = YourSoftwareUserService
             '    _DateTimeService = YourDateTimeService
             'End Sub
@@ -520,8 +520,8 @@ Namespace SMS
         Public Class R2CoreParkingSystemSMSOwnersManager
 
             Private _SoftwareUserService As ISoftwareUserService
-            Private _DateTimeService As IR2DateTimeService
-            Public Sub New(YourSoftwareUserService As ISoftwareUserService, YourDateTimeService As IR2DateTimeService)
+            Private _DateTimeService As IDateTimeService
+            Public Sub New(YourSoftwareUserService As ISoftwareUserService, YourDateTimeService As IDateTimeService)
                 _SoftwareUserService = YourSoftwareUserService
                 _DateTimeService = YourDateTimeService
             End Sub
@@ -562,7 +562,6 @@ Namespace SMS
             'BPTChanged
             Public Sub ActivateSMSOwner(YourSoftwareUserId As Int64)
                 Try
-                    Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
                     Dim InstanceSoftwareUser = New R2CoreSoftwareUsersManager(_DateTimeService, _SoftwareUserService)
                     Dim InstanceSMSOwnerTypes = New R2CoreSMSOwnerTypesManager(_DateTimeService)
                     Dim InstanceSMSOwners = New R2CoreSMSOwnersManager(_DateTimeService, _SoftwareUserService)

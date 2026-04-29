@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
 
@@ -31,21 +32,15 @@ namespace APITransportation.Controllers
             { throw new Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message); }
         }
 
-        [HttpPost]
-        [Route("api/GetCaptcha")]
-        public HttpResponseMessage Getxxx()
-        {
-            try
-            {
-                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(string.Empty), Encoding.UTF8, "application/json");
-                return response;
-            }
-            catch (DataBaseException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-            catch (Exception ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
-        }
+    }
+
+    public class Networking
+    {
+        public Networking() { }
+
+        public string GetClientIpAddress(System.Web.HttpContext YourHttpContext)
+        { return HttpContext.Current.Request.UserHostAddress; }
 
     }
+
 }

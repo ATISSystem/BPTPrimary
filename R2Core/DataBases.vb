@@ -5,124 +5,15 @@ Imports System.Data.SqlClient
 Imports System.Globalization
 Imports System.Reflection
 Imports System.Windows.Forms
-Imports R2Core.ConfigurationManagement
+
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
+Imports R2Core.GeneralConfiguration
 Imports R2Core.LoggingManagement
+Imports R2Core.PredefinedMessagesManagement
+Imports R2Core.PredefinedMessagesManagement.Exceptions
 
 Namespace DatabaseManagement
-
-    Public Enum R2OpenCloseConnectionStatus
-        OpenCloseYes = 0
-        OpenCloseNo = 1
-    End Enum
-
-    Public Class R2CoreMClassDatabaseManagement
-        'Public Shared Function GetOLEDbConnectionString(ByVal FileName As String) As String
-        '    Dim Builder As New OleDb.OleDbConnectionStringBuilder
-        '    If IO.Path.GetExtension(FileName).ToUpper = ".XLS" Then
-        '        Builder.Provider = "Microsoft.Jet.OLEDB.4.0"
-        '        Builder.Add("Extended Properties", "Excel 8.0;IMEX=1;HDR=No;")
-        '    Else
-        '        Builder.Provider = "Microsoft.ACE.OLEDB.12.0"
-        '        Builder.Add("Extended Properties", "Excel 12.0;")
-        '        Builder.Add("Extended Properties", "Excel 12.0;IMEX=1;HDR=No;")
-        '    End If
-        '    Builder.DataSource = FileName
-        '    Return Builder.ConnectionString
-        'End Function
-
-        'Public Shared Function GetOLEDbConnectionString(ByVal FileName As String, ByVal Header As String) As String
-        '    Dim Builder As New OleDb.OleDbConnectionStringBuilder
-        '    If IO.Path.GetExtension(FileName).ToUpper = ".XLS" Then
-        '        Builder.Provider = "Microsoft.Jet.OLEDB.4.0"
-        '        Builder.Add("Extended Properties", String.Format("Excel 8.0;IMEX=1;HDR={0};", Header))
-        '    Else
-        '        Builder.Provider = "Microsoft.ACE.OLEDB.12.0"
-        '        Builder.Add("Extended Properties", String.Format("Excel 12.0;IMEX=1;HDR={0};", Header))
-        '    End If
-        '    Builder.DataSource = FileName
-        '    Return Builder.ConnectionString
-        'End Function
-
-        'Public Shared Function DocPaths() As String
-        '    Try
-        '        Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\pic common"
-        '    Catch ex As Exception
-        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-        '    End Try
-        'End Function
-
-        'Public Shared Function RptPaths() As String
-        '    Try
-        '        Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\rpt"
-        '    Catch ex As Exception
-        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-        '    End Try
-        'End Function
-
-        'Public Shared Function IconsPath() As String
-        '    Try
-        '        Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\atlas icons"
-        '    Catch ex As Exception
-        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-        '    End Try
-        'End Function
-
-        'Public Shared Function EmzaPaths() As String
-        '    Try
-        '        Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\emza secret"
-        '    Catch ex As Exception
-        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-        '    End Try
-        'End Function
-
-        'Public Shared Function PersonelPicPath() As String
-        '    Try
-        '        Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\personelpic"
-        '    Catch ex As Exception
-        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-        '    End Try
-        'End Function
-
-        Private Shared _OpenConnection As SqlClient.SqlConnection = R2PrimarySqlConnection.GetTransactionDBConnection
-        Private Shared WithEvents ConnectionTimer As New System.Timers.Timer(60000)
-
-        'Public Sub ForceConnectionToOpen(YourTimerInterval As Int64)
-        '    Try
-        '        _OpenConnection.Close()
-        '        _OpenConnection.Open()
-        '        ConnectionTimer.Interval = YourTimerInterval
-        '        ConnectionTimer.Enabled = True
-        '        ConnectionTimer.Start()
-        '    Catch ex As Exception
-        '        MessageBox.Show(ex.Message)
-        '    End Try
-        'End Sub
-
-        'Public Shared Function GetOpenConnection() As SqlConnection
-        '    Try
-        '        If _OpenConnection.State <> ConnectionState.Closed Then Return _OpenConnection
-        '        _OpenConnection.Open()
-        '        ConnectionTimer.Enabled = True
-        '        ConnectionTimer.Start()
-        '        Return _OpenConnection
-        '    Catch ex As Exception
-        '        MessageBox.Show(ex.Message)
-        '    End Try
-        'End Function
-
-        'Private Shared Sub ConnectionTimerHandler() Handles ConnectionTimer.Elapsed
-        '    Try
-        '        ConnectionTimer.Enabled = False
-        '        ConnectionTimer.Stop()
-        '        _OpenConnection.Close()
-        '    Catch ex As Exception
-        '        MessageBox.Show(ex.Message)
-        '    End Try
-        'End Sub
-
-    End Class
 
     'BPTChanged
     Public Class R2ClassSqlDataBOX
@@ -132,13 +23,19 @@ Namespace DatabaseManagement
         Private _SqlString As String
         Private _DS As New DataSet
         Private _RecordsCount As Int64
-        Private _DateTimeService As IR2DateTimeService
+        Private _DateTimeService As IDateTimeService
 
         Public Sub New()
-            _DateTimeService = New R2DateTimeService
+            Try
+                _DateTimeService = New R2DateTimeService
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
         End Sub
 
-        Public Sub New(ByVal YourSqlCnn As SqlConnection, ByVal YourDisposeCounter As Int16, ByVal YourSqlString As String, YourDateTimeService As IR2DateTimeService)
+        Public Sub New(ByVal YourSqlCnn As SqlConnection, ByVal YourDisposeCounter As Int16, ByVal YourSqlString As String, YourDateTimeService As IDateTimeService)
             Try
                 _DateTimeService = YourDateTimeService
                 _SqlConnection = YourSqlCnn
@@ -150,6 +47,8 @@ Namespace DatabaseManagement
                 Da.SelectCommand.Connection = _SqlConnection
                 _DS.Tables.Clear()
                 _RecordsCount = Da.Fill(_DS)
+            Catch ex As SqlException
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As FileNotExistException
                 Throw ex
             Catch ex As UnableConnectToAPIException
@@ -167,6 +66,8 @@ Namespace DatabaseManagement
                 Da.SelectCommand.Connection = _SqlConnection
                 _DS.Tables.Clear()
                 _RecordsCount = Da.Fill(_DS)
+            Catch ex As SqlException
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As FileNotExistException
                 Throw ex
             Catch ex As UnableConnectToAPIException
@@ -215,6 +116,8 @@ Namespace DatabaseManagement
         Public Shared Function GetTransactionDBConnection() As SqlConnection
             Try
                 Return New SqlClient.SqlConnection(R2CoreConectionStringsManager.GetR2PrimarySMSSystemConnectionString(R2PrimaryDBType.TransactionDB))
+            Catch ex As FileNotExistException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
@@ -223,6 +126,8 @@ Namespace DatabaseManagement
         Public Shared Function GetSubscriptionDBConnection() As SqlConnection
             Try
                 Return New SqlClient.SqlConnection(R2CoreConectionStringsManager.GetR2PrimarySMSSystemConnectionString(R2PrimaryDBType.SubscriptionDB))
+            Catch ex As FileNotExistException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
@@ -233,18 +138,20 @@ Namespace DatabaseManagement
     Public MustInherit Class R2PrimarySqlConnection
 
         Public Shared Function GetTransactionDBConnection() As SqlConnection
-            'Return New SqlConnection("Data Source=192.168.1.2;Initial Catalog=R2Primary;Persist Security Info=True;User ID=sa;Password=Biinfo878")
             Try
                 Return New SqlClient.SqlConnection(R2CoreConectionStringsManager.GetR2PrimaryConnectionString(R2PrimaryDBType.TransactionDB))
+            Catch ex As FileNotExistException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
         Public Shared Function GetSubscriptionDBConnection() As SqlConnection
-            'Return New SqlConnection("Data Source=192.168.1.2;Initial Catalog=R2Primary;Persist Security Info=True;User ID=sa;Password=Biinfo878")
             Try
                 Return New SqlClient.SqlConnection(R2CoreConectionStringsManager.GetR2PrimaryConnectionString(R2PrimaryDBType.SubscriptionDB))
+            Catch ex As FileNotExistException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
@@ -256,6 +163,8 @@ Namespace DatabaseManagement
         Public Shared Function GetTransactionDBConnection() As SqlConnection
             Try
                 Return New SqlClient.SqlConnection(R2CoreConectionStringsManager.GetTDBClientConnectionString(R2PrimaryDBType.TransactionDB))
+            Catch ex As FileNotExistException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
@@ -264,6 +173,8 @@ Namespace DatabaseManagement
         Public Shared Function GetSubscriptionDBConnection() As SqlConnection
             Try
                 Return New SqlClient.SqlConnection(R2CoreConectionStringsManager.GetTDBClientConnectionString(R2PrimaryDBType.SubscriptionDB))
+            Catch ex As FileNotExistException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
@@ -274,10 +185,13 @@ Namespace DatabaseManagement
     Public NotInheritable Class R2CoreDatabaseManager
 
         Private Shared InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private Shared _DateTimeService As IR2DateTimeService
+        Private Shared _DateTimeService As IDateTimeService
 
         Public Shared Function GetEquivalenceMessage(YourException As SqlException) As DataBaseException
             Try
+                'When Connect to Instance Not Applicable
+                If YourException.Errors(0).Number = 2 Then Throw New DataBaseException("ارتباط با بانک اطلاعات امکان پذیر نیست")
+
                 _DateTimeService = New R2DateTimeService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
 
@@ -287,6 +201,12 @@ Namespace DatabaseManagement
                 Else
                     Throw New DataBaseEquivalenceMessageNotFoundException
                 End If
+            Catch ex As UnableConnectToAPIException
+                Throw ex
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As PredefinedMessageNotFoundException
+                Throw ex
             Catch ex As DataBaseException
                 Throw ex
             Catch ex As DataBaseEquivalenceMessageNotFoundException
@@ -301,10 +221,14 @@ Namespace DatabaseManagement
     'BPTChanged
     Public Class R2CoreSqlDataBOXManager
 
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
-            _DateTimeService = YourDateTimeService
-            GarbageCollector.Initialize()
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
+            Try
+                _DateTimeService = YourDateTimeService
+                GarbageCollector.Initialize()
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
         End Sub
 
         Public Function GetDataBOX(ByVal SqlCnn As SqlConnection, ByVal SqlString As String, ByVal DisposeCounter As Int16, ByRef DS As DataSet, ByRef DataChangeStatus As Boolean) As R2ClassSqlDataBOX
@@ -344,6 +268,9 @@ Namespace DatabaseManagement
                 Else
                     Throw New Exception("Error:YourDisposeCounter < 0")
                 End If
+
+            Catch ex As DataBaseException
+                Throw ex
             Catch ex As FileNotExistException
                 Throw ex
             Catch ex As UnableConnectToAPIException
@@ -352,42 +279,6 @@ Namespace DatabaseManagement
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
-
-
-        'Public Function GetDataBOX(ByVal SqlCnn As SqlConnection, ByVal SqlString As String, ByVal DisposeCounter As Int16, ByRef DS As DataSet, ByRef DataChangeStatus As Boolean) As R2ClassSqlDataBOX
-        '    Try
-        '        If DisposeCounter > 0 Then
-        '            If GarbageCollector._Dict.ContainsKey(SqlString) Then
-        '                If DateDiff(DateInterval.Second, GarbageCollector._Dict(SqlString).GetStartTime, DateTime.Now) >= GarbageCollector._Dict(SqlString).GetDisposeCounter Then
-        '                    GarbageCollector._Dict(SqlString).RenewData()
-        '                    DataChangeStatus = True
-        '                Else
-        '                    DataChangeStatus = False
-        '                End If
-        '                DS = GarbageCollector._Dict(SqlString).GetDS
-        '                Return GarbageCollector._Dict(SqlString)
-        '            Else
-        '                GarbageCollector._Dict.Add(SqlString, New R2ClassSqlDataBOX(SqlCnn, DisposeCounter, SqlString, _DateTimeService))
-        '                DataChangeStatus = True
-        '                DS = GarbageCollector._Dict(SqlString).GetDS
-        '                Return GarbageCollector._Dict(SqlString)
-        '            End If
-        '        ElseIf DisposeCounter = 0 Then
-        '            Dim R2ClassSqlDataBOX As R2ClassSqlDataBOX
-        '            R2ClassSqlDataBOX = New R2ClassSqlDataBOX(SqlCnn, DisposeCounter, SqlString, _DateTimeService)
-        '            DS = R2ClassSqlDataBOX.GetDS
-        '            Return R2ClassSqlDataBOX
-        '        Else
-        '            Throw New Exception("Error:YourDisposeCounter < 0")
-        '        End If
-        '    Catch ex As FileNotExistException
-        '        Throw ex
-        '    Catch ex As UnableConnectToAPIException
-        '        Throw ex
-        '    Catch ex As Exception
-        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-        '    End Try
-        'End Function
 
     End Class
 
@@ -436,30 +327,152 @@ Namespace DatabaseManagement
 
     'BPTChanged
     Public Class DataBaseEquivalenceMessageNotFoundException
-        Inherits ApplicationException
+        Inherits BPTException
 
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "خطای سیستم - معادلی برای خطای بازگشتی از بانک اطلاعات یافت نشد"
-            End Get
-        End Property
+        Public Sub New()
+            Try
+                _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.SystemBugDataBaseEquivalenceMessage).MsgId
+                _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.SystemBugDataBaseEquivalenceMessage).MsgContent
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As PredefinedMessageNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
     End Class
 
     'BPTChanged
     Public Class DataBaseException
-        Inherits ApplicationException
+        Inherits BPTException
 
-        Private _Message As String
         Public Sub New(YourMessage As String)
-            _Message = YourMessage
+            Try
+                _MessageCode = R2CorePredefinedMessages.ExceptionfromDataBase
+                _Message = YourMessage
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As PredefinedMessageNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
         End Sub
-
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return _Message
-            End Get
-        End Property
     End Class
 
+    'Public Enum R2OpenCloseConnectionStatus
+    '    OpenCloseYes = 0
+    '    OpenCloseNo = 1
+    'End Enum
+
+    'Public Class R2CoreMClassDatabaseManagement
+    '    'Public Shared Function GetOLEDbConnectionString(ByVal FileName As String) As String
+    '    '    Dim Builder As New OleDb.OleDbConnectionStringBuilder
+    '    '    If IO.Path.GetExtension(FileName).ToUpper = ".XLS" Then
+    '    '        Builder.Provider = "Microsoft.Jet.OLEDB.4.0"
+    '    '        Builder.Add("Extended Properties", "Excel 8.0;IMEX=1;HDR=No;")
+    '    '    Else
+    '    '        Builder.Provider = "Microsoft.ACE.OLEDB.12.0"
+    '    '        Builder.Add("Extended Properties", "Excel 12.0;")
+    '    '        Builder.Add("Extended Properties", "Excel 12.0;IMEX=1;HDR=No;")
+    '    '    End If
+    '    '    Builder.DataSource = FileName
+    '    '    Return Builder.ConnectionString
+    '    'End Function
+
+    '    'Public Shared Function GetOLEDbConnectionString(ByVal FileName As String, ByVal Header As String) As String
+    '    '    Dim Builder As New OleDb.OleDbConnectionStringBuilder
+    '    '    If IO.Path.GetExtension(FileName).ToUpper = ".XLS" Then
+    '    '        Builder.Provider = "Microsoft.Jet.OLEDB.4.0"
+    '    '        Builder.Add("Extended Properties", String.Format("Excel 8.0;IMEX=1;HDR={0};", Header))
+    '    '    Else
+    '    '        Builder.Provider = "Microsoft.ACE.OLEDB.12.0"
+    '    '        Builder.Add("Extended Properties", String.Format("Excel 12.0;IMEX=1;HDR={0};", Header))
+    '    '    End If
+    '    '    Builder.DataSource = FileName
+    '    '    Return Builder.ConnectionString
+    '    'End Function
+
+    '    'Public Shared Function DocPaths() As String
+    '    '    Try
+    '    '        Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\pic common"
+    '    '    Catch ex As Exception
+    '    '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+    '    '    End Try
+    '    'End Function
+
+    '    'Public Shared Function RptPaths() As String
+    '    '    Try
+    '    '        Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\rpt"
+    '    '    Catch ex As Exception
+    '    '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+    '    '    End Try
+    '    'End Function
+
+    '    'Public Shared Function IconsPath() As String
+    '    '    Try
+    '    '        Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\atlas icons"
+    '    '    Catch ex As Exception
+    '    '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+    '    '    End Try
+    '    'End Function
+
+    '    'Public Shared Function EmzaPaths() As String
+    '    '    Try
+    '    '        Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\emza secret"
+    '    '    Catch ex As Exception
+    '    '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+    '    '    End Try
+    '    'End Function
+
+    '    'Public Shared Function PersonelPicPath() As String
+    '    '    Try
+    '    '        Return R2CoreMClassConfigurationManagement.GetConfig(R2CoreConfigurations.DocumentsPath, 0) + "\personelpic"
+    '    '    Catch ex As Exception
+    '    '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+    '    '    End Try
+    '    'End Function
+
+    '    'Private Shared _OpenConnection As SqlClient.SqlConnection = R2PrimarySqlConnection.GetTransactionDBConnection
+    '    'Private Shared WithEvents ConnectionTimer As New System.Timers.Timer(60000)
+
+    '    'Public Sub ForceConnectionToOpen(YourTimerInterval As Int64)
+    '    '    Try
+    '    '        _OpenConnection.Close()
+    '    '        _OpenConnection.Open()
+    '    '        ConnectionTimer.Interval = YourTimerInterval
+    '    '        ConnectionTimer.Enabled = True
+    '    '        ConnectionTimer.Start()
+    '    '    Catch ex As Exception
+    '    '        MessageBox.Show(ex.Message)
+    '    '    End Try
+    '    'End Sub
+
+    '    'Public Shared Function GetOpenConnection() As SqlConnection
+    '    '    Try
+    '    '        If _OpenConnection.State <> ConnectionState.Closed Then Return _OpenConnection
+    '    '        _OpenConnection.Open()
+    '    '        ConnectionTimer.Enabled = True
+    '    '        ConnectionTimer.Start()
+    '    '        Return _OpenConnection
+    '    '    Catch ex As Exception
+    '    '        MessageBox.Show(ex.Message)
+    '    '    End Try
+    '    'End Function
+
+    '    'Private Shared Sub ConnectionTimerHandler() Handles ConnectionTimer.Elapsed
+    '    '    Try
+    '    '        ConnectionTimer.Enabled = False
+    '    '        ConnectionTimer.Stop()
+    '    '        _OpenConnection.Close()
+    '    '    Catch ex As Exception
+    '    '        MessageBox.Show(ex.Message)
+    '    '    End Try
+    '    'End Sub
+
+    'End Class
+
+    'BPTChanged
 
 End Namespace

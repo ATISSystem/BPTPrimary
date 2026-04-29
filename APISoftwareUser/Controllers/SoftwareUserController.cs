@@ -34,6 +34,8 @@ using R2Core.DateTimeProvider;
 using System.Reflection;
 using R2Core.SecurityAlgorithmsManagement.Exceptions;
 using R2Core.LoggingManagement;
+using R2Core.Caching;
+using R2Core.SQLInjectionPrevention;
 
 
 
@@ -49,15 +51,15 @@ namespace APISoftwareUser.Controllers
         private R2DateTimeService _DateTimeService;
         private ILogger _loggerService;
         private Networking _Networking;
-
-
+        private ISoftwareUserService _SoftwareUserService;
 
         public SoftwareUserController()
         {
             try
             {
                 _DateTimeService = new R2DateTimeService();
-                _loggerService = new R2Core.LoggingManagement.R2CorenLogService();
+                _SoftwareUserService = new SoftwareUserService();
+                _loggerService = new R2CorenLogService();
                 _Networking = new Networking();
             }
             catch (FileNotExistException ex)
@@ -136,22 +138,53 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(new APICommonSessionId { SessionId = Content.SessionId }), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            {
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.UserUnSuccessLogin, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Content.UserShenaseh) + ":" + Content.UserShenaseh, MessageDetail2 = nameof(Content.UserPassword) + ":" + Content.UserPassword, MessageDetail3 = nameof(ex.Message) + ":" + ex.Message });
+                return _APICommon.CreateErrorContentMessage(ex);
+            }
+            catch (SqlInjectionException ex)
+            {
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.UserUnSuccessLogin, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Content.UserShenaseh) + ":" + Content.UserShenaseh, MessageDetail2 = nameof(Content.UserPassword) + ":" + Content.UserPassword, MessageDetail3 = nameof(ex.Message) + ":" + ex.Message });
+                return _APICommon.CreateErrorContentMessage(ex);
+            }
+            catch (CaptchaWordNotCorrectException ex)
+            {
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.UserUnSuccessLogin, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Content.UserShenaseh) + ":" + Content.UserShenaseh, MessageDetail2 = nameof(Content.UserPassword) + ":" + Content.UserPassword, MessageDetail3 = nameof(ex.Message) + ":" + ex.Message });
+                return _APICommon.CreateErrorContentMessage(ex);
+            }
+            catch (FileNotExistException ex)
+            {
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.UserUnSuccessLogin, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Content.UserShenaseh) + ":" + Content.UserShenaseh, MessageDetail2 = nameof(Content.UserPassword) + ":" + Content.UserPassword, MessageDetail3 = nameof(ex.Message) + ":" + ex.Message });
+                return _APICommon.CreateErrorContentMessage(ex);
+            }
+            catch (CacheTypeNotFoundException ex)
+            {
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.UserUnSuccessLogin, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Content.UserShenaseh) + ":" + Content.UserShenaseh, MessageDetail2 = nameof(Content.UserPassword) + ":" + Content.UserPassword, MessageDetail3 = nameof(ex.Message) + ":" + ex.Message });
+                return _APICommon.CreateErrorContentMessage(ex);
+            }
             catch (SoftWareUserNotFoundException ex)
             {
-                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.UserUnSuccessLogin, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Content.UserShenaseh) + ":" + Content.UserShenaseh, MessageDetail2 = nameof(Content.UserPassword) + ":" + Content.UserPassword });
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.UserUnSuccessLogin, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Content.UserShenaseh) + ":" + Content.UserShenaseh, MessageDetail2 = nameof(Content.UserPassword) + ":" + Content.UserPassword, MessageDetail3 = nameof(ex.Message) + ":" + ex.Message });
                 return _APICommon.CreateErrorContentMessage(ex);
             }
             catch (UserIsNotActiveException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
+            {
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.UserUnSuccessLogin, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Content.UserShenaseh) + ":" + Content.UserShenaseh, MessageDetail2 = nameof(Content.UserPassword) + ":" + Content.UserPassword, MessageDetail3 = nameof(ex.Message) + ":" + ex.Message });
+                return _APICommon.CreateErrorContentMessage(ex);
+            }
             catch (RedisException ex)
-            { return _APICommon.CreateErrorContentMessage(ex); }
+            {
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.UserUnSuccessLogin, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Content.UserShenaseh) + ":" + Content.UserShenaseh, MessageDetail2 = nameof(Content.UserPassword) + ":" + Content.UserPassword, MessageDetail3 = nameof(ex.Message) + ":" + ex.Message });
+                return _APICommon.CreateErrorContentMessage(ex);
+            }
             catch (UserHasAlreadyBeenAuthenticated ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
             {
-                _loggerService.RegisterExceptionLog(ex);
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.UserUnSuccessLogin, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Content.UserShenaseh) + ":" + Content.UserShenaseh, MessageDetail2 = nameof(Content.UserPassword) + ":" + Content.UserPassword, MessageDetail3 = nameof(ex.Message) + ":" + ex.Message });
                 return _APICommon.CreateErrorContentMessage(ex);
             }
         }
@@ -302,10 +335,14 @@ namespace APISoftwareUser.Controllers
                 var RawSoftwareUser = Content.RawSoftwareUser;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
-                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(User.UserId));
+
                 R2CoreSoftWareUserSecurity SoftwareUserSecurity = null;
+                var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, _SoftwareUserService);
                 var SoftwareUserId = InstanceSoftwareUsers.RegisteringSoftwareUser(RawSoftwareUser, true, User.UserId, ref SoftwareUserSecurity);
                 var SoftwareUser = InstanceSoftwareUsers.GetUser(SoftwareUserId, true);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.RegisteringSoftwareUser, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(SoftwareUser.UserId) + ":" + SoftwareUser.UserId, MessageDetail2 = nameof(SoftwareUser.UserName) + ":" + SoftwareUser.UserName, MessageDetail3 = nameof(SoftwareUser.MobileNumber) + ":" + SoftwareUser.MobileNumber, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(SoftwareUserSecurity), Encoding.UTF8, "application/json");
                 return response;
@@ -324,7 +361,7 @@ namespace APISoftwareUser.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(1));
                 var SessionId = Content.SessionId;
@@ -334,8 +371,10 @@ namespace APISoftwareUser.Controllers
                 InstanceSession.ConfirmSession(SessionId, Captcha);
                 InstanseSoftwareUsers.SoftwareUserForgetPassword(SessionId, SoftwareUserMobileNumber);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.SoftwareUserForgetPassword, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(SessionId) + ":" + SessionId, MessageDetail2 = nameof(SoftwareUserMobileNumber) + ":" + SoftwareUserMobileNumber, MessageDetail3 = nameof(Captcha) + ":" + Captcha });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.PleaseEnterOTPCode).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.PleaseEnterOTPCode).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (CaptchaInvalidException ex)
@@ -355,7 +394,7 @@ namespace APISoftwareUser.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
 
                 var SessionId = Content.SessionId;
                 var OTPCode = Content.OTPCode;
@@ -364,7 +403,7 @@ namespace APISoftwareUser.Controllers
                 InstanseSoftwareUsers.VerifySoftwareUserOTPCode(SessionId, OTPCode);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.NewUserPasswordSentSuccessfully).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.NewUserPasswordSentSuccessfully).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (OTPCodeInvalidException ex)
@@ -392,6 +431,8 @@ namespace APISoftwareUser.Controllers
 
                 var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(User.UserId));
                 var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPasswordforMe(SoftwareUserId, User.UserId);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.ResetSoftwareUserPassword, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(SoftwareUserId) + ":" + SoftwareUserId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(SoftWareUserSecurity), Encoding.UTF8, "application/json");
@@ -440,7 +481,7 @@ namespace APISoftwareUser.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var RawSoftwareUser = Content.RawSoftwareUser;
 
@@ -449,8 +490,10 @@ namespace APISoftwareUser.Controllers
                 var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(User.UserId));
                 InstanceSoftwareUsers.EditSoftwareUser(RawSoftwareUser);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.EditSoftwareUser, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawSoftwareUser.UserId) + ":" + RawSoftwareUser.UserId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.EditingSoftWareUserSuccessed).MsgContent }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.EditingSoftWareUserSuccessed).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -499,7 +542,7 @@ namespace APISoftwareUser.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
 
                 var SessionId = Content.SessionId;
                 var SoftwareUserId = Content.SoftwareUserId;
@@ -509,8 +552,10 @@ namespace APISoftwareUser.Controllers
                 var InstanceSMSOwners = new R2CoreParkingSystemSMSOwnersManager(new SoftwareUserService(User.UserId), _DateTimeService);
                 InstanceSMSOwners.ChangeSMSOwnerCurrentState(SoftwareUserId);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.ChangeSMSOwnerCurrentStatus, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(SoftwareUserId) + ":" + SoftwareUserId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.ProcessSuccessed).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -527,7 +572,7 @@ namespace APISoftwareUser.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
 
                 var SessionId = Content.SessionId;
@@ -538,8 +583,10 @@ namespace APISoftwareUser.Controllers
                 var InstanceSMSOwners = new R2CoreParkingSystemSMSOwnersManager(new SoftwareUserService(User.UserId), _DateTimeService);
                 InstanceSMSOwners.ActivateSMSOwner(SoftwareUserId);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.ActivateSMSOwner, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(SoftwareUserId) + ":" + SoftwareUserId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ActivateSMSOwnerSuccessed).MsgContent }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.ActivateSMSOwnerSuccessed).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -572,6 +619,8 @@ namespace APISoftwareUser.Controllers
                 response.Content = new StringContent(JsonConvert.SerializeObject(RawSoftwareUser), Encoding.UTF8, "application/json");
                 return response;
             }
+            catch (DataBaseException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (RedisException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
@@ -614,7 +663,7 @@ namespace APISoftwareUser.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
 
                 var SessionId = Content.SessionId;
@@ -624,13 +673,13 @@ namespace APISoftwareUser.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                //R2Core.LoggingManagement.R2CoreLoggingManager.RegisterLog(new R2Core.LoggingManagement.R2CoreRawLog { LogTypeId = 1, Description = "ChangeSoftwareUserWebProcessGroupAccess", MessageDetail1 = Content.SoftwareUserId.ToString(), MessageDetail2 = Content.PGId.ToString(), MessageDetail3 = Content.PGAccess.ToString(), UserId = 21 });
-
                 var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(User.UserId));
                 InstanceSoftwareUsers.ChangeSoftwareUserWebProcessGroupAccess(SoftwareUserId, WPGId, WPGAccess);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.ChangeSoftwareUserWebProcessGroupAccess, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(SoftwareUserId) + ":" + SoftwareUserId, MessageDetail2 = nameof(WPGId) + ":" + WPGId, MessageDetail3 = nameof(WPGAccess) + ":" + WPGAccess, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ChangeSoftwareUserWebProcessGroupAccessSuccessed).MsgContent }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.ChangeSoftwareUserWebProcessGroupAccessSuccessed).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -647,7 +696,7 @@ namespace APISoftwareUser.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
 
                 var SessionId = Content.SessionId;
@@ -657,13 +706,13 @@ namespace APISoftwareUser.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                //R2Core.LoggingManagement.R2CoreLoggingManager.RegisterLog(new R2Core.LoggingManagement.R2CoreRawLog { LogTypeId=2, Description= "ChangeSoftwareUserWebProcessAccess", MessageDetail1= Content.SoftwareUserId.ToString(), MessageDetail2 = Content.PId.ToString(), MessageDetail3= Content.PAccess.ToString(), UserId =21 });
-
                 var InstanceSoftwareUsers = new R2CoreSoftwareUsersManager(new R2DateTimeService(), new SoftwareUserService(User.UserId));
                 InstanceSoftwareUsers.ChangeSoftwareUserWebProcessAccess(SoftwareUserId, WPId, WPAccess);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.ChangeSoftwareUserWebProcessAccess, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(SoftwareUserId) + ":" + SoftwareUserId, MessageDetail2 = nameof(WPId) + ":" + WPId, MessageDetail3 = nameof(WPAccess) + ":" + WPAccess, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ChangeSoftwareUserWebProcessAccess).MsgContent }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.ChangeSoftwareUserWebProcessAccess).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -734,7 +783,7 @@ namespace APISoftwareUser.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
 
                 var SessionId = Content.SessionId;
@@ -746,7 +795,7 @@ namespace APISoftwareUser.Controllers
                 InstanseSoftwareUsers.SendWebSiteLink(InstanseSoftwareUsers.GetUser(SoftwareUserId, true));
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.SendWebSiteLink).MsgContent }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.SendWebSiteLink).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -828,7 +877,7 @@ namespace APISoftwareUser.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
 
                 var SessionId = Content.SessionId;
@@ -843,8 +892,10 @@ namespace APISoftwareUser.Controllers
                 var InstanceSoftwareUser = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(User.UserId));
                 InstanceSoftwareUser.CustomizationSoftwareUserPassword(SoftwareUserId, OldPassword, NewPassword);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.CustomizationSoftwareUserPassword, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(SoftwareUserId) + ":" + SoftwareUserId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (InvalidSoftWareUserOldPasswordException ex)

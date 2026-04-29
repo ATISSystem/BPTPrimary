@@ -14,8 +14,8 @@ Imports System.Reflection
 Namespace GeneralConfiguration
     Public MustInherit Class PayanehClassLibraryGeneralConfigurations
         Inherits R2CoreTransportationAndLoadNotificationGeneralConfigurations
-        Public Shared ReadOnly Property TruckersAssociationControllingMoneyWallet As Int64 = 75
-        Public Shared ReadOnly Property DriversAssociationControllingMoneyWallet As Int64 = 99
+        Public Shared ReadOnly Property TruckersAssociationControllingMoneyWalletAutomatedJobService As Int64 = 75
+        Public Shared ReadOnly Property DriversAssociationControllingMoneyWalletAutomatedJobService As Int64 = 99
 
     End Class
 
@@ -33,8 +33,8 @@ Namespace ConfigurationManagement
         Public Shared ReadOnly Property ElamBarMonitoringInterval As Int64 = 33
         Public Shared ReadOnly Property TariffsPayanehKiosk As Int64 = 53
         Public Shared ReadOnly Property PayanehAmirKabirAutomatedJobsSetting As Int64 = 64
-        'Public Shared ReadOnly Property TruckersAssociationControllingMoneyWallet As Int64 = 75
-        'Public Shared ReadOnly Property DriversAssociationControllingMoneyWallet As Int64 = 99
+        'Public Shared ReadOnly Property TruckersAssociationControllingMoneyWalletAutomatedJobService As Int64 = 75
+        'Public Shared ReadOnly Property DriversAssociationControllingMoneyWalletAutomatedJobService As Int64 = 99
     End Class
 
 End Namespace

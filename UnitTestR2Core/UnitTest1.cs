@@ -3,7 +3,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
-using R2Core.MobileProcessesManagement.Exceptions;
 using R2Core.SessionManagement;
 using R2Core.WebProcessesManagement;
 using System;

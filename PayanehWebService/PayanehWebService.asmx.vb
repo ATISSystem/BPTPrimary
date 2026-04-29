@@ -22,6 +22,7 @@ Imports R2CoreTransportationAndLoadNotification.TruckDrivers
 Imports R2CoreTransportationAndLoadNotification.Trucks
 Imports System.ServiceModel
 Imports System.Net
+Imports R2Core.SQLInjectionPrevention
 
 
 ' To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line.

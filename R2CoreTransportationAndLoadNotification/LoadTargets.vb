@@ -2,12 +2,12 @@
 
 
 
-Imports R2Core.BaseStandardClass
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
+Imports R2Core.SQLInjectionPrevention
 Imports R2CoreParkingSystem.ProvincesAndCities
 Imports R2CoreParkingSystem.ProvincesAndCities.Execption
 Imports R2CoreTransportationAndLoadNotification.LoadSources
@@ -17,7 +17,6 @@ Imports System.Reflection
 Namespace LoadTargets
 
     Public Class R2CoreTransportationAndLoadNotificationStandardProvinceStructure
-        Inherits R2StandardStructure
 
         Public Sub New()
             MyBase.New()
@@ -26,7 +25,7 @@ Namespace LoadTargets
         End Sub
 
         Public Sub New(ByVal YourProvinceId As Int64, YourProvinceTitle As String)
-            MyBase.New(YourProvinceId, YourProvinceTitle)
+            MyBase.New()
             ProvinceId = YourProvinceId
             ProvinceTitle = YourProvinceTitle
         End Sub
@@ -37,7 +36,6 @@ Namespace LoadTargets
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationStandardLoadTargetStructure
-        Inherits R2StandardStructure
 
         Public Sub New()
             MyBase.New()
@@ -46,7 +44,7 @@ Namespace LoadTargets
         End Sub
 
         Public Sub New(ByVal YourNSSCity As R2CoreParkingSystemMClassCitys.R2StandardCityStructure)
-            MyBase.New(YourNSSCity.nCityCode, YourNSSCity.StrCityName)
+            MyBase.New()
             _NSSCity = YourNSSCity
             _TargetTravelLength = YourNSSCity.nDistance
         End Sub
@@ -184,8 +182,8 @@ Namespace LoadTargets
     Public Class R2CoreTransportationAndLoadNotificationLoadTargetsManager
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub

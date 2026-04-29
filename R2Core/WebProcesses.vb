@@ -9,7 +9,7 @@ Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.EntityRelationManagement
 Imports R2Core.LoggingManagement
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2Core.SMS.SMSResultLogging
 Imports R2Core.SoftwareUserManagement
 Imports R2Core.WebProcessesManagement.Exceptions
@@ -19,7 +19,6 @@ Imports System.Reflection
 Namespace WebProcessesManagement
 
     Public Class R2StandardWebProcessStructure
-        Inherits R2StandardStructure
 
         Public Sub New()
             MyBase.New()
@@ -40,7 +39,7 @@ Namespace WebProcessesManagement
         End Sub
 
         Public Sub New(ByVal YourPId As Int64, ByVal YourPName As String, ByVal YourPTitle As String, ByVal YourTargetWfProcess As String, ByVal YourDescription As String, YourPIconName As String, YourPBackColor As Color, YourPForeColor As Color, YourUserId As Int64, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
-            MyBase.New(YourPId, YourPName.Trim())
+            MyBase.New()
             PId = YourPId
             PName = YourPName
             PTitle = YourPTitle
@@ -79,7 +78,6 @@ Namespace WebProcessesManagement
     End Class
 
     Public Class R2StandardWebProcessGroupStructure
-        Inherits R2StandardStructure
 
         Public Sub New()
             MyBase.New()
@@ -98,7 +96,7 @@ Namespace WebProcessesManagement
         End Sub
 
         Public Sub New(ByVal YourPGId As Int64, ByVal YourPGName As String, ByVal YourPGTitle As String, YourPGIconName As String, YourPGBackColor As Color, YourPGForeColor As Color, YourUserId As Int64, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
-            MyBase.New(YourPGId, YourPGName.Trim())
+            MyBase.New()
             PGId = YourPGId
             PGName = YourPGName
             PGTitle = YourPGTitle
@@ -151,7 +149,7 @@ Namespace WebProcessesManagement
     Public Class R2CoreWebProcessesManager
 
         Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
-        Private _DateTimeService As IR2DateTimeService
+        Private _DateTimeService As IDateTimeService
         Private _LoggerService As ILogger
 
         Public Sub New()
@@ -161,7 +159,7 @@ Namespace WebProcessesManagement
 
         Public Function GetWebProcesses(YourUserId As Int64) As String
             Try
-                Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstanccePublicProcedures = New R2CorePublicProceduresManager
                 Dim Ds As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                  "Select WebProcessGroups.PGId,WebProcessGroups.PGTitle,WebProcessGroups.PGIconName,WebProcesses.PId,WebProcesses.PTitle,WebProcesses.PName,WebProcesses.Description,WebProcesses.PIconName,WebProcesses.PForeColor as ForeColor,WebProcesses.PBackColor as BackColor  
@@ -192,7 +190,7 @@ Namespace WebProcessesManagement
 
         Public Function GetVeryUsefulWebProcesses(YourUser As R2CoreSoftwareUser) As String
             Try
-                Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstanccePublicProcedures = New R2CorePublicProceduresManager
                 Dim Ds As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                  "Select WebProcessGroups.PGId,WebProcessGroups.PGTitle,WebProcessGroups.PGIconName,WebProcesses.PId,WebProcesses.PTitle,WebProcesses.PName,
@@ -225,7 +223,7 @@ Namespace WebProcessesManagement
 
         Public Function GetTaskBarWebProcesses(YourUser As R2CoreSoftwareUser) As String
             Try
-                Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstanccePublicProcedures = New R2CorePublicProceduresManager
                 Dim Ds As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                  "Select WebProcessGroups.PGId,WebProcessGroups.PGTitle,WebProcessGroups.PGIconName,WebProcesses.PId,WebProcesses.PTitle,WebProcesses.PName,
@@ -258,7 +256,7 @@ Namespace WebProcessesManagement
 
         Public Function GetAllOfWebProcessGroupsWebProcesses(YourSoftwareUserId As Int64) As String
             Try
-                Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstanccePublicProcedures = New R2CorePublicProceduresManager
                 Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(_DateTimeService, Nothing)
                 Dim Ds As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,

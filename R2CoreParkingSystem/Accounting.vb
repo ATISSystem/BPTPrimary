@@ -16,6 +16,7 @@ Imports R2Core.DateTimeProvider
 Imports R2CoreParkingSystem.MoneyWalletManagement
 Imports R2Core.SQLInjectionPrevention
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
+Imports R2Core.PublicProcedures
 
 
 Namespace AccountingManagement
@@ -42,7 +43,7 @@ Namespace AccountingManagement
         SherkatChangeCarTruckNumberPlate = 19 'هزینه تغییر پلاک ناوگان باری - شرکت
         AnjomanChangeDriverTruck = 20  'هزینه تغییر نام راننده ناوگان باری - انجمن
         AnjomanChangeCarTruckNumberPlate = 21 'هزینه تغییر پلاک ناوگان باری - انجمن
-        TruckersAssociationControllingMoneyWallet = 22 'کارکرد کیف پول کنترلی کامیونداران
+        TruckersAssociationControllingMoneyWalletAutomatedJobService = 22 'کارکرد کیف پول کنترلی کامیونداران
         XXX3 = 23 '
         XXX4 = 24 '
         SoftwareUserSMSOwnerServiceCost = 25 'هزینه فعال سازی سرویس اس ام اس
@@ -208,53 +209,53 @@ Namespace AccountingManagement
 
         Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
 
-        Public Function GetAccountingCollection(YourTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourTotalNumberofAccounts As Int64) As List(Of R2StandardEnterExitAccountingExtendedStructure)
-            Try
-                Dim Lst = New List(Of R2StandardEnterExitAccountingExtendedStructure)
-                Dim Ds As DataSet
-                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
-                     "Select Top " & YourTotalNumberofAccounts & " Accounting.EEAccountingProcessType,Accountings.AColor,Accountings.AName,Accounting.TimeA,Accounting.DateShamsiA,Accounting.CurrentChargeA,Accounting.MblghA,Accounting.ReminderChargeA,Computers.MDisplayTitle,SoftwareUsers.UserName,Accounting.DateMilladiA,Accounting.maabarcode,Accounting.userida from R2Primary.dbo.TblAccounting as Accounting
-                         Inner Join  R2Primary.dbo.TblAccountingCodingTypes as Accountings On Accounting.EEAccountingProcessType=Accountings.ACode
-                         Inner Join R2Primary.dbo.TblComputers as Computers On Accounting.MaabarCode=Computers.MId
-                         Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Accounting.UserIdA=SoftwareUsers.UserId
-                      Where Accounting.CardId=" & YourTrafficCard.CardId & "  Order by Accounting.DateMilladiA Desc", 0, Ds, New Boolean)
-                For Loopx As Int16 = 0 To Ds.Tables(0).Rows.Count - 1
-                    Dim myEEAProcessType As String = Ds.Tables(0).Rows(Loopx).Item("EEAccountingProcessType")
-                    Dim myDateShamsiA As String = Ds.Tables(0).Rows(Loopx).Item("dateshamsia")
-                    Dim myTimeA As String = Ds.Tables(0).Rows(Loopx).Item("TimeA")
-                    Dim myDateTimeMilladiA As DateTime = Ds.Tables(0).Rows(Loopx).Item("datemilladia")
-                    Dim myNSSCar As R2StandardCarStructure = New R2StandardCarStructure
-                    Dim myMaabarCode As String = Ds.Tables(0).Rows(Loopx).Item("maabarcode")
-                    Dim myMblghA As Int64 = Ds.Tables(0).Rows(Loopx).Item("mblgha")
-                    Dim myUserIdA As Int64 = Ds.Tables(0).Rows(Loopx).Item("userida")
-                    Dim myCurrentChargeA As Int64 = Ds.Tables(0).Rows(Loopx).Item("currentchargea")
-                    Dim myReminderChargeA As Int64 = Ds.Tables(0).Rows(Loopx).Item("reminderchargea")
-                    Lst.Add(New R2StandardEnterExitAccountingExtendedStructure(New R2StandardEnterExitAccountingStructure(YourTrafficCard, myEEAProcessType, myDateShamsiA, myTimeA, myDateTimeMilladiA, myNSSCar, myMaabarCode, myMblghA, myUserIdA, myCurrentChargeA, myReminderChargeA), Ds.Tables(0).Rows(Loopx).Item("AColor").trim, Ds.Tables(0).Rows(Loopx).Item("AName").trim, Ds.Tables(0).Rows(Loopx).Item("MDisplayTitle").trim, Ds.Tables(0).Rows(Loopx).Item("UserName").trim))
-                Next
-                Return Lst
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function GetAccountingCollection(YourTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourTotalNumberofAccounts As Int64) As List(Of R2StandardEnterExitAccountingExtendedStructure)
+        '    Try
+        '        Dim Lst = New List(Of R2StandardEnterExitAccountingExtendedStructure)
+        '        Dim Ds As DataSet
+        '        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+        '             "Select Top " & YourTotalNumberofAccounts & " Accounting.EEAccountingProcessType,Accountings.AColor,Accountings.AName,Accounting.TimeA,Accounting.DateShamsiA,Accounting.CurrentChargeA,Accounting.MblghA,Accounting.ReminderChargeA,Computers.MDisplayTitle,SoftwareUsers.UserName,Accounting.DateMilladiA,Accounting.maabarcode,Accounting.userida from R2Primary.dbo.TblAccounting as Accounting
+        '                 Inner Join  R2Primary.dbo.TblAccountingCodingTypes as Accountings On Accounting.EEAccountingProcessType=Accountings.ACode
+        '                 Inner Join R2Primary.dbo.TblComputers as Computers On Accounting.MaabarCode=Computers.MId
+        '                 Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Accounting.UserIdA=SoftwareUsers.UserId
+        '              Where Accounting.CardId=" & YourTrafficCard.CardId & "  Order by Accounting.DateMilladiA Desc", 0, Ds, New Boolean)
+        '        For Loopx As Int16 = 0 To Ds.Tables(0).Rows.Count - 1
+        '            Dim myEEAProcessType As String = Ds.Tables(0).Rows(Loopx).Item("EEAccountingProcessType")
+        '            Dim myDateShamsiA As String = Ds.Tables(0).Rows(Loopx).Item("dateshamsia")
+        '            Dim myTimeA As String = Ds.Tables(0).Rows(Loopx).Item("TimeA")
+        '            Dim myDateTimeMilladiA As DateTime = Ds.Tables(0).Rows(Loopx).Item("datemilladia")
+        '            Dim myNSSCar As R2StandardCarStructure = New R2StandardCarStructure
+        '            Dim myMaabarCode As String = Ds.Tables(0).Rows(Loopx).Item("maabarcode")
+        '            Dim myMblghA As Int64 = Ds.Tables(0).Rows(Loopx).Item("mblgha")
+        '            Dim myUserIdA As Int64 = Ds.Tables(0).Rows(Loopx).Item("userida")
+        '            Dim myCurrentChargeA As Int64 = Ds.Tables(0).Rows(Loopx).Item("currentchargea")
+        '            Dim myReminderChargeA As Int64 = Ds.Tables(0).Rows(Loopx).Item("reminderchargea")
+        '            Lst.Add(New R2StandardEnterExitAccountingExtendedStructure(New R2StandardEnterExitAccountingStructure(YourTrafficCard, myEEAProcessType, myDateShamsiA, myTimeA, myDateTimeMilladiA, myNSSCar, myMaabarCode, myMblghA, myUserIdA, myCurrentChargeA, myReminderChargeA), Ds.Tables(0).Rows(Loopx).Item("AColor").trim, Ds.Tables(0).Rows(Loopx).Item("AName").trim, Ds.Tables(0).Rows(Loopx).Item("MDisplayTitle").trim, Ds.Tables(0).Rows(Loopx).Item("UserName").trim))
+        '        Next
+        '        Return Lst
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Sub InsertAccounting(ByVal YourEEAcounting As R2StandardEnterExitAccountingStructure)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                If YourEEAcounting.NSSCar Is Nothing Then
-                    CmdSql.CommandText = "insert into R2Primary.dbo.TblAccounting(CardId,EEAccountingProcessType,DateShamsiA,TimeA,DateMilladiA,PelakA,SerialA,CityA,PelakTypeA,MaabarCode,MblghA,UseridA,CurrentChargeA,ReminderChargeA) values('" & YourEEAcounting.NSSTrafficCard.CardId & "'," & YourEEAcounting.EEAccountingProcessType & ",'" & YourEEAcounting.DateShamsiA & "','" & YourEEAcounting.TimeA & "','" & YourEEAcounting.DateTimeMilladiA.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) & "','','','" & Now.Millisecond.ToString() + Rnd().ToString() & "',0,'" & YourEEAcounting.MaabarCode & "'," & YourEEAcounting.MblghA & "," & YourEEAcounting.UserIdA & "," & YourEEAcounting.CurrentChargeA & "," & YourEEAcounting.ReminderChargeA & ")"
-                Else
-                    CmdSql.CommandText = "insert into R2Primary.dbo.TblAccounting(CardId,EEAccountingProcessType,DateShamsiA,TimeA,DateMilladiA,PelakA,SerialA,CityA,PelakTypeA,MaabarCode,MblghA,UseridA,CurrentChargeA,ReminderChargeA) values('" & YourEEAcounting.NSSTrafficCard.CardId & "'," & YourEEAcounting.EEAccountingProcessType & ",'" & YourEEAcounting.DateShamsiA & "','" & YourEEAcounting.TimeA & "','" & YourEEAcounting.DateTimeMilladiA.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) & "','" & YourEEAcounting.NSSCar.StrCarNo & "','" & YourEEAcounting.NSSCar.StrCarSerialNo & "','" & R2CoreParkingSystemMClassCitys.GetCityNameFromnCityCode(YourEEAcounting.NSSCar.nIdCity) & "'," & R2PelakType.None & ",'" & R2CoreMClassConfigurationManagement.GetComputerCode() & "'," & YourEEAcounting.MblghA & "," & YourEEAcounting.UserIdA & "," & YourEEAcounting.CurrentChargeA & "," & YourEEAcounting.ReminderChargeA & ")"
-                End If
-                CmdSql.ExecuteNonQuery()
-                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
+        'Public Sub InsertAccounting(ByVal YourEEAcounting As R2StandardEnterExitAccountingStructure)
+        '    Dim CmdSql As New SqlClient.SqlCommand
+        '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+        '    Try
+        '        CmdSql.Connection.Open()
+        '        CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+        '        If YourEEAcounting.NSSCar Is Nothing Then
+        '            CmdSql.CommandText = "insert into R2Primary.dbo.TblAccounting(CardId,EEAccountingProcessType,DateShamsiA,TimeA,DateMilladiA,PelakA,SerialA,CityA,PelakTypeA,MaabarCode,MblghA,UseridA,CurrentChargeA,ReminderChargeA) values('" & YourEEAcounting.NSSTrafficCard.CardId & "'," & YourEEAcounting.EEAccountingProcessType & ",'" & YourEEAcounting.DateShamsiA & "','" & YourEEAcounting.TimeA & "','" & YourEEAcounting.DateTimeMilladiA.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) & "','','','" & Now.Millisecond.ToString() + Rnd().ToString() & "',0,'" & YourEEAcounting.MaabarCode & "'," & YourEEAcounting.MblghA & "," & YourEEAcounting.UserIdA & "," & YourEEAcounting.CurrentChargeA & "," & YourEEAcounting.ReminderChargeA & ")"
+        '        Else
+        '            CmdSql.CommandText = "insert into R2Primary.dbo.TblAccounting(CardId,EEAccountingProcessType,DateShamsiA,TimeA,DateMilladiA,PelakA,SerialA,CityA,PelakTypeA,MaabarCode,MblghA,UseridA,CurrentChargeA,ReminderChargeA) values('" & YourEEAcounting.NSSTrafficCard.CardId & "'," & YourEEAcounting.EEAccountingProcessType & ",'" & YourEEAcounting.DateShamsiA & "','" & YourEEAcounting.TimeA & "','" & YourEEAcounting.DateTimeMilladiA.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) & "','" & YourEEAcounting.NSSCar.StrCarNo & "','" & YourEEAcounting.NSSCar.StrCarSerialNo & "','" & R2CoreParkingSystemMClassCitys.GetCityNameFromnCityCode(YourEEAcounting.NSSCar.nIdCity) & "'," & R2PelakType.None & ",'" & R2CoreMClassConfigurationManagement.GetComputerCode() & "'," & YourEEAcounting.MblghA & "," & YourEEAcounting.UserIdA & "," & YourEEAcounting.CurrentChargeA & "," & YourEEAcounting.ReminderChargeA & ")"
+        '        End If
+        '        CmdSql.ExecuteNonQuery()
+        '        CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+        '    Catch ex As Exception
+        '        If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
 
     End Class
 
@@ -263,95 +264,95 @@ Namespace AccountingManagement
         Private Shared _DateTimeService = New R2DateTimeService()
         Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
-        Public Shared Function GetAccountingNamebyAccountingCode(ByVal YourAccountingCode As R2CoreParkingSystemAccountings) As String
-            Try
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select AName from R2Primary.dbo.TblAccountingCodingTypes Where ACode=" & YourAccountingCode & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
-                    Throw New GetDataException
-                End If
-                Return Ds.Tables(0).Rows(0).Item("AName").trim
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetAccountingNamebyAccountingCode(ByVal YourAccountingCode As R2CoreParkingSystemAccountings) As String
+        '    Try
+        '        Dim Ds As DataSet
+        '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select AName from R2Primary.dbo.TblAccountingCodingTypes Where ACode=" & YourAccountingCode & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+        '            Throw New GetDataException
+        '        End If
+        '        Return Ds.Tables(0).Rows(0).Item("AName").trim
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Sub InsertAccounting(ByVal YourEEAcounting As R2StandardEnterExitAccountingStructure)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                If YourEEAcounting.NSSCar Is Nothing Then
-                    CmdSql.CommandText = "insert into R2Primary.dbo.TblAccounting(CardId,EEAccountingProcessType,DateShamsiA,TimeA,DateMilladiA,PelakA,SerialA,CityA,PelakTypeA,MaabarCode,MblghA,UseridA,CurrentChargeA,ReminderChargeA) values('" & YourEEAcounting.NSSTrafficCard.CardId & "'," & YourEEAcounting.EEAccountingProcessType & ",'" & YourEEAcounting.DateShamsiA & "','" & YourEEAcounting.TimeA & "','" & YourEEAcounting.DateTimeMilladiA.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) & "','','','" & Now.Millisecond.ToString() + Rnd().ToString() & "',0,'" & YourEEAcounting.MaabarCode & "'," & YourEEAcounting.MblghA & "," & YourEEAcounting.UserIdA & "," & YourEEAcounting.CurrentChargeA & "," & YourEEAcounting.ReminderChargeA & ")"
-                Else
-                    CmdSql.CommandText = "insert into R2Primary.dbo.TblAccounting(CardId,EEAccountingProcessType,DateShamsiA,TimeA,DateMilladiA,PelakA,SerialA,CityA,PelakTypeA,MaabarCode,MblghA,UseridA,CurrentChargeA,ReminderChargeA) values('" & YourEEAcounting.NSSTrafficCard.CardId & "'," & YourEEAcounting.EEAccountingProcessType & ",'" & YourEEAcounting.DateShamsiA & "','" & YourEEAcounting.TimeA & "','" & YourEEAcounting.DateTimeMilladiA.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) & "','" & YourEEAcounting.NSSCar.StrCarNo & "','" & YourEEAcounting.NSSCar.StrCarSerialNo & "','" & R2CoreParkingSystemMClassCitys.GetCityNameFromnCityCode(YourEEAcounting.NSSCar.nIdCity) & "'," & R2PelakType.None & ",'" & R2CoreMClassConfigurationManagement.GetComputerCode() & "'," & YourEEAcounting.MblghA & "," & YourEEAcounting.UserIdA & "," & YourEEAcounting.CurrentChargeA & "," & YourEEAcounting.ReminderChargeA & ")"
-                End If
-                CmdSql.ExecuteNonQuery()
-                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
+        'Public Shared Sub InsertAccounting(ByVal YourEEAcounting As R2StandardEnterExitAccountingStructure)
+        '    Dim CmdSql As New SqlClient.SqlCommand
+        '    CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+        '    Try
+        '        CmdSql.Connection.Open()
+        '        CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+        '        If YourEEAcounting.NSSCar Is Nothing Then
+        '            CmdSql.CommandText = "insert into R2Primary.dbo.TblAccounting(CardId,EEAccountingProcessType,DateShamsiA,TimeA,DateMilladiA,PelakA,SerialA,CityA,PelakTypeA,MaabarCode,MblghA,UseridA,CurrentChargeA,ReminderChargeA) values('" & YourEEAcounting.NSSTrafficCard.CardId & "'," & YourEEAcounting.EEAccountingProcessType & ",'" & YourEEAcounting.DateShamsiA & "','" & YourEEAcounting.TimeA & "','" & YourEEAcounting.DateTimeMilladiA.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) & "','','','" & Now.Millisecond.ToString() + Rnd().ToString() & "',0,'" & YourEEAcounting.MaabarCode & "'," & YourEEAcounting.MblghA & "," & YourEEAcounting.UserIdA & "," & YourEEAcounting.CurrentChargeA & "," & YourEEAcounting.ReminderChargeA & ")"
+        '        Else
+        '            CmdSql.CommandText = "insert into R2Primary.dbo.TblAccounting(CardId,EEAccountingProcessType,DateShamsiA,TimeA,DateMilladiA,PelakA,SerialA,CityA,PelakTypeA,MaabarCode,MblghA,UseridA,CurrentChargeA,ReminderChargeA) values('" & YourEEAcounting.NSSTrafficCard.CardId & "'," & YourEEAcounting.EEAccountingProcessType & ",'" & YourEEAcounting.DateShamsiA & "','" & YourEEAcounting.TimeA & "','" & YourEEAcounting.DateTimeMilladiA.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) & "','" & YourEEAcounting.NSSCar.StrCarNo & "','" & YourEEAcounting.NSSCar.StrCarSerialNo & "','" & R2CoreParkingSystemMClassCitys.GetCityNameFromnCityCode(YourEEAcounting.NSSCar.nIdCity) & "'," & R2PelakType.None & ",'" & R2CoreMClassConfigurationManagement.GetComputerCode() & "'," & YourEEAcounting.MblghA & "," & YourEEAcounting.UserIdA & "," & YourEEAcounting.CurrentChargeA & "," & YourEEAcounting.ReminderChargeA & ")"
+        '        End If
+        '        CmdSql.ExecuteNonQuery()
+        '        CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+        '    Catch ex As Exception
+        '        If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
 
-        Public Shared Function GetAccountingColorbyAccountingCode(ByVal YourAccountingCode As R2CoreParkingSystemAccountings) As String
-            Try
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select AColor from R2Primary.dbo.TblAccountingCodingTypes Where ACode=" & YourAccountingCode & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
-                    Throw New GetDataException
-                End If
-                Return Ds.Tables(0).Rows(0).Item("AColor").trim
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetAccountingColorbyAccountingCode(ByVal YourAccountingCode As R2CoreParkingSystemAccountings) As String
+        '    Try
+        '        Dim Ds As DataSet
+        '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select AColor from R2Primary.dbo.TblAccountingCodingTypes Where ACode=" & YourAccountingCode & "", 3600, Ds, New Boolean).GetRecordsCount = 0 Then
+        '            Throw New GetDataException
+        '        End If
+        '        Return Ds.Tables(0).Rows(0).Item("AColor").trim
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function GetAccountingCollection(YourTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourTotalNumberofAccounts As Int64) As List(Of R2StandardEnterExitAccountingExtendedStructure)
-            Try
-                Dim Lst As List(Of R2StandardEnterExitAccountingExtendedStructure) = New List(Of R2StandardEnterExitAccountingExtendedStructure)
-                Dim Ds As DataSet = New DataSet
-                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
-                     "Select Top " & YourTotalNumberofAccounts & " Accounting.EEAccountingProcessType,Accountings.AColor,Accountings.AName,Accounting.TimeA,Accounting.DateShamsiA,Accounting.CurrentChargeA,Accounting.MblghA,Accounting.ReminderChargeA,Computers.MName,SoftwareUsers.UserName,Accounting.DateMilladiA,Accounting.maabarcode,Accounting.userida from R2Primary.dbo.TblAccounting as Accounting
-                         Inner Join  R2Primary.dbo.TblAccountingCodingTypes as Accountings On Accounting.EEAccountingProcessType=Accountings.ACode
-                         Inner Join R2Primary.dbo.TblComputers as Computers On Accounting.MaabarCode=Computers.MId
-                         Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Accounting.UserIdA=SoftwareUsers.UserId
-                      Where Accounting.CardId=" & YourTrafficCard.CardId & "  Order by Accounting.DateMilladiA Desc", 1, Ds, New Boolean)
-                For Loopx As Int16 = 0 To Ds.Tables(0).Rows.Count - 1
-                    Dim myEEAProcessType As String = Ds.Tables(0).Rows(Loopx).Item("EEAccountingProcessType")
-                    Dim myDateShamsiA As String = Ds.Tables(0).Rows(Loopx).Item("dateshamsia")
-                    Dim myTimeA As String = Ds.Tables(0).Rows(Loopx).Item("TimeA")
-                    Dim myDateTimeMilladiA As DateTime = Ds.Tables(0).Rows(Loopx).Item("datemilladia")
-                    Dim myNSSCar As R2StandardCarStructure = New R2StandardCarStructure
-                    Dim myMaabarCode As String = Ds.Tables(0).Rows(Loopx).Item("maabarcode")
-                    Dim myMblghA As Int64 = Ds.Tables(0).Rows(Loopx).Item("mblgha")
-                    Dim myUserIdA As Int64 = Ds.Tables(0).Rows(Loopx).Item("userida")
-                    Dim myCurrentChargeA As Int64 = Ds.Tables(0).Rows(Loopx).Item("currentchargea")
-                    Dim myReminderChargeA As Int64 = Ds.Tables(0).Rows(Loopx).Item("reminderchargea")
-                    Lst.Add(New R2StandardEnterExitAccountingExtendedStructure(New R2StandardEnterExitAccountingStructure(YourTrafficCard, myEEAProcessType, myDateShamsiA, myTimeA, myDateTimeMilladiA, myNSSCar, myMaabarCode, myMblghA, myUserIdA, myCurrentChargeA, myReminderChargeA), Ds.Tables(0).Rows(Loopx).Item("AColor").trim, Ds.Tables(0).Rows(Loopx).Item("AName").trim, Ds.Tables(0).Rows(Loopx).Item("MName").trim, Ds.Tables(0).Rows(Loopx).Item("UserName").trim))
-                Next
-                Return Lst
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetAccountingCollection(YourTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourTotalNumberofAccounts As Int64) As List(Of R2StandardEnterExitAccountingExtendedStructure)
+        '    Try
+        '        Dim Lst As List(Of R2StandardEnterExitAccountingExtendedStructure) = New List(Of R2StandardEnterExitAccountingExtendedStructure)
+        '        Dim Ds As DataSet = New DataSet
+        '        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+        '             "Select Top " & YourTotalNumberofAccounts & " Accounting.EEAccountingProcessType,Accountings.AColor,Accountings.AName,Accounting.TimeA,Accounting.DateShamsiA,Accounting.CurrentChargeA,Accounting.MblghA,Accounting.ReminderChargeA,Computers.MName,SoftwareUsers.UserName,Accounting.DateMilladiA,Accounting.maabarcode,Accounting.userida from R2Primary.dbo.TblAccounting as Accounting
+        '                 Inner Join  R2Primary.dbo.TblAccountingCodingTypes as Accountings On Accounting.EEAccountingProcessType=Accountings.ACode
+        '                 Inner Join R2Primary.dbo.TblComputers as Computers On Accounting.MaabarCode=Computers.MId
+        '                 Inner Join R2Primary.dbo.TblSoftwareUsers as SoftwareUsers On Accounting.UserIdA=SoftwareUsers.UserId
+        '              Where Accounting.CardId=" & YourTrafficCard.CardId & "  Order by Accounting.DateMilladiA Desc", 1, Ds, New Boolean)
+        '        For Loopx As Int16 = 0 To Ds.Tables(0).Rows.Count - 1
+        '            Dim myEEAProcessType As String = Ds.Tables(0).Rows(Loopx).Item("EEAccountingProcessType")
+        '            Dim myDateShamsiA As String = Ds.Tables(0).Rows(Loopx).Item("dateshamsia")
+        '            Dim myTimeA As String = Ds.Tables(0).Rows(Loopx).Item("TimeA")
+        '            Dim myDateTimeMilladiA As DateTime = Ds.Tables(0).Rows(Loopx).Item("datemilladia")
+        '            Dim myNSSCar As R2StandardCarStructure = New R2StandardCarStructure
+        '            Dim myMaabarCode As String = Ds.Tables(0).Rows(Loopx).Item("maabarcode")
+        '            Dim myMblghA As Int64 = Ds.Tables(0).Rows(Loopx).Item("mblgha")
+        '            Dim myUserIdA As Int64 = Ds.Tables(0).Rows(Loopx).Item("userida")
+        '            Dim myCurrentChargeA As Int64 = Ds.Tables(0).Rows(Loopx).Item("currentchargea")
+        '            Dim myReminderChargeA As Int64 = Ds.Tables(0).Rows(Loopx).Item("reminderchargea")
+        '            Lst.Add(New R2StandardEnterExitAccountingExtendedStructure(New R2StandardEnterExitAccountingStructure(YourTrafficCard, myEEAProcessType, myDateShamsiA, myTimeA, myDateTimeMilladiA, myNSSCar, myMaabarCode, myMblghA, myUserIdA, myCurrentChargeA, myReminderChargeA), Ds.Tables(0).Rows(Loopx).Item("AColor").trim, Ds.Tables(0).Rows(Loopx).Item("AName").trim, Ds.Tables(0).Rows(Loopx).Item("MName").trim, Ds.Tables(0).Rows(Loopx).Item("UserName").trim))
+        '        Next
+        '        Return Lst
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function GetNSSLastAccounting(YourAccountingCodeType As Int64) As R2StandardEnterExitAccountingStructure
-            Try
-                Dim DS As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
-                     "Select Top 1 * from R2Primary.dbo.TblAccounting as Accounting
-                      Where Accounting.EEAccountingProcessType=" & YourAccountingCodeType & "
-                      Order By Accounting.DateMilladiA Desc", 0, DS, New Boolean).GetRecordsCount <> 0 Then
-                    Return New R2StandardEnterExitAccountingStructure(R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(Convert.ToInt64(DS.Tables(0).Rows(0).Item("CardId"))), DS.Tables(0).Rows(0).Item("EEAccountingProcessType"), DS.Tables(0).Rows(0).Item("DateShamsiA"), DS.Tables(0).Rows(0).Item("TimeA"), DS.Tables(0).Rows(0).Item("DateMilladiA"), Nothing, DS.Tables(0).Rows(0).Item("MaabarCode"), DS.Tables(0).Rows(0).Item("MblghA"), DS.Tables(0).Rows(0).Item("UserIdA"), DS.Tables(0).Rows(0).Item("CurrentChargeA"), DS.Tables(0).Rows(0).Item("ReminderChargeA"))
-                Else
-                    Throw New LastAccountingRecordforAccountingTypeIdNotFoundException
-                End If
-            Catch ex As LastAccountingRecordforAccountingTypeIdNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetNSSLastAccounting(YourAccountingCodeType As Int64) As R2StandardEnterExitAccountingStructure
+        '    Try
+        '        Dim DS As DataSet
+        '        If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+        '             "Select Top 1 * from R2Primary.dbo.TblAccounting as Accounting
+        '              Where Accounting.EEAccountingProcessType=" & YourAccountingCodeType & "
+        '              Order By Accounting.DateMilladiA Desc", 0, DS, New Boolean).GetRecordsCount <> 0 Then
+        '            Return New R2StandardEnterExitAccountingStructure(R2CoreParkingSystemMClassTrafficCardManagement.GetNSSTrafficCard(Convert.ToInt64(DS.Tables(0).Rows(0).Item("CardId"))), DS.Tables(0).Rows(0).Item("EEAccountingProcessType"), DS.Tables(0).Rows(0).Item("DateShamsiA"), DS.Tables(0).Rows(0).Item("TimeA"), DS.Tables(0).Rows(0).Item("DateMilladiA"), Nothing, DS.Tables(0).Rows(0).Item("MaabarCode"), DS.Tables(0).Rows(0).Item("MblghA"), DS.Tables(0).Rows(0).Item("UserIdA"), DS.Tables(0).Rows(0).Item("CurrentChargeA"), DS.Tables(0).Rows(0).Item("ReminderChargeA"))
+        '        Else
+        '            Throw New LastAccountingRecordforAccountingTypeIdNotFoundException
+        '        End If
+        '    Catch ex As LastAccountingRecordforAccountingTypeIdNotFoundException
+        '        Throw ex
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
     End Class
 
@@ -371,8 +372,8 @@ Namespace AccountingManagement
     Public Class R2CoreParkingSystemAccountingManager
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -407,7 +408,7 @@ Namespace AccountingManagement
         Public Function GetMoneyWalletTransactions(YourMoneyWalletId As Int64) As String
             Try
                 Dim Ds As DataSet
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                      "Select Top 100 Accountings.AName as TransactionTitle,Accountings.AColor as TransactionColor,Accounting.DateShamsiA as ShamsiDate,Accounting.TimeA as Time,Accounting.CurrentChargeA as CurrentBalance,Accounting.MblghA as Amount,Accounting.ReminderChargeA as Reminder,SoftwareUsers.UserName as UserName
                       from R2Primary.dbo.TblAccounting as Accounting

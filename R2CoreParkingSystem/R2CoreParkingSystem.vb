@@ -71,6 +71,7 @@ Imports System.Runtime.Serialization.Formatters.Binary
 Imports R2Core.DateTimeProvider
 Imports R2Core.GeneralConfiguration
 Imports R2CoreParkingSystem.GeneralConfiguration
+Imports R2Core.BaseClasses
 
 Namespace PubSubMessages
     Public MustInherit Class R2CoreParkingSystemPubSubChannels
@@ -1392,8 +1393,8 @@ Namespace BlackList
     Public Class R2CoreParkingSystemInstanceBlackListManager
 
         Private InstanceSqlDataBox As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -1573,7 +1574,6 @@ End Namespace
 
 Namespace Drivers
     Public Class R2StandardDriverStructure
-        Inherits BaseStandardClass.R2StandardStructure
 
         Private mynIdPerson As Int64
         Private myStrPersonFullName As String
@@ -1593,7 +1593,7 @@ Namespace Drivers
         End Sub
 
         Public Sub New(ByVal nIdPersonn As Int64, ByVal StrPersonFullNamee As String, ByVal StrNationalCodee As String, ByVal StrFatherNamee As String, ByVal StrAddresss As String, ByVal StrIdNoo As String, ByVal strDrivingLicenceNoo As String)
-            MyBase.New(nIdPersonn, StrPersonFullNamee)
+            MyBase.New()
             mynIdPerson = nIdPersonn
             myStrPersonFullName = StrPersonFullNamee
             myStrNationalCode = StrNationalCodee
@@ -2213,43 +2213,6 @@ Namespace AuthenticationManagement
 
 End Namespace
 
-Namespace ProcessesManagement
-
-    Public MustInherit Class R2CoreParkingSystemProcesses
-        Inherits R2CoreDesktopProcesses
-
-        Public Shared ReadOnly FrmcBlackList As Int64 = 3
-        Public Shared ReadOnly FrmcTempExitTerafficCard As Int64 = 4
-        Public Shared ReadOnly FrmcMoneyWalletReturnAmount As Int64 = 5
-        Public Shared ReadOnly FrmcMoneyWalletTransferCharge As Int64 = 6
-        Public Shared ReadOnly FrmcMoneyWalletCharge As Int64 = 7
-        Public Shared ReadOnly FrmcUserChargeReport As Int64 = 8
-        Public Shared ReadOnly FrmcTerafficCardEdit As Int64 = 9
-        Public Shared ReadOnly FrmcTerafficCardInitialRegister As Int64 = 10
-        Public Shared ReadOnly FrmcBlackListFinancialReport As Int64 = 20
-        Public Shared ReadOnly FrmcMoneyWalletsCurrentChargeReport = 22
-        Public Shared ReadOnly FrmcMoneyWalletAccounting As Int64 = 25
-        Public Shared ReadOnly FrmcUserChargeSavabegh As Int64 = 26
-        Public Shared ReadOnly FrmcCarEnterExitReport As Int64 = 27
-        Public Shared ReadOnly FrmcMoneyWalletChargeSavabegh As Int64 = 28
-        Public Shared ReadOnly FrmcRegisteringHandyBills As Int64 = 29
-        Public Shared ReadOnly FrmcSoldRFIDCardsReport As Int64 = 48
-        Public Shared ReadOnly FrmcParkingTotalEnteranceSeparationByTerraficCardReport As Int64 = 49
-        Public Shared ReadOnly FrmcPresentCarsInParkingReport As Int64 = 50
-        Public Shared ReadOnly FrmcCarEntranceReport As Int64 = 51
-        Public Shared ReadOnly FrmcLoadTargetsTravelLength As Int64 = 57
-        Public Shared ReadOnly FrmcTerraficCardsIdentityReport As Int64 = 59
-        Public Shared ReadOnly FrmcBlackListReport As Int64 = 60
-        Public Shared ReadOnly FrmcCarEntryExitLogViewer As Int64 = 69
-        Public Shared ReadOnly FrmcMoneyWalletChargeByTruck As Int64 = 71
-        Public Shared ReadOnly FrmcMassSMSMessaging As Int64 = 74
-
-
-
-    End Class
-
-End Namespace
-
 Namespace ExceptionManagement
 
     Public Class TerafficCardLastExitedException
@@ -2680,8 +2643,8 @@ Namespace SoftwareUsersManagement
 
         Private InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
 
-        Public Function GetNSSSoftwareUser(YourDriverId As Int64) As R2CoreStandardSoftwareUserStructure
-            Dim InstanceSoftwareUser As New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+        Public Function GetNSSSoftwareUser(YourDriverId As Int64) As R2CoreSoftwareUser
+            Dim InstanceSoftwareUser As New R2CoreSoftwareUsersManager(New R2DateTimeService, Nothing)
             Try
                 Dim Ds As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
@@ -2690,7 +2653,7 @@ Namespace SoftwareUsersManagement
 	                            Inner Join dbtransport.dbo.TbDriver as Drivers On EntityRelations.E2=Drivers.nIDDriver 
                           Where SoftwareUsers.Deleted=0 and EntityRelations.ERTypeId=" & R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & " and
                                 EntityRelations.RelationActive=1 and Drivers.nIDDriver=" & YourDriverId & "", 0, Ds, New Boolean).GetRecordsCount = 0 Then Throw New SoftwareUserRelatedThisDriverNotFoundException
-                Return InstanceSoftwareUser.GetNSSUser(Convert.ToInt64(Ds.Tables(0).Rows(0).Item("UserId")))
+                Return InstanceSoftwareUser.GetUser(Convert.ToInt64(Ds.Tables(0).Rows(0).Item("UserId")), False)
             Catch ex As SoftwareUserRelatedThisDriverNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -2772,9 +2735,9 @@ Namespace SoftwareUsersManagement
     'BPTChanged
     Public Class R2CoreParkingSystemSoftwareUsersManager
 
-        Private _DateTimeService As IR2DateTimeService
+        Private _DateTimeService As IDateTimeService
         Private _SoftwareUserService As ISoftwareUserService
-        Public Sub New(YourDateTimeService As IR2DateTimeService, YourSoftwareUserService As ISoftwareUserService)
+        Public Sub New(YourDateTimeService As IDateTimeService, YourSoftwareUserService As ISoftwareUserService)
             _DateTimeService = YourDateTimeService
             _SoftwareUserService = YourSoftwareUserService
         End Sub
@@ -2812,19 +2775,6 @@ Namespace SoftwareUsersManagement
 
 End Namespace
 
-Namespace RequesterManagement
-
-    Public MustInherit Class R2CoreParkingSystemRequesters
-        Inherits R2CoreRequesters
-
-
-
-    End Class
-
-
-
-End Namespace
-
 Namespace EntityManagement
 
     Public MustInherit Class R2CoreParkingSystemEntities
@@ -2858,7 +2808,6 @@ Namespace CarsNativeness
     End Class
 
     Public Class R2CoreParkingSystemStandardCarNativenessTypeStructure
-        Inherits R2StandardStructure
         Public Sub New()
             MyBase.New()
             _NId = Int64.MinValue
@@ -2874,7 +2823,7 @@ Namespace CarsNativeness
         End Sub
 
         Public Sub New(YourNId As Int64, YourNName As String, YourNTitle As String, YourNColor As Color, YourDateTimeMilladi As DateTime, YOurDateShamsi As String, YourTime As String, YourActive As Boolean, YourViewFlag As Boolean, YourDeleted As Boolean)
-            MyBase.New(YourNId, YourNName)
+            MyBase.New()
             _NId = YourNId
             _NName = YourNName
             _NTitle = YourNTitle
@@ -3054,7 +3003,7 @@ Namespace CarsNativeness
             Inherits BPTException
             Public Overrides ReadOnly Property Message As String
                 Get
-                    Return InstancePredefinedMessages.GetNSS(R2CoreParkingSystemPredefinedMessages.UnIndigenousCars).MsgContent
+                    Return InstancePredefinedMessages.GetPredefinedMessage(R2CoreParkingSystemPredefinedMessages.UnIndigenousCars).MsgContent
                 End Get
             End Property
         End Class

@@ -1066,7 +1066,7 @@ End Namespace
 Namespace ConfigurationManagement
 
     Public MustInherit Class R2CoreLPRConfigurations
-        Inherits R2CoreConfigurations
+        Inherits R2Core.GeneralConfiguration.R2CoreGeneralConfigurations
 
         Public Shared ReadOnly Property LicensePalte1 As Int64 = 35
         Public Shared ReadOnly Property LicensePalte2 As Int64 = 36

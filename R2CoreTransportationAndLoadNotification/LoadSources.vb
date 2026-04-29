@@ -6,6 +6,7 @@ Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
+Imports R2Core.SQLInjectionPrevention
 Imports R2CoreParkingSystem.ProvincesAndCities
 Imports R2CoreParkingSystem.ProvincesAndCities.Execption
 Imports R2CoreTransportationAndLoadNotification.LoadSources.Exceptions
@@ -14,7 +15,6 @@ Imports System.Reflection
 Namespace LoadSources
 
     Public Class R2CoreTransportationAndLoadNotificationStandardLoadSourceStructure
-        Inherits R2StandardStructure
 
         Public Sub New()
             MyBase.New()
@@ -22,7 +22,7 @@ Namespace LoadSources
         End Sub
 
         Public Sub New(ByVal YourNSSCity As R2CoreParkingSystemMClassCitys.R2StandardCityStructure)
-            MyBase.New(YourNSSCity.nCityCode, YourNSSCity.StrCityName)
+            MyBase.New()
             _NSSCity = YourNSSCity
         End Sub
 
@@ -136,8 +136,8 @@ Namespace LoadSources
     Public NotInheritable Class R2CoreTransportationAndLoadNotificationLoadSourcesManager
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub

@@ -24,12 +24,13 @@ Imports R2Core.MoneyWallet.PaymentRequests
 Imports System.Net
 Imports System.Net.Http
 Imports Newtonsoft.Json
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2CoreParkingSystem.UserChargeProcessManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.GeneralConfiguration
 Imports R2Core.SQLInjectionPrevention
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
+Imports R2Core.PaymentRequests
 
 Namespace MoneyWalletManagement
 
@@ -70,31 +71,31 @@ Namespace MoneyWalletManagement
             End Try
         End Function
 
-        Public Sub ActMoneyWalletNextStatus(YourNSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourBagType As BagPayType, YourMblgh As Int64, YourAccountCode As R2CoreParkingSystemAccountings, YourUserNSS As R2CoreStandardSoftwareUserStructure)
-            Dim InstanceCars = New R2CoreParkingSystemInstanceCarsManager()
-            Dim InstanceAccounting = New R2CoreParkingSystemInstanceAccountingManager()
-            Try
-                Dim myNSSCar As R2StandardCarStructure = Nothing
-                Try
-                    myNSSCar = InstanceCars.GetNSSCar(InstanceCars.GetnIdCarFromCardId(YourNSSTrafficCard.CardId))
-                Catch ex As R2CoreParkingSystemRelatedCarNotExistException
-                Catch ex As RelatedTerraficCardNotFoundException
-                Catch exx As GetDataException
-                Catch ex As GetNSSException
-                End Try
-                Dim myMoneyWalletCurrentCharge As Int64 = GetMoneyWalletCharge(YourNSSTrafficCard)
-                Dim myMoneyWalletReminder As Int64
-                If YourBagType = BagPayType.AddMoney Then
-                    myMoneyWalletReminder = myMoneyWalletCurrentCharge + YourMblgh
-                ElseIf YourBagType = BagPayType.MinusMoney Then
-                    myMoneyWalletReminder = myMoneyWalletCurrentCharge - YourMblgh
-                End If
-                InstanceAccounting.InsertAccounting(New R2StandardEnterExitAccountingStructure(YourNSSTrafficCard, YourAccountCode, _DateTimeService.GetCurrentShamsiDate(), _DateTimeService.GetCurrentTime(), _DateTimeService.GetCurrentDateTimeMilladi(), myNSSCar, R2CoreMClassConfigurationManagement.GetComputerCode(), YourMblgh, YourUserNSS.UserId, myMoneyWalletCurrentCharge, myMoneyWalletReminder))
-                AddMinusMoneyWallet(YourNSSTrafficCard, YourBagType, YourMblgh)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
+        'Public Sub ActMoneyWalletNextStatus(YourNSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourBagType As BagPayType, YourMblgh As Int64, YourAccountCode As R2CoreParkingSystemAccountings, YourUserNSS As R2CoreStandardSoftwareUserStructure)
+        '    Dim InstanceCars = New R2CoreParkingSystemInstanceCarsManager()
+        '    Dim InstanceAccounting = New R2CoreParkingSystemInstanceAccountingManager()
+        '    Try
+        '        Dim myNSSCar As R2StandardCarStructure = Nothing
+        '        Try
+        '            myNSSCar = InstanceCars.GetNSSCar(InstanceCars.GetnIdCarFromCardId(YourNSSTrafficCard.CardId))
+        '        Catch ex As R2CoreParkingSystemRelatedCarNotExistException
+        '        Catch ex As RelatedTerraficCardNotFoundException
+        '        Catch exx As GetDataException
+        '        Catch ex As GetNSSException
+        '        End Try
+        '        Dim myMoneyWalletCurrentCharge As Int64 = GetMoneyWalletCharge(YourNSSTrafficCard)
+        '        Dim myMoneyWalletReminder As Int64
+        '        If YourBagType = BagPayType.AddMoney Then
+        '            myMoneyWalletReminder = myMoneyWalletCurrentCharge + YourMblgh
+        '        ElseIf YourBagType = BagPayType.MinusMoney Then
+        '            myMoneyWalletReminder = myMoneyWalletCurrentCharge - YourMblgh
+        '        End If
+        '        InstanceAccounting.InsertAccounting(New R2StandardEnterExitAccountingStructure(YourNSSTrafficCard, YourAccountCode, _DateTimeService.GetCurrentShamsiDate(), _DateTimeService.GetCurrentTime(), _DateTimeService.GetCurrentDateTimeMilladi(), myNSSCar, R2CoreMClassConfigurationManagement.GetComputerCode(), YourMblgh, YourUserNSS.UserId, myMoneyWalletCurrentCharge, myMoneyWalletReminder))
+        '        AddMinusMoneyWallet(YourNSSTrafficCard, YourBagType, YourMblgh)
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
 
         Public Sub AddMinusMoneyWallet(YourNSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourBagPayType As BagPayType, YourMblgh As Int64)
             Dim Cmdsql As New SqlClient.SqlCommand
@@ -131,89 +132,89 @@ Namespace MoneyWalletManagement
             End Try
         End Sub
 
-        Public Shared Sub ActMoneyWalletNextStatus(YourNSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourBagType As BagPayType, YourMblgh As Int64, YourAccountCode As R2CoreParkingSystemAccountings, YourUserNSS As R2CoreStandardSoftwareUserStructure)
-            Try
-                Dim myNSSCar As R2StandardCarStructure = Nothing
-                Try
-                    myNSSCar = R2CoreParkingSystemMClassCars.GetNSSCar(R2CoreParkingSystemMClassCars.GetnIdCarFromCardId(YourNSSTrafficCard.CardId))
-                Catch ex As R2CoreParkingSystemRelatedCarNotExistException
-                Catch ex As RelatedTerraficCardNotFoundException
-                Catch exx As GetDataException
-                Catch ex As GetNSSException
-                End Try
-                Dim myMoneyWalletCurrentCharge As Int64 = GetMoneyWalletCharge(YourNSSTrafficCard)
-                Dim myMoneyWalletReminder As Int64
-                If YourBagType = BagPayType.AddMoney Then
-                    myMoneyWalletReminder = myMoneyWalletCurrentCharge + YourMblgh
-                ElseIf YourBagType = BagPayType.MinusMoney Then
-                    myMoneyWalletReminder = myMoneyWalletCurrentCharge - YourMblgh
-                End If
-                R2CoreParkingSystemMClassAccountingManagement.InsertAccounting(New R2StandardEnterExitAccountingStructure(YourNSSTrafficCard, YourAccountCode, _DateTimeService.GetCurrentShamsiDate(), _DateTimeService.GetCurrentTime(), _DateTimeService.GetCurrentDateTimeMilladi(), myNSSCar, R2CoreMClassConfigurationManagement.GetComputerCode(), YourMblgh, YourUserNSS.UserId, myMoneyWalletCurrentCharge, myMoneyWalletReminder))
-                AddMinusMoneyWallet(YourNSSTrafficCard, YourBagType, YourMblgh)
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
+        'Public Shared Sub ActMoneyWalletNextStatus(YourNSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourBagType As BagPayType, YourMblgh As Int64, YourAccountCode As R2CoreParkingSystemAccountings, YourUserNSS As R2CoreStandardSoftwareUserStructure)
+        '    Try
+        '        Dim myNSSCar As R2StandardCarStructure = Nothing
+        '        Try
+        '            myNSSCar = R2CoreParkingSystemMClassCars.GetNSSCar(R2CoreParkingSystemMClassCars.GetnIdCarFromCardId(YourNSSTrafficCard.CardId))
+        '        Catch ex As R2CoreParkingSystemRelatedCarNotExistException
+        '        Catch ex As RelatedTerraficCardNotFoundException
+        '        Catch exx As GetDataException
+        '        Catch ex As GetNSSException
+        '        End Try
+        '        Dim myMoneyWalletCurrentCharge As Int64 = GetMoneyWalletCharge(YourNSSTrafficCard)
+        '        Dim myMoneyWalletReminder As Int64
+        '        If YourBagType = BagPayType.AddMoney Then
+        '            myMoneyWalletReminder = myMoneyWalletCurrentCharge + YourMblgh
+        '        ElseIf YourBagType = BagPayType.MinusMoney Then
+        '            myMoneyWalletReminder = myMoneyWalletCurrentCharge - YourMblgh
+        '        End If
+        '        R2CoreParkingSystemMClassAccountingManagement.InsertAccounting(New R2StandardEnterExitAccountingStructure(YourNSSTrafficCard, YourAccountCode, _DateTimeService.GetCurrentShamsiDate(), _DateTimeService.GetCurrentTime(), _DateTimeService.GetCurrentDateTimeMilladi(), myNSSCar, R2CoreMClassConfigurationManagement.GetComputerCode(), YourMblgh, YourUserNSS.UserId, myMoneyWalletCurrentCharge, myMoneyWalletReminder))
+        '        AddMinusMoneyWallet(YourNSSTrafficCard, YourBagType, YourMblgh)
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
 
-        Public Shared Function GetMoneyWalletCharge(YourNSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure) As Int64
-            Try
-                Dim Da As New SqlClient.SqlDataAdapter : Dim ds As New DataSet
-                Da.SelectCommand = New SqlClient.SqlCommand("select top 1 charge from R2Primary.dbo.tblrfidcards where ltrim(rtrim(cardno))='" & YourNSSTrafficCard.CardNo & "' order by cardID DESC")
-                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
-                ds.Tables.Clear()
-                If Da.Fill(ds) <> 0 Then
-                    Return ds.Tables(0).Rows(0).Item("charge")
-                Else
-                    Throw New MoneyWalletNotExistException
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetMoneyWalletCharge(YourNSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure) As Int64
+        '    Try
+        '        Dim Da As New SqlClient.SqlDataAdapter : Dim ds As New DataSet
+        '        Da.SelectCommand = New SqlClient.SqlCommand("select top 1 charge from R2Primary.dbo.tblrfidcards where ltrim(rtrim(cardno))='" & YourNSSTrafficCard.CardNo & "' order by cardID DESC")
+        '        Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+        '        ds.Tables.Clear()
+        '        If Da.Fill(ds) <> 0 Then
+        '            Return ds.Tables(0).Rows(0).Item("charge")
+        '        Else
+        '            Throw New MoneyWalletNotExistException
+        '        End If
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Sub AddMinusMoneyWallet(YourNSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourBagPayType As BagPayType, YourMblgh As Int64)
-            Dim Cmdsql As New SqlClient.SqlCommand
-            Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                Cmdsql.Connection.Open()
-                Cmdsql.Transaction = Cmdsql.Connection.BeginTransaction
-                If YourBagPayType = BagPayType.AddMoney Then
-                    Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards set Charge=charge+" & YourMblgh & " where CardNo='" & YourNSSTrafficCard.CardNo & "'"
-                Else
-                    Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards set Charge=charge-" & YourMblgh & " where CardNo='" & YourNSSTrafficCard.CardNo & "'"
-                End If
-                Cmdsql.ExecuteNonQuery()
-                Cmdsql.Transaction.Commit() : Cmdsql.Connection.Close()
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
+        'Public Shared Sub AddMinusMoneyWallet(YourNSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourBagPayType As BagPayType, YourMblgh As Int64)
+        '    Dim Cmdsql As New SqlClient.SqlCommand
+        '    Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+        '    Try
+        '        Cmdsql.Connection.Open()
+        '        Cmdsql.Transaction = Cmdsql.Connection.BeginTransaction
+        '        If YourBagPayType = BagPayType.AddMoney Then
+        '            Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards set Charge=charge+" & YourMblgh & " where CardNo='" & YourNSSTrafficCard.CardNo & "'"
+        '        Else
+        '            Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards set Charge=charge-" & YourMblgh & " where CardNo='" & YourNSSTrafficCard.CardNo & "'"
+        '        End If
+        '        Cmdsql.ExecuteNonQuery()
+        '        Cmdsql.Transaction.Commit() : Cmdsql.Connection.Close()
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
 
-        Public Shared Function GetMoneyWalletReminder(YourNSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourBagPayType As BagPayType, YourMblgh As Int64) As Int64
-            Try
-                If YourBagPayType = BagPayType.AddMoney Then
-                    Return GetMoneyWalletCharge(YourNSSTrafficCard) + YourMblgh
-                ElseIf YourBagPayType = BagPayType.MinusMoney Then
-                    Return GetMoneyWalletCharge(YourNSSTrafficCard) - YourMblgh
-                End If
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetMoneyWalletReminder(YourNSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourBagPayType As BagPayType, YourMblgh As Int64) As Int64
+        '    Try
+        '        If YourBagPayType = BagPayType.AddMoney Then
+        '            Return GetMoneyWalletCharge(YourNSSTrafficCard) + YourMblgh
+        '        ElseIf YourBagPayType = BagPayType.MinusMoney Then
+        '            Return GetMoneyWalletCharge(YourNSSTrafficCard) - YourMblgh
+        '        End If
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
-        Public Shared Function GetMoneyWalletAllMoney(YourNSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourAccountType As R2CoreParkingSystemAccountings, YourUserNSS As R2CoreStandardSoftwareUserStructure) As Int64
-            Try
-                Dim myAllMoney As Int64 = GetMoneyWalletCharge(YourNSSTrafficCard)
-                If myAllMoney >= 0 Then
-                    ActMoneyWalletNextStatus(YourNSSTrafficCard, BagPayType.MinusMoney, myAllMoney, YourAccountType, YourUserNSS)
-                Else
-                    ActMoneyWalletNextStatus(YourNSSTrafficCard, BagPayType.AddMoney, -myAllMoney, YourAccountType, YourUserNSS)
-                End If
-                Return myAllMoney
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Shared Function GetMoneyWalletAllMoney(YourNSSTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourAccountType As R2CoreParkingSystemAccountings, YourUserNSS As R2CoreStandardSoftwareUserStructure) As Int64
+        '    Try
+        '        Dim myAllMoney As Int64 = GetMoneyWalletCharge(YourNSSTrafficCard)
+        '        If myAllMoney >= 0 Then
+        '            ActMoneyWalletNextStatus(YourNSSTrafficCard, BagPayType.MinusMoney, myAllMoney, YourAccountType, YourUserNSS)
+        '        Else
+        '            ActMoneyWalletNextStatus(YourNSSTrafficCard, BagPayType.AddMoney, -myAllMoney, YourAccountType, YourUserNSS)
+        '        End If
+        '        Return myAllMoney
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
         'Public Shared Sub TransferSourceMoneyWalletChargeToSecond(ByVal YourNSSSourceTrafficCard As R2CoreParkingSystemStandardTrafficCardStructure, ByVal YourNSSSecondTrafficCard As R2CoreParkingSystemStandardRFIDCardStructure)
         '    Try
@@ -230,8 +231,8 @@ Namespace MoneyWalletManagement
     Public Class R2CoreParkingSystemMoneyWalletManager
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -239,7 +240,7 @@ Namespace MoneyWalletManagement
             Dim InstanceMoneyWallet = New R2Core.MoneyWallet.MoneyWallet.R2CoreMoneyWalletManager(_DateTimeService)
             Try
                 Dim SqlString = String.Empty
-                If YourSoftwareuser.UserTypeId() = 1 Or YourSoftwareuser.UserTypeId() = 2 Or YourSoftwareuser.UserTypeId() = 4 Or YourSoftwareuser.UserTypeId() = 5 Or YourSoftwareuser.UserTypeId() = 6 Or YourSoftwareuser.UserTypeId() = 8 Or YourSoftwareuser.UserTypeId() = 9 Or YourSoftwareuser.UserTypeId() = 10 Or YourSoftwareuser.UserTypeId() = 11 Or YourSoftwareuser.UserTypeId() = 12 Or YourSoftwareuser.UserTypeId() = 13 Or YourSoftwareuser.UserTypeId() = 14 Then
+                If YourSoftwareuser.UserTypeId() = 1 Or YourSoftwareuser.UserTypeId() = 2 Or YourSoftwareuser.UserTypeId() = 4 Or YourSoftwareuser.UserTypeId() = 5 Or YourSoftwareuser.UserTypeId() = 6 Or YourSoftwareuser.UserTypeId() = 8 Or YourSoftwareuser.UserTypeId() = 9 Or YourSoftwareuser.UserTypeId() = 10 Or YourSoftwareuser.UserTypeId() = 11 Or YourSoftwareuser.UserTypeId() = 12 Or YourSoftwareuser.UserTypeId() = 13 Or YourSoftwareuser.UserTypeId() = 14 Or YourSoftwareuser.UserTypeId() = 16 Then
                     SqlString = "select  Top 1 SoftwareUsersRelationMoneyWallet.CardId from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
                                     Inner Join R2Primary.dbo.TblSoftwareUsersRelationMoneyWallet as SoftwareUsersRelationMoneyWallet On SoftwareUsers.UserId=SoftwareUsersRelationMoneyWallet.UserId 
                                  Where SoftwareUsers.UserId=" & YourSoftwareuser.UserId & "  and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and SoftwareUsersRelationMoneyWallet.RelationActive=1"
@@ -509,8 +510,8 @@ Namespace MoneyWalletChargeManagement
     Public Class R2CoreParkingSystemInstanceMoneyWalletChargeManager
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -704,8 +705,8 @@ Namespace MoneyWalletChargeManagement
     Public Class R2CoreParkingSystemMoneyWalletChargeManager
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -746,7 +747,7 @@ Namespace MoneyWalletChargeManagement
 
         Public Function GetDefaultAmounts(YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -771,7 +772,7 @@ Namespace MoneyWalletChargeManagement
                 Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourMoneyWalletId)
 
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim Ds As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -807,7 +808,7 @@ Namespace MoneyWalletChargeManagement
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourTime1)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourTime2)
 
-                Dim PublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim PublicProcedures = New R2CorePublicProceduresManager
                 Dim myConcat1 As String = YourDate1 + YourTime1
                 Dim myConcat2 As String = YourDate2 + YourTime2
                 Dim Lst As List(Of R2StandardUserChargeProcessStructure) = New List(Of R2StandardUserChargeProcessStructure)
@@ -869,7 +870,7 @@ Namespace MoneyWalletChargeManagement
 
             Public Overrides ReadOnly Property Message As String
                 Get
-                    Return InstancePredefinedMessages.GetNSS(R2CoreParkingSystemPredefinedMessages.AmountInvalid).MsgContent
+                    Return InstancePredefinedMessages.GetPredefinedMessage(R2CoreParkingSystemPredefinedMessages.AmountInvalid).MsgContent
                 End Get
             End Property
         End Class
@@ -884,7 +885,7 @@ Namespace MoneyWalletChargeManagement
 
             Public Overrides ReadOnly Property Message As String
                 Get
-                    Return InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.WebServiceConnectingException).MsgContent + vbCrLf + _Message
+                    Return InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.WebServiceConnectingException).MsgContent + vbCrLf + _Message
                 End Get
             End Property
         End Class

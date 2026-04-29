@@ -4,17 +4,6 @@
 Imports log4net.Layout
 Imports log4net.Util
 Imports Newtonsoft.Json
-Imports R2Core.ConfigurationManagement
-Imports R2Core.DatabaseManagement
-Imports R2Core.DateAndTimeManagement
-Imports R2Core.DateAndTimeManagement.Exceptions
-Imports R2Core.DateTimeProvider
-Imports R2Core.DateTimeProvider.Models
-Imports R2Core.ExceptionManagement
-Imports R2Core.Networking
-Imports R2Core.PublicProc
-Imports R2Core.SecurityAlgorithmsManagement.Exceptions
-Imports R2Core.SQLInjectionPrevention
 Imports System.Globalization
 Imports System.IO
 Imports System.Net
@@ -26,6 +15,18 @@ Imports System.Text.RegularExpressions
 Imports System.Threading.Tasks
 Imports System.Windows.Forms
 Imports System.Xml
+
+Imports R2Core.DatabaseManagement
+Imports R2Core.DateAndTimeManagement
+Imports R2Core.DateAndTimeManagement.Exceptions
+Imports R2Core.DateTimeProvider
+Imports R2Core.DateTimeProvider.Models
+Imports R2Core.ExceptionManagement
+Imports R2Core.GeneralConfiguration
+Imports R2Core.Networking
+Imports R2Core.PublicProcedures
+Imports R2Core.SecurityAlgorithmsManagement.Exceptions
+Imports R2Core.SQLInjectionPrevention
 
 'BPTChanged
 Namespace DateTimeProvider
@@ -45,7 +46,7 @@ Namespace DateTimeProvider
 
     End Namespace
 
-    Public Interface IR2DateTimeService
+    Public Interface IDateTimeService
         Function ConvertToShamsiDate(YourDateTime As DateTime) As String
         Function GetTimeOfDate(YourDateTime As DateTime) As String
         Function GetTickofTime(YourDateTime As DateTime) As Int64
@@ -96,9 +97,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -115,9 +116,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -134,9 +135,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return JsonConvert.DeserializeObject(Of Int64)(JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent).Result.ToString)
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -153,9 +154,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return JsonConvert.DeserializeObject(Of Int64)(JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent).Result.ToString)
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -172,9 +173,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -191,9 +192,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -210,9 +211,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -229,9 +230,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -248,9 +249,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -267,9 +268,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -286,9 +287,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -305,9 +306,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -324,9 +325,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -343,9 +344,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return JsonConvert.DeserializeObject(Of R2CoreDateAndTime)(JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent).Result.ToString)
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -362,9 +363,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -381,9 +382,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -400,9 +401,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -419,9 +420,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -438,9 +439,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -457,9 +458,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -476,9 +477,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -495,9 +496,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnableConnectToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnableConnectToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -514,9 +515,9 @@ Namespace DateTimeProvider
                     Dim ResponseContent = Await Response.Content.ReadAsStringAsync()
                     Return (JsonConvert.DeserializeObject(Of R2CoreDateTimeProviderResult)(ResponseContent)).Result
                 Else
-                    Throw New UnSuccessConnectionToAPIException(Response.Content.ReadAsStringAsync().Result)
+                    Throw New AggregateException(JsonConvert.DeserializeObject(Of R2CoreRawExceptionMessage)(Response.Content.ReadAsStringAsync().Result).ErrorMessage)
                 End If
-            Catch ex As UnSuccessConnectionToAPIException
+            Catch ex As AggregateException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
@@ -526,7 +527,7 @@ Namespace DateTimeProvider
     End Class
 
     Public Class R2DateTimeService
-        Implements IR2DateTimeService
+        Implements IDateTimeService
 
         Private InstanceAPICaller As R2CoreDateTimeProviderAPICaller
 
@@ -540,231 +541,231 @@ Namespace DateTimeProvider
             End Try
         End Sub
 
-        Public Function ConvertToShamsiDate(YourDateTime As Date) As String Implements IR2DateTimeService.ConvertToShamsiDate
+        Public Function ConvertToShamsiDate(YourDateTime As Date) As String Implements IDateTimeService.ConvertToShamsiDate
             Try
                 Return Task.Run(Function() InstanceAPICaller.ConvertToShamsiDate(YourDateTime)).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetTimeOfDate(YourDateTime As Date) As String Implements IR2DateTimeService.GetTimeOfDate
+        Public Function GetTimeOfDate(YourDateTime As Date) As String Implements IDateTimeService.GetTimeOfDate
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetTimeOfDate(YourDateTime)).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetTickofTime(YourDateTime As Date) As Int64 Implements IR2DateTimeService.GetTickofTime
+        Public Function GetTickofTime(YourDateTime As Date) As Int64 Implements IDateTimeService.GetTickofTime
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetTickofTime(YourDateTime)).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetCurrentTickofTime() As Int64 Implements IR2DateTimeService.GetCurrentTickofTime
+        Public Function GetCurrentTickofTime() As Int64 Implements IDateTimeService.GetCurrentTickofTime
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetCurrentTickofTime()).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetMilladiDateTimeFromShamsiDate(YourShamsiDate As String, YourTime As String) As DateTime Implements IR2DateTimeService.GetMilladiDateTimeFromShamsiDate
+        Public Function GetMilladiDateTimeFromShamsiDate(YourShamsiDate As String, YourTime As String) As DateTime Implements IDateTimeService.GetMilladiDateTimeFromShamsiDate
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetMilladiDateTimeFromShamsiDate(YourShamsiDate, YourTime)).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetLastShamsiDate() As String Implements IR2DateTimeService.GetLastShamsiDate
+        Public Function GetLastShamsiDate() As String Implements IDateTimeService.GetLastShamsiDate
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetLastShamsiDate()).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetShamsiDateWithAddMonth(YourShamsiDate As String, YourMonthsToAdd As Short) As String Implements IR2DateTimeService.GetShamsiDateWithAddMonth
+        Public Function GetShamsiDateWithAddMonth(YourShamsiDate As String, YourMonthsToAdd As Short) As String Implements IDateTimeService.GetShamsiDateWithAddMonth
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetShamsiDateWithAddMonth(YourShamsiDate, YourMonthsToAdd)).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetCurrentTime() As String Implements IR2DateTimeService.GetCurrentTime
+        Public Function GetCurrentTime() As String Implements IDateTimeService.GetCurrentTime
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetCurrentTime()).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetCurrentTimeWithSecond() As String Implements IR2DateTimeService.GetCurrentTimeWithSecond
+        Public Function GetCurrentTimeWithSecond() As String Implements IDateTimeService.GetCurrentTimeWithSecond
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetCurrentTimeWithSecond()).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetCurrentTimeWithMinute() As String Implements IR2DateTimeService.GetCurrentTimeWithMinute
+        Public Function GetCurrentTimeWithMinute() As String Implements IDateTimeService.GetCurrentTimeWithMinute
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetCurrentTimeWithMinute()).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetNextShamsiDate() As String Implements IR2DateTimeService.GetNextShamsiDate
+        Public Function GetNextShamsiDate() As String Implements IDateTimeService.GetNextShamsiDate
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetNextShamsiDate()).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetNextShamsiDateWithoutSlashes() As String Implements IR2DateTimeService.GetNextShamsiDateWithoutSlashes
+        Public Function GetNextShamsiDateWithoutSlashes() As String Implements IDateTimeService.GetNextShamsiDateWithoutSlashes
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetNextShamsiDateWithoutSlashes()).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetTime(YourDateTimeMilladi As Date) As String Implements IR2DateTimeService.GetTime
+        Public Function GetTime(YourDateTimeMilladi As Date) As String Implements IDateTimeService.GetTime
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetTime(YourDateTimeMilladi)).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetCurrentDateAndTime() As Object Implements IR2DateTimeService.GetCurrentDateAndTime
+        Public Function GetCurrentDateAndTime() As Object Implements IDateTimeService.GetCurrentDateAndTime
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetCurrentDateAndTime()).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetCurrentShamsiDate() As String Implements IR2DateTimeService.GetCurrentShamsiDate
+        Public Function GetCurrentShamsiDate() As String Implements IDateTimeService.GetCurrentShamsiDate
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetCurrentShamsiDate()).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetCurrentShamsiDateWithoutSlashes() As String Implements IR2DateTimeService.GetCurrentShamsiDateWithoutSlashes
+        Public Function GetCurrentShamsiDateWithoutSlashes() As String Implements IDateTimeService.GetCurrentShamsiDateWithoutSlashes
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetCurrentShamsiDateWithoutSlashes()).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetCurrentDateTimeMilladi() As DateTime Implements IR2DateTimeService.GetCurrentDateTimeMilladi
+        Public Function GetCurrentDateTimeMilladi() As DateTime Implements IDateTimeService.GetCurrentDateTimeMilladi
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetCurrentDateTimeMilladi()).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetCurrentShamsiSal() As String Implements IR2DateTimeService.GetCurrentShamsiSal
+        Public Function GetCurrentShamsiSal() As String Implements IDateTimeService.GetCurrentShamsiSal
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetCurrentShamsiSal()).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function CheckShamsiDateSyntax(YourShamsiDate As String) As Boolean Implements IR2DateTimeService.CheckShamsiDateSyntax
+        Public Function CheckShamsiDateSyntax(YourShamsiDate As String) As Boolean Implements IDateTimeService.CheckShamsiDateSyntax
             Try
                 Return Task.Run(Function() InstanceAPICaller.CheckShamsiDateSyntax(YourShamsiDate)).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function CheckTimeSyntax(YourTime As String) As Boolean Implements IR2DateTimeService.CheckTimeSyntax
+        Public Function CheckTimeSyntax(YourTime As String) As Boolean Implements IDateTimeService.CheckTimeSyntax
             Try
                 Return Task.Run(Function() InstanceAPICaller.CheckTimeSyntax(YourTime)).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetPersianMonthName(YourShamsiDate As String) As String Implements IR2DateTimeService.GetPersianMonthName
+        Public Function GetPersianMonthName(YourShamsiDate As String) As String Implements IDateTimeService.GetPersianMonthName
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetPersianMonthName(YourShamsiDate)).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function GetDelimetedTime(YourUnDelimetedTime As String) As String Implements IR2DateTimeService.GetDelimetedTime
+        Public Function GetDelimetedTime(YourUnDelimetedTime As String) As String Implements IDateTimeService.GetDelimetedTime
             Try
                 Return Task.Run(Function() InstanceAPICaller.GetDelimetedTime(YourUnDelimetedTime)).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
         End Function
 
-        Public Function Get6ZeroTime() As String Implements IR2DateTimeService.Get6ZeroTime
+        Public Function Get6ZeroTime() As String Implements IDateTimeService.Get6ZeroTime
             Try
                 Return Task.Run(Function() InstanceAPICaller.Get6ZeroTime()).Result
-            Catch ex As UnableConnectToAPIException
-                Throw ex
+            Catch ex As AggregateException
+                Throw New AggregateException(ex.InnerException.Message)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
@@ -1237,7 +1238,7 @@ Namespace DateAndTimeManagement
     '        If Mah = "12" Then Return "اسفند  ماه"
     '    End Function
     '    Public Function GetDelimetedTime(YourUnDelimetedTime As String) As String
-    '        Dim InstancePublicProcedures As New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+    '        Dim InstancePublicProcedures As New R2Core.PublicProc.R2CorePublicProceduresManager
     '        If YourUnDelimetedTime.Length < 8 Then YourUnDelimetedTime = YourUnDelimetedTime + InstancePublicProcedures.RepeatStr("0", 8 - YourUnDelimetedTime.Length)
     '        Return Mid(YourUnDelimetedTime, 1, 2) + ":" + Mid(YourUnDelimetedTime, 3, 2) + ":" + Mid(YourUnDelimetedTime, 5, 2)
     '    End Function
@@ -1325,7 +1326,6 @@ Namespace DateAndTimeManagement
             End Enum
 
             Public Class R2CoreStandardPersianCalendarStructure
-                Inherits BaseStandardClass.R2StandardStructure
 
                 Public Property HId As Int64
                 Public Property DateShamsi As String
@@ -1335,8 +1335,8 @@ Namespace DateAndTimeManagement
             Public Class R2CoreInstanceDateAndTimePersianCalendarManager
 
                 Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-                Private _DateTimeService As IR2DateTimeService
-                Public Sub New(YourDateTimeService As IR2DateTimeService)
+                Private _DateTimeService As IDateTimeService
+                Public Sub New(YourDateTimeService As IDateTimeService)
                     _DateTimeService = YourDateTimeService
                     InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
                 End Sub
@@ -1372,8 +1372,8 @@ Namespace DateAndTimeManagement
             Public NotInheritable Class R2CoreDateAndTimePersianCalendarManagement
 
                 Private Shared InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-                Private _DateTimeService As IR2DateTimeService
-                Public Sub New(YourDateTimeService As IR2DateTimeService)
+                Private _DateTimeService As IDateTimeService
+                Public Sub New(YourDateTimeService As IDateTimeService)
                     _DateTimeService = YourDateTimeService
                     InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
                 End Sub
@@ -1407,7 +1407,6 @@ Namespace DateAndTimeManagement
 
             'BPTChnaged
             Public Class R2CorePersianCalendar
-                Inherits BaseStandardClass.R2StandardStructure
 
                 Public Property HId As Int64
                 Public Property DateShamsi As String
@@ -1418,8 +1417,8 @@ Namespace DateAndTimeManagement
             Public Class R2CorePersianCalendarManager
 
                 Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-                Private _DateTimeService As IR2DateTimeService
-                Public Sub New(YourDateTimeService As IR2DateTimeService)
+                Private _DateTimeService As IDateTimeService
+                Public Sub New(YourDateTimeService As IDateTimeService)
                     _DateTimeService = YourDateTimeService
                     InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
                 End Sub
@@ -1813,7 +1812,7 @@ Namespace DateAndTimeManagement
         End Function
 
         Public Function GetDelimetedTime(YourUnDelimetedTime As String) As String
-            Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+            Dim InstancePublicProcedures = New R2CorePublicProceduresManager
             If YourUnDelimetedTime.Length < 8 Then YourUnDelimetedTime = YourUnDelimetedTime + InstancePublicProcedures.RepeatStr("0", 8 - YourUnDelimetedTime.Length)
             Return Mid(YourUnDelimetedTime, 1, 2) + ":" + Mid(YourUnDelimetedTime, 3, 2) + ":" + Mid(YourUnDelimetedTime, 5, 2)
         End Function

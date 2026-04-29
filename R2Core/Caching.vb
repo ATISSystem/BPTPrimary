@@ -2,33 +2,47 @@
 
 
 Imports Newtonsoft.Json
-Imports R2Core.CachHelper
-Imports R2Core.ConfigurationManagement
-Imports R2Core.DatabaseManagement
-Imports R2Core.DateTimeProvider
-Imports R2Core.GeneralConfiguration
 Imports StackExchange.Redis
 Imports System.CodeDom
 Imports System.Data.SqlClient
 Imports System.Reflection
 Imports System.Web
 
+Imports R2Core.CachHelper
+Imports R2Core.DatabaseManagement
+Imports R2Core.DateTimeProvider
+Imports R2Core.GeneralConfiguration
+Imports R2Core.ExceptionManagement
+Imports R2Core.PredefinedMessagesManagement
+Imports R2Core.PredefinedMessagesManagement.Exceptions
+
 Namespace CachHelper
 
     Public Class RedisConnectorHelper
 
         Private InstanceGeneralConfiguration As R2CoreGeneralConfigurationManager
-        Private _DateTimeService As R2DateTimeService
-
+        Private _DateTimeService As IDateTimeService
 
         Public Sub New()
-            _DateTimeService = New R2DateTimeService
-            InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
+            Try
+                _DateTimeService = New R2DateTimeService
+                InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
+            End Try
         End Sub
 
         Private ReadOnly Property RedisHost As String
             Get
-                Return InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.Caching, 0)
+                Try
+                    Return InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.Caching, 0)
+                Catch ex As FileNotExistException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
             End Get
         End Property
 
@@ -88,58 +102,27 @@ Namespace Caching
         Public Shared ReadOnly Property GeneralAnnounceSMSRequest As Int64 = 6
     End Class
 
-    Public Class R2CoreStandardCacheTypeStructure
-
-        Public Sub New()
-            MyBase.New()
-            _CacheTypeId = Int64.MinValue
-            _CacheTypeName = String.Empty
-            _CacheTime = String.Empty
-            _DateTimeMilladi = DateTime.Now
-            _DateShamsi = String.Empty
-            _Time = String.Empty
-            _UserId = Int64.MinValue
-            _Core = String.Empty
-            _ViewFlag = Boolean.FalseString
-            _Active = Boolean.FalseString
-            _Deleted = Boolean.FalseString
-        End Sub
-
-        Public Sub New(YourCacheTypeId As Int64, YourCacheTypeName As String, YourCacheTime As String, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourTime As String, YourUserId As Int64, YourCore As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
-            _CacheTypeId = YourCacheTypeId
-            _CacheTypeName = YourCacheTypeName
-            _CacheTime = YourCacheTime
-            _DateTimeMilladi = YourDateTimeMilladi
-            _DateShamsi = YourDateShamsi
-            _Time = YourTime
-            _UserId = YourUserId
-            _Core = YourCore
-            _ViewFlag = YourViewFlag
-            _Active = YourActive
-            _Deleted = YourDeleted
-        End Sub
-
+    Public Class R2CoreRawCacheType
         Public Property CacheTypeId As Int64
         Public Property CacheTypeName As String
         Public Property CacheTime As Int64
-        Public Property DateTimeMilladi As DateTime
-        Public Property DateShamsi As String
-        Public Property Time As String
-        Public Property UserId As Int64
-        Public Property Core As String
-        Public Property ViewFlag As Boolean
         Public Property Active As Boolean
-        Public Property Deleted As Boolean
-
     End Class
 
     Public Class R2CoreCacheManager
 
-        Private _DateTimeService As IR2DateTimeService
+        Private _DateTimeService As IDateTimeService
         Private _RCH As RedisConnectorHelper
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
-            _DateTimeService = YourDateTimeService
-            _RCH = New RedisConnectorHelper
+
+        Public Sub New(YourDateTimeService As IDateTimeService)
+            Try
+                _DateTimeService = YourDateTimeService
+                _RCH = New RedisConnectorHelper
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
         End Sub
 
         Private Shared _Cache(100) As IDatabase
@@ -147,20 +130,24 @@ Namespace Caching
             Try
                 If _Cache(YourDataBaseId) Is Nothing Then _Cache(YourDataBaseId) = _RCH.Connection.GetDatabase(YourDataBaseId)
                 Return _Cache(YourDataBaseId)
+            Catch ex As RedisException
+                Throw ex
             Catch ex As Exception
                 Throw ex
             End Try
         End Function
 
-        Public Function GetCacheType(YourCacheTypeId As Int64) As R2CoreStandardCacheTypeStructure
+        Public Function GetCacheType(YourCacheTypeId As Int64) As R2CoreRawCacheType
             Try
                 Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
                 Dim DS As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 * from R2Primary.dbo.TblCacheTypes Where CacheTypeId=" & YourCacheTypeId & "", 10000, DS, New Boolean).GetRecordsCount = 0 Then
                     Throw New CacheTypeNotFoundException
                 Else
-                    Return New R2CoreStandardCacheTypeStructure(DS.Tables(0).Rows(0).Item("CacheTypeId"), DS.Tables(0).Rows(0).Item("CacheTypeName").trim, DS.Tables(0).Rows(0).Item("CacheTime"), DS.Tables(0).Rows(0).Item("DateTimeMilladi"), DS.Tables(0).Rows(0).Item("DateShamsi").trim, DS.Tables(0).Rows(0).Item("Time").trim, DS.Tables(0).Rows(0).Item("UserId"), DS.Tables(0).Rows(0).Item("Core").trim, DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted"))
+                    Return New R2CoreRawCacheType With {.CacheTypeId = DS.Tables(0).Rows(0).Item("CacheTypeId"), .CacheTypeName = DS.Tables(0).Rows(0).Item("CacheTypeName").trim, .CacheTime = DS.Tables(0).Rows(0).Item("CacheTime"), .Active = DS.Tables(0).Rows(0).Item("Active")}
                 End If
+            Catch ex As FileNotExistException
+                Throw ex
             Catch ex As CacheTypeNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -177,6 +164,8 @@ Namespace Caching
                 Else
                     Return False
                 End If
+            Catch ex As RedisException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
@@ -190,6 +179,12 @@ Namespace Caching
                 Else
                     Cache.StringSet(YourKeyId, JsonConvert.SerializeObject(YourCacheValue))
                 End If
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As CacheTypeNotFoundException
+                Throw ex
+            Catch ex As RedisException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
@@ -198,6 +193,8 @@ Namespace Caching
         Public Function GetCache(YourKeyId As String, YourDataBaseId As Integer) As Object
             Try
                 Return GetDataBase(YourDataBaseId).StringGet(YourKeyId)
+            Catch ex As RedisException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
@@ -207,6 +204,8 @@ Namespace Caching
             Try
                 Dim Cache = _RCH.Connection.GetDatabase(YourDataBaseId)
                 Cache.KeyDelete(YourCacheKey)
+            Catch ex As RedisException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try
@@ -215,21 +214,35 @@ Namespace Caching
     End Class
 
     Public Class CacheTypeNotFoundException
-        Inherits ApplicationException
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "کلید شاخص بافرینگ یا کش در سیستم وجود ندارد"
-            End Get
-        End Property
+        Inherits BPTException
+        Public Sub New()
+            Try
+                _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.CacheTypeNotFound).MsgId
+                _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.CacheTypeNotFound).MsgContent
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As PredefinedMessageNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
     End Class
 
     Public Class CacheNotFoundException
-        Inherits ApplicationException
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "اطلاعلت مورد نظر در کش سیستم یافت نشد"
-            End Get
-        End Property
+        Inherits BPTException
+        Public Sub New()
+            Try
+                _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.CacheNotFound).MsgId
+                _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.CacheNotFound).MsgContent
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As PredefinedMessageNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
     End Class
 
 End Namespace

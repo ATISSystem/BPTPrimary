@@ -3,8 +3,10 @@ using APITraffic.Models;
 using Newtonsoft.Json;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
+using R2Core.LoggingManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
+using R2CoreParkingSystem.Logging;
 using R2CoreParkingSystem.TrafficCosts;
 using R2CoreParkingSystem.TrafficGates;
 using System;
@@ -14,6 +16,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
 
@@ -24,10 +27,17 @@ namespace APITraffic.Controllers
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
         private R2DateTimeService _DateTimeService;
+        private ILogger _loggerService;
+        private Networking _Networking;
 
         public TrafficGatesController()
         {
-            try { _DateTimeService = new R2DateTimeService(); }
+            try
+            {
+                _DateTimeService = new R2DateTimeService();
+                _loggerService = new R2Core.LoggingManagement.R2CorenLogService();
+                _Networking = new Networking();
+            }
             catch (FileNotExistException ex)
             { throw ex; }
             catch (Exception ex)
@@ -74,6 +84,8 @@ namespace APITraffic.Controllers
 
                 InstanceTrafficGates.RegisteringTrafficGate(RawTrafficGate);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreParkingSystemLogTypes.RegisteringTrafficGate, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawTrafficGate.GateTitle) + ":" + RawTrafficGate.GateTitle, MessageDetail2= nameof(RawTrafficGate.GateLocation ) + ":" + RawTrafficGate.GateLocation , UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -100,6 +112,8 @@ namespace APITraffic.Controllers
 
                 InstanceTrafficGates.ActivateTrafficGate(TrafficGateId);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreParkingSystemLogTypes.ActivateTrafficGate, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TrafficGateId) + ":" + TrafficGateId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -125,6 +139,8 @@ namespace APITraffic.Controllers
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 InstanceTrafficGates.UnActivateTrafficGate(TrafficGateId);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreParkingSystemLogTypes.UnActivateTrafficGate, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TrafficGateId) + ":" + TrafficGateId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");

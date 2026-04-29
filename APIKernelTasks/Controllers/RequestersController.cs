@@ -22,7 +22,7 @@ namespace APIKernelTasks.Controllers
     public class RequestersController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService;
+        private IDateTimeService _DateTimeService;
 
         public RequestersController()
         {

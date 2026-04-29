@@ -158,6 +158,8 @@ namespace APITransportation.Controllers
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
                 InstanceSequentialTurns.SequentialTurnRegistering(RawSequentialTurn);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.SequentialTurnRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawSequentialTurn.SeqTurnTitle) + ":" + RawSequentialTurn.SeqTurnTitle, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -189,6 +191,8 @@ namespace APITransportation.Controllers
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
                 InstanceSequentialTurns.SequentialTurnEditing(RawSequentialTurn);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.SequentialTurnEditing, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawSequentialTurn.SeqTurnTitle ) + ":" + RawSequentialTurn.SeqTurnTitle , UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -219,6 +223,8 @@ namespace APITransportation.Controllers
 
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
                 InstanceSequentialTurns.SequentialTurnDeleting(SequentialTurnId);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.SequentialTurnDeleting, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(SequentialTurnId) + ":" + SequentialTurnId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
@@ -282,6 +288,8 @@ namespace APITransportation.Controllers
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
                 InstanceSequentialTurns.SequentialTurnRelationLoaderTypeDeleting(SequentialTurnId, LoaderTypeId);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.SequentialTurnRelationLoaderTypeDeleting, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(LoaderTypeId) + ":" + LoaderTypeId, MessageDetail2 = nameof(SequentialTurnId) + ":" + SequentialTurnId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -313,6 +321,8 @@ namespace APITransportation.Controllers
 
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
                 InstanceSequentialTurns.SequentialTurnRelationLoaderTypeRegistering(SequentialTurnId, LoaderTypeId);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.SequentialTurnRelationLoaderTypeRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(LoaderTypeId) + ":" + LoaderTypeId, MessageDetail2 = nameof(SequentialTurnId) + ":" + SequentialTurnId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
@@ -376,6 +386,8 @@ namespace APITransportation.Controllers
                 var InstanceSequentialTurns = new R2CoreTransportationAndLoadNotificationSequentialTurnsManager();
                 InstanceSequentialTurns.SequentialTurnRelationAnnouncementSubGroupDeleting(SequentialTurnId, AnnouncementSGId);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.SequentialTurnRelationAnnouncementSubGroupDeleting, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(AnnouncementSGId) + ":" + AnnouncementSGId, MessageDetail2 = nameof(SequentialTurnId) + ":" + SequentialTurnId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -410,7 +422,6 @@ namespace APITransportation.Controllers
 
                 _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.SequentialTurnRelationAnnouncementSubGroupRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(AnnouncementSGId)+":"+ AnnouncementSGId, MessageDetail2=nameof(SequentialTurnId)+":"+ SequentialTurnId, UserId = User.UserId });
 
-
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -426,16 +437,9 @@ namespace APITransportation.Controllers
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
 
-        public class Networking
-        {
-            public Networking() { }
-
-            public string GetClientIpAddress(System.Web.HttpContext YourHttpContext)
-            { return HttpContext.Current.Request.UserHostAddress; }
-
-        }
 
     }
+
 }
 
 

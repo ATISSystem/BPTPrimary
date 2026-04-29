@@ -1,7 +1,7 @@
 ﻿
 
 Imports PayanehClassLibrary.ConfigurationManagement
-Imports PayanehClassLibrary.DriversAssociationControllingMoneyWallet.Exceptions
+Imports PayanehClassLibrary.DriversAssociationControllingMoneyWalletAutomatedJobService.Exceptions
 Imports PayanehClassLibrary.GeneralConfiguration
 Imports PayanehClassLibrary.SMS.SMSTypes
 Imports R2Core.ConfigurationManagement
@@ -22,7 +22,7 @@ Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
 Imports R2CoreParkingSystem.SMS.SMSControllingMoneyWallet.Exceptions
 Imports System.Reflection
 
-Namespace DriversAssociationControllingMoneyWallet
+Namespace DriversAssociationControllingMoneyWalletAutomatedJobService
 
     'BPTChanged
     Public Class DriversAssociationControllingMoneyWalletManager
@@ -47,7 +47,7 @@ Namespace DriversAssociationControllingMoneyWallet
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
 
                 'لیست مقاصد و کاربران
-                Dim TargetUsers = InstanceGeneralConfiguration.GetStringConfiguration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWallet, 7).Split("-")
+                Dim TargetUsers = InstanceGeneralConfiguration.GetStringConfiguration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWalletAutomatedJobService, 7).Split("-")
                 Dim LstSoftwareUsers = New List(Of R2CoreSoftwareUser)
                 Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(_DateTimeService, Nothing)
                 For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
@@ -61,7 +61,7 @@ Namespace DriversAssociationControllingMoneyWallet
                 'ارسال اس ام اس
                 If CreationData.Data1 = 0 Then Return
                 Dim InstanceSMSHandler = New R2CoreSMSHandlerManager(_DateTimeService, Nothing)
-                Dim SMSResult = InstanceSMSHandler.SendSMS(LstSoftwareUsers, PayanehClassLibrarySMSTypes.DriversAssociationControllingMoneyWallet, InstanceSMSHandler.RepeatSMSCreationData(CreationData, LstSoftwareUsers.Count), True)
+                Dim SMSResult = InstanceSMSHandler.SendSMS(LstSoftwareUsers, PayanehClassLibrarySMSTypes.DriversAssociationControllingMoneyWalletAutomatedJobService, InstanceSMSHandler.RepeatSMSCreationData(CreationData, LstSoftwareUsers.Count), True)
                 Dim SMSResultAnalyze = InstanceSMSHandler.GetSMSResultAnalyze(SMSResult)
                 If Not SMSResultAnalyze = String.Empty Then Throw New DriversAssociationControllingMoneyWalletSendSMSFailedException(SMSResultAnalyze)
             Catch ex As MoneyWalletNotExistException
@@ -79,7 +79,7 @@ Namespace DriversAssociationControllingMoneyWallet
             Try
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager(_DateTimeService)
-                Return InstanceMoneyWallet.GetMoneyWallet(InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWallet, 4), False)
+                Return InstanceMoneyWallet.GetMoneyWallet(InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWalletAutomatedJobService, 4), False)
             Catch ex As MoneyWalletNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -116,7 +116,7 @@ Namespace DriversAssociationControllingMoneyWallet
                 Dim TimeOfDay = _DateTimeService.GetCurrentTickofTime
                 Dim StTime = TimeSpan.Parse("00:00:00").Ticks
                 Dim EndTime = TimeSpan.Parse("00:05:00").Ticks
-                Dim ConfigTime = TimeSpan.Parse(InstanceGeneralConfiguration.GetStringConfiguration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWallet, 6)).Ticks
+                Dim ConfigTime = TimeSpan.Parse(InstanceGeneralConfiguration.GetStringConfiguration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWalletAutomatedJobService, 6)).Ticks
                 If TimeOfDay >= StTime And TimeOfDay <= EndTime Then
                     _ControllingMoneyWalletExcecutedFlag = False
                     Return
@@ -130,7 +130,7 @@ Namespace DriversAssociationControllingMoneyWallet
                 If _ControllingMoneyWalletExcecutedFlag Then Return
 
                 'طبق کانفیگ سیستم کلا اکانتینگ فعال باشد یا نه
-                If Not InstanceGeneralConfiguration.GetBooleanConfiguration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWallet, 1) Then Return
+                If Not InstanceGeneralConfiguration.GetBooleanConfiguration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWalletAutomatedJobService, 1) Then Return
 
                 'آغاز فرآیند اکانتینگ
                 'آخرین اکانت ثبت شده
@@ -142,8 +142,8 @@ Namespace DriversAssociationControllingMoneyWallet
                 'کسر هزینه شرکت خودگردان
                 'درصد شرکت خودگردان - ارزش افزوده
                 Dim Amount As Int64 = GetAmountforDriversAssociationControllingMoneyWallet(LastAccounting)
-                If InstanceGeneralConfiguration.GetBooleanConfiguration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWallet, 2) Then
-                    Dim CostofSelfGoverning = InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWallet, 3)
+                If InstanceGeneralConfiguration.GetBooleanConfiguration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWalletAutomatedJobService, 2) Then
+                    Dim CostofSelfGoverning = InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWalletAutomatedJobService, 3)
                     Amount = Amount * (100 / (100 + CostofSelfGoverning))
                 End If
                 Dim MoneyWalletId = GetMoneyWallet.MoneyWalletId
@@ -172,7 +172,7 @@ Namespace DriversAssociationControllingMoneyWallet
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(_DateTimeService)
                 Dim Inventory = InstanceMoneyWallet.GetMoneyWalletCharge(GetMoneyWallet.MoneyWalletId)
-                If Inventory < InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWallet, 5) Then
+                If Inventory < InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWalletAutomatedJobService, 5) Then
                     Throw New DriversAssociationControllingMoneyWalletCriticalAmountReachedException
                 End If
             Catch ex As DriversAssociationControllingMoneyWalletCriticalAmountReachedException

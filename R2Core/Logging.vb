@@ -1,21 +1,15 @@
 ﻿
 
-
-Imports R2Core.DatabaseManagement
-Imports R2Core.DateAndTimeManagement
-Imports R2Core.ExceptionManagement
-Imports R2Core.LoggingManagement.ExceptionManagement
 Imports System.Drawing
 Imports System.Reflection
 Imports NLog
 Imports StackExchange.Redis
-Imports R2Core.CachHelper
-Imports Newtonsoft.Json
-Imports R2Core.MobileProcessesManagement.Exceptions
-Imports Newtonsoft.Json.Linq
-Imports R2Core.PubSubMessaging
 Imports System.Security.Cryptography
-Imports R2Core.DateTimeProvider
+Imports Newtonsoft.Json.Linq
+Imports Newtonsoft.Json
+
+Imports R2Core.CachHelper
+Imports R2Core.PubSubMessaging
 
 Namespace LoggingManagement
 
@@ -42,21 +36,29 @@ Namespace LoggingManagement
         Public Shared ReadOnly Property None As Int64 = 0
         Public Shared ReadOnly Property UserSuccessLogin As Int64 = 3
         Public Shared ReadOnly Property UserUnSuccessLogin As Int64 = 4
+        Public Shared ReadOnly Property CarouselChangeActiveStatus As Int64 = 12
+        Public Shared ReadOnly Property CarouselDeleting As Int64 = 13
+        Public Shared ReadOnly Property CarouselEditing As Int64 = 14
+        Public Shared ReadOnly Property CarouselRegistering As Int64 = 15
+        Public Shared ReadOnly Property ConfigurationOfDeviceDeleting As Int64 = 16
+        Public Shared ReadOnly Property ConfigurationOfDeviceRegistering As Int64 = 17
+        Public Shared ReadOnly Property ConfigurationOfDeviceEditing As Int64 = 18
+        Public Shared ReadOnly Property DeviceDeleting As Int64 = 22
+        Public Shared ReadOnly Property DeviceEditing As Int64 = 23
+        Public Shared ReadOnly Property DeviceRegistering As Int64 = 24
+        Public Shared ReadOnly Property GeneralConfigurationEditing As Int64 = 25
+        Public Shared ReadOnly Property SendGeneralAnnounceSMS As Int64 = 32
+        Public Shared ReadOnly Property CustomizationSoftwareUserPassword As Int64 = 33
+        Public Shared ReadOnly Property ChangeSoftwareUserWebProcessAccess As Int64 = 34
+        Public Shared ReadOnly Property ChangeSoftwareUserWebProcessGroupAccess As Int64 = 35
+        Public Shared ReadOnly Property ActivateSMSOwner As Int64 = 36
+        Public Shared ReadOnly Property ChangeSMSOwnerCurrentStatus As Int64 = 37
+        Public Shared ReadOnly Property EditSoftwareUser As Int64 = 38
+        Public Shared ReadOnly Property ResetSoftwareUserPassword As Int64 = 39
+        Public Shared ReadOnly Property SoftwareUserForgetPassword As Int64 = 40
+        Public Shared ReadOnly Property RegisteringSoftwareUser As Int64 = 41
 
-    End Class
 
-    'BPTChanged
-    Public Class R2CoreLog
-        Public LogId As Int64
-        Public LogTypeId As Int64
-        Public Description As String
-        Public MessageDetail1 As String
-        Public MessageDetail2 As String
-        Public MessageDetail3 As String
-        Public UserId As Int64
-        Public DateTimeMilladi As DateTime
-        Public DateShamsi As String
-        Public Time As String
     End Class
 
     'BPTChanged

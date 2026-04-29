@@ -3,7 +3,6 @@ using APIMoneyWallet.Models;
 using Newtonsoft.Json;
 using PayanehClassLibrary.ConfigurationManagement;
 using PayanehClassLibrary.GeneralConfiguration;
-using R2Core.ConfigurationManagement;
 using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
@@ -30,7 +29,7 @@ namespace APIMoneyWalletAndTraffic.Controllers
     public class MoneyWalletController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService;
+        private IDateTimeService _DateTimeService;
 
         public MoneyWalletController()
         {
@@ -201,7 +200,7 @@ namespace APIMoneyWalletAndTraffic.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                var MoneyWalletId = InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWallet, 4);
+                var MoneyWalletId = InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWalletAutomatedJobService, 4);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstanceMoneyWallet.GetMoneyWallet(MoneyWalletId, false)), Encoding.UTF8, "application/json");

@@ -2,12 +2,11 @@
 
 
 
-Imports R2Core.BaseStandardClass
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SQLInjectionPrevention
 Imports R2CoreTransportationAndLoadNotification.LoaderTypes.Exceptions
@@ -20,7 +19,6 @@ Namespace LoaderTypes
 
 
     Public Class R2CoreTransportationAndLoadNotificationStandardLoaderTypeStructure
-        Inherits R2StandardStructure
 
         Public Sub New()
             MyBase.New()
@@ -34,7 +32,7 @@ Namespace LoaderTypes
         End Sub
 
         Public Sub New(ByVal YourLoaderTypeId As Int64, YourLoaderTypeTitle As String, YourLoaderTypeOrganizationId As Int64, YourLoaderTypeFixStatusId As Int64, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
-            MyBase.New(YourLoaderTypeId, YourLoaderTypeTitle)
+            MyBase.New()
             _LoaderTypeId = YourLoaderTypeId
             _LoaderTypeTitle = YourLoaderTypeTitle
             _LoaderTypeOrganizationId = YourLoaderTypeOrganizationId
@@ -123,8 +121,8 @@ Namespace LoaderTypes
     Public Class R2CoreTransportationAndLoadNotificationLoaderTypesManager
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -134,7 +132,7 @@ Namespace LoaderTypes
                 Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
 
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -165,7 +163,7 @@ Namespace LoaderTypes
         Public Function GetLoaderType(YourLoaderTypeId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationLoaderType
             Try
                 Dim Ds As New DataSet
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
 
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -240,7 +238,7 @@ Namespace LoaderTypes
 
         Public Function GetLoaderTypeRelationAnnouncementSubGroups(YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
 
                 Dim Ds As New DataSet
                 If YourImmediately Then

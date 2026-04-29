@@ -30,7 +30,7 @@ End Namespace
 Namespace ConfigurationManagement
 
     Public MustInherit Class R2CoreParkingSystemConfigurations
-        Inherits R2Core.ConfigurationManagement.R2CoreConfigurations
+        Inherits R2Core.ConfigurationManagement_Old.R2CoreConfigurations
 
         Public Shared ReadOnly Property PersonChargeMessage As Int64 = 12
         Public Shared ReadOnly Property Camera1 As Int64 = 13

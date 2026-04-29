@@ -9,7 +9,7 @@ Imports PayanehClassLibrary.DataBaseManagement
 Imports PayanehClassLibrary.DriverTrucksManagement
 Imports PayanehClassLibrary.LoadNotification.LoadPermission
 Imports R2Core
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2Core.ConfigurationManagement
 Imports R2Core.ExceptionManagement
 Imports R2Core.DatabaseManagement
@@ -1745,14 +1745,14 @@ Namespace Turns
 
     Public Class PayanehClassLibraryTurnManager
 
-        Private _DateTimeService As IR2DateTimeService
+        Private _DateTimeService As IDateTimeService
         Private _SoftwareUserService As ISoftwareUserService
         Private _InstanceSqlDataBox As R2CoreSqlDataBOXManager
         Private _InstanceLogging As R2CoreLoggingManager
         Private _loggerService As ILogger
 
 
-        Public Sub New(YourR2DateTimeService As IR2DateTimeService)
+        Public Sub New(YourR2DateTimeService As IDateTimeService)
             _SoftwareUserService = New SoftwareUserService(Nothing)
             _DateTimeService = YourR2DateTimeService
             _InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
@@ -1909,7 +1909,7 @@ Namespace Turns
         End Sub
 
         Public Sub ResuscitationNonCreditTurn(YourSofttWareUser As R2CoreSoftwareUser, YourUserId As Int64)
-            Dim InstancePredefinedMessages = New R2CoreMClassPredefinedMessagesManager(_DateTimeService)
+            Dim InstancePredefinedMessages = New R2CorePredefinedMessagesManager(_DateTimeService)
             Try
 
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService)
@@ -1917,12 +1917,12 @@ Namespace Turns
 
                 'ارسال پیام به راننده 
                 Try
-                    SendingSMSResuscitationNonCreditTurn(YourSofttWareUser, InstancePredefinedMessages.GetNSS(PayanehClassLibraryPredefinedMessages.ResuscitationNonCreditTurnSuccess).MsgContent)
+                    SendingSMSResuscitationNonCreditTurn(YourSofttWareUser, InstancePredefinedMessages.GetPredefinedMessage(PayanehClassLibraryPredefinedMessages.ResuscitationNonCreditTurnSuccess).MsgContent)
                 Catch ex As Exception
                 End Try
             Catch ex As NonIndigenousTrucksException
                 Try
-                    SendingSMSResuscitationNonCreditTurn(YourSofttWareUser, InstancePredefinedMessages.GetNSS(R2CoreTransportationAndLoadNotificationPredefinedMessages.UnIndigenousTrucks).MsgContent)
+                    SendingSMSResuscitationNonCreditTurn(YourSofttWareUser, InstancePredefinedMessages.GetPredefinedMessage(R2CoreTransportationAndLoadNotificationPredefinedMessages.UnIndigenousTrucks).MsgContent)
                 Catch exSendingSMS As Exception
                 End Try
             Catch ex As ResuscitationReserveTurnEndDateReachedException
@@ -1937,7 +1937,7 @@ Namespace Turns
                 End Try
             Catch ex As ResuscitationReserveTurnServiceIsUnactiveException
                 Try
-                    SendingSMSResuscitationNonCreditTurn(YourSofttWareUser, InstancePredefinedMessages.GetNSS(PayanehClassLibraryPredefinedMessages.ResuscitationNonCreditTurnServiceDisable).MsgContent)
+                    SendingSMSResuscitationNonCreditTurn(YourSofttWareUser, InstancePredefinedMessages.GetPredefinedMessage(PayanehClassLibraryPredefinedMessages.ResuscitationNonCreditTurnServiceDisable).MsgContent)
                 Catch exSendingSMS As Exception
                 End Try
             Catch ex As MoneyWalletCurrentChargeNotEnoughException
@@ -2026,7 +2026,8 @@ Namespace Turns
 
     Public Class TurnRegisteringStrategy
 
-        Protected _DateTimeService As IR2DateTimeService
+        Protected _DateTimeService As IDateTimeService
+        Protected _SoftwareUserService As ISoftwareUserService
         Protected Event DoStrategyRequestedEvent()
         Protected MoneyWallet As R2CoreMoneyWallet
         Protected TurnRegisteringRequest As R2CoreTransportationAndLoadNotificationTurnRegisterRequest
@@ -2052,14 +2053,16 @@ Namespace Turns
             End Get
         End Property
 
-        Public Sub New(YourR2DateTimeService As IR2DateTimeService)
+        Public Sub New(YourR2DateTimeService As IDateTimeService, YourSoftwareUserService As ISoftwareUserService)
             _DateTimeService = YourR2DateTimeService
+            _SoftwareUserService = YourSoftwareUserService
             _RCH = New RedisConnectorHelper
         End Sub
 
-        Public Sub New(YourDateTimeService As IR2DateTimeService, YourSequentialTurnId As Int64, YourTruckId As Int64, YourTurnRegisteringRequestId As Int64, YourSoftwareUserId As Int64, YourRequesterId As Int64, YourTurnType As TurnType)
+        Public Sub New(YourDateTimeService As IDateTimeService, YourSoftwareUserService As ISoftwareUserService, YourSequentialTurnId As Int64, YourTruckId As Int64, YourTurnRegisteringRequestId As Int64, YourSoftwareUserId As Int64, YourRequesterId As Int64, YourTurnType As TurnType)
             Try
                 _DateTimeService = YourDateTimeService
+                _SoftwareUserService = YourSoftwareUserService
                 _RCH = New RedisConnectorHelper
                 TurnType = YourTurnType
 
@@ -2095,7 +2098,7 @@ Namespace Turns
                 TurnRegisteringRequest = InstanceTurnRegister.GetTurnRegisterRequest(YourTurnRegisteringRequestId, True)
 
                 'کنترل مجوز درخواست صدور نوبت توسط رکستر خاص بر اساس تسلسل نوبت
-                Dim InstancePermissions = New R2CoreInstansePermissionsManager
+                Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
                 If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.RequesterCanSendRequestforTurnIssueBySeqT, YourRequesterId, YourSequentialTurnId) Then Throw New RequesterNotAllowTurnIssueBySeqTException
 
                 'کنترل مجوز درخواست صدور نوبت توسط رکستر خاص بر اساس نوع آخرین بار دریافت شده
@@ -2193,13 +2196,13 @@ Namespace Turns
             End Try
         End Sub
 
-        Private Sub SendingSMSTurn(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
+        Private Sub SendingSMSTurn(YourSoftwareUser As R2CoreSoftwareUser)
             Try
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
-                Dim LstUser = New List(Of R2CoreStandardSoftwareUserStructure) From {YourNSSSoftwareUser}
+                Dim InstanceSMSHandler = New R2CoreSMSHandlerManager(_DateTimeService, _SoftwareUserService)
+                Dim LstUser = New List(Of R2CoreSoftwareUser) From {YourSoftwareUser}
                 Dim LstCreationData = New List(Of SMSCreationData) From {New SMSCreationData With {.Data1 = _DateTimeService.GetCurrentShamsiDate + " " + _DateTimeService.GetCurrentTime, .Data2 = TurnSeqT}}
-                Dim SMSResult = InstanceSMSHandling.SendSMS(LstUser, R2CoreTransportationAndLoadNotificationSMSTypes.SendingTurnNumberSMS, LstCreationData, True)
-                Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
+                Dim SMSResult = InstanceSMSHandler.SendSMS(LstUser, R2CoreTransportationAndLoadNotificationSMSTypes.SendingTurnNumberSMS, LstCreationData, True)
+                Dim SMSResultAnalyze = InstanceSMSHandler.GetSMSResultAnalyze(SMSResult)
                 'If Not SMSResultAnalyze = String.Empty Then Throw New 
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -2212,7 +2215,7 @@ Namespace Turns
         Inherits TurnRegisteringStrategy
 
         Public Sub New(YourSeqTId As Int64, YourTruckId As Int64, YourTurnRegisteringRequestId As Int64, YourSoftwareUserId As Int64, YourRequesterId As Int64, YourTurnType As TurnType)
-            MyBase.New(New R2DateTimeService, YourSeqTId, YourTruckId, YourTurnRegisteringRequestId, YourSoftwareUserId, YourRequesterId, YourTurnType)
+            MyBase.New(New R2DateTimeService, New SoftwareUserService, YourSeqTId, YourTruckId, YourTurnRegisteringRequestId, YourSoftwareUserId, YourRequesterId, YourTurnType)
         End Sub
 
         Private Sub DoStrategyRequestedEvent_Handler() Handles MyClass.DoStrategyRequestedEvent
@@ -2220,7 +2223,7 @@ Namespace Turns
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService)
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim InstanceTurnAccounting = New R2CoreTransportationAndLoadNotificationTurnAccountingManager(New R2DateTimeService)
 
                 'تراکنش صدور نوبت
@@ -2290,7 +2293,7 @@ Namespace Turns
         Inherits TurnRegisteringStrategy
 
         Public Sub New(YourSeqTId As Int64, YourTruckId As Int64, YourTurnRegisteringRequestId As Int64, YourSoftwareUserId As Int64, YourRequesterId As Int64, YourTurnType As TurnType)
-            MyBase.New(New R2DateTimeService, YourSeqTId, YourTruckId, YourTurnRegisteringRequestId, YourSoftwareUserId, YourRequesterId, YourTurnType)
+            MyBase.New(New R2DateTimeService, New SoftwareUserService, YourSeqTId, YourTruckId, YourTurnRegisteringRequestId, YourSoftwareUserId, YourRequesterId, YourTurnType)
         End Sub
 
         Private Sub DoStrategyRequestedEvent_Handler() Handles MyClass.DoStrategyRequestedEvent
@@ -2298,7 +2301,7 @@ Namespace Turns
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService)
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim InstanceTurnAccounting = New R2CoreTransportationAndLoadNotificationTurnAccountingManager(New R2DateTimeService)
 
                 Dim Turn = InstanceTurns.GetTurn(TurnRegisteringRequest, True)

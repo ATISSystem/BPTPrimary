@@ -1,17 +1,147 @@
 ﻿
-Imports R2Core.BaseStandardClass
-Imports R2Core.ConfigurationManagement
-Imports R2Core.DatabaseManagement
-Imports R2Core.DateTimeProvider
-Imports R2Core.ExceptionManagement
-Imports R2Core.PublicProc
 Imports System.Data.SqlClient
 Imports System.Reflection
 Imports System.Text
 
+Imports R2Core.BaseStandardClass
+Imports R2Core.DatabaseManagement
+Imports R2Core.DateTimeProvider
+Imports R2Core.ExceptionManagement
+Imports R2Core.PublicProcedures
+
+'BPTChanged
+Namespace Devices
+    Public Class R2CoreRawDevice
+        Public DeviceId As Int64?
+        Public DeviceTitle As String
+        Public DeviceLocation As String
+        Public Active As Boolean
+    End Class
+
+    Public Class R2CoreDeviceManager
+        Private InstanceSqlDataBox As R2CoreSqlDataBOXManager
+        Private _DateTimeService As IDateTimeService
+
+        Public Sub New(YourDateTimeService As IDateTimeService)
+            Try
+                _DateTimeService = YourDateTimeService
+                InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Function GetAllDevices(YourImmediately As Boolean) As String
+            Try
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
+
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                    "Select DeviceId,DeviceTitle,DeviceLocation,Active from R2Primary.dbo.TblDevices 
+                         Where ViewFlag=1 and Deleted=0 Order By DeviceId for Json Auto")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
+                Else
+                    If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                    "Select DeviceId,DeviceTitle,DeviceLocation,Active from R2Primary.dbo.TblDevices 
+                         Where ViewFlag=1 and Deleted=0 Order By DeviceId for Json Auto", 32767, Ds, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
+                End If
+                Return InstancePublicProcedures.GetIntegratedJson(Ds)
+            Catch ex As SqlException
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As DataBaseException
+                Throw ex
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As UnableConnectToAPIException
+                Throw ex
+            Catch ex As AnyNotFoundException
+                Throw ex
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
+
+        Public Sub DeviceRegistering(YourRawDevice As R2CoreRawDevice)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                CmdSql.CommandText = "Select Top 1 DeviceId from R2Primary.dbo.TblDevices with (tablockx) order by DeviceId desc"
+                CmdSql.ExecuteNonQuery()
+                Dim DeviceId As Int64 = CmdSql.ExecuteScalar + 1
+                CmdSql.CommandText = "Insert Into R2Primary.dbo.TblDevices(DeviceId,DeviceTitle,DeviceLocation,Active,ViewFlag,Deleted)
+                                          Values(@DeviceId,@DeviceTitle,@DeviceLocation,@Active,1,0)"
+                CmdSql.Parameters.Add("@DeviceId", SqlDbType.BigInt).Value = DeviceId
+                CmdSql.Parameters.Add("@DeviceTitle", SqlDbType.NVarChar).Value = YourRawDevice.DeviceTitle
+                CmdSql.Parameters.Add("@DeviceLocation", SqlDbType.NVarChar).Value = YourRawDevice.DeviceLocation
+                CmdSql.Parameters.Add("@Active", SqlDbType.Bit).Value = IIf(YourRawDevice.Active, 1, 0)
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub DeviceEditing(YourRawDevice As R2CoreRawDevice)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
+                CmdSql.CommandText = "Update R2Primary.dbo.TblDevices Set DeviceTitle=@DeviceTitle,DeviceLocation=@DeviceLocation,Active=@Active Where DeviceId=@DeviceId"
+                CmdSql.Parameters.Add("@DeviceTitle", SqlDbType.NVarChar).Value = YourRawDevice.DeviceTitle
+                CmdSql.Parameters.Add("@DeviceLocation", SqlDbType.NVarChar).Value = YourRawDevice.DeviceLocation
+                CmdSql.Parameters.Add("@Active", SqlDbType.Bit).Value = IIf(YourRawDevice.Active, 1, 0)
+                CmdSql.Parameters.Add("@DeviceId", SqlDbType.BigInt).Value = YourRawDevice.DeviceId
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        Public Sub DeviceDeleting(YourDeviceId As Int64)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+            Try
+                CmdSql.Connection.Open()
+                CmdSql.CommandText = "Delete R2Primary.dbo.TblDevices Where DeviceId=@DeviceId"
+                CmdSql.Parameters.Add("@DeviceId", SqlDbType.BigInt).Value = YourDeviceId
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+    End Class
+
+End Namespace
+
 Namespace ComputersManagement
     Public Class R2CoreStandardComputerStructure
-        Inherits BaseStandardClass.R2StandardStructure
 
 
 
@@ -27,7 +157,7 @@ Namespace ComputersManagement
         End Sub
 
         Public Sub New(ByVal YourMId As Int64, ByVal YourMName As String, ByVal YourMDisplayTitle As String, ByVal YourMLocation As String, YourViewFlag As Boolean, YourOActive As Boolean, YourDeleted As Boolean)
-            MyBase.New(YourMId, YourMName)
+            MyBase.New()
             MId = YourMId
             MName = YourMName
             MDisplayTitle = YourMDisplayTitle
@@ -53,8 +183,8 @@ Namespace ComputersManagement
     Public Class R2CoreMClassComputersManager
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -107,7 +237,7 @@ Namespace ComputersManagement
 
     Public Class R2CoreMClassComputersManagement
 
-        Private Shared _DateTimeService As IR2DateTimeService = New R2DateTimeService
+        Private Shared _DateTimeService As IDateTimeService = New R2DateTimeService
         Private Shared InstanceSqlDataBOX As R2CoreSqlDataBOXManager
 
 
@@ -157,32 +287,32 @@ Namespace ComputersManagement
 
     End Class
 
-    Public Class R2CoreStandardConfigurationOfComputerStructure
-        Inherits R2CoreStandardConfigurationStructure
+    'Public Class R2CoreStandardConfigurationOfComputerStructure
+    '    Inherits R2CoreStandardConfigurationStructure
 
-        Public Sub New()
-            MyBase.New()
-            ComId = 0
-            CValue = String.Empty
-        End Sub
+    '    Public Sub New()
+    '        MyBase.New()
+    '        ComId = 0
+    '        CValue = String.Empty
+    '    End Sub
 
-        Public Sub New(YourNSSConfiguration As R2CoreStandardConfigurationStructure, ByVal YourComId As Int64, ByVal YourCValue As String)
-            MyBase.New(YourNSSConfiguration.CId, YourNSSConfiguration.CName, YourNSSConfiguration.CValue, YourNSSConfiguration.Orientation, YourNSSConfiguration.Description)
-            ComId = YourComId
-            CValue = YourCValue
-        End Sub
+    '    Public Sub New(YourNSSConfiguration As R2CoreStandardConfigurationStructure, ByVal YourComId As Int64, ByVal YourCValue As String)
+    '        MyBase.New(YourNSSConfiguration.CId, YourNSSConfiguration.CName, YourNSSConfiguration.CValue, YourNSSConfiguration.Orientation, YourNSSConfiguration.Description)
+    '        ComId = YourComId
+    '        CValue = YourCValue
+    '    End Sub
 
-        Public Property ComId As Int64
+    '    Public Property ComId As Int64
 
-        Public Property CValue As String
+    '    Public Property CValue As String
 
-    End Class
+    'End Class
 
     Public Class R2CoreMClassConfigurationOfComputersManager
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -343,7 +473,7 @@ Namespace ComputersManagement
     Public NotInheritable Class R2CoreMClassConfigurationOfComputersManagement
         'Inherits R2CoreMClassConfigurationManagement
 
-        Private Shared _DateTimeService As IR2DateTimeService = New R2DateTimeService
+        Private Shared _DateTimeService As IDateTimeService = New R2DateTimeService
         Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(_DateTimeService)
 
         'Public Shared Function GetConfigOnLine(YourCId As Int64, YourMId As Int64) As Object
@@ -502,112 +632,3 @@ Namespace ComputersManagement
 
 End Namespace
 
-Namespace Devices
-    Public Class R2CoreRawDevice
-        Public DeviceId As Int64?
-        Public DeviceTitle As String
-        Public DeviceLocation As String
-        Public Active As Boolean
-    End Class
-
-    Public Class R2CoreDeviceManager
-        Private InstanceSqlDataBox As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
-            _DateTimeService = YourDateTimeService
-            InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
-        End Sub
-
-        Public Function GetAllDevices(YourImmediately As Boolean) As String
-            Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
-
-                Dim Ds As New DataSet
-                If YourImmediately Then
-                    Dim Da As New SqlClient.SqlDataAdapter
-                    Da.SelectCommand = New SqlCommand(
-                    "Select DeviceId,DeviceTitle,DeviceLocation,Active from R2Primary.dbo.TblDevices 
-                         Where ViewFlag=1 and Deleted=0 Order By DeviceId for Json Auto")
-                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
-                    If Da.Fill(Ds) <= 0 Then Throw New AnyNotFoundException
-                Else
-                    If InstanceSqlDataBox.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
-                    "Select DeviceId,DeviceTitle,DeviceLocation,Active from R2Primary.dbo.TblDevices 
-                         Where ViewFlag=1 and Deleted=0 Order By DeviceId for Json Auto", 32767, Ds, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
-                End If
-                Return InstancePublicProcedures.GetIntegratedJson(Ds)
-            Catch ex As AnyNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-        Public Sub DeviceRegistering(YourRawDevice As R2CoreRawDevice)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Select Top 1 DeviceId from R2Primary.dbo.TblDevices with (tablockx) order by DeviceId desc"
-                CmdSql.ExecuteNonQuery()
-                Dim DeviceId As Int64 = CmdSql.ExecuteScalar + 1
-                CmdSql.CommandText = "Insert Into R2Primary.dbo.TblDevices(DeviceId,DeviceTitle,DeviceLocation,Active,ViewFlag,Deleted)
-                                          Values(@DeviceId,@DeviceTitle,@DeviceLocation,@Active,1,0)"
-                CmdSql.Parameters.Add("@DeviceId", SqlDbType.BigInt).Value = DeviceId
-                CmdSql.Parameters.Add("@DeviceTitle", SqlDbType.NVarChar).Value = YourRawDevice.DeviceTitle
-                CmdSql.Parameters.Add("@DeviceLocation", SqlDbType.NVarChar).Value = YourRawDevice.DeviceLocation
-                CmdSql.Parameters.Add("@Active", SqlDbType.Bit).Value = IIf(YourRawDevice.Active, 1, 0)
-                CmdSql.ExecuteNonQuery()
-                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-        Public Sub DeviceEditing(YourRawDevice As R2CoreRawDevice)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                CmdSql.CommandText = "Update R2Primary.dbo.TblDevices Set DeviceTitle=@DeviceTitle,DeviceLocation=@DeviceLocation,Active=@Active Where DeviceId=@DeviceId"
-                CmdSql.Parameters.Add("@DeviceTitle", SqlDbType.NVarChar).Value = YourRawDevice.DeviceTitle
-                CmdSql.Parameters.Add("@DeviceLocation", SqlDbType.NVarChar).Value = YourRawDevice.DeviceLocation
-                CmdSql.Parameters.Add("@Active", SqlDbType.Bit).Value = IIf(YourRawDevice.Active, 1, 0)
-                CmdSql.Parameters.Add("@DeviceId", SqlDbType.BigInt).Value = YourRawDevice.DeviceId
-                CmdSql.ExecuteNonQuery()
-                CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then
-                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                End If
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-        Public Sub DeviceDeleting(YourDeviceId As Int64)
-            Dim CmdSql As New SqlClient.SqlCommand
-            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-            Try
-                CmdSql.Connection.Open()
-                CmdSql.CommandText = "Delete R2Primary.dbo.TblDevices Where DeviceId=@DeviceId"
-                CmdSql.Parameters.Add("@DeviceId", SqlDbType.BigInt).Value = YourDeviceId
-                CmdSql.ExecuteNonQuery()
-                CmdSql.Connection.Close()
-            Catch ex As SqlException
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
-            Catch ex As Exception
-                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Sub
-
-    End Class
-
-End Namespace

@@ -48,7 +48,7 @@ Imports R2CoreTransportationAndLoadNotification.AnnouncementTiming
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2CoreTransportationAndLoadNotification.SoftwareUserManagement
 Imports R2Core.SMS.SMSHandling
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters
 Imports R2CoreTransportationAndLoadNotification.SMS.SMSTypes
@@ -317,7 +317,7 @@ Namespace LoadPermission
                 'Dim NSSTruckDriver = InstanceTruckDriver.GetNSSTruckDriver(InstanceCars.GetnIdPersonFirst(NSSTruck.NSSCar.nIdCar), False)
                 Dim NSSTurn = InstanceTurns.GetNSSTurn(YourNSSLoadAllocation.TurnId)
                 Dim InstanceTurnAttendance = New R2CoreTransportationAndLoadNotificationInstanceTurnAttendanceManager
-                Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
+                'Dim InstanceConfiguration = New R2CoreInstanceConfigurationManager(_DateTimeService)
 
                 'کنترل لیست سیاه
                 'Dim BlackList = InstanceBlackList.GetBlackList(New R2StandardCarStructure(NSSTruck.NSSCar.nIdCar, NSSTruck.NSSCar.snCarType, NSSTruck.NSSCar.StrCarNo, NSSTruck.NSSCar.StrCarSerialNo, NSSTruck.NSSCar.nIdCity), R2CoreParkingSystemMClassBlackList.R2CoreParkingSystemBlackListType.ActiveBlackLists)
@@ -385,13 +385,13 @@ Namespace LoadPermission
             End Try
         End Sub
 
-        Private Sub SendingLoadPermissionSMS(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure, YourCurrentDateTime As R2CoreDateAndTime, YourNSSLoadCapacitorLoad As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadExtendedStructure, YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure)
+        Private Sub SendingLoadPermissionSMS(YourNSSTruck As R2CoreTransportationAndLoadNotificationStandardTruckStructure, YourCurrentDateTime As R2CoreDateAndTime, YourNSSLoadCapacitorLoad As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadExtendedStructure, YourSoftwareUser As R2CoreSoftwareUser)
             Try
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
-                Dim LstUser = New List(Of R2CoreStandardSoftwareUserStructure) From {YourNSSSoftwareUser}
+                Dim InstanceSMSHandler = New R2CoreSMSHandlerManager(_DateTimeService, New SoftwareUserService)
+                Dim LstUser = New List(Of R2CoreSoftwareUser) From {YourSoftwareUser}
                 Dim LstCreationData = New List(Of SMSCreationData) From {New SMSCreationData With {.Data1 = YourCurrentDateTime.ShamsiDate + " " + YourCurrentDateTime.Time, .Data2 = YourNSSLoadCapacitorLoad.GoodTitle + " - " + YourNSSLoadCapacitorLoad.LoadTargetTitle, .Data3 = YourNSSLoadCapacitorLoad.TransportCompanyTitle}}
-                Dim SMSResult = InstanceSMSHandling.SendSMS(LstUser, R2CoreTransportationAndLoadNotificationSMSTypes.SendingLoadPermissionIssuedInfSMS, LstCreationData, True)
-                Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
+                Dim SMSResult = InstanceSMSHandler.SendSMS(LstUser, R2CoreTransportationAndLoadNotificationSMSTypes.SendingLoadPermissionIssuedInfSMS, LstCreationData, True)
+                Dim SMSResultAnalyze = InstanceSMSHandler.GetSMSResultAnalyze(SMSResult)
                 'If Not SMSResultAnalyze = String.Empty Then Throw New 
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -1330,10 +1330,10 @@ Namespace LoadPermission
     Public Class R2CoreTransportationAndLoadNotificationLoadPermissionManager
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
+        Private _DateTimeService As IDateTimeService
         Private _RCH As RedisConnectorHelper
 
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
             _RCH = New RedisConnectorHelper
@@ -1400,7 +1400,7 @@ Namespace LoadPermission
 
         Public Function GetLoadPermissions(YourLoadId As Int64) As String
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
 
                 Dim DS As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
@@ -1436,7 +1436,7 @@ Namespace LoadPermission
 
         Public Function GetLoadPermissions(YourAnnouncementGroupId As Int64, YourAnnouncementSubGroupId As Int64) As String
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
 
                 Dim DS As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
@@ -1524,7 +1524,7 @@ Namespace LoadPermission
                 Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationTransportCompaniesManager(_DateTimeService)
                 Dim TC = InstanceTransportCompanies.GetTransportCompanyfromSoftwareUser(YourSoftwareUser, False)
 
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager()
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager()
                 Dim Ds As New DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select Top 100 LoadAllocations.LAId AS LoadAllocationId,Cars.strCarNo as Pelak,Cars.strCarSerialNo as Serial,Cars.strBodyNo as TruckSmartCardNo,Persons.strPersonFullName as Driver,

@@ -24,7 +24,7 @@ Imports PayanehClassLibrary.TransportCompanies
 Imports R2Core
 Imports R2Core.BaseStandardClass
 Imports R2Core.ComputerMessagesManagement
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2Core.ComputersManagement
 Imports R2Core.ConfigurationManagement
 Imports R2Core.ExceptionManagement
@@ -70,7 +70,7 @@ Imports R2CoreTransportationAndLoadNotification.LoadAllocation
 Imports TWSClassLibrary.TDBClientManagement
 Imports PayanehClassLibrary.Logging
 Imports PayanehClassLibrary.ReportsManagement
-Imports PayanehClassLibrary.TruckersAssociationControllingMoneyWallet.Exceptions
+Imports PayanehClassLibrary.TruckersAssociationControllingMoneyWalletAutomatedJobService.Exceptions
 Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2CoreTransportationAndLoadNotification.AnnouncementTiming
@@ -118,19 +118,8 @@ Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
 Imports R2CoreTransportationAndLoadNotification.PredefinedMessages
 Imports R2Core.DateTimeProvider
 Imports R2Core.SQLInjectionPrevention
+Imports R2Core.Networking.Exceptions
 
-Namespace ComputerMessages
-
-    Public MustInherit Class PayanehClassLibraryComputerMessageTypes
-        Inherits R2Core.ComputerMessagesManagement.R2CoreComputerMessageTypes
-        Public Shared ReadOnly ChangeDriverTruck As Int64 = 4
-        Public Shared ReadOnly ChangeCarTruckNumberPlate As Int64 = 5
-    End Class
-
-End Namespace
-
-Namespace DataBaseManagement
-End Namespace
 
 Namespace DriverTrucksManagement
 
@@ -837,50 +826,6 @@ Namespace CarTrucksManagement
         End Class
 
     End Namespace
-
-End Namespace
-
-Namespace ProcessesManagement
-
-    Public MustInherit Class PayanehClassLibraryProcesses
-        Inherits R2CoreParkingSystemProcesses
-
-        Public Shared ReadOnly FrmcCarAndDriversInformation As Int64 = 11
-        Public Shared ReadOnly FrmcSodoorNobat As Int64 = 12
-        Public Shared ReadOnly FrmcBoomiExceptTruck As Int64 = 13
-        Public Shared ReadOnly FrmcDriverTruckFingerPrintRegister As Int64 = 14
-        Public Shared ReadOnly FrmcTruckDriverOneFPSabtFutronic As Int64 = 15
-        Public Shared ReadOnly FrmcDriverTruckPresentDermalog As Int64 = 16
-        Public Shared ReadOnly FrmcTruckDriverPresentSabtSuprema As Int64 = 17
-        Public Shared ReadOnly FrmcEnterExit As Int64 = 18
-        Public Shared ReadOnly FrmcTransferPersonelFingerPrintsIntoClock4 As Int64 = 19
-        Public Shared ReadOnly FrmcContractorCompanyFinancialReport As Int64 = 21
-        Public Shared ReadOnly FrmcTruckersAssociationFinancialReport As Int64 = 23
-        Public Shared ReadOnly FrmcAnnouncementHallAutomation As Int64 = 31
-        Public Shared ReadOnly FrmcDriverTruckLoadsReport As Int64 = 32
-        Public Shared ReadOnly FrmcAnnouncementHallMonitoringControlPanel As Int64 = 33
-        Public Shared ReadOnly FrmcTurnsComputerMessageProducer As Int64 = 34
-        Public Shared ReadOnly FrmcChangeDriverTruckAndCarTruckNumberPlateComputerMessageProducer As Int64 = 39
-        Public Shared ReadOnly FrmcCapacitorLoadsforAnnounceReport As Int64 = 40
-        Public Shared ReadOnly FrmcCapacitorLoadsTransportCompaniesRegisteredLoadsReport As Int64 = 41
-        Public Shared ReadOnly FrmcAnnouncementsPerformanceReport As Int64 = 42
-        Public Shared ReadOnly FrmcAnnouncementsPerformanceGeneralStatisticsReport As Int64 = 43
-        Public Shared ReadOnly FrmcPublicConfigurations As Int64 = 46
-        Public Shared ReadOnly FrmcClientConfigurations As Int64 = 47
-        Public Shared ReadOnly FrmcTruckDriversWaitingToGetLoadPermissionReport As Int64 = 52
-        Public Shared ReadOnly FrmcTrucksAverageOfSleepDaysToGetLoadPermissionReport As Int64 = 53
-        Public Shared ReadOnly FrmcTravelLengthOfLoadTargetsReport As Int64 = 54
-        Public Shared ReadOnly FrmcTransportPriceTariffsReport As Int64 = 55
-        Public Shared ReadOnly FrmcIndigenousTrucksWithUNNativeLPReport As Int64 = 56
-        Public Shared ReadOnly FrmcSedimentedLoadsReport As Int64 = 58
-        Public Shared ReadOnly FrmcLoadPermissionsIssuedOrderByPriorityReport As Int64 = 61
-        Public Shared ReadOnly FrmcTruckersAssociationControllingMoneyWallet As Int64 = 65
-        Public Shared ReadOnly FrmcClearanceLoadsReport As Int64 = 66
-        Public Shared ReadOnly FrmcSaleOfSoftwareUserActivationSMSReport As Int64 = 67
-        Public Shared ReadOnly FrmcSoftwareUserManagement As Int64 = 70
-
-
-    End Class
 
 End Namespace
 
@@ -3635,12 +3580,6 @@ Namespace CarTruckLoad
 
 End Namespace
 
-Namespace LoadCapacitor
-
-
-
-End Namespace
-
 Namespace HumanManagement
 
     Namespace Personnel
@@ -4180,22 +4119,22 @@ Namespace LoadNotification.LoadPermission
             End Try
         End Sub
 
-        Public Function GetLoadPermissionInf(YournEstelamId As Int64, YourTurnId As Int64) As DataStruct
-            Try
-                Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
-                Da.SelectCommand = New SqlCommand("Select Top 1 StrExitDate,StrExitTime,nUserIdExit From DBTransport.dbo.TbEnterExit Where nEnterExitId=" & YourTurnId & " and nEstelamId=" & YournEstelamId & "")
-                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
-                Ds.Tables.Clear()
-                If Da.Fill(Ds) = 0 Then Throw New LoadPermissionNotExistException
-                Dim LoadPermissionDataStruct As New DataStruct
-                LoadPermissionDataStruct.Data1 = IIf(Ds.Tables(0).Rows(0).Item("StrExitDate").Equals(System.DBNull.Value), String.Empty, Ds.Tables(0).Rows(0).Item("StrExitDate").trim)
-                LoadPermissionDataStruct.Data2 = IIf(Ds.Tables(0).Rows(0).Item("StrExitTime").Equals(System.DBNull.Value), String.Empty, Ds.Tables(0).Rows(0).Item("StrExitTime").trim)
-                LoadPermissionDataStruct.Data3 = IIf(Ds.Tables(0).Rows(0).Item("nUserIdExit").Equals(System.DBNull.Value), String.Empty, DirectCast(R2CoreMClassSoftwareUsersManagement.GetNSSUser(Ds.Tables(0).Rows(0).Item("nUserIdExit")), R2CoreStandardSoftwareUserStructure).UserName)
-                Return LoadPermissionDataStruct
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function GetLoadPermissionInf(YournEstelamId As Int64, YourTurnId As Int64) As DataStruct
+        '    Try
+        '        Dim Da As New SqlClient.SqlDataAdapter : Dim Ds As New DataSet
+        '        Da.SelectCommand = New SqlCommand("Select Top 1 StrExitDate,StrExitTime,nUserIdExit From DBTransport.dbo.TbEnterExit Where nEnterExitId=" & YourTurnId & " and nEstelamId=" & YournEstelamId & "")
+        '        Da.SelectCommand.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
+        '        Ds.Tables.Clear()
+        '        If Da.Fill(Ds) = 0 Then Throw New LoadPermissionNotExistException
+        '        Dim LoadPermissionDataStruct As New DataStruct
+        '        LoadPermissionDataStruct.Data1 = IIf(Ds.Tables(0).Rows(0).Item("StrExitDate").Equals(System.DBNull.Value), String.Empty, Ds.Tables(0).Rows(0).Item("StrExitDate").trim)
+        '        LoadPermissionDataStruct.Data2 = IIf(Ds.Tables(0).Rows(0).Item("StrExitTime").Equals(System.DBNull.Value), String.Empty, Ds.Tables(0).Rows(0).Item("StrExitTime").trim)
+        '        LoadPermissionDataStruct.Data3 = IIf(Ds.Tables(0).Rows(0).Item("nUserIdExit").Equals(System.DBNull.Value), String.Empty, DirectCast(R2CoreMClassSoftwareUsersManagement.GetNSSUser(Ds.Tables(0).Rows(0).Item("nUserIdExit")), R2CoreStandardSoftwareUserStructure).UserName)
+        '        Return LoadPermissionDataStruct
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
 
     End Class

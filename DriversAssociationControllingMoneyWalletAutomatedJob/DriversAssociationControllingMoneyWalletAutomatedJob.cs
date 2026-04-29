@@ -1,7 +1,7 @@
 ﻿using PayanehClassLibrary.ConfigurationManagement;
-using PayanehClassLibrary.DriversAssociationControllingMoneyWallet;
+using PayanehClassLibrary.DriversAssociationControllingMoneyWalletAutomatedJobService;
 using PayanehClassLibrary.GeneralConfiguration;
-using PayanehClassLibrary.TruckersAssociationControllingMoneyWallet;
+using PayanehClassLibrary.TruckersAssociationControllingMoneyWalletAutomatedJobService;
 using R2Core.ConfigurationManagement;
 using R2Core.DateTimeProvider;
 using R2Core.GeneralConfiguration;
@@ -52,7 +52,7 @@ namespace DriversAssociationControllingMoneyWalletAutomatedJob
                     {            
                         var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(_SystemUser);
-                        _AutomatedJobsTimer.Interval = InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWallet , 8) * 1000;
+                        _AutomatedJobsTimer.Interval = InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.DriversAssociationControllingMoneyWalletAutomatedJobService , 8) * 1000;
                         _FailStatus = false;
                         EventLog.WriteEntry("DriversAssociationControllingMoneyWalletAutomatedJob", "DriversAssociationControllingMoneyWalletAutomatedJob.Interval=" + _AutomatedJobsTimer.Interval.ToString(), EventLogEntryType.SuccessAudit);
                     }

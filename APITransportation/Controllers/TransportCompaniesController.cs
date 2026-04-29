@@ -1,4 +1,5 @@
-﻿using APICommon.Models;
+﻿using Antlr.Runtime.Misc;
+using APICommon.Models;
 using APITransportation.Models;
 using APITransportation.Models.TransportCompanies;
 using APITransportation.Models.Truck;
@@ -9,10 +10,12 @@ using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
+using R2Core.LoggingManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
 using R2Core.SoftwareUserManagement;
 using R2CoreParkingSystem.SMS.SMSOwners;
+using R2CoreTransportationAndLoadNotification.Logging;
 using R2CoreTransportationAndLoadNotification.TransportCompanies;
 using R2CoreTransportationAndLoadNotification.TruckDrivers;
 using System;
@@ -22,6 +25,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Services.Protocols;
@@ -32,11 +36,18 @@ namespace APITransportation.Controllers
     public class TransportCompaniesController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService;
+        private IDateTimeService _DateTimeService;
+        private ILogger _loggerService;
+        private Networking _Networking;
 
         public TransportCompaniesController()
         {
-            try { _DateTimeService = new R2DateTimeService(); }
+            try
+            {
+                _DateTimeService = new R2DateTimeService();
+                _loggerService = new R2Core.LoggingManagement.R2CorenLogService();
+                _Networking = new Networking();
+            }
             catch (FileNotExistException ex)
             { throw ex; }
             catch (Exception ex)
@@ -155,6 +166,9 @@ namespace APITransportation.Controllers
 
                 var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationTransportCompaniesManager(_DateTimeService);
                 InstanceTransportCompanies.EditTransportCompany(RawTC);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.EditTransportCompany, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawTC.TCId ) + ":" + RawTC.TCId , UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -186,6 +200,8 @@ namespace APITransportation.Controllers
                 var InstanceSMSOwners = new R2CoreParkingSystemSMSOwnersManager(new SoftwareUserService(User.UserId), _DateTimeService);
                 InstanceSMSOwners.ActivateSMSOwner(InstanceTransportCompanies.GetSoftwareUserIdfromTransportCompanyId(TransportCompanyId, true));
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.ActivateTransportCompanySMSOwner, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TransportCompanyId) + ":" + TransportCompanyId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -215,6 +231,8 @@ namespace APITransportation.Controllers
                 var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(User.UserId));
                 var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(InstanceTransportCompanies.GetSoftwareUserIdfromTransportCompanyId(TransportCompanyId, true), User.UserId);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.ResetTransportCompanyUserPassword, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TransportCompanyId) + ":" + TransportCompanyId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(SoftWareUserSecurity), Encoding.UTF8, "application/json");
                 return response;
@@ -233,7 +251,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService );
+                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
 
                 var SessionId = Content.SessionId;
@@ -243,8 +261,9 @@ namespace APITransportation.Controllers
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 var InstanceTransportCompanies = new R2CoreTransportationAndLoadNotificationTransportCompaniesManager(_DateTimeService);
-                var InstanseSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 InstanceTransportCompanies.TransportCompanyChangeActiveStatus(TransportCompanyId, Active);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TransportCompanyChangeActiveStatus, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TransportCompanyId) + ":" + TransportCompanyId, MessageDetail2= nameof(Active) + ":" + Active, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;

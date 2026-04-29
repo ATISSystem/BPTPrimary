@@ -6,7 +6,7 @@ Imports R2Core.DatabaseManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.MoneyWallet.MoneyWallet
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2CoreParkingSystem.AccountingManagement
 Imports R2CoreParkingSystem.TrafficCardsManagement
 Imports R2CoreParkingSystem.TrafficCardsManagement.ExceptionManagement
@@ -36,15 +36,15 @@ Namespace TurnCosts
 
     Public Class R2CoreTransportationAndLoadNotificationTurnCostManager
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Public Function GetAllTurnCosts(YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
 
                 Dim DS As New DataSet
                 If YourImmediately Then

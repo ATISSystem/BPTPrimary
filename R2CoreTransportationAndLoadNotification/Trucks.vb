@@ -10,7 +10,7 @@ Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.GeneralConfiguration
 Imports R2Core.MoneyWallet.MoneyWallet
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SoftwareUserManagement
 Imports R2Core.SQLInjectionPrevention
@@ -511,8 +511,8 @@ Namespace Trucks
             Inherits BPTException
 
             Public Sub New()
-                _Message = InstancePredefinedMessages.GetNSS(R2CoreTransportationAndLoadNotificationPredefinedMessages.TruckNotFoundException).MsgContent
-                _MessageCode = InstancePredefinedMessages.GetNSS(R2CoreTransportationAndLoadNotificationPredefinedMessages.TruckNotFoundException).MsgId
+                _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CoreTransportationAndLoadNotificationPredefinedMessages.TruckNotFoundException).MsgContent
+                _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CoreTransportationAndLoadNotificationPredefinedMessages.TruckNotFoundException).MsgId
             End Sub
         End Class
 
@@ -550,8 +550,8 @@ Namespace Trucks
     Public Class R2CoreTransportationAndLoadNotificationTrucksManager
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -699,7 +699,7 @@ Namespace Trucks
             Dim CmdSql As New SqlClient.SqlCommand
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager(_DateTimeService)
                 Dim InstanceCars = New R2CoreParkingSystemInstanceCarsManager
                 Dim InstanceDrivers = New R2CoreParkingSystemInstanceDriversManager

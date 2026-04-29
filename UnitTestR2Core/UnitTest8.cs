@@ -20,7 +20,6 @@ using System.Net.Http;
 using System.Net;
 using System.Text;
 using System.Web.Http.ModelBinding.Binders;
-using R2Core.ConfigurationManagement;
 using R2Core.SMS.SMSHandling;
 using R2Core.DatabaseManagement;
 using R2Core.PredefinedMessagesManagement;
@@ -33,6 +32,7 @@ using R2Core.SMS.SMSOwners;
 using PayanehClassLibrary.Turns;
 using R2CoreTransportationAndLoadNotification.LoadSedimentation;
 using R2CoreTransportationAndLoadNotification.Announcements;
+using R2Core.GeneralConfiguration;
 
 namespace LoadCapacitor
 {
@@ -61,9 +61,6 @@ namespace LoadCapacitor
             //var sms1 = new R2CoreSMSSendingManager(new R2DateTimeService());
             //sms1.Sending();
 
-            var xxx = new R2CoreRawLog { LogTypeId = 0, Description = "22", MessageDetail1 = "AnnouncementGroupId", MessageDetail2 = "", MessageDetail3 = "", UserId = 21 };
-            (new R2CoreLoggingManager()).RegisterLog(new Exception("654321"));
-
             var InstanceSoftwareUsers = new R2CoreParkingSystemSoftwareUsersManager(new R2DateTimeService() , new SoftwareUserService(21));
             var Instance = new R2Core.SoftwareUserManagement.R2CoreSoftwareUsersManager(new R2DateTimeService (),null );
             var SoftwareUserComposedInf = InstanceSoftwareUsers.GetSoftwareUserComposedInf(Instance.GetUser(21,false ));
@@ -74,8 +71,8 @@ namespace LoadCapacitor
             //var xcx = TaskResult.Result;
 
             
-            var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(new R2DateTimeService ());
-            var ErrorMessageCode = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.None).MsgId;
+            var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(new R2DateTimeService ());
+            var ErrorMessageCode = InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.None).MsgId;
 
             R2CoreSqlDataBOXManager InstanceSqlDataBOX = new R2CoreSqlDataBOXManager(new R2DateTimeService ());
 
@@ -100,7 +97,6 @@ namespace LoadCapacitor
             //var InstanceSession = new R2Core.SessionManagement.R2CoreSessionManager();
             //var SessionStartBox = InstanceSession.StartSession();
 
-            (new R2Core.LoggingManagement.R2CoreLoggingManager()).RegisterLog( new R2CoreRawLog { LogTypeId = 0, Description = "14040623", MessageDetail1 = "1", MessageDetail2 = "2", MessageDetail3 = "3", UserId = 21 });
             return;
 
             //var y = new R2DateTime();

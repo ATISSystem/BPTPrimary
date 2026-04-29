@@ -13,9 +13,9 @@ Namespace SMS
         Public MustInherit Class PayanehClassLibrarySMSTypes
             Inherits R2CoreTransportationAndLoadNotificationSMSTypes
 
-            Public Shared ReadOnly Property TruckersAssociationControllingMoneyWallet = 6
+            Public Shared ReadOnly Property TruckersAssociationControllingMoneyWalletAutomatedJobService = 6
             Public Shared ReadOnly Property ResuscitationNonCreditTurn = 15
-            Public Shared ReadOnly Property DriversAssociationControllingMoneyWallet = 24
+            Public Shared ReadOnly Property DriversAssociationControllingMoneyWalletAutomatedJobService = 24
 
 
         End Class

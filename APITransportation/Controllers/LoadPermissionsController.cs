@@ -24,7 +24,7 @@ namespace APITransportation.Controllers
     {
 
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService;
+        private IDateTimeService _DateTimeService;
 
         public LoadPermissionsController()
         {

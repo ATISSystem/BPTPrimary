@@ -5,10 +5,13 @@ using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
+using R2Core.LoggingManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
 using R2CoreParkingSystem.ProvincesAndCities;
 using R2CoreTransportationAndLoadNotification.Announcements;
+using R2CoreTransportationAndLoadNotification.Logging;
+using R2CoreTransportationAndLoadNotification.Turns.SequentialTurns;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +20,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Services.Protocols;
@@ -28,11 +32,18 @@ namespace APITransportation.Controllers
     public class AnnouncementsController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService;
+        private IDateTimeService _DateTimeService;
+        private ILogger _loggerService;
+        private Networking _Networking;
 
         public AnnouncementsController()
         {
-            try { _DateTimeService = new R2DateTimeService(); }
+            try
+            {
+                _DateTimeService = new R2DateTimeService();
+                _loggerService = new R2Core.LoggingManagement.R2CorenLogService();
+                _Networking = new Networking();
+            }
             catch (FileNotExistException ex)
             { throw ex; }
             catch (Exception ex)
@@ -85,6 +96,8 @@ namespace APITransportation.Controllers
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementRegistering(RawAnnouncement);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.AnnouncementRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawAnnouncement.AnnouncementTitle ) + ":" + RawAnnouncement.AnnouncementTitle , UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -116,6 +129,8 @@ namespace APITransportation.Controllers
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementEditing(RawAnnouncement);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.AnnouncementEditing, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawAnnouncement.AnnouncementId ) + ":" + RawAnnouncement.AnnouncementId , UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -146,6 +161,8 @@ namespace APITransportation.Controllers
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementDeleting(AnnouncementId);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.AnnouncementDeleting, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(AnnouncementId) + ":" + AnnouncementId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -239,6 +256,8 @@ namespace APITransportation.Controllers
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementSGRegistering(RawAnnouncementSubGroup);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.AnnouncementSubGroupRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawAnnouncementSubGroup.AnnouncementSGTitle) + ":" + RawAnnouncementSubGroup.AnnouncementSGTitle, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -270,6 +289,8 @@ namespace APITransportation.Controllers
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementSGEditing(RawAnnouncementSubGroup);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.AnnouncementSubGroupEditing, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawAnnouncementSubGroup.AnnouncementSGId) + ":" + RawAnnouncementSubGroup.AnnouncementSGId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -300,6 +321,8 @@ namespace APITransportation.Controllers
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementSGDeleting(AnnouncementSGId);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.AnnouncementSubGroupDeleting, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(AnnouncementSGId) + ":" + AnnouncementSGId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
@@ -363,6 +386,8 @@ namespace APITransportation.Controllers
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementRelationAnnouncementSubGroupDeleting(AnnouncementId, AnnouncementSGId);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.AnnouncementRelationAnnouncementSubGroupDeleting, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(AnnouncementId) + ":" + AnnouncementId, MessageDetail2 = nameof(AnnouncementSGId) + ":" + AnnouncementSGId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -394,6 +419,8 @@ namespace APITransportation.Controllers
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementRelationAnnouncementSubGroupRegistering(AnnouncementId, AnnouncementSGId);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.AnnouncementRelationAnnouncementSubGroupRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(AnnouncementId) + ":" + AnnouncementId, MessageDetail2 = nameof(AnnouncementSGId) + ":" + AnnouncementSGId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
@@ -456,6 +483,8 @@ namespace APITransportation.Controllers
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementSubGroupRelationProvinceRegistering(ProvinceId, AnnouncementSGId);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.AnnouncementSubGroupRelationProvinceRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(ProvinceId) + ":" + ProvinceId, MessageDetail2 = nameof(AnnouncementSGId) + ":" + AnnouncementSGId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -487,6 +516,8 @@ namespace APITransportation.Controllers
 
                 var InstanceAnnouncements = new R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService);
                 InstanceAnnouncements.AnnouncementSubGroupRelationProvinceDeleting(ProvinceId, AnnouncementSGId);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.AnnouncementSubGroupRelationProvinceDeleting, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(ProvinceId) + ":" + ProvinceId, MessageDetail2 = nameof(AnnouncementSGId) + ":" + AnnouncementSGId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;

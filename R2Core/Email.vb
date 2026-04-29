@@ -1,19 +1,29 @@
 ﻿
-
-
-Imports R2Core.ConfigurationManagement
-Imports R2Core.DateTimeProvider
-Imports R2Core.Email.Exceptions
-Imports R2Core.GeneralConfiguration
 Imports System.IO
 Imports System.Net.Mail
+Imports System.Reflection
+Imports System.Security
+Imports System.Security.Authentication
 Imports System.Text
+Imports R2Core.DatabaseManagement
+
+Imports R2Core.DateTimeProvider
+Imports R2Core.Email.Exceptions
+Imports R2Core.ExceptionManagement
+Imports R2Core.GeneralConfiguration
 
 Namespace Email
 
     Public Class R2CoreEmailManager
 
-        Private _DateTimeService As New R2DateTimeService
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
+            Try
+                _DateTimeService = YourDateTimeService
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
 
         Public Sub SendEmailWithTXTTypeAttachment(YourReciever As String, YourAttachment As StringBuilder, YourSubject As String, YourBody As String, YourAttachmentFileName As String)
             Try
@@ -35,6 +45,14 @@ Namespace Email
                 mail.Subject = YourSubject
                 mail.Body = YourBody
                 SmtpClient.Send(mail)
+            Catch ex As Exception When TypeOf ex Is SmtpFailedRecipientException OrElse TypeOf ex Is InvalidOperationException OrElse TypeOf ex Is ArgumentNullException OrElse TypeOf ex Is InvalidOperationException OrElse TypeOf ex Is SmtpException OrElse TypeOf ex Is SmtpFailedRecipientException OrElse TypeOf ex Is SecurityException OrElse TypeOf ex Is AuthenticationException
+                Throw ex
+            Catch ex As DataBaseException
+                Throw ex
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As UnableConnectToAPIException
+                Throw ex
             Catch ex As R2CoreEmailSystemIsNotActiveException
                 Throw ex
             Catch ex As Exception
@@ -46,7 +64,8 @@ Namespace Email
 
     Namespace Exceptions
         Public Class R2CoreEmailSystemIsNotActiveException
-            Inherits ApplicationException
+            Inherits BPTException
+
             Public Overrides ReadOnly Property Message As String
                 Get
                     Return "سرویس ایمیل غیر فعال است"

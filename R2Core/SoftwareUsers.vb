@@ -42,6 +42,7 @@ Imports log4net.Appender.RollingFileAppender
 Imports R2Core.SecurityAlgorithmsManagement.Hashing
 Imports R2Core.GeneralConfiguration
 Imports System.Web.Services
+Imports R2Core.PublicProcedures
 
 Namespace SoftwareUserManagement
 
@@ -59,7 +60,6 @@ Namespace SoftwareUserManagement
     End Class
 
     Public Class R2CoreStandardSoftwareUserTypeStructure
-        Inherits BaseStandardClass.R2StandardStructure
 
         Public Sub New()
             MyBase.New()
@@ -76,7 +76,7 @@ Namespace SoftwareUserManagement
         End Sub
 
         Public Sub New(YourUTId As Int64, YourUTName As String, YourUTTitle As String, YourUTColor As Color, YourUserId As Int64, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
-            MyBase.New(YourUTId, YourUTName)
+            MyBase.New()
             UTId = YourUTId
             UTName = YourUTName
             UTTitle = YourUTTitle
@@ -102,7 +102,6 @@ Namespace SoftwareUserManagement
     End Class
 
     Public Class R2CoreStandardSoftwareUserStructure
-        Inherits BaseStandardClass.R2StandardStructure
 
         Public Sub New()
             MyBase.New()
@@ -144,7 +143,7 @@ Namespace SoftwareUserManagement
                        YourNonceTimeStamp As DateTime, YourNonceCount As Int64, YourPersonalNonce As String, YourPersonalNonceTimeStamp As DateTime,
                        YourCaptcha As String, YourCaptchaValid As Boolean, YourUserCreatorId As Int64,
                        YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourViewFlag As Boolean, YourDeleted As Boolean)
-            MyBase.New(YourUserId, YourUserName)
+            MyBase.New()
             UserId = YourUserId
             ApiKey = YourApiKey
             APIKeyExpiration = YourAPIKeyExpiration
@@ -223,9 +222,9 @@ Namespace SoftwareUserManagement
 
     Public Class R2CoreInstanseSoftwareUsersManager
 
-        Private _DateTimeService As IR2DateTimeService
+        Private _DateTimeService As IDateTimeService
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Public Sub New(YourR2DateTimeService As IR2DateTimeService)
+        Public Sub New(YourR2DateTimeService As IDateTimeService)
             _DateTimeService = YourR2DateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -274,10 +273,12 @@ Namespace SoftwareUserManagement
                     Throw New UserNotExistByMobileNumberException
                 End If
                 Return New R2CoreStandardSoftwareUserStructure(Ds.Tables(0).Rows(0).Item("UserId"), Ds.Tables(0).Rows(0).Item("ApiKey").trim, Ds.Tables(0).Rows(0).Item("APIKeyExpiration"), Ds.Tables(0).Rows(0).Item("UserName").trim, Ds.Tables(0).Rows(0).Item("UserShenaseh").trim, Ds.Tables(0).Rows(0).Item("UserPassword").trim, Ds.Tables(0).Rows(0).Item("UserPasswordExpiration"), Ds.Tables(0).Rows(0).Item("UserPinCode").trim, Ds.Tables(0).Rows(0).Item("UserCanCharge"), Ds.Tables(0).Rows(0).Item("UserActive"), Ds.Tables(0).Rows(0).Item("UserTypeId"), Ds.Tables(0).Rows(0).Item("MobileNumber").trim, Ds.Tables(0).Rows(0).Item("UserStatus").trim, Ds.Tables(0).Rows(0).Item("VerificationCode").trim, Ds.Tables(0).Rows(0).Item("VerificationCodeTimeStamp"), Ds.Tables(0).Rows(0).Item("VerificationCodeCount"), Ds.Tables(0).Rows(0).Item("Nonce").trim, Ds.Tables(0).Rows(0).Item("NonceTimeStamp"), Ds.Tables(0).Rows(0).Item("NonceCount"), Ds.Tables(0).Rows(0).Item("PersonalNonce").trim, Ds.Tables(0).Rows(0).Item("PersonalNonceTimeStamp"), Ds.Tables(0).Rows(0).Item("Captcha").trim, Ds.Tables(0).Rows(0).Item("CaptchaValid"), Ds.Tables(0).Rows(0).Item("UserCreatorId"), Ds.Tables(0).Rows(0).Item("DateTimeMilladi"), Ds.Tables(0).Rows(0).Item("DateShamsi").trim, Ds.Tables(0).Rows(0).Item("ViewFlag"), Ds.Tables(0).Rows(0).Item("Deleted"))
+            Catch ex As DataBaseException
+                Throw ex
             Catch ex As SqlInjectionException
                 Throw ex
-            Catch exx As UserNotExistByMobileNumberException
-                Throw exx
+            Catch ex As UserNotExistByMobileNumberException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -1123,8 +1124,8 @@ Namespace SoftwareUserManagement
             Inherits BPTException
 
             Public Sub New()
-                _Message = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.UserHasAlreadyBeenAuthenticated).MsgContent
-                _MessageCode = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.UserHasAlreadyBeenAuthenticated).MsgId
+                _Message = InstancePredefinedMessages.GetPredefinedMessage(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.UserHasAlreadyBeenAuthenticated).MsgContent
+                _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.UserHasAlreadyBeenAuthenticated).MsgId
             End Sub
 
         End Class
@@ -1133,8 +1134,8 @@ Namespace SoftwareUserManagement
             Inherits BPTException
 
             Public Sub New()
-                _Message = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.OTPCodeInvalid).MsgContent
-                _MessageCode = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.OTPCodeInvalid).MsgId
+                _Message = InstancePredefinedMessages.GetPredefinedMessage(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.OTPCodeInvalid).MsgContent
+                _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.OTPCodeInvalid).MsgId
             End Sub
 
         End Class
@@ -1145,12 +1146,12 @@ Namespace SoftwareUserManagement
     'BPTChanged
     Public Class R2CoreSoftwareUsersManager
 
-        Private _DateTimeService As IR2DateTimeService
+        Private _DateTimeService As IDateTimeService
         Private _SoftwareUserService As ISoftwareUserService
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
         Private _RCH As RedisConnectorHelper
         Private _LoggerService As ILogger
-        Public Sub New(YourDateTimeService As IR2DateTimeService, YourSoftwareUserService As ISoftwareUserService)
+        Public Sub New(YourDateTimeService As IDateTimeService, YourSoftwareUserService As ISoftwareUserService)
             _DateTimeService = YourDateTimeService
             _SoftwareUserService = YourSoftwareUserService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
@@ -1238,6 +1239,10 @@ Namespace SoftwareUserManagement
                     End If
                 End If
                 Return New R2CoreSoftwareUser With {.UserId = Ds.Tables(0).Rows(0).Item("UserId"), .ApiKey = Ds.Tables(0).Rows(0).Item("ApiKey").trim, .APIKeyExpiration = Ds.Tables(0).Rows(0).Item("APIKeyExpiration").trim, .UserName = Ds.Tables(0).Rows(0).Item("UserName").trim, .UserShenaseh = Ds.Tables(0).Rows(0).Item("UserShenaseh").trim, .UserPassword = Ds.Tables(0).Rows(0).Item("UserPassword").trim, .UserPasswordExpiration = Ds.Tables(0).Rows(0).Item("UserPasswordExpiration").trim, .UserPinCode = Ds.Tables(0).Rows(0).Item("UserPinCode").trim, .UserCanCharge = Ds.Tables(0).Rows(0).Item("UserCanCharge"), .UserActive = Ds.Tables(0).Rows(0).Item("UserActive"), .UserTypeId = Ds.Tables(0).Rows(0).Item("UserTypeId"), .MobileNumber = Ds.Tables(0).Rows(0).Item("MobileNumber").trim}
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As SqlException
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
             Catch ex As UserIdNotExistException
                 Throw ex
             Catch ex As Exception
@@ -1286,6 +1291,10 @@ Namespace SoftwareUserManagement
                     Throw New SoftWareUserNotFoundException
                 End If
                 Return New R2CoreSoftwareUser With {.UserId = Ds.Tables(0).Rows(0).Item("UserId"), .ApiKey = Ds.Tables(0).Rows(0).Item("ApiKey").trim, .APIKeyExpiration = Ds.Tables(0).Rows(0).Item("APIKeyExpiration"), .UserName = Ds.Tables(0).Rows(0).Item("UserName").trim, .UserShenaseh = Ds.Tables(0).Rows(0).Item("UserShenaseh").trim, .UserPassword = Ds.Tables(0).Rows(0).Item("UserPassword").trim, .UserPasswordExpiration = Ds.Tables(0).Rows(0).Item("UserPasswordExpiration"), .UserPinCode = Ds.Tables(0).Rows(0).Item("UserPinCode"), .UserCanCharge = Ds.Tables(0).Rows(0).Item("UserCanCharge"), .UserActive = Ds.Tables(0).Rows(0).Item("UserActive"), .UserTypeId = Ds.Tables(0).Rows(0).Item("UserTypeId"), .MobileNumber = Ds.Tables(0).Rows(0).Item("MobileNumber").trim}
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As DataBaseException
+                Throw ex
             Catch ex As SqlInjectionException
                 Throw ex
             Catch ex As SoftWareUserNotFoundException
@@ -1317,13 +1326,19 @@ Namespace SoftwareUserManagement
                 Else
                     Throw New CaptchaWordNotCorrectException
                 End If
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As DataBaseException
+                Throw ex
+            Catch ex As SqlInjectionException
+                Throw ex
+            Catch ex As SoftWareUserNotFoundException
+                Throw ex
             Catch ex As UserIsNotActiveException
                 Throw ex
             Catch ex As SessionOverException
                 Throw ex
             Catch ex As CaptchaWordNotCorrectException
-                Throw ex
-            Catch ex As SoftWareUserNotFoundException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -1332,7 +1347,7 @@ Namespace SoftwareUserManagement
 
         Public Function GetSoftwareUserTypes(YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager()
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim Ds As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -1471,8 +1486,8 @@ Namespace SoftwareUserManagement
             Dim CmdSql As New SqlCommand
             CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
-                Dim InstancePermissions = New R2CoreInstansePermissionsManager
-                If Not InstancePermissions.ExistPermission(R2CorePermissionTypes.UserCanSendSoftwareUserShenasehPasswordViaSMS, YourUserId, 0) Then Throw New UserNotAllowedRunThisProccessException
+                Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
+                If Not InstancePermissions.ExistPermission(R2CorePermissionTypes.UserCanSendSoftwareUserShenasehPasswordViaSMS, YourUserId, 0) Then Throw New UserNotAlllowedException
 
                 Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
@@ -1493,6 +1508,8 @@ Namespace SoftwareUserManagement
                 SoftWareUserSecurity.UserShenaseh = SoftwareUser.MobileNumber
                 SoftWareUserSecurity.UserPassword = newPassword
                 Return SoftWareUserSecurity
+            Catch ex As UserNotAlllowedException
+
             Catch ex As PermissionException
                 Throw ex
             Catch ex As DataBaseException
@@ -1542,10 +1559,10 @@ Namespace SoftwareUserManagement
             Try
                 Dim AES = New AESAlgorithmsManager
                 Dim InstanceCacheKeys = New Caching.R2CoreCacheManager(_DateTimeService)
-                Dim InstanceSoftwareUser = New R2CoreInstanseSoftwareUsersManager(_DateTimeService)
+                Dim InstanceSoftwareUser = New R2CoreSoftwareUsersManager(_DateTimeService, Nothing)
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
 
-                Dim SoftwareUser = InstanceSoftwareUser.GetNSSUserUnChangeable(New R2CoreSoftwareUserMobile(YourSoftwareUserMobileNumber))
+                Dim SoftwareUser = InstanceSoftwareUser.GetUser(New R2CoreSoftwareUserMobile(YourSoftwareUserMobileNumber), True)
 
                 Dim SessionIdOTPCodeUserId = New R2CoreSessionIdOTPCodeUserId
                 SessionIdOTPCodeUserId.SessionId = YourSessionId
@@ -1700,10 +1717,10 @@ Namespace SoftwareUserManagement
             End Try
         End Sub
 
-        Public Sub SendSMSSoftwareUserVerificationCode(YourNSSSoftwareUser As R2CoreStandardSoftwareUserStructure, YourVerificationCode As String)
+        Public Sub SendSMSSoftwareUserVerificationCode(YourSoftwareUser As R2CoreSoftwareUser, YourVerificationCode As String)
             Try
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
-                Dim LstUser = New List(Of R2CoreStandardSoftwareUserStructure) From {YourNSSSoftwareUser}
+                Dim InstanceSMSHandling = New R2CoreSMSHandlerManager(_DateTimeService, _SoftwareUserService)
+                Dim LstUser = New List(Of R2CoreSoftwareUser) From {YourSoftwareUser}
                 Dim LstCreationData = New List(Of SMSCreationData) From {New SMSCreationData With {.Data1 = YourVerificationCode}}
                 Dim SMSResult = InstanceSMSHandling.SendSMS(LstUser, R2CoreSMSTypes.OTPCode, LstCreationData, False)
                 Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
@@ -1803,7 +1820,7 @@ Namespace SoftwareUserManagement
         Public Sub RegisteringSoftwareUserPermissionsByUserType(YourUserId As Int64)
             Try
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
-                Dim InstancePermissions = New R2CorePermissionsManager()
+                Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
                 Dim UserTypeId = GetRawSoftwareUser(YourUserId, True).UserTypeId
                 Dim ComposeSearchString As String = UserTypeId.ToString + ":"
                 Dim AllofSoftwareUserTypes As String() = Split(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.SoftwareUserTypesPermissions, 0), ";")
@@ -1820,13 +1837,13 @@ Namespace SoftwareUserManagement
             Try
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
 
-                Dim InstancePermissions = New R2CorePermissionsManager()
+                Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
                 Dim UserTypeId = GetRawSoftwareUser(YourUserId, True).UserTypeId
                 'به دست آوردن لیست فرآیندهای وب قابل دسترسی برای نوع کاربر و ارسال به مدیریت مجوز
                 Dim ComposeSearchString As String = UserTypeId.ToString + ":"
                 Dim AllofSoftwareUserTypes1 As String() = Split(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.SoftwareUserTypesAccessWebProcesses, 0), ";")
                 Dim AllofWebProcessesIds As String() = Split(Mid(AllofSoftwareUserTypes1.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes1.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
-                R2CoreMClassPermissionsManagement.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, YourUserId, AllofWebProcessesIds)
+                InstancePermissions.RegisteringPermissions(R2CorePermissionTypes.SoftwareUsersAccessWebProcesses, YourUserId, AllofWebProcessesIds)
                 'به دست آوردن لیست گروههای فرآیند وب برای نوع کاربر و ارسال آن به مدیریت روابط نهادی
                 Dim AllofSoftwareUserTypes2 As String() = Split(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.SoftwareUserTypesRelationWebProcessGroups, 0), ";")
                 Dim AllofWebProcessGroupsIds As String() = Split(Mid(AllofSoftwareUserTypes2.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0), ComposeSearchString.Length + 1, AllofSoftwareUserTypes2.Where(Function(x) Mid(x, 1, ComposeSearchString.Length) = ComposeSearchString)(0).Length), ",")
@@ -1887,7 +1904,6 @@ Namespace SoftwareUserManagement
 
     'BPTChanged
     Public Class R2CoreSoftwareUser
-        Inherits BaseStandardClass.R2StandardStructure
         Public Property UserId As Int64
         Public Property ApiKey As String
         Public Property APIKeyExpiration As String
@@ -1957,6 +1973,10 @@ Namespace SoftwareUserManagement
         Private _UserId As Int64
         Public Sub New(YourUserId As Int64)
             _UserId = YourUserId
+        End Sub
+
+        Public Sub New()
+            _UserId = SystemUserId
         End Sub
 
         Public ReadOnly Property UserId As Long Implements ISoftwareUserService.UserId

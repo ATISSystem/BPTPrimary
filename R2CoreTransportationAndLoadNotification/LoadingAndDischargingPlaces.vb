@@ -14,7 +14,7 @@ Imports R2Core.DateTimeProvider
 Imports R2Core.EntityRelationManagement
 Imports R2Core.ExceptionManagement
 Imports R2Core.GeneralConfiguration
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SiteIsBusy
 Imports R2Core.SMS.Exceptions
@@ -36,7 +36,6 @@ Namespace LoadingAndDischargingPlaces
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationStandardLoadingAndDischargingPlacesStructure
-        Inherits R2StandardStructure
 
         Public Sub New()
             MyBase.New()
@@ -55,7 +54,7 @@ Namespace LoadingAndDischargingPlaces
         End Sub
 
         Public Sub New(YourLADPlaceId As Int64, YourLADPlaceTitle As String, YourLADPlaceTel As String, YourLADPlaceAddress As String, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourTime As String, YourUserId As Int64, YourLoadingActive As Boolean, YourDischargingActive As Boolean, YourViewFlag As Boolean, YourDeleted As Boolean)
-            MyBase.New(YourLADPlaceId, YourLADPlaceTitle)
+            MyBase.New()
             _LADPlaceId = YourLADPlaceId
             _LADPlaceTitle = YourLADPlaceTitle
             _LADPlaceTel = YourLADPlaceTel
@@ -237,7 +236,7 @@ Namespace LoadingAndDischargingPlaces
         '            CmdSql.Connection.Close()
         '        End If
         '        'ارسال اس ام اس
-        '        Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+        '        Dim InstancePublicProcedures = New R2Core.PublicProc.R2CorePublicProceduresManager
         '        SendSMSLoadingAndDischargingPLacesChangeStatus(YourNSSLADPlace.LADPlaceTitle, _LoadingPlaceEquivalent, InstancePublicProcedures.GetBooleanVariablePersianEquivalent(Not CurrentStatus))
         '    Catch ex As Exception
         '        If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
@@ -262,7 +261,7 @@ Namespace LoadingAndDischargingPlaces
         '            CmdSql.Connection.Close()
         '        End If
         '        'ارسال اس ام اس
-        '        Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+        '        Dim InstancePublicProcedures = New R2Core.PublicProc.R2CorePublicProceduresManager
         '        SendSMSLoadingAndDischargingPLacesChangeStatus(YourNSSLADPlace.LADPlaceTitle, _DischargingPlaceEquivalent, InstancePublicProcedures.GetBooleanVariablePersianEquivalent(Not CurrentStatus))
         '    Catch ex As Exception
         '        If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
@@ -386,7 +385,7 @@ Namespace LoadingAndDischargingPlaces
 
         Public Function GetLoadingAndDischargingPlaces_SearchIntroCharacters(YourSearchString As String, YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
                 Dim DS As New DataSet
@@ -422,7 +421,7 @@ Namespace LoadingAndDischargingPlaces
 
         Public Function GetLoadingAndDischargingPlace(YourLADPlaceId As Int64, YourImmediately As Boolean) As RawLoadingAndDischargingPlace
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -461,9 +460,9 @@ Namespace LoadingAndDischargingPlaces
                 Dim LADPlaceIdNew As Int64 = CmdSql.ExecuteScalar() + 1
                 CmdSql.CommandText = "Insert Into R2PrimaryTransportationAndLoadNotification.dbo.TblLoadingAndDischargingPlaces(LADPlaceId,LADPlaceTitle,LADPlaceTel,LADPlaceAddress,DateTimeMilladi,DateShamsi,Time,UserId,LoadingActive,DischargingActive,ViewFlag,Deleted)
                                             Values(@LADPlaceId,@LADPlaceTitle,@LADPlaceTel,@LADPlaceAddress,convert(varchar, getdate(), 20),R2Primary.DBO.BPTCOGregorianToPersian(GETDATE()),convert(varchar, getdate(), 8)," & InstanceSoftwareUsers.GetSystemUserId & ",1,1,1,0)"
-                CmdSql.Parameters.Add("@LADPlaceId", SqlDbType.BigInt ).Value =LADPlaceIdNew
-                CmdSql.Parameters.Add("@LADPlaceTitle", SqlDbType.NVarChar ).Value =YourRawLoadingAndDischargingPlace.LADPlaceTitle
-                CmdSql.Parameters.Add("@LADPlaceTel", SqlDbType.NVarChar ).Value =YourRawLoadingAndDischargingPlace.LADPlaceTel
+                CmdSql.Parameters.Add("@LADPlaceId", SqlDbType.BigInt).Value = LADPlaceIdNew
+                CmdSql.Parameters.Add("@LADPlaceTitle", SqlDbType.NVarChar).Value = YourRawLoadingAndDischargingPlace.LADPlaceTitle
+                CmdSql.Parameters.Add("@LADPlaceTel", SqlDbType.NVarChar).Value = YourRawLoadingAndDischargingPlace.LADPlaceTel
                 CmdSql.Parameters.Add("@LADPlaceAddress", SqlDbType.NVarChar).Value = YourRawLoadingAndDischargingPlace.LADPlaceAddress
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
@@ -538,7 +537,7 @@ Namespace LoadingAndDischargingPlaces
                     CmdSql.Connection.Close()
                 End If
                 'ارسال اس ام اس
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 SendLoadingAndDischargingPLacesChangeStatusSMS(LADPlace.LADPlaceTitle, _LoadingPlaceEquivalent, InstancePublicProcedures.GetBooleanVariablePersianEquivalent(Not LADPlace.LoadingActive))
             Catch ex As Exception
                 If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
@@ -563,7 +562,7 @@ Namespace LoadingAndDischargingPlaces
                     CmdSql.Connection.Close()
                 End If
                 'ارسال اس ام اس
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 SendLoadingAndDischargingPLacesChangeStatusSMS(LADPlace.LADPlaceTitle, _DischargingPlaceEquivalent, InstancePublicProcedures.GetBooleanVariablePersianEquivalent(Not LADPlace.DischargingActive))
             Catch ex As Exception
                 If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
@@ -576,17 +575,17 @@ Namespace LoadingAndDischargingPlaces
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 'کاربران
                 Dim TargetUsers = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.LoadingDischargingPlaces, 2).Split("-")
-                Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
-                Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+                Dim LstSoftwareUsers = New List(Of R2CoreSoftwareUser)
+                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(New R2DateTimeService, New SoftwareUserService)
                 For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
-                    LstSoftwareUsers.Add(InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(TargetUsers(LoopxUsers))))
+                    LstSoftwareUsers.Add(InstanceSoftwareUsers.GetUser(Convert.ToInt64(TargetUsers(LoopxUsers)), False))
                 Next
                 'کانتنت پیام
                 Dim myData = New SMSCreationData With {.Data1 = YourLoadingDischargingPlaceTitle, .Data2 = YourLoadingDischargingNote, .Data3 = YourStatus}
                 'ارسال اس ام اس
-                Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
-                Dim SMSResult = InstanceSMSHandling.SendSMS(LstSoftwareUsers, R2CoreTransportationAndLoadNotification.SMS.SMSTypes.R2CoreTransportationAndLoadNotificationSMSTypes.LoadingAndDischargingPLacesChangeStatus, InstanceSMSHandling.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
-                Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
+                Dim InstanceSMSHandler = New R2CoreSMSHandlerManager(_DateTimeService, New SoftwareUserService)
+                Dim SMSResult = InstanceSMSHandler.SendSMS(LstSoftwareUsers, R2CoreTransportationAndLoadNotification.SMS.SMSTypes.R2CoreTransportationAndLoadNotificationSMSTypes.LoadingAndDischargingPLacesChangeStatus, InstanceSMSHandler.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
+                Dim SMSResultAnalyze = InstanceSMSHandler.GetSMSResultAnalyze(SMSResult)
                 If Not SMSResultAnalyze = String.Empty Then Throw New LoadingAndDischargingSendSMSFailedException
             Catch ex As LoadingAndDischargingSendSMSFailedException
                 Throw ex

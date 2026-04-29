@@ -35,9 +35,9 @@ Namespace TWSManagement
     Public Class PayanehClassLibraryTWSManager
 
         Private _TWS As TerminalsWebService.TerminalsWebService = New TerminalsWebService.TerminalsWebService()
-        Private _R2DateTimeService As IR2DateTimeService
+        Private _R2DateTimeService As IDateTimeService
 
-        Public Sub New(YourR2DateTimeService As IR2DateTimeService)
+        Public Sub New(YourR2DateTimeService As IDateTimeService)
             _R2DateTimeService = YourR2DateTimeService
         End Sub
 

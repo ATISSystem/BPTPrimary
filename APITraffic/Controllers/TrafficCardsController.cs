@@ -4,8 +4,10 @@ using APITraffic.Models;
 using Newtonsoft.Json;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
+using R2Core.LoggingManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
+using R2CoreParkingSystem.Logging;
 using R2CoreParkingSystem.TrafficCardsManagement;
 using System;
 using System.Collections.Generic;
@@ -14,6 +16,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
 
@@ -24,6 +27,8 @@ namespace APITraffic.Controllers
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
         private R2DateTimeService _DateTimeService;
+        private ILogger _loggerService;
+        private Networking _Networking;
 
         public TrafficCardsController()
         {
@@ -51,6 +56,8 @@ namespace APITraffic.Controllers
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 InstanceTrafficCards.RegisteringTrafficCard(TrafficCardNo, TrafficCardTypeId, TrafficCardTempTypeId,User.UserId );
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreParkingSystemLogTypes.RegisteringTrafficCard, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TrafficCardNo) + ":" + TrafficCardNo, MessageDetail2 = nameof(TrafficCardTypeId) + ":" + TrafficCardTypeId, MessageDetail3= nameof(TrafficCardTempTypeId) + ":" + TrafficCardTempTypeId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -100,6 +107,8 @@ namespace APITraffic.Controllers
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 InstanceTrafficCards.EditingTrafficCard(RawTrafficCard);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreParkingSystemLogTypes.EditingTrafficCard, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawTrafficCard.TrafficCardId) + ":" + RawTrafficCard.TrafficCardId,MessageDetail2= nameof(RawTrafficCard.TrafficCardNo) + ":" + RawTrafficCard.TrafficCardNo, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -173,6 +182,8 @@ namespace APITraffic.Controllers
 
                 InstanceTrafficCards.RegisteringTrafficCardType(TrafficCardTypeTitle);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreParkingSystemLogTypes.RegisteringTrafficCardType, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TrafficCardTypeTitle) + ":" + TrafficCardTypeTitle, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -198,6 +209,8 @@ namespace APITraffic.Controllers
                 var User = InstanceSession.ConfirmSession(SessionId);
 
                 InstanceTrafficCards.EditingTrafficCardType(RawTrafficCardType);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreParkingSystemLogTypes.EditingTrafficCardType, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawTrafficCardType.TrafficCardTypeId) + ":" + RawTrafficCardType.TrafficCardTypeId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");

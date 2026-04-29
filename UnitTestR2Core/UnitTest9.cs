@@ -3,11 +3,9 @@ using PayanehClassLibrary.CarTrucksManagement;
 using PayanehClassLibrary.DriverTrucksManagement;
 using R2Core.Caching;
 using R2Core.Carousels;
-using R2Core.ConfigurationManagement;
 using R2Core.ConfigurationOfDevices;
 using R2Core.DatabaseManagement;
 using R2Core.DateTimeProvider;
-using R2Core.MoneyWallet.PaymentRequests;
 using R2Core.PermissionManagement;
 using R2Core.SMS.SMSSendRecive;
 using R2Core.SoftwareUserManagement;
@@ -22,6 +20,7 @@ using R2CoreTransportationAndLoadNotification.Trucks;
 using StackExchange.Redis;
 using System;
 using System.Data;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Net;
@@ -32,25 +31,112 @@ using R2CoreTransportationAndLoadNotification.TransportTariffsParameters;
 using R2Core.GeneralConfiguration;
 using R2Core.SMS.SMSHandling;
 using R2Core.SMS.GeneralAnnounceSMS;
+using System.Security.Cryptography;
+using System.EnterpriseServices.Internal;
+using R2Core.RawGroups;
+using R2Core;
+using R2Core.ExceptionManagement;
+using R2Core.Devices;
+using R2Core.PredefinedMessagesManagement;
+using R2Core.SMS.SMSHandling.Exceptions;
+using R2Core.BaseClasses;
 
 namespace UnitTestR2Core
 {
     [TestClass]
     public class UnitTest9
     {
-        R2DateTimeService _DateTimeService = new R2DateTimeService();
+        IDateTimeService _DateTimeService;
+        R2CoreSqlDataBOXManager _InstanceSqlDataBOX;
 
         [TestMethod]
         public void TestMethod1()
         {
+            _DateTimeService = new R2DateTimeService();
+            _InstanceSqlDataBOX = new R2CoreSqlDataBOXManager(_DateTimeService);
+            PayanehWebService.PayanehWebService _WSp = new PayanehWebService.PayanehWebService();
+            var _WS = new R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService();
+            var InstanceGeneralConfiguration = new R2Core.GeneralConfiguration.R2CoreGeneralConfigurationManager(_DateTimeService);
             var InstanceGeneralAnnounceSMS = new R2CoreGeneralAnnounceSMSManager(_DateTimeService);
             var InstanceSMSHandler = new R2CoreSMSHandlerManager(_DateTimeService, null);
             var InstanceCarousels = new R2CoreCarouselsManager(_DateTimeService);
             var instanceSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, null);
+            var RawGroupFileHolder = new R2CoreRawGroupFileHolder(R2Core.RawGroups.R2CoreRawGroups.Carousels, new R2Core.BaseClasses.R2CoreFile("1"), _DateTimeService);
+            var InstanceTestAPIs = new TestAPIs();
+            var InstanceDevice = new R2CoreDeviceManager(_DateTimeService);
+            var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
+            var InsatnceRawGroups = new R2CoreRawGroupsManager (_DateTimeService);
+            var InstancePermissions = new R2CorePermissionsManager(_DateTimeService);
+            var InstancePaymentRequests = new R2Core.PaymentRequests.R2CoreInstansePaymentRequestsManager(_DateTimeService);
+            var InstanceSession = new R2Core.SessionManagement.R2CoreSessionManager();
+            try
+            {
 
-            var xcxc=instanceSoftwareUsers.GetUser("F49B1141",true ); 
+                InstanceSession.StartSession();
 
-            InstanceSMSHandler.SendSMSFree("09132043148",new SMSCreationData { Data1="123" } ,12);
+                //R2CoreTransportationAndLoadNotification.Rmto.RmtoWebService.GetNSSTruckDriver("123");
+
+                R2CoreTransportationAndLoadNotification.Rmto.RmtoWebService.GetNSSTruck("4178165");
+
+                //PayanehClassLibraryMClassDriverTrucksManagement.GetDriverTruckfromRMTOAndInsertUpdateLocalDataBaseByNationalCode("4172014607");
+                //var Truck = _WS.WebMethodGetTruckBySmartCarNofromRMTO("2548574", _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
+                //var TruckDriver = _WS.WebMethodGetTruckDriverByNationalCodefromRMTO("1280336651", _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
+
+
+                var MobileNumber = new MobileNumberInvallidException("09132043148");
+
+
+                InstancePredefinedMessages.GetPredefinedMessage(2);
+                //InstanceDevice.GetAllDevices(true);
+                //var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
+                //var WantedSoftwareUser = InstanceSoftwareUsers.GetNSSUserUnChangeable(new R2CoreSoftwareUserMobile("09132043148"));
+                try
+                {
+                    var xop = InstanceTestAPIs.TestGetAllDevices(true );
+                }
+                catch (AggregateException  ex)
+                {
+                    ;
+                }
+
+
+                var Da = new SqlDataAdapter();
+                DataSet Ds = new DataSet();
+                Da.SelectCommand = new SqlCommand("Select * from r2primary..tbldevice");
+                Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection();
+                Da.Fill(Ds);
+            }
+            catch (SqlException ex)
+            {
+                var xXx = R2CoreDatabaseManager.GetEquivalenceMessage(ex);
+                throw xXx;
+            }
+            catch (Exception ex)
+            {; }
+
+            var RGFileHolder = new R2CoreRawGroupFileHolder(9, new R2CoreFile("1.Carousel"), _DateTimeService);
+            Byte[] FileByteArray = null;
+            RGFileHolder.GetFile(ref FileByteArray);
+
+            var RawGroup = InsatnceRawGroups.GetRawGroup(9);
+
+            var byt = _WS.WebMethodGetFile(R2Core.RawGroups.R2CoreRawGroups.Carousels, 1.ToString() + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.Pictures, 0), _WS.WebMethodLogin(instanceSoftwareUsers.GetUser(21, true).UserShenaseh, instanceSoftwareUsers.GetUser(21, true).UserPassword));
+            _WS.WebMethodSaveFile(R2Core.RawGroups.R2CoreRawGroups.Carousels, 111.ToString() + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.Pictures, 0), byt, _WS.WebMethodLogin(instanceSoftwareUsers.GetUser(21, true).UserShenaseh, instanceSoftwareUsers.GetUser(21, true).UserPassword));
+
+
+            var xcxc = instanceSoftwareUsers.GetUser("F49B1141", true);
+
+
+
+            InstanceCarousels.CarouselsCachePreparing(instanceSoftwareUsers.GetUser(21, true));
+
+            InstanceCarousels.CarouselRegistering(new R2CoreCarousel { CTitle = "", URL = "", Description = "", Picture = new byte[] { 1, 2, 3 } }, instanceSoftwareUsers.GetUser(21, true));
+            InstanceCarousels.CarouselChangeActiveStatus(20007, true, instanceSoftwareUsers.GetUser(21, true));
+
+
+
+
+            InstanceSMSHandler.SendSMSFree("09132043148", new SMSCreationData { Data1 = "123" }, 12);
 
             var SoftwareUserTypes = instanceSoftwareUsers.GetSoftwareUserTypes(true);
 
@@ -108,7 +194,6 @@ namespace UnitTestR2Core
 
 
 
-            var InstancePermissions = new R2CorePermissionsManager();
             if (InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.LoadAllocationUseTimeHandlingByLoadStatus, 1, 0))
             { }
 
@@ -141,7 +226,6 @@ namespace UnitTestR2Core
             xcv.GetTruckBySmartCardNo("4116459");
 
             PayanehClassLibraryMClassDriverTrucksManagement.GetDriverTruckfromRMTOAndInsertUpdateLocalDataBaseByNationalCode("4172014607");
-            PayanehWebService.PayanehWebService _WS = new PayanehWebService.PayanehWebService();
             //var Truck = _WS.WebMethodGetTruckBySmartCarNofromRMTO("2548574", _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
             //var TruckDriver = _WS.WebMethodGetTruckDriverByNationalCodefromRMTO("1280336651", _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
 
@@ -160,10 +244,6 @@ namespace UnitTestR2Core
             xx.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection(), "select * from tblsoftwareusers", 0, ref DS, ref booo);
             xx.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection(), "select * from tblsoftwareusers", 1000, ref DS, ref booo);
             xx.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection(), "select * from tblsoftwareusers", 0, ref DS, ref booo);
-
-            var X = new R2CoreInstansePaymentRequestsManager(_DateTimeService);
-            X.PaymentRequest(5, 15000, 21);
-
 
 
             InstanceMoneyWalletCharge.PaymentRequest(15000, 21);

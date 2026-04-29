@@ -380,8 +380,8 @@ Namespace TurnRegisterRequest
     'BPTChanged
     Public Class PayanehClassLibraryTurnRegisterRequestManager
 
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
         End Sub
 
@@ -457,7 +457,7 @@ Namespace TurnRegisterRequest
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService)
                 'کنترل مجوز
-                Dim InstancePermissions = New R2CoreInstansePermissionsManager
+                Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
                 If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanRequestReserveTurnRegistering, YourSoftwareUserId, 0) Then Throw New UserCanNotRequestReserveTurnRegisteringException
                 If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.RequesterCanRequestReserveTurnRegistering, YourRequesterId, 0) Then Throw New RequesterCanNotRequestReserveTurnRegisteringException
                 'ثبت درخواست صدور نوبت رزرو
@@ -494,7 +494,7 @@ Namespace TurnRegisterRequest
         Public Function ResuscitationReserveTurn(YourSeqTId As Int64, YourTurnRegisterRequestId As Int64, YourTruckId As Int64, YourRequesterId As Int64, YourTurnType As TurnType, YourSotwareUserId As Int64) As Int64
             Try
                 'کنترل مجوز کاربر
-                Dim InstancePermissions = New R2CoreInstansePermissionsManager
+                Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
                 If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanResuscitationReserveTurn, YourSotwareUserId, 0) Then Throw New UserCanNotResuscitationReserveTurnException
 
                 'کنترل نوع درخواست و تاریخ انقضاء 
@@ -549,7 +549,7 @@ Namespace TurnRegisterRequest
         Public Function EmergencyTurnRegisterRequest(YourSeqTId As Int64, YourTruckId As Int64, ByRef YourTurnId As Int64, YourEmergencyTurnRegisterRequestNote As String, YourRequesterId As Int64, YourTurnType As TurnType, YourSoftwareUserId As Int64) As Int64
             Try
                 'کنترل مجوز درخواست نوبت اضطراری
-                Dim InstancePermissions = New R2CoreInstansePermissionsManager
+                Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
                 If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanRequestEmergencyTurnRegistering, YourSoftwareUserId, 0) Then Throw New UserCanNotRequestEmergencyTurnRegisteringException
                 'کنترل موجودی کیف پول برای هزینه صدور نوبت - درصورتی که موجودی کافی نباشداکسپشن پرتاب می گردد 
                 If Not IsMoneyWalletInventoryIsEnoughForTurnRegistering(YourTruckId, YourSeqTId) Then Throw New MoneyWalletCurrentChargeNotEnoughException

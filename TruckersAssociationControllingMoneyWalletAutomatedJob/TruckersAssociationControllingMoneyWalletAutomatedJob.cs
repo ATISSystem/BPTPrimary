@@ -1,6 +1,6 @@
 ﻿using PayanehClassLibrary.ConfigurationManagement;
 using PayanehClassLibrary.GeneralConfiguration;
-using PayanehClassLibrary.TruckersAssociationControllingMoneyWallet;
+using PayanehClassLibrary.TruckersAssociationControllingMoneyWalletAutomatedJobService;
 using R2Core.ConfigurationManagement;
 using R2Core.DateTimeProvider;
 using R2Core.GeneralConfiguration;
@@ -52,7 +52,7 @@ namespace TruckersAssociationControllingMoneyWalletAutomatedJob
                     {
                         var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(_SystemUser);
-                        _AutomatedJobsTimer.Interval = InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWallet, 8) * 1000;
+                        _AutomatedJobsTimer.Interval = InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWalletAutomatedJobService, 8) * 1000;
                         _FailStatus = false;
                         EventLog.WriteEntry("TruckersAssociationControllingMoneyWalletAutomatedJob", "TruckersAssociationControllingMoneyWalletAutomatedJob.Interval=" + _AutomatedJobsTimer.Interval.ToString(), EventLogEntryType.SuccessAudit);
                     }

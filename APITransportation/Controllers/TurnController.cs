@@ -153,7 +153,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TurnId = Content.TurnId;
@@ -164,7 +164,7 @@ namespace APITransportation.Controllers
                 InstanceTurns.TurnCancellationByUser(TurnId, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }

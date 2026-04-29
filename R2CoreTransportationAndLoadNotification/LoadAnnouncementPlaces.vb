@@ -3,7 +3,7 @@
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2Core.WebProcessesManagement.Exceptions
 Imports R2CoreTransportationAndLoadNotification.Exceptions
 Imports System.Reflection
@@ -14,7 +14,7 @@ Namespace LoadAnnouncementPlaces
 
         Public Function GetLoadAnnouncementPlaces(YourProvinceId As Int64) As String
             Try
-                Dim InstanccePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstanccePublicProcedures = New R2CorePublicProceduresManager
                 Dim Ds As DataSet
 
                 '"Select LoadAnnouncementPlaces.LAPTitle,LoadAnnouncementPlaces.LAPIconName,LoadAnnouncementPlaces.LAPURL,LoadAnnouncementPlaces.Description 

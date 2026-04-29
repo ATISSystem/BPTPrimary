@@ -29,8 +29,8 @@ Namespace LoadAllocations
 
     Public Class PayanehClassLibraryLoadAllocationsManager
 
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
         End Sub
 

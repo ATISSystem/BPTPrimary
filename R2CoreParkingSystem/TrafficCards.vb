@@ -2,6 +2,7 @@
 
 
 Imports R2Core
+Imports R2Core.BaseClasses
 Imports R2Core.BaseStandardClass
 Imports R2Core.ComputersManagement
 Imports R2Core.ConfigurationManagement
@@ -9,7 +10,7 @@ Imports R2Core.DatabaseManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.GeneralConfiguration
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2Core.RFIDCards
 Imports R2Core.SoftwareUserManagement
 Imports R2CoreParkingSystem.AccountingManagement
@@ -28,7 +29,6 @@ Namespace TrafficCardsManagement
     End Enum
 
     Public Class R2CoreParkingSystemStandardTrafficCardStructure
-        Inherits R2StandardStructure
 
         Private myCardId As String
         Private myCardNo As String
@@ -64,7 +64,7 @@ Namespace TrafficCardsManagement
             myCardType = TerafficCardType.None : myTempCardType = TrafficTempCardType.None
         End Sub
         Public Sub New(ByVal CardIdd As String, ByVal CardNoo As String, ByVal Chargee As Int32, ByVal UserIdSabtt As Byte, ByVal UserIdEditt As Byte, ByVal PelakTypee As Byte, ByVal Pelakk As String, ByVal Seriall As String, ByVal NoMoneyy As Boolean, ByVal Activee As Boolean, ByVal CompanyNamee As String, ByVal NameFamilyy As String, ByVal Mobilee As String, ByVal Addresss As String, ByVal Tell As String, ByVal Tahvilgg As String, ByVal DateTimeMilladiSabtt As DateTime, ByVal DateTimeMilladiEditt As DateTime, ByVal DateShamsiSabtt As String, ByVal DateShamsiEditt As String, ByVal CardTypee As TerafficCardType, ByVal TempCardTypee As TrafficTempCardType)
-            MyBase.New(CardIdd, CardNoo)
+            MyBase.New()
             myCardId = CardIdd
             myCardNo = CardNoo
             myCharge = Chargee
@@ -302,14 +302,14 @@ Namespace TrafficCardsManagement
             End Try
         End Function
 
-        Public Sub UpdatingTrafficCard(ByVal YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourEditLevel As R2Enums.EditLevel)
+        Public Sub UpdatingTrafficCard(ByVal YourNSSTerafficCard As R2CoreParkingSystemStandardTrafficCardStructure, YourEditLevel As R2CoreEnums.EditLevel)
             Dim Cmdsql As New SqlClient.SqlCommand
             Cmdsql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection
             Try
                 Cmdsql.Connection.Open()
-                If YourEditLevel = R2Enums.EditLevel.LowLevel Then
+                If YourEditLevel = R2CoreEnums.EditLevel.LowLevel Then
                     Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set UserIdEdit=" & YourNSSTerafficCard.UserIdEdit & ",Pelak='" & YourNSSTerafficCard.Pelak & "',Serial='" & YourNSSTerafficCard.Serial & "',CompanyName='" & YourNSSTerafficCard.CompanyName & "',NameFamily='" & YourNSSTerafficCard.NameFamily & "',Mobile='" & YourNSSTerafficCard.Mobile & "',Address='" & YourNSSTerafficCard.Address & "',Tel='" & YourNSSTerafficCard.Tel & "',Tahvilg='" & YourNSSTerafficCard.Tahvilg & "',CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & ",DateTimeMilladiEdit='" & _DateTimeService.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTimeService.GetCurrentShamsiDate() & "' Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
-                ElseIf YourEditLevel = R2Enums.EditLevel.HighLevel Then
+                ElseIf YourEditLevel = R2CoreEnums.EditLevel.HighLevel Then
                     Cmdsql.CommandText = "Update R2Primary.dbo.TblRfidCards Set UserIdEdit=" & YourNSSTerafficCard.UserIdEdit & ",Pelak='" & YourNSSTerafficCard.Pelak & "',Serial='" & YourNSSTerafficCard.Serial & "',NoMoney=" & IIf(YourNSSTerafficCard.NoMoney = True, 1, 0) & ",Active=" & IIf(YourNSSTerafficCard.Active = True, 1, 0) & ",CompanyName='" & YourNSSTerafficCard.CompanyName & "',NameFamily='" & YourNSSTerafficCard.NameFamily & "',Mobile='" & YourNSSTerafficCard.Mobile & "',Address='" & YourNSSTerafficCard.Address & "',Tel='" & YourNSSTerafficCard.Tel & "',Tahvilg='" & YourNSSTerafficCard.Tahvilg & "',CardType=" & YourNSSTerafficCard.CardType & ",TempCardType=" & YourNSSTerafficCard.TempCardType & ",DateTimeMilladiEdit='" & _DateTimeService.GetCurrentDateTimeMilladi() & "',DateShamsiEdit='" & _DateTimeService.GetCurrentShamsiDate() & "' Where CardNo='" & YourNSSTerafficCard.CardNo & "'"
                 End If
                 Cmdsql.ExecuteNonQuery()
@@ -672,8 +672,8 @@ Namespace TrafficCardsManagement
     Public Class R2CoreParkingSystemTrafficCardsManager
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -727,7 +727,7 @@ Namespace TrafficCardsManagement
 
         Public Function GetTrafficCardTypesJSON(YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager()
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager()
 
                 Dim DS As New DataSet
                 If YourImmediately Then
@@ -752,7 +752,7 @@ Namespace TrafficCardsManagement
 
         Public Function GetTrafficCardTempTypesJSON() As String
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager()
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager()
 
                 Dim DS As DataSet
                 InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,

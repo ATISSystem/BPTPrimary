@@ -8,7 +8,7 @@ Imports R2Core.DateAndTimeManagement
 Imports R2Core.EntityRelationManagement
 Imports R2Core.ExceptionManagement
 Imports R2Core.PermissionManagement
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SiteIsBusy
 Imports R2Core.SMS.Exceptions
@@ -313,8 +313,8 @@ Namespace LoadCapacitor
         Public Class R2CoreTransportationAndLoadNotificationLoadAccountingManager
 
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-            Private _DateTimeService As IR2DateTimeService
-            Public Sub New(YourDateTimeService As IR2DateTimeService)
+            Private _DateTimeService As IDateTimeService
+            Public Sub New(YourDateTimeService As IDateTimeService)
                 _DateTimeService = YourDateTimeService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
             End Sub
@@ -338,7 +338,7 @@ Namespace LoadCapacitor
                     Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                     InstanceSQLInjectionPrevention.GeneralAuthorization(YourLoadId)
 
-                    Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                    Dim InstancePublicProcedures = New R2CorePublicProceduresManager
 
                     Dim DS As New DataSet
                     If YourImmediately Then
@@ -1295,7 +1295,7 @@ Namespace LoadCapacitor
             Public Shared Function GetExistenceNonZeroLoads(YourNSSRequesterSoftwareUser As R2CoreStandardSoftwareUserStructure) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadExtendedStructure)
                 Try
                     Dim SqlString = String.Empty
-                    Dim InstancePermissions = New R2CoreInstansePermissionsManager
+                    Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
                     'If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.SoftwareUserCanViewListofAllLoadsofLoadCapacitor, YourNSSRequesterSoftwareUser.UserId, 0) Then
                     'Else
                     '    SqlString = " and Elam.nUserID In (Select Permissions.EntityIdSecond from R2Primary.dbo.TblPermissions as Permissions 
@@ -1337,7 +1337,7 @@ Namespace LoadCapacitor
             Public Shared Function GetSedimentedLoadCapacitorLoads(YourNSSRequesterSoftwareUser As R2CoreStandardSoftwareUserStructure) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadExtendedStructure)
                 Try
                     Dim SqlString = String.Empty
-                    Dim InstancePermissions = New R2CoreInstansePermissionsManager
+                    Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
                     'If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.SoftwareUserCanViewListofAllLoadsofLoadCapacitor, YourNSSRequesterSoftwareUser.UserId, 0) Then
                     'Else
                     '    SqlString = " and Elam.nUserID In (Select Permissions.EntityIdSecond from R2Primary.dbo.TblPermissions as Permissions 
@@ -1379,7 +1379,7 @@ Namespace LoadCapacitor
             Public Shared Function GetAllLoadCapacitorLoads(YourNSSRequesterSoftwareUser As R2CoreStandardSoftwareUserStructure) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadExtendedStructure)
                 Try
                     Dim SqlString = String.Empty
-                    Dim InstancePermissions = New R2CoreInstansePermissionsManager
+                    Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
                     'If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.SoftwareUserCanViewListofAllLoadsofLoadCapacitor, YourNSSRequesterSoftwareUser.UserId, 0) Then
                     'Else
                     '    SqlString = " and Elam.nUserID In (Select Permissions.EntityIdSecond from R2Primary.dbo.TblPermissions as Permissions 
@@ -1421,7 +1421,7 @@ Namespace LoadCapacitor
             Public Shared Function GetLastLoadCapacitorLoads(YourNSSRequesterSoftwareUser As R2CoreStandardSoftwareUserStructure) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadExtendedStructure)
                 Try
                     Dim SqlString = String.Empty
-                    Dim InstancePermissions = New R2CoreInstansePermissionsManager
+                    Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
                     'If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.SoftwareUserCanViewListofAllLoadsofLoadCapacitor, YourNSSRequesterSoftwareUser.UserId, 0) Then
                     'Else
                     '    SqlString = " and Elam.nUserID In (Select Permissions.EntityIdSecond from R2Primary.dbo.TblPermissions as Permissions 
@@ -1463,7 +1463,7 @@ Namespace LoadCapacitor
             Public Shared Function GetTommorowLoadCapacitorLoads(YourNSSRequesterSoftwareUser As R2CoreStandardSoftwareUserStructure) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadExtendedStructure)
                 Try
                     Dim SqlString = String.Empty
-                    Dim InstancePermissions = New R2CoreInstansePermissionsManager
+                    Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
                     'If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.SoftwareUserCanViewListofAllLoadsofLoadCapacitor, YourNSSRequesterSoftwareUser.UserId, 0) Then
                     'Else
                     '    SqlString = " and Elam.nUserID In (Select Permissions.EntityIdSecond from R2Primary.dbo.TblPermissions as Permissions 
@@ -1810,10 +1810,10 @@ Namespace LoadCapacitor
         Public Class R2CoreTransportationAndLoadNotificationLoadManager
 
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-            Private _DateTimeService As IR2DateTimeService
+            Private _DateTimeService As IDateTimeService
             Private _RCH As RedisConnectorHelper
 
-            Public Sub New(YourR2DateTimeService As IR2DateTimeService)
+            Public Sub New(YourR2DateTimeService As IDateTimeService)
                 _DateTimeService = YourR2DateTimeService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
                 _RCH = New RedisConnectorHelper
@@ -1843,7 +1843,7 @@ Namespace LoadCapacitor
 
             Public Function GetLoadStatusesForSoftwareUserType(YourSoftwareUser As R2CoreSoftwareUser) As String
                 Try
-                    Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                    Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                     Dim DS As DataSet
                     If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                          "Select LoadStatuses.LoadStatusId,LoadStatuses.LoadStatusName as LoadStatusTitle  from R2PrimaryTransportationAndLoadNotification.dbo.TblLoadCapacitorLoadStatuses as LoadStatuses
@@ -1925,7 +1925,7 @@ Namespace LoadCapacitor
             Public Sub CacheLoads(YourValue As StackExchange.Redis.RedisValue)
                 Try
                     Dim InstanceCache = New R2Core.Caching.R2CoreCacheManager(_DateTimeService)
-                    Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                    Dim InstancePublicProcedures = New R2CorePublicProceduresManager
 
                     Dim PubSubMessage = JsonConvert.DeserializeObject(Of PubSubMessageforCachingLoads)(YourValue)
 
@@ -1971,7 +1971,7 @@ Namespace LoadCapacitor
             '             If Value.IsNullOrEmpty Then Throw New BaseInfFailedException
             '             Dim TurnInfo = JsonConvert.DeserializeObject(Of R2CoreTransportationAndLoadNotificationTurnInfo)(Value)
 
-            '             Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+            '             Dim InstancePublicProcedures = New R2CorePublicProceduresManager
             '             Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager
             '             Dim DSLoads As DataSet = Nothing
             '             Dim SqlQuery =
@@ -2025,7 +2025,7 @@ Namespace LoadCapacitor
 
                     If YourShamsiDate = String.Empty Then YourShamsiDate = _DateTimeService.GetCurrentShamsiDate
 
-                    Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                    Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                     Dim DSLoads As DataSet = Nothing
                     'کامپوزیت ساب کووری
                     Dim SubQuery As String = String.Empty
@@ -2086,7 +2086,7 @@ Namespace LoadCapacitor
                     Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                     InstanceSQLInjectionPrevention.GeneralAuthorization(YourShamsiDate)
 
-                    Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                    Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                     Dim DSLoads As DataSet = Nothing
                     'کامپوزیت ساب کووری
                     Dim SubQuery As String = String.Empty
@@ -2143,7 +2143,7 @@ Namespace LoadCapacitor
                     Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                     InstanceSQLInjectionPrevention.GeneralAuthorization(YourShamsiDate)
 
-                    Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                    Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                     Dim DSLoads As DataSet = Nothing
                     'کامپوزیت ساب کووری
                     Dim SubQuery As String = String.Empty
@@ -2991,7 +2991,7 @@ Namespace LoadCapacitor
                 Try
                     Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementsManager
                     Dim InstanceLoadCapacitorAccounting = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorAccountingManager
-                    Dim InstancePermisions = New R2Core.PermissionManagement.R2CoreInstansePermissionsManager
+                    Dim InstancePermisions = New R2CorePermissionsManager(_DateTimeService)
                     Dim NSSAnnouncementHall = InstanceAnnouncements.GetNSSAnnouncementHall(YourNSS.AHId)
                     Dim NSSAnnouncementsubGroup = InstanceAnnouncements.GetNSSAnnouncementsubGroupByLoaderTypeId(YourNSS.nTruckType)
                     'کنترل بار فردا - بار فردا قابل کنسل شدن نیست
@@ -3546,8 +3546,8 @@ Namespace LoadCapacitor
         'BPTChanged
         Public Class R2CoreTransportationAndLoadNotificationLoadManipulationManager
 
-            Private _DateTimeService As IR2DateTimeService
-            Public Sub New(YourDateTimeService As IR2DateTimeService)
+            Private _DateTimeService As IDateTimeService
+            Public Sub New(YourDateTimeService As IDateTimeService)
                 _DateTimeService = YourDateTimeService
             End Sub
 
@@ -3581,7 +3581,7 @@ Namespace LoadCapacitor
                     Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
                     Dim InstanceProvincesAndCities = New R2CoreParkingSystemProvincesAndCitiesManager(_DateTimeService)
                     Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationTransportCompaniesManager(_DateTimeService)
-                    Dim InstancePermissions = New R2Core.PermissionManagement.R2CoreInstansePermissionsManager
+                    Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
                     Dim InstanceConfigurationOfLoadAnnouncement = New R2CoreTransportationAndLoadNotificationConfigurationOfLoadAnnouncementManager(_DateTimeService)
                     Dim InstanceSpecializedPersianCalendar = New R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager(_DateTimeService)
                     Dim InstanceTransportTariffs = New R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService)
@@ -3835,7 +3835,7 @@ Namespace LoadCapacitor
                     Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
                     Dim InstanceProvincesAndCities = New R2CoreParkingSystemProvincesAndCitiesManager(_DateTimeService)
                     Dim InstanceTransportCompanies = New R2CoreTransportationAndLoadNotificationTransportCompaniesManager(_DateTimeService)
-                    Dim InstancePermissions = New R2Core.PermissionManagement.R2CoreInstansePermissionsManager
+                    Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
                     Dim InstanceConfigurationOfLoadAnnouncement = New R2CoreTransportationAndLoadNotificationConfigurationOfLoadAnnouncementManager(_DateTimeService)
                     Dim InstanceSpecializedPersianCalendar = New R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager(_DateTimeService)
                     Dim InstanceTransportTariffs = New R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService)
@@ -4051,7 +4051,7 @@ Namespace LoadCapacitor
                     Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService)
                     Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
                     Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
-                    Dim InstancePermissions = New R2CoreInstansePermissionsManager
+                    Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
                     Dim InstanceLoadAccounting = New R2CoreTransportationAndLoadNotificationLoadAccountingManager(_DateTimeService)
                     Dim InstanceConfigurationOfLoadAnnouncement = New R2CoreTransportationAndLoadNotificationConfigurationOfLoadAnnouncementManager(_DateTimeService)
                     Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTimeService)
@@ -4148,7 +4148,7 @@ Namespace LoadCapacitor
 
                     Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService)
                     Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
-                    Dim InstancePermisions = New R2CorePermissionsManager
+                    Dim InstancePermisions = New R2CorePermissionsManager(_DateTimeService)
                     Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTimeService)
 
                     Dim LastLoad = InstanceLoad.GetLoadSimpleModel(YourLoadId, True)
@@ -4228,7 +4228,7 @@ Namespace LoadCapacitor
                 Try
                     Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService)
                     Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
-                    Dim InstancePermisions = New R2CorePermissionsManager
+                    Dim InstancePermisions = New R2CorePermissionsManager(_DateTimeService)
                     Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTimeService)
 
                     Dim LastLoad = InstanceLoad.GetLoadSimpleModel(YourLoadId, True)
@@ -4300,7 +4300,7 @@ Namespace LoadCapacitor
                 Try
                     Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService)
                     Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
-                    Dim InstancePermisions = New R2CorePermissionsManager
+                    Dim InstancePermisions = New R2CorePermissionsManager(_DateTimeService)
                     Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTimeService)
 
                     Dim LastLoad = InstanceLoad.GetLoadSimpleModel(YourLoadId, True)
@@ -4857,8 +4857,8 @@ Namespace LoadCapacitor
         'BPTChanged
         Public Class R2CoreTransportationAndLoadNotificationChangingStatusOfTommorowLoadsManager
 
-            Private _DateTimeService As IR2DateTimeService
-            Public Sub New(YourR2DateTimeService As IR2DateTimeService)
+            Private _DateTimeService As IDateTimeService
+            Public Sub New(YourR2DateTimeService As IDateTimeService)
                 _DateTimeService = YourR2DateTimeService
             End Sub
 
@@ -4898,19 +4898,19 @@ Namespace LoadCapacitor
             Private Sub SendSMSChangingStatusOfTommorowLoads()
                 Try
                     Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
-                    Dim InstanceSoftwareUsers = New R2CoreInstanseSoftwareUsersManager(New R2DateTimeService)
+                    Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(New R2DateTimeService, New SoftwareUserService)
 
                     'کاربران
                     Dim TargetUsers = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.TommorowLoads, 2).Split("-")
-                    Dim LstSoftwareUsers = New List(Of R2CoreStandardSoftwareUserStructure)
+                    Dim LstSoftwareUsers = New List(Of R2CoreSoftwareUser)
                     For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
-                        LstSoftwareUsers.Add(InstanceSoftwareUsers.GetNSSUser(Convert.ToInt64(TargetUsers(LoopxUsers))))
+                        LstSoftwareUsers.Add(InstanceSoftwareUsers.GetUser(Convert.ToInt64(TargetUsers(LoopxUsers)), False))
                     Next
                     'ارسال اس ام اس
                     Dim myData = New SMSCreationData With {.Data1 = String.Empty}
-                    Dim InstanceSMSHandling = New R2CoreSMSHandlingManager(_DateTimeService)
-                    Dim SMSResult = InstanceSMSHandling.SendSMS(LstSoftwareUsers, R2CoreTransportationAndLoadNotificationSMSTypes.ChangingStatusOfTommorowLoadsSucceeded, InstanceSMSHandling.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
-                    Dim SMSResultAnalyze = InstanceSMSHandling.GetSMSResultAnalyze(SMSResult)
+                    Dim InstanceSMSHandler = New R2CoreSMSHandlerManager(_DateTimeService, New R2Core.SoftwareUserManagement.SoftwareUserService)
+                    Dim SMSResult = InstanceSMSHandler.SendSMS(LstSoftwareUsers, R2CoreTransportationAndLoadNotificationSMSTypes.ChangingStatusOfTommorowLoadsSucceeded, InstanceSMSHandler.RepeatSMSCreationData(myData, LstSoftwareUsers.Count), True)
+                    Dim SMSResultAnalyze = InstanceSMSHandler.GetSMSResultAnalyze(SMSResult)
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
                 End Try

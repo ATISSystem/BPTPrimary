@@ -6,7 +6,7 @@ Imports PayanehClassLibrary.ConfigurationManagement
 Imports PayanehClassLibrary.GeneralConfiguration
 Imports PayanehClassLibrary.ReportsManagement
 Imports PayanehClassLibrary.SMS.SMSTypes
-Imports PayanehClassLibrary.TruckersAssociationControllingMoneyWallet.Exceptions
+Imports PayanehClassLibrary.TruckersAssociationControllingMoneyWalletAutomatedJobService.Exceptions
 Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement.CalendarManagement.PersianCalendar
@@ -25,7 +25,7 @@ Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
 Imports R2CoreParkingSystem.SMS.SMSControllingMoneyWallet.Exceptions
 Imports R2CoreParkingSystem.TrafficCardsManagement
 
-Namespace TruckersAssociationControllingMoneyWallet
+Namespace TruckersAssociationControllingMoneyWalletAutomatedJobService
 
     'BPTChanged
     Public Class TruckersAssociationControllingMoneyWalletManager
@@ -50,7 +50,7 @@ Namespace TruckersAssociationControllingMoneyWallet
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
 
                 'لیست مقاصد و کاربران
-                Dim TargetUsers = InstanceGeneralConfiguration.GetStringConfiguration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWallet, 7).Split("-")
+                Dim TargetUsers = InstanceGeneralConfiguration.GetStringConfiguration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWalletAutomatedJobService, 7).Split("-")
                 Dim LstSoftwareUsers = New List(Of R2CoreSoftwareUser)
                 Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(_DateTimeService, Nothing)
                 For LoopxUsers As Int64 = 0 To TargetUsers.Count - 1
@@ -64,7 +64,7 @@ Namespace TruckersAssociationControllingMoneyWallet
                 'ارسال اس ام اس
                 If CreationData.Data1 = 0 Then Return
                 Dim InstanceSMSHandler = New R2CoreSMSHandlerManager(_DateTimeService, Nothing)
-                Dim SMSResult = InstanceSMSHandler.SendSMS(LstSoftwareUsers, PayanehClassLibrarySMSTypes.TruckersAssociationControllingMoneyWallet, InstanceSMSHandler.RepeatSMSCreationData(CreationData, LstSoftwareUsers.Count), True)
+                Dim SMSResult = InstanceSMSHandler.SendSMS(LstSoftwareUsers, PayanehClassLibrarySMSTypes.TruckersAssociationControllingMoneyWalletAutomatedJobService, InstanceSMSHandler.RepeatSMSCreationData(CreationData, LstSoftwareUsers.Count), True)
                 Dim SMSResultAnalyze = InstanceSMSHandler.GetSMSResultAnalyze(SMSResult)
                 If Not SMSResultAnalyze = String.Empty Then Throw New TruckersAssociationControllingMoneyWalletSendSMSFailedException(SMSResultAnalyze)
             Catch ex As MoneyWalletNotExistException
@@ -82,7 +82,7 @@ Namespace TruckersAssociationControllingMoneyWallet
             Try
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 Dim InstanceMoneyWallet = New R2CoreMoneyWalletManager(_DateTimeService)
-                Return InstanceMoneyWallet.GetMoneyWallet(InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWallet, 4), False)
+                Return InstanceMoneyWallet.GetMoneyWallet(InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWalletAutomatedJobService, 4), False)
             Catch ex As MoneyWalletNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -119,7 +119,7 @@ Namespace TruckersAssociationControllingMoneyWallet
                 Dim TimeOfDay = _DateTimeService.GetCurrentTickofTime
                 Dim StTime = TimeSpan.Parse("00:00:00").Ticks
                 Dim EndTime = TimeSpan.Parse("00:05:00").Ticks
-                Dim ConfigTime = TimeSpan.Parse(InstanceGeneralConfiguration.GetStringConfiguration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWallet, 6)).Ticks
+                Dim ConfigTime = TimeSpan.Parse(InstanceGeneralConfiguration.GetStringConfiguration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWalletAutomatedJobService, 6)).Ticks
                 If TimeOfDay >= StTime And TimeOfDay <= EndTime Then
                     _ControllingMoneyWalletExcecutedFlag = False
                     Return
@@ -133,11 +133,11 @@ Namespace TruckersAssociationControllingMoneyWallet
                 If _ControllingMoneyWalletExcecutedFlag Then Return
 
                 'طبق کانفیگ سیستم کلا اکانتینگ فعال باشد یا نه
-                If Not InstanceGeneralConfiguration.GetBooleanConfiguration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWallet, 1) Then Return
+                If Not InstanceGeneralConfiguration.GetBooleanConfiguration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWalletAutomatedJobService, 1) Then Return
 
                 'آغاز فرآیند اکانتینگ
                 'آخرین اکانت ثبت شده
-                Dim LastAccounting = InstanceAccounting.GetLastAccounting(R2CoreParkingSystemAccountings.TruckersAssociationControllingMoneyWallet)
+                Dim LastAccounting = InstanceAccounting.GetLastAccounting(R2CoreParkingSystemAccountings.TruckersAssociationControllingMoneyWalletAutomatedJobService)
 
                 'امروز یک مرتبه اکانت ثبت شده پس نیازی به ثبت مجدد نیست
                 If LastAccounting.DateShamsi = _DateTimeService.GetCurrentShamsiDate Then Return
@@ -145,12 +145,12 @@ Namespace TruckersAssociationControllingMoneyWallet
                 'کسر هزینه شرکت خودگردان
                 'درصد شرکت خودگردان - ارزش افزوده
                 Dim Amount As Int64 = GetAmountforTruckersAssociationControllingMoneyWallet(LastAccounting)
-                If InstanceGeneralConfiguration.GetBooleanConfiguration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWallet, 2) Then
-                    Dim CostofSelfGoverning = InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWallet, 3)
+                If InstanceGeneralConfiguration.GetBooleanConfiguration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWalletAutomatedJobService, 2) Then
+                    Dim CostofSelfGoverning = InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWalletAutomatedJobService, 3)
                     Amount = Amount * (100 / (100 + CostofSelfGoverning))
                 End If
                 Dim MoneyWalletId = GetMoneyWallet.MoneyWalletId
-                InstanceMoneyWallet.ActMoneyWalletNextStatus(MoneyWalletId, BagPayType.MinusMoney, Amount, R2CoreParkingSystemAccountings.TruckersAssociationControllingMoneyWallet, YourUserId)
+                InstanceMoneyWallet.ActMoneyWalletNextStatus(MoneyWalletId, BagPayType.MinusMoney, Amount, R2CoreParkingSystemAccountings.TruckersAssociationControllingMoneyWalletAutomatedJobService, YourUserId)
                 _ControllingMoneyWalletExcecutedFlag = True
                 SendSMSTruckersAssociationControllingMoneyWallet(MoneyWalletId)
             Catch ex As LastAccountingRecordforAccountingTypeIdNotFoundException
@@ -175,7 +175,7 @@ Namespace TruckersAssociationControllingMoneyWallet
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 Dim InstanceMoneyWallet = New R2CoreParkingSystemMoneyWalletManager(_DateTimeService)
                 Dim Inventory = InstanceMoneyWallet.GetMoneyWalletCharge(GetMoneyWallet.MoneyWalletId)
-                If Inventory < InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWallet, 5) Then
+                If Inventory < InstanceGeneralConfiguration.GetInt64Configuration(PayanehClassLibraryGeneralConfigurations.TruckersAssociationControllingMoneyWalletAutomatedJobService, 5) Then
                     Throw New TruckersAssociationControllingMoneyWalletCriticalAmountReachedException
                 End If
             Catch ex As TruckersAssociationControllingMoneyWalletCriticalAmountReachedException

@@ -28,13 +28,13 @@ Imports System.Runtime.Serialization.Formatters.Binary
 Imports R2Core.DateTimeProvider
 Imports R2Core.GeneralConfiguration
 Imports R2CoreParkingSystem.GeneralConfiguration
+Imports R2Core.BaseClasses
 
 
 
 Namespace Cars
 
     Public Class R2StandardCarStructure
-        Inherits BaseStandardClass.R2StandardStructure
 
         Private mynIdCar As Int64
         Private mysnCarType As String
@@ -51,7 +51,7 @@ Namespace Cars
         End Sub
 
         Public Sub New(ByVal nIdCarr As Int64, ByVal snCarTypee As String, ByVal StrCarNoo As String, ByVal StrCarSerialNoo As String, ByVal nIdCityy As String)
-            MyBase.New(nIdCarr, StrCarNoo)
+            MyBase.New()
             mynIdCar = nIdCarr
             mysnCarType = snCarTypee
             myStrCarNo = StrCarNoo
@@ -526,9 +526,9 @@ Namespace Cars
     'BPTChanged
     Public Class R2CoreParkingSystemCarsManager
 
-        Private _DateTimeService As IR2DateTimeService
+        Private _DateTimeService As IDateTimeService
         Private _InstanceSqlDataBox As R2CoreSqlDataBOXManager
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             _InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub

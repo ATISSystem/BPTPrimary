@@ -1,20 +1,22 @@
 ﻿
+
+
 Imports System.Drawing
 Imports System.Drawing.Imaging
 Imports System.Reflection
 Imports System.Windows.Forms
 Imports System.Text
-Imports R2Core.ConfigurationManagement
+Imports System.Globalization
+Imports System.Threading.Tasks
+Imports Newtonsoft.Json
+Imports PcPosDll
+
 Imports R2Core.DatabaseManagement
 Imports R2Core.LoggingManagement
-Imports R2Core.BaseStandardClass
-Imports R2Core.DateAndTimeManagement
 Imports R2Core.SoftwareUserManagement
 Imports R2Core.SoftwareUserManagement.Exceptions
-Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SMS.Exceptions
 Imports R2Core.EntityRelationManagement
-
 Imports R2Core.SMS.SMSTypes.Exceptions
 Imports R2Core.SMS.SMSTypes
 Imports R2Core.SMS.SMSHandling.Exceptions
@@ -28,25 +30,27 @@ Imports R2Core.SMS.RecivedSMSCodes
 Imports R2Core.SMS.SMSHandling
 Imports R2Core.DateAndTimeManagement.CalendarManagement.PersianCalendar
 Imports R2Core.DateTimeProvider
-Imports System.Globalization
 Imports R2Core.ExceptionManagement
 Imports R2Core.SQLInjectionPrevention
 Imports R2Core.GeneralConfiguration
-Imports R2Core.PublicProc
-Imports System.Threading.Tasks
-Imports Newtonsoft.Json
+Imports R2Core.PublicProcedures
 Imports R2Core.Caching
 Imports R2Core.SecurityAlgorithmsManagement.AESAlgorithms
 Imports R2Core.CachHelper
 Imports R2Core.PubSubMessaging
-Imports PcPosDll
 Imports R2Core.SessionManagement
 Imports R2Core.SMS.GeneralAnnounceSMS.Exceptions
+Imports System.Web.Services.Protocols
+Imports R2Core.PredefinedMessagesManagement
+Imports StackExchange.Redis
 
 
 Namespace SMS
 
+    'BPTChanged
     Namespace SendSMSCodes
+
+        'BPTChanged
         Public MustInherit Class R2CoreSendSMSCodes
             Public Shared ReadOnly Property None = 0
             Public Shared ReadOnly Property Success = 1
@@ -58,72 +62,45 @@ Namespace SMS
 
         End Class
 
-        Public Class R2CoreStandardSendSMSCodeStructure
-
-            Public Sub New()
-                MyBase.New()
-                _SendSMSCodeId = Int64.MinValue
-                _SendSMSCodeName = String.Empty
-                _SendSMSCodeTitle = String.Empty
-                _Description = String.Empty
-                _SendSMSCode = String.Empty
-                _DateTimeMilladi = DateAndTime.Now
-                _DateShamsi = String.Empty
-                _Time = String.Empty
-                _UserId = Int64.MinValue
-                _ViewFlag = Boolean.FalseString
-                _Active = Boolean.FalseString
-                _Deleted = Boolean.FalseString
-            End Sub
-
-            Public Sub New(YourSendSMSCodeId As Int64, YourSendSMSCodeName As String, YourSendSMSCodeTitle As String, YourDescription As String, YourSendSMSCode As String, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourTime As String, YourUserId As Int64, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
-                _SendSMSCodeId = YourSendSMSCodeId
-                _SendSMSCodeName = YourSendSMSCodeName
-                _SendSMSCodeTitle = YourSendSMSCodeTitle
-                _Description = YourDescription
-                _SendSMSCode = YourSendSMSCode
-                _DateTimeMilladi = YourDateTimeMilladi
-                _DateShamsi = YourDateShamsi
-                _Time = YourTime
-                _UserId = YourUserId
-                _ViewFlag = YourViewFlag
-                _Active = YourActive
-                _Deleted = YourDeleted
-            End Sub
-
+        'BPTChanged
+        Public Class R2CoreSendSMSCode
             Public Property SendSMSCodeId As Int64
-            Public Property SendSMSCodeName As String
             Public Property SendSMSCodeTitle As String
             Public Property Description As String
             Public Property SendSMSCode As String
-            Public Property DateTimeMilladi As DateTime
-            Public Property DateShamsi As String
-            Public Property Time As String
-            Public Property UserId As Int64
-            Public Property ViewFlag As Boolean
             Public Property Active As Boolean
-            Public Property Deleted As Boolean
-
         End Class
 
+        'BPTChanged
         Public Class R2CoreSendSMSCodeManager
 
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-            Private _DateTimeService As IR2DateTimeService
-            Public Sub New(YourDateTimeService As IR2DateTimeService)
-                _DateTimeService = YourDateTimeService
-                InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+            Private _DateTimeService As IDateTimeService
+
+            Public Sub New(YourDateTimeService As IDateTimeService)
+                Try
+                    _DateTimeService = YourDateTimeService
+                    InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
             End Sub
 
-            Public Function GetNSSSendSMSCode(YourSendSMSCodeId As Int64) As R2CoreStandardSendSMSCodeStructure
+            Public Function GetSendSMSCode(YourSendSMSCodeId As Int64) As R2CoreSendSMSCode
                 Try
                     Dim DS As DataSet
                     If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                          "Select * from R2PrimarySMSSystem.dbo.TblSendSMSCodes Where SendSMSCodeId=" & YourSendSMSCodeId & "", 3600, DS, New Boolean).GetRecordsCount = 0 Then
                         Throw New SendSMSCodeIdNotFoundExcption
                     Else
-                        Return New R2CoreStandardSendSMSCodeStructure(DS.Tables(0).Rows(0).Item("SendSMSCodeId"), DS.Tables(0).Rows(0).Item("SendSMSCodeName").trim, DS.Tables(0).Rows(0).Item("SendSMSCodeTitle").trim, DS.Tables(0).Rows(0).Item("Description").trim, DS.Tables(0).Rows(0).Item("SendSMSCode").trim, DS.Tables(0).Rows(0).Item("DateTimeMilladi"), DS.Tables(0).Rows(0).Item("DateShamsi").trim, DS.Tables(0).Rows(0).Item("Time").trim, DS.Tables(0).Rows(0).Item("UserId"), DS.Tables(0).Rows(0).Item("ViewFlag"), DS.Tables(0).Rows(0).Item("Active"), DS.Tables(0).Rows(0).Item("Deleted"))
+                        Return New R2CoreSendSMSCode With {.SendSMSCodeId = DS.Tables(0).Rows(0).Item("SendSMSCodeId"), .SendSMSCodeTitle = DS.Tables(0).Rows(0).Item("SendSMSCodeTitle").trim, .Description = DS.Tables(0).Rows(0).Item("Description").trim, .SendSMSCode = DS.Tables(0).Rows(0).Item("SendSMSCode").trim, .Active = DS.Tables(0).Rows(0).Item("Active")}
                     End If
+                Catch ex As FileNotExistException
+                    Throw ex
+                Catch ex As DataBaseException
+                    Throw ex
+                Catch ex As UnableConnectToAPIException
+                    Throw ex
                 Catch ex As SendSMSCodeIdNotFoundExcption
                     Throw ex
                 Catch ex As Exception
@@ -133,71 +110,55 @@ Namespace SMS
 
         End Class
 
+        'BPTChanged
         Namespace Exceptions
             Public Class SendSMSCodeIdNotFoundExcption
-                Inherits ApplicationException
+                Inherits BPTException
 
-                Public Overrides ReadOnly Property Message As String
-                    Get
-                        Return "کد شاخص مرتبط با اعلان وضعیت ارسال اس ام اس موجود نیست"
-                    End Get
-                End Property
-
+                Public Sub New()
+                    _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.SendSMSCodeIdNotFoundExcption).MsgContent
+                    _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.SendSMSCodeIdNotFoundExcption).MsgId
+                End Sub
             End Class
 
         End Namespace
 
     End Namespace
 
+    'BPTChanged
     Namespace RecivedSMSCodes
+
+        'BPTChanged
         Public MustInherit Class RecivedSMSCodes
             Public Shared ReadOnly Property None = 0
             Public Shared ReadOnly Property ActivateSMSOwner = 1
             Public Shared ReadOnly Property UNActivateSMSOwner = 2
         End Class
 
-        Namespace Exceptions
-            Public Class SMSRecivedCodeforSMSCodeNotFoundException
-                Inherits ApplicationException
-
-                Public Overrides ReadOnly Property Message As String
-                    Get
-                        Return "کد ارسالی در اس ام اس دریافتی تعریف نشده است"
-                    End Get
-                End Property
-
-            End Class
-
-        End Namespace
-
         'BPTChanged
         Public Class R2CoreRecivedSMSCode
             Public Property SMSRCId As Int64
-            Public Property SMSRCName As String
             Public Property SMSRCTitle As String
             Public Property SMSCode As String
             Public Property EndMinutes As Int64
-            Public Property Core As String
             Public Property AssemblyDll As String
             Public Property AssemblyPath As String
-            Public Property DateTimeMilladi As DateTime
-            Public Property DateShamsi As String
-            Public Property Time As String
-            Public Property UserId As Int64
-            Public Property ViewFlag As Boolean
             Public Property Active As Boolean
-            Public Property Deleted As Boolean
-
         End Class
 
         'BPTChanged
         Public Class R2CoreRecivedSMSCodesManager
 
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-            Private _DateTimeService As IR2DateTimeService
-            Public Sub New(YourDateTimeService As IR2DateTimeService)
-                _DateTimeService = YourDateTimeService
-                InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+            Private _DateTimeService As IDateTimeService
+
+            Public Sub New(YourDateTimeService As IDateTimeService)
+                Try
+                    _DateTimeService = YourDateTimeService
+                    InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
             End Sub
 
             Public Function GetRecivedSMSCode(YourSMSCode As String) As R2CoreRecivedSMSCode
@@ -208,7 +169,13 @@ Namespace SMS
                     Dim DS As New DataSet
                     If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select Top 1 * from R2PrimarySMSSystem.dbo.TblSMSRecivedCoding Where SMSCode='" & Mid(YourSMSCode.Trim, 1, 3) & "' and Active=1 and Deleted=0 Order By DateTimeMilladi Desc", 32767, DS, New Boolean).GetRecordsCount = 0 Then Throw New SMSRecivedCodeforSMSCodeNotFoundException
-                    Return New R2CoreRecivedSMSCode With {.SMSRCId = DS.Tables(0).Rows(0).Item("SMSRCId"), .SMSRCName = DS.Tables(0).Rows(0).Item("SMSRCName").trim, .SMSRCTitle = DS.Tables(0).Rows(0).Item("SMSRCTitle").trim, .SMSCode = DS.Tables(0).Rows(0).Item("SMSCode").trim, .EndMinutes = DS.Tables(0).Rows(0).Item("EndMinutes"), .Core = DS.Tables(0).Rows(0).Item("Core").trim, .AssemblyDll = DS.Tables(0).Rows(0).Item("AssemblyDll").trim, .AssemblyPath = DS.Tables(0).Rows(0).Item("AssemblyPath").trim, .DateTimeMilladi = DS.Tables(0).Rows(0).Item("DateTimeMilladi"), .DateShamsi = DS.Tables(0).Rows(0).Item("DateShamsi"), .Time = DS.Tables(0).Rows(0).Item("Time"), .UserId = DS.Tables(0).Rows(0).Item("UserId"), .ViewFlag = DS.Tables(0).Rows(0).Item("ViewFlag"), .Active = DS.Tables(0).Rows(0).Item("Active"), .Deleted = DS.Tables(0).Rows(0).Item("Deleted")}
+                    Return New R2CoreRecivedSMSCode With {.SMSRCId = DS.Tables(0).Rows(0).Item("SMSRCId"), .SMSRCTitle = DS.Tables(0).Rows(0).Item("SMSRCTitle").trim, .SMSCode = DS.Tables(0).Rows(0).Item("SMSCode").trim, .EndMinutes = DS.Tables(0).Rows(0).Item("EndMinutes"), .AssemblyDll = DS.Tables(0).Rows(0).Item("AssemblyDll").trim, .AssemblyPath = DS.Tables(0).Rows(0).Item("AssemblyPath").trim, .Active = DS.Tables(0).Rows(0).Item("Active")}
+                Catch ex As FileNotExistException
+                    Throw ex
+                Catch ex As DataBaseException
+                    Throw ex
+                Catch ex As UnableConnectToAPIException
+                    Throw ex
                 Catch ex As SqlInjectionException
                     Throw ex
                 Catch ex As SMSRecivedCodeforSMSCodeNotFoundException
@@ -220,10 +187,23 @@ Namespace SMS
 
         End Class
 
+        'BPTChanged
+        Namespace Exceptions
+            'BPTChanged
+            Public Class SMSRecivedCodeforSMSCodeNotFoundException
+                Inherits BPTException
 
+                Public Sub New()
+                    _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.SMSRecivedCodeforSMSCodeNotFoundException).MsgContent
+                    _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.SMSRecivedCodeforSMSCodeNotFoundException).MsgId
+                End Sub
+            End Class
+
+        End Namespace
 
     End Namespace
 
+    'BPTChanged
     Namespace GeneralAnnounceSMS
 
         'BPTChanged
@@ -235,14 +215,20 @@ Namespace SMS
 
         'BPTChanged
         Public Class R2CoreGeneralAnnounceSMSManager
-            Private _DateTimeService As IR2DateTimeService
+            Private _DateTimeService As IDateTimeService
             Private _InstanceSqlDataBOX As R2CoreSqlDataBOXManager
             Private _RCH As RedisConnectorHelper
 
-            Public Sub New(YourR2DateTimeService As IR2DateTimeService)
-                _DateTimeService = YourR2DateTimeService
-                _InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
-                _RCH = New RedisConnectorHelper()
+            Public Sub New(YourR2DateTimeService As IDateTimeService)
+                Try
+                    _DateTimeService = YourR2DateTimeService
+                    _InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+                    _RCH = New RedisConnectorHelper()
+                Catch ex As FileNotExistException
+                    Throw ex
+                Catch ex As Exception
+                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+                End Try
             End Sub
 
             Public Class ProgressInformation
@@ -260,6 +246,12 @@ Namespace SMS
                     If DirectCast(Value, StackExchange.Redis.RedisValue).IsNull Then Throw New ProgressInfNotFoundException
                     Dim Content = JsonConvert.DeserializeObject(Of ProgressInformation)(Value.ToString)
                     Return Content
+                Catch ex As FileNotExistException
+                    Throw ex
+                Catch ex As CacheTypeNotFoundException
+                    Throw ex
+                Catch ex As RedisException
+                    Throw ex
                 Catch ex As ProgressInfNotFoundException
                     Throw ex
                 Catch ex As Exception
@@ -278,6 +270,14 @@ Namespace SMS
                     Dim _Subscriber = _RCH.Connection.GetSubscriber()
                     _Subscriber.Publish(R2CorePubSubChannels.GeneralAnnounceSMSRequest, JsonConvert.SerializeObject(PubSubMessage))
                     Return GAMId
+                Catch ex As FileNotExistException
+                    Throw ex
+                Catch ex As DataBaseException
+                    Throw ex
+                Catch ex As UnableConnectToAPIException
+                    Throw ex
+                Catch ex As RedisException
+                    Throw ex
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
                 End Try
@@ -300,6 +300,18 @@ Namespace SMS
                         InstanceCache.SetCache(CacheKey, ProgressInfo, R2CoreCacheTypes.GeneralAnnounceSMSRequest, R2CoreCatchDataBases.GeneralAnnounceSMSRequests, False)
                     Next
                     Return InstanceSMSHandler.GetSMSResultAnalyze(SMSResult)
+                Catch ex As FileNotExistException
+                    Throw ex
+                Catch ex As DataBaseException
+                    Throw ex
+                Catch ex As UnableConnectToAPIException
+                    Throw ex
+                Catch ex As SendSMSCodeIdNotFoundExcption
+                    Throw ex
+                Catch ex As CacheTypeNotFoundException
+                    Throw ex
+                Catch ex As RedisException
+                    Throw ex
                 Catch ex As CreateSMSFailedArrayofSoftwareUserNotEqualtoArrayofSMSCreationDataException
                     Throw ex
                 Catch ex As SMSTypeIdNotFoundException
@@ -313,16 +325,15 @@ Namespace SMS
 
         End Class
 
+        'BPTChanged
         Namespace Exceptions
             Public Class ProgressInfNotFoundException
                 Inherits BPTException
 
-                Public Overrides ReadOnly Property Message As String
-                    Get
-                        Return "اطلاعاتی از سرویس ارسال اس ام اس یافت نشد"
-                    End Get
-                End Property
-
+                Public Sub New()
+                    _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.ProgressInfNotFoundException).MsgContent
+                    _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.ProgressInfNotFoundException).MsgId
+                End Sub
             End Class
         End Namespace
 
@@ -331,262 +342,31 @@ Namespace SMS
 
     Namespace SMSHandling
 
-
-        Public Class R2CoreStandardSMSStructure
-            Public Sub New()
-                MyBase.New()
-                SmsId = Int64.MinValue
-                MobileNumber = String.Empty
-                Message = String.Empty
-                EndMinutes = Int64.MinValue
-                DateTimeMilladi = Now.Date
-                Active = Boolean.FalseString
-                DateShamsi = String.Empty
-                Time = String.Empty
-            End Sub
-
-            Public Sub New(ByVal YourSmsId As Int64, ByVal YourMobileNumber As String, ByVal YourMessage As String, ByVal YourEndMinutes As Int64, ByVal YourDateTimeMilladi As DateTime, ByVal YourActive As Boolean, ByVal YourDateShamsi As String, ByVal YourTime As String)
-                SmsId = YourSmsId
-                MobileNumber = YourMobileNumber
-                Message = YourMessage
-                EndMinutes = YourEndMinutes
-                DateTimeMilladi = YourDateTimeMilladi
-                Active = YourActive
-                DateShamsi = YourDateShamsi
-                Time = YourTime
-            End Sub
-
-            Public Property SmsId As Int64
-            Public Property MobileNumber As String
-            Public Property Message As String
-            Public Property EndMinutes As Int64
-            Public Property DateTimeMilladi As DateTime
-            Public Property Active As Boolean
-            Public Property DateShamsi As String
-            Public Property Time As String
+        'BPTChanged
+        Public Class R2CoreSMS
+            Public SMSId As Int64
+            Public MobileNumber As String
+            Public Message As String
+            Public EndMinutes As Int16
+            Public Active As Boolean
+            Public DateShamsi As String
+            Public SmsType As Int16
         End Class
 
+        'BPTChanged
         Public Structure SMSCreationData
             Public Data1, Data2, Data3, Data4, Data5, Data6, Data7, Data8, Data9, Data10 As String
         End Structure
 
-        Public Structure SMS10Params
-            Public Data1, Data2, Data3, Data4, Data5, Data6, Data7, Data8, Data9, Data10 As String
-        End Structure
-
-        Public Class R2CoreSMSHandlingManager
-
-            Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-            Private _DateTimeService As IR2DateTimeService
-            Public Sub New(YourDateTimeService As IR2DateTimeService)
-                _DateTimeService = YourDateTimeService
-                InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
-            End Sub
-
-            Public Function GetSMSResultAnalyze(YourLst As List(Of KeyValuePair(Of Int64, String))) As String
-                Try
-                    Dim SB = New StringBuilder
-                    Dim InstanceSendSMSCode = New R2CoreSendSMSCodeManager(_DateTimeService)
-                    For LoopxLst As Int64 = 0 To YourLst.Count - 1
-                        If YourLst(LoopxLst).Key = SendSMSCodes.R2CoreSendSMSCodes.Success Then
-                            SB.Append(String.Empty)
-                        Else
-                            SB.AppendLine(YourLst(LoopxLst).Value + "  " + InstanceSendSMSCode.GetNSSSendSMSCode(YourLst(LoopxLst).Key).Description)
-                        End If
-                    Next
-                    Return SB.ToString
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-                End Try
-            End Function
-
-            Public Function SendSMS(YourSoftwareUsers As List(Of R2CoreStandardSoftwareUserStructure), YourSMSTypeId As Int64, YourSMSCreationData As List(Of SMSCreationData), YourChekDelayFromActivation As Boolean) As List(Of KeyValuePair(Of Int64, String))
-                Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = R2PrimarySMSSystemSqlConnection.GetTransactionDBConnection
-                Try
-                    'کنترل فعال بودن سرویس اس ام اس
-                    Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
-                    If Not InstanceGeneralConfiguration.GetBooleanConfiguration(R2CoreGeneralConfigurations.SmsSystemSetting, 0) Then Throw New SmsSystemIsDisabledException
-
-                    Dim LstResult = New List(Of KeyValuePair(Of Int64, String))
-                    Dim myCurrentDateTime = _DateTimeService.GetCurrentDateAndTime
-
-                    'بررسی معادل بودن تعداد اعضاء لیست ها
-                    If YourSoftwareUsers.Count <> YourSMSCreationData.Count Then Throw New CreateSMSFailedArrayofSoftwareUserNotEqualtoArrayofSMSCreationDataException
-                    'بررسی پارامترهای ورودی
-                    Dim InstanceSMSOwners = New R2CoreMClassSMSOwnersManager(_DateTimeService)
-                    Dim InstanceSMSTypes = New R2CoreMClassSMSTypesManager(_DateTimeService)
-                    Dim NSSSMSType = InstanceSMSTypes.GetNSSSMSType(YourSMSTypeId)
-                    CmdSql.Connection.Open()
-                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                    'CmdSql.CommandText = "Select Top 1 SMSId from R2PrimarySMSSystem.dbo.TblSMSWareHouse with (tablockx) Order By SMSId Desc"
-                    'CmdSql.ExecuteNonQuery()
-                    Dim SMSOwner As R2CoreStandardSMSOwnerStructure = Nothing
-                    For Loopx As Int64 = 0 To YourSoftwareUsers.Count - 1
-                        Try
-                            SMSOwner = InstanceSMSOwners.GetNSSSMSOwner(YourSoftwareUsers(Loopx), False)
-                        Catch ex As SMSOwnerForSoftwareUserDoNotRegisteredException
-                            LstResult.Add(New KeyValuePair(Of Long, String)(R2CoreSendSMSCodes.SMSOwnerNotExist, YourSoftwareUsers(Loopx).MobileNumber))
-                            Continue For
-                        Catch ex As Exception
-                            Throw ex
-                        End Try
-                        If YourSoftwareUsers(Loopx).MobileNumber.Trim.Length <> InstanceGeneralConfiguration.GetInt64Configuration(R2CoreGeneralConfigurations.SmsSystemSetting, 7) Then
-                            LstResult.Add(New KeyValuePair(Of Long, String)(R2CoreSendSMSCodes.InvalidMobileNumber, YourSoftwareUsers(Loopx).MobileNumber))
-                            Continue For
-                        End If
-                        If Not SMSOwner.IsSendingActive Then
-                            LstResult.Add(New KeyValuePair(Of Long, String)(R2CoreSendSMSCodes.SMSOwnerIsSendingActiveIsfalse, YourSoftwareUsers(Loopx).MobileNumber))
-                            Continue For
-                        End If
-                        If NSSSMSType.Price <> 0 And SMSOwner.ReminderCharge <> 0 Then
-                            If SMSOwner.ReminderCharge - SMSOwner.ReminderHolder <= NSSSMSType.Price Then
-                                LstResult.Add(New KeyValuePair(Of Long, String)(R2CoreSendSMSCodes.InsufficientSMSMoneyWalletCharge, YourSoftwareUsers(Loopx).MobileNumber))
-                                Continue For
-                            End If
-                        End If
-                        If YourChekDelayFromActivation Then
-                            If DateDiff(DateInterval.Minute, SMSOwner.DateTimeMilladi, myCurrentDateTime.DateTimeMilladi) < InstanceGeneralConfiguration.GetInt64Configuration(R2CoreGeneralConfigurations.SmsSystemSetting, 16) Then
-                                LstResult.Add(New KeyValuePair(Of Long, String)(R2CoreSendSMSCodes.DelayToStartSMSSending, YourSoftwareUsers(Loopx).MobileNumber))
-                                Continue For
-                            End If
-                        End If
-                        Dim SMSContent = GetCompositedSMSCreationData(NSSSMSType, YourSMSCreationData(Loopx))
-                        Dim SMS = New R2CoreStandardSMSStructure(Nothing, YourSoftwareUsers(Loopx).MobileNumber, SMSContent, NSSSMSType.SMSMinutes, Nothing, Nothing, Nothing, Nothing)
-                        CmdSql.CommandText = "Insert Into R2PrimarySMSSystem.dbo.TblSMSWareHouse(MobileNumber,Message,EndMinutes,DateTimeMilladi,Active,DateShamsi,SmsType) values('" & SMS.MobileNumber & "','" & SMS.Message & "'," & SMS.EndMinutes & ",'" & myCurrentDateTime.DateTimeMilladi & "',1,'" & myCurrentDateTime.ShamsiDate & "'," & R2CoreSMSSendReciveType.ForSend & ")"
-                        CmdSql.ExecuteNonQuery()
-                        CmdSql.CommandText = "Update R2PrimarySMSSystem.dbo.TblSMSOwners Set ReminderHolder=ReminderHolder+" & NSSSMSType.Price & "
-                                              Where SMSOwnerUserId=" & YourSoftwareUsers(Loopx).UserId & " and IsSendingActive=1"
-                        CmdSql.ExecuteNonQuery()
-                        LstResult.Add(New KeyValuePair(Of Long, String)(R2CoreSendSMSCodes.Success, YourSoftwareUsers(Loopx).MobileNumber))
-                    Next
-                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-                    Return LstResult
-                Catch ex As CreateSMSFailedArrayofSoftwareUserNotEqualtoArrayofSMSCreationDataException
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw ex
-                Catch ex As SMSTypeIdNotFoundException
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw ex
-                Catch ex As SmsSystemIsDisabledException
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw ex
-                Catch ex As Exception
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-                End Try
-            End Function
-
-            Public Function SendSMS(YourNSSSMSTypeid As Int64, YourNSSUserTypeId As Int64, YourSMSCreationData As SMSCreationData) As List(Of KeyValuePair(Of Int64, String))
-                Try
-                    Dim InstanceSMSOwners = New R2Core.SMS.SMSOwners.R2CoreMClassSMSOwnersManager(_DateTimeService)
-                    Dim LstSoftwareUsers = InstanceSMSOwners.GetNSSSoftwareUsers(YourNSSUserTypeId)
-                    Return SendSMS(LstSoftwareUsers, YourNSSSMSTypeid, RepeatSMSCreationData(YourSMSCreationData, LstSoftwareUsers.Count), True)
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-                End Try
-            End Function
-
-            Public Sub RecivedSMSHandling(YourSoftwareUserId As Int64)
-                Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = R2PrimarySMSSystemSqlConnection.GetTransactionDBConnection
-                Try
-                    Dim DS As New DataSet
-                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySMSSystemSqlConnection.GetSubscriptionDBConnection,
-                     "Select * from R2PrimarySMSSystem.dbo.TblSMSWareHouse as SMSWareHouse
-                          Inner Join R2PrimarySMSSystem.DBO.TblSMSRecivedCoding as SMSRecivedCoding On Substring(SMSWareHouse.Message,1,3)=SMSRecivedCoding.SMSCode 
-                      Where SMSWareHouse.Active=1 and SMSWareHouse.SmsType=" & R2CoreSMSSendReciveType.Recived & " and SMSRecivedCoding.Active=1 and SMSRecivedCoding.Deleted=0", 0, DS, New Boolean).GetRecordsCount = 0 Then Return
-                    CmdSql.Connection.Open()
-                    CmdSql.Transaction = CmdSql.Connection.BeginTransaction
-                    For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
-                        Dim PathDll As String = Application.StartupPath + "\" + DS.Tables(0).Rows(Loopx).Item("AssemblyDll").trim
-                        Dim Assembly_ As Assembly = Assembly.LoadFrom(PathDll)
-                        Dim HandlerClassPath As String = DS.Tables(0).Rows(Loopx).Item("AssemblyPath").Trim()
-                        Dim HandlerInstanceType = Assembly_.GetType(HandlerClassPath)
-                        Dim HandlerObj = CType(Activator.CreateInstance(HandlerInstanceType), RecievedSMSHandler)
-                        HandlerObj.MobileNumber = DS.Tables(0).Rows(Loopx).Item("MobileNumber")
-                        HandlerObj.UserId = YourSoftwareUserId
-                        HandlerObj.SMSContent = DS.Tables(0).Rows(Loopx).Item("Message").trim
-                        Try
-                            HandlerObj.Handling()
-                        Catch ex As Exception
-                        End Try
-                        CmdSql.CommandText = "Update R2PrimarySMSSystem.dbo.TblSMSWareHouse Set Active=0 Where SMSId=" & Convert.ToInt64(DS.Tables(0).Rows(Loopx).Item("SMSId")) & ""
-                        CmdSql.ExecuteNonQuery()
-                    Next
-                    CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
-                Catch ex As Exception
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then
-                        CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
-                    End If
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-                End Try
-            End Sub
-
-            Public Sub SMSGarbage()
-                Dim CmdSql As New SqlClient.SqlCommand
-                CmdSql.Connection = R2PrimarySMSSystemSqlConnection.GetTransactionDBConnection
-                Try
-                    CmdSql.Connection.Open()
-                    CmdSql.CommandText = "Update R2PrimarySMSSystem.dbo.TblSMSWareHouse Set Active=0
-                                          Where Active=1 and DATEDIFF(MINUTE ,DateTimeMilladi,GETDATE()) > EndMinutes"
-                    CmdSql.ExecuteNonQuery()
-                    CmdSql.Connection.Close()
-                Catch ex As Exception
-                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-                End Try
-            End Sub
-
-            Public Function RepeatSMSCreationData(YourSMSCreationData As SMSCreationData, YourCount As Int64) As List(Of SMSCreationData)
-                Try
-                    Dim Lst = New List(Of SMSCreationData)
-                    For Loopx As Int64 = 0 To YourCount - 1
-                        Lst.Add(YourSMSCreationData)
-                    Next
-                    Return Lst
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-                End Try
-            End Function
-
-            Public Function GetCompositedSMSCreationData(YourNSSSMSType As R2CoreStandardSMSTypeStructure, YourData As SMSCreationData) As String
-                Try
-                    Dim InstanceSMSTypes = New R2CoreMClassSMSTypesManager(_DateTimeService)
-                    Dim NSSSMSType = InstanceSMSTypes.GetNSSSMSType(YourNSSSMSType.SMSTypeId)
-                    Dim SMSContent = NSSSMSType.SMSTypeContent.Replace("Data1", YourData.Data1).Replace("Data2", YourData.Data2).Replace("Data3", YourData.Data3).Replace("Data4", YourData.Data4).Replace("Data5", YourData.Data5).Replace("Data6", YourData.Data6).Replace("Data7", YourData.Data7).Replace("Data8", YourData.Data8).Replace("Data9", YourData.Data9).Replace("Data10", YourData.Data10)
-                    Return SMSContent
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
-                End Try
-            End Function
-
-
-        End Class
-
         Namespace Exceptions
 
             Public Class MobileNumberInvallidException
-                Inherits ApplicationException
+                Inherits BPTException
 
-                Private _Message As String = String.Empty
-                Public Sub New(YourMessage As String)
-                    _Message = YourMessage
+                Public Sub New(YourMobileNumber As String)
+                    _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.MobileNumberInvallidException).MsgId
+                    _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.MobileNumberInvallidException).MsgContent.Replace("@M", YourMobileNumber)
                 End Sub
-
-                Public Overrides ReadOnly Property Message As String
-                    Get
-                        Return "شماره موبایل " + _Message.Trim + " نادرست است"
-                    End Get
-                End Property
 
             End Class
 
@@ -673,11 +453,11 @@ Namespace SMS
         'BPTChanged
         Public Class R2CoreSMSHandlerManager
 
-            Private _DateTimeService As IR2DateTimeService
+            Private _DateTimeService As IDateTimeService
             Private _SoftwareUserService As ISoftwareUserService
             Private _InstanceSqlDataBOX As R2CoreSqlDataBOXManager
 
-            Public Sub New(YourR2DateTimeService As IR2DateTimeService, YourSoftwareUserService As ISoftwareUserService)
+            Public Sub New(YourR2DateTimeService As IDateTimeService, YourSoftwareUserService As ISoftwareUserService)
                 _DateTimeService = YourR2DateTimeService
                 _SoftwareUserService = YourSoftwareUserService
                 _InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
@@ -691,10 +471,18 @@ Namespace SMS
                         If YourLst(LoopxLst).Key = SendSMSCodes.R2CoreSendSMSCodes.Success Then
                             SB.Append(String.Empty)
                         Else
-                            SB.AppendLine(YourLst(LoopxLst).Value + "  " + InstanceSendSMSCode.GetNSSSendSMSCode(YourLst(LoopxLst).Key).Description)
+                            SB.AppendLine(YourLst(LoopxLst).Value + "  " + InstanceSendSMSCode.GetSendSMSCode(YourLst(LoopxLst).Key).Description)
                         End If
                     Next
                     Return SB.ToString
+                Catch ex As FileNotExistException
+                    Throw ex
+                Catch ex As DataBaseException
+                    Throw ex
+                Catch ex As UnableConnectToAPIException
+                    Throw ex
+                Catch ex As SendSMSCodeIdNotFoundExcption
+                    Throw ex
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
                 End Try
@@ -751,7 +539,7 @@ Namespace SMS
                             End If
                         End If
                         Dim SMSContent = GetCompositedSMSCreationData(NSSSMSType, YourSMSCreationData(Loopx))
-                        Dim SMS = New R2CoreStandardSMSStructure(Nothing, YourSoftwareUsers(Loopx).MobileNumber, SMSContent, NSSSMSType.SMSMinutes, Nothing, Nothing, Nothing, Nothing)
+                        Dim SMS = New R2CoreSMS With {.SMSId = Nothing, .MobileNumber = YourSoftwareUsers(Loopx).MobileNumber, .Message = SMSContent, .EndMinutes = NSSSMSType.SMSMinutes}
                         CmdSql.CommandText = "Insert Into R2PrimarySMSSystem.dbo.TblSMSWareHouse(MobileNumber,Message,EndMinutes,DateTimeMilladi,Active,DateShamsi,SmsType) values('" & SMS.MobileNumber & "','" & SMS.Message & "'," & SMS.EndMinutes & ",convert(varchar, getdate(), 20),1, R2Primary.DBO.BPTCOGregorianToPersian(GETDATE())," & R2CoreSMSSendReciveType.ForSend & ")"
                         CmdSql.ExecuteNonQuery()
                         CmdSql.CommandText = "Update R2PrimarySMSSystem.dbo.TblSMSOwners Set ReminderHolder=ReminderHolder+" & NSSSMSType.Price & "
@@ -818,7 +606,7 @@ Namespace SMS
                     Dim InstanceSMSTypes = New R2CoreMClassSMSTypesManager(_DateTimeService)
                     Dim NSSSMSType = InstanceSMSTypes.GetNSSSMSType(YourSMSTypes)
                     Dim SMSContent = GetCompositedSMSCreationData(NSSSMSType, YourSMSCreationData)
-                    Dim SMS = New R2CoreStandardSMSStructure(Nothing, YourMobileNumber, SMSContent, NSSSMSType.SMSMinutes, Nothing, Nothing, Nothing, Nothing)
+                    Dim SMS = New R2CoreSMS With {.MobileNumber = YourMobileNumber, .Message = SMSContent, .EndMinutes = NSSSMSType.SMSMinutes}
                     CmdSql.Connection.Open()
                     CmdSql.Transaction = CmdSql.Connection.BeginTransaction
                     CmdSql.CommandText = "Insert Into R2PrimarySMSSystem.dbo.TblSMSWareHouse(MobileNumber,Message,EndMinutes,DateTimeMilladi,Active,DateShamsi,SmsType) Values(@MobileNumber,@Message,@EndMinutes,convert(varchar, getdate(), 20),1,R2Primary.DBO.BPTCOGregorianToPersian(GETDATE())," & R2CoreSMSSendReciveType.ForSend & ")"
@@ -977,8 +765,8 @@ Namespace SMS
 
         'Public Class R2CoreSMSRecivingManager
         '    Private _SepahanSMS As New net.sepahansms.smsSendWebServiceforPHP()
-        '    Private _DateTimeService As IR2DateTimeService
-        '    Public Sub New(YourDateTimeService As IR2DateTimeService)
+        '    Private _DateTimeService As IDateTimeService
+        '    Public Sub New(YourDateTimeService As IDateTimeService)
         '        _DateTimeService = YourDateTimeService
         '    End Sub
 
@@ -1060,10 +848,10 @@ Namespace SMS
         Public Class R2CoreSMSSendingManager
             Private _SepahanSMS As New net.sepahansms.smsSendWebServiceforPHP()
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-            Private _DateTimeService As IR2DateTimeService
+            Private _DateTimeService As IDateTimeService
             Private _LoggerService As ILogger
 
-            Public Sub New(YourDateTimeService As IR2DateTimeService)
+            Public Sub New(YourDateTimeService As IDateTimeService)
                 _DateTimeService = YourDateTimeService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
                 _LoggerService = New R2CorenLogService
@@ -1126,10 +914,10 @@ Namespace SMS
         Public Class R2CoreSMSRecivingManager
             Private _SepahanSMS As New net.sepahansms.smsSendWebServiceforPHP()
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-            Private _DateTimeService As IR2DateTimeService
+            Private _DateTimeService As IDateTimeService
             Private _LoggerService As ILogger
 
-            Public Sub New(YourDateTimeService As IR2DateTimeService)
+            Public Sub New(YourDateTimeService As IDateTimeService)
                 _DateTimeService = YourDateTimeService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
                 _LoggerService = New R2CorenLogService
@@ -1158,16 +946,13 @@ Namespace SMS
                             InstanceSQLInjectionPrevention.GeneralAuthorization(MobileNumber)
                             InstanceSQLInjectionPrevention.GeneralAuthorization(myDate)
                         Catch ex As SqlInjectionException
-                            _LoggerService.RegisterExceptionLog(New Exception((New SqlInjectionException()).Message))
+                            _LoggerService.RegisterExceptionLog(ex)
                             Continue For
                         End Try
                         Dim InstanceRecivedSMSCodes = New R2CoreRecivedSMSCodesManager(_DateTimeService)
                         Dim NSSRecivedSMSCode As R2CoreRecivedSMSCode = Nothing
                         Try
                             NSSRecivedSMSCode = InstanceRecivedSMSCodes.GetRecivedSMSCode(SmsText)
-                        Catch ex As SqlInjectionException
-                            _LoggerService.RegisterExceptionLog(New Exception((New SqlInjectionException()).Message))
-                            Continue For
                         Catch ex As SMSRecivedCodeforSMSCodeNotFoundException
                             Continue For
                         End Try
@@ -1196,7 +981,6 @@ Namespace SMS
     Namespace SMSTypes
 
         Public Class R2CoreStandardSMSTypeStructure
-            Inherits R2StandardStructure
 
             Public Sub New()
                 MyBase.New()
@@ -1218,7 +1002,7 @@ Namespace SMS
             End Sub
 
             Public Sub New(YourSMSTypeId As Int64, YourSMSTypeName As String, YourSMSTypeTitle As String, YourSMSTypeColor As Color, YourPrice As Int64, YourSMSTypeContent As String, YourSMSMinutes As Int64, YourCore As String, YourUserId As Int64, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourTime As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
-                MyBase.New(YourSMSTypeId, YourSMSTypeTitle)
+                MyBase.New()
                 _SMSTypeId = YourSMSTypeId
                 _SMSTypeName = YourSMSTypeName
                 _SMSTypeTitle = YourSMSTypeTitle
@@ -1257,8 +1041,8 @@ Namespace SMS
         Public Class R2CoreMClassSMSTypesManager
 
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-            Private _DateTimeService As IR2DateTimeService
-            Public Sub New(YourDateTimeService As IR2DateTimeService)
+            Private _DateTimeService As IDateTimeService
+            Public Sub New(YourDateTimeService As IDateTimeService)
                 _DateTimeService = YourDateTimeService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
             End Sub
@@ -1318,24 +1102,24 @@ Namespace SMS
                 End Try
             End Function
 
-            Public Function GetSMSTypes(YourSearchString As String) As List(Of R2StandardStructure)
-                Try
-                    Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
-                    InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
+            'Public Function GetSMSTypes(YourSearchString As String) As List(Of R2StandardStructure)
+            '    Try
+            '        Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
+            '        InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
 
-                    Dim Ds As DataSet
-                    InstanceSqlDataBOX.GetDataBOX(R2PrimarySMSSystemSqlConnection.GetSubscriptionDBConnection, "Select * From R2PrimarySMSSystem.dbo.TblSMSTypes Where Active=1 And ViewFlag=1 And SMSTypeTitle Like  '%" & YourSearchString & "%' Order By SMSTypeTitle ", 3600, Ds, New Boolean)
-                    Dim Lst As New List(Of R2StandardStructure)
-                    For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
-                        Lst.Add(New R2CoreStandardSMSTypeStructure(Ds.Tables(0).Rows(Loopx).Item("SMSTypeId"), Ds.Tables(0).Rows(Loopx).Item("SMSTypeName").trim, Ds.Tables(0).Rows(Loopx).Item("SMSTypeTitle").trim, Color.FromName(Ds.Tables(0).Rows(Loopx).Item("SMSTypeColor").trim), Ds.Tables(0).Rows(Loopx).Item("Price"), Ds.Tables(0).Rows(Loopx).Item("SMSTypeContent").trim, Ds.Tables(0).Rows(Loopx).Item("SMSMinutes"), Ds.Tables(0).Rows(Loopx).Item("Core").trim, Ds.Tables(0).Rows(Loopx).Item("UserId"), Ds.Tables(0).Rows(Loopx).Item("DateTimeMilladi"), Ds.Tables(0).Rows(Loopx).Item("DateShamsi"), Ds.Tables(0).Rows(Loopx).Item("Time"), Ds.Tables(0).Rows(Loopx).Item("ViewFlag"), Ds.Tables(0).Rows(Loopx).Item("Active"), Ds.Tables(0).Rows(Loopx).Item("Deleted")))
-                    Next
-                    Return Lst
-                Catch ex As SqlInjectionException
-                    Throw ex
-                Catch ex As Exception
-                    Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-                End Try
-            End Function
+            '        Dim Ds As DataSet
+            '        InstanceSqlDataBOX.GetDataBOX(R2PrimarySMSSystemSqlConnection.GetSubscriptionDBConnection, "Select * From R2PrimarySMSSystem.dbo.TblSMSTypes Where Active=1 And ViewFlag=1 And SMSTypeTitle Like  '%" & YourSearchString & "%' Order By SMSTypeTitle ", 3600, Ds, New Boolean)
+            '        Dim Lst As New List(Of R2StandardStructure)
+            '        For Loopx As Int64 = 0 To Ds.Tables(0).Rows.Count - 1
+            '            Lst.Add(New R2CoreStandardSMSTypeStructure(Ds.Tables(0).Rows(Loopx).Item("SMSTypeId"), Ds.Tables(0).Rows(Loopx).Item("SMSTypeName").trim, Ds.Tables(0).Rows(Loopx).Item("SMSTypeTitle").trim, Color.FromName(Ds.Tables(0).Rows(Loopx).Item("SMSTypeColor").trim), Ds.Tables(0).Rows(Loopx).Item("Price"), Ds.Tables(0).Rows(Loopx).Item("SMSTypeContent").trim, Ds.Tables(0).Rows(Loopx).Item("SMSMinutes"), Ds.Tables(0).Rows(Loopx).Item("Core").trim, Ds.Tables(0).Rows(Loopx).Item("UserId"), Ds.Tables(0).Rows(Loopx).Item("DateTimeMilladi"), Ds.Tables(0).Rows(Loopx).Item("DateShamsi"), Ds.Tables(0).Rows(Loopx).Item("Time"), Ds.Tables(0).Rows(Loopx).Item("ViewFlag"), Ds.Tables(0).Rows(Loopx).Item("Active"), Ds.Tables(0).Rows(Loopx).Item("Deleted")))
+            '        Next
+            '        Return Lst
+            '    Catch ex As SqlInjectionException
+            '        Throw ex
+            '    Catch ex As Exception
+            '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            '    End Try
+            'End Function
 
         End Class
 
@@ -1376,15 +1160,15 @@ Namespace SMS
         Public Class R2CoreSMSTypesManager
 
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-            Private _DateTimeService As IR2DateTimeService
-            Public Sub New(YourDateTimeService As IR2DateTimeService)
+            Private _DateTimeService As IDateTimeService
+            Public Sub New(YourDateTimeService As IDateTimeService)
                 _DateTimeService = YourDateTimeService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
             End Sub
 
             Public Function GetSMSTypesJSON(YourSearchString As String, YourImmediately As Boolean) As String
                 Try
-                    Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager()
+                    Dim InstancePublicProcedures = New R2CorePublicProceduresManager()
                     Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                     InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
 
@@ -1533,8 +1317,8 @@ Namespace SMS
         Public Class R2CoreMClassSMSOwnerTypesManager
 
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-            Private _DateTimeService As IR2DateTimeService
-            Public Sub New(YourDateTimeService As IR2DateTimeService)
+            Private _DateTimeService As IDateTimeService
+            Public Sub New(YourDateTimeService As IDateTimeService)
                 _DateTimeService = YourDateTimeService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
             End Sub
@@ -1579,8 +1363,8 @@ Namespace SMS
         Public Class R2CoreMClassSMSOwnersManager
 
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-            Private _DateTimeService As IR2DateTimeService
-            Public Sub New(YourDateTimeService As IR2DateTimeService)
+            Private _DateTimeService As IDateTimeService
+            Public Sub New(YourDateTimeService As IDateTimeService)
                 _DateTimeService = YourDateTimeService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
             End Sub
@@ -1864,9 +1648,9 @@ Namespace SMS
         Public Class R2CoreSMSOwnersManager
 
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-            Private _DateTimeService As IR2DateTimeService
+            Private _DateTimeService As IDateTimeService
             Private _SoftwareUserService As ISoftwareUserService
-            Public Sub New(YourR2DateTimeService As IR2DateTimeService, YourSoftwareUserService As ISoftwareUserService)
+            Public Sub New(YourR2DateTimeService As IDateTimeService, YourSoftwareUserService As ISoftwareUserService)
                 _SoftwareUserService = YourSoftwareUserService
                 _DateTimeService = YourR2DateTimeService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
@@ -1982,6 +1766,12 @@ Namespace SMS
                         LstUsers.Add(New R2CoreSoftwareUser With {.UserId = DS.Tables(0).Rows(Loopx).Item("UserId"), .ApiKey = DS.Tables(0).Rows(Loopx).Item("ApiKey").trim, .APIKeyExpiration = DS.Tables(0).Rows(Loopx).Item("APIKeyExpiration"), .UserName = DS.Tables(0).Rows(Loopx).Item("UserName").trim, .UserShenaseh = DS.Tables(0).Rows(Loopx).Item("UserShenaseh").trim, .UserPassword = DS.Tables(0).Rows(Loopx).Item("UserPassword").trim, .UserPasswordExpiration = DS.Tables(0).Rows(Loopx).Item("UserPasswordExpiration"), .UserPinCode = DS.Tables(0).Rows(Loopx).Item("UserPinCode"), .UserCanCharge = DS.Tables(0).Rows(Loopx).Item("UserCanCharge"), .UserActive = DS.Tables(0).Rows(Loopx).Item("UserActive"), .UserTypeId = DS.Tables(0).Rows(Loopx).Item("UserTypeId"), .MobileNumber = DS.Tables(0).Rows(Loopx).Item("MobileNumber").trim})
                     Next
                     Return LstUsers
+                Catch ex As FileNotExistException
+                    Throw ex
+                Catch ex As DataBaseException
+                    Throw ex
+                Catch ex As UnableConnectToAPIException
+                    Throw ex
                 Catch ex As Exception
                     Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
                 End Try
@@ -2096,8 +1886,8 @@ Namespace SMS
         Public Class R2CoreSMSOwnerTypesManager
 
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-            Private _DateTimeService As IR2DateTimeService
-            Public Sub New(YourDateTimeService As IR2DateTimeService)
+            Private _DateTimeService As IDateTimeService
+            Public Sub New(YourDateTimeService As IDateTimeService)
                 _DateTimeService = YourDateTimeService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
             End Sub

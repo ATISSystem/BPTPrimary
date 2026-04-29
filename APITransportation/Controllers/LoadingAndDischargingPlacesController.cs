@@ -7,11 +7,13 @@ using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
+using R2Core.LoggingManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
 using R2Core.SoftwareUserManagement;
 using R2CoreTransportationAndLoadNotification;
 using R2CoreTransportationAndLoadNotification.LoadingAndDischargingPlaces;
+using R2CoreTransportationAndLoadNotification.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +21,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Services.Protocols;
@@ -30,10 +33,17 @@ namespace APITransportation.Controllers
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
         private R2DateTimeService _DateTimeService;
+        private ILogger _loggerService;
+        private Networking _Networking;
 
         public LoadingAndDischargingPlacesController()
         {
-            try { _DateTimeService = new R2DateTimeService(); }
+            try
+            {
+                _DateTimeService = new R2DateTimeService();
+                _loggerService = new R2Core.LoggingManagement.R2CorenLogService();
+                _Networking = new Networking();
+            }
             catch (FileNotExistException ex)
             { throw ex; }
             catch (Exception ex)
@@ -122,6 +132,8 @@ namespace APITransportation.Controllers
                 var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager();
                 var LADPlaceId = InstanceLoadingAndDischargingPlaces.LoadingAndDischargingPlaceRegister(RawLADPlaceInf);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.LADPlaceRegister, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawLADPlaceInf.LADPlaceTitle ) + ":" + RawLADPlaceInf.LADPlaceTitle , UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -153,6 +165,8 @@ namespace APITransportation.Controllers
                 var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager();
                 InstanceLoadingAndDischargingPlaces.LoadingAndDischargingPlaceUpdating(RawLADPlaceInf);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.LADPlaceUpdate, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawLADPlaceInf.LADPlaceId) + ":" + RawLADPlaceInf.LADPlaceId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -182,6 +196,8 @@ namespace APITransportation.Controllers
 
                 var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager();
                 InstanceLoadingAndDischargingPlaces.LoadingAndDischargingPlaceDelete(LADPlaceId);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.LADPlaceDelete, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(LADPlaceId) + ":" + LADPlaceId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
@@ -213,6 +229,8 @@ namespace APITransportation.Controllers
                 var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager();
                 InstanceLoadingAndDischargingPlaces.LoadingPlaceChangeActiveStatus(LADPlaceId);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.LoadingPlaceChangeActiveStatus, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(LADPlaceId) + ":" + LADPlaceId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
@@ -242,6 +260,8 @@ namespace APITransportation.Controllers
 
                 var InstanceLoadingAndDischargingPlaces = new R2CoreTransportationAndLoadNotificationLoadingAndDischargingPlacesManager();
                 InstanceLoadingAndDischargingPlaces.DischargingPlaceChangeActiveStatus(LADPlaceId);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.DischargingPlaceChangeActiveStatus, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(LADPlaceId) + ":" + LADPlaceId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;

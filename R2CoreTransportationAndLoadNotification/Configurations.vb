@@ -8,7 +8,7 @@ Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.GeneralConfiguration
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2CoreParkingSystem.GeneralConfiguration
 Imports R2CoreTransportationAndLoadNotification.ConfigurationsManagement.Exceptions
 Imports System.Data.SqlClient
@@ -68,16 +68,16 @@ Namespace ConfigurationOfLoadAnnouncement
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationConfigurationOfLoadAnnouncementManager
         Private InstanceSqlDataBox As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
+        Private _DateTimeService As IDateTimeService
 
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Public Function GetAllConfigurationOfLoadAnnouncement(YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
 
                 Dim Ds As New DataSet
                 If YourImmediately Then
@@ -233,7 +233,8 @@ End Namespace
 
 Namespace ConfigurationsManagement
     Public MustInherit Class R2CoreTransportationAndLoadNotificationConfigurations
-        Inherits R2CoreConfigurations
+        Inherits R2CoreParkingSystem.ConfigurationManagement.R2CoreParkingSystemConfigurations
+
         Public Shared ReadOnly Property TurnControlling As Int64 = 34
         'Public Shared ReadOnly Property TWS As Int64 = 51
         'Public Shared ReadOnly Property AnnouncementHallMonitoring As Int64 = 52
@@ -371,16 +372,16 @@ Namespace ConfigurationsManagement
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationConfigurationsManager
         Private InstanceSqlDataBox As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
+        Private _DateTimeService As IDateTimeService
 
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
 
         Public Function GetAllLoadViewConditions(YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager()
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager()
 
                 Dim Ds As New DataSet
                 If YourImmediately Then
@@ -487,7 +488,7 @@ Namespace ConfigurationsManagement
 
         Public Function GetAllLoadAllocationConditions(YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager()
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager()
 
                 Dim Ds As New DataSet
                 If YourImmediately Then
@@ -598,8 +599,8 @@ Namespace ConfigurationsManagement
     Public Class R2CoreTransportationAndLoadNotificationConfigurationOfAnnouncementsManager
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub

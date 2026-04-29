@@ -10,22 +10,34 @@ Imports System.Xml
 
 Namespace ExceptionManagement
 
+    'BPTChanged
+    Public Class R2CoreRawExceptionMessage
+        Public ErrorMessage As String
+        Public ErrorMessageCode As Int64
+    End Class
+
+    'BPTChanged
+    Public Class R2CoreExceptionsManager
+
+    End Class
+
+    'BPTChanged
     Public Class BPTException
         Inherits ApplicationException
 
         Protected _Message As String
         Protected _MessageCode As Int64
-        Protected InstancePredefinedMessages As R2CoreMClassPredefinedMessagesManager
-        Protected _DateTimeService As IR2DateTimeService
+        Protected InstancePredefinedMessages As R2CorePredefinedMessagesManager
+        Protected _DateTimeService As IDateTimeService
         Public Sub New()
             _DateTimeService = New R2DateTimeService
-            InstancePredefinedMessages = New R2CoreMClassPredefinedMessagesManager(_DateTimeService)
+            InstancePredefinedMessages = New R2CorePredefinedMessagesManager(_DateTimeService)
         End Sub
 
         Public Sub New(YourException As Exception)
-            InstancePredefinedMessages = New R2CoreMClassPredefinedMessagesManager(_DateTimeService)
+            InstancePredefinedMessages = New R2CorePredefinedMessagesManager(_DateTimeService)
             _Message = YourException.Message
-            _MessageCode = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.None).MsgId
+            _MessageCode = R2CorePredefinedMessages.None
         End Sub
 
         Public Overrides ReadOnly Property Message As String
@@ -41,66 +53,104 @@ Namespace ExceptionManagement
         End Property
     End Class
 
+    'BPTChanged
     Public Class BPTSoapException
         Inherits BPTException
 
         Public Sub New(YourSoapException As SoapException)
-            _Message = YourSoapException.Message
-            _MessageCode = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.BPTSoapException).MsgId
+            _Message = InstancePredefinedMessages.GetPredefinedMessage(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.BPTSoapException).MsgContent + vbCrLf + YourSoapException.Message
+            _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.BPTSoapException).MsgId
         End Sub
     End Class
 
-    Public MustInherit Class R2CoreMClassExceptionsManagement
-        Private Shared InstanceSqlDataBOX As New R2CoreSqlDataBOXManager(New R2DateTimeService)
-        Public Shared Function GetSqlExceptionMessage(YourSqlExceptionId As Int64) As String
-            Try
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "Select Top 1 Message from R2Primary.dbo.TblSqlExceptions Where SEId=" & YourSqlExceptionId & " Order By SEId Asc", 3600, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New SqlExceptionNotFoundException
-                Return Ds.Tables(0).Rows(0).Item("Message")
-            Catch ex As SqlExceptionNotFoundException
-                Throw ex
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
-
-    End Class
-
+    'BPTChanged
     Public Class UserNotAlllowedException
-        Inherits ApplicationException
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "کاربر مجاز به اجرای این فرآیند نیست"
-            End Get
-        End Property
+        Inherits BPTException
+
+        Public Sub New()
+            _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.UserNotAlllowedException).MsgContent
+            _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.UserNotAlllowedException).MsgId
+        End Sub
     End Class
 
-    Public Class SqlExceptionNotFoundException
-        Inherits ApplicationException
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "اس کیو ال اکسپشن با کد شاخص مورد نظر یافت نشد"
-            End Get
-        End Property
+    'BPTChanged
+    Public Class DataEntryException
+        Inherits BPTException
+
+        Public Sub New()
+            _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.DataEntryException).MsgContent
+            _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.DataEntryException).MsgId
+        End Sub
+
+        Public Sub New(YourMessage As String)
+            _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.DataEntryException).MsgContent + vbCrLf + YourMessage
+            _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.DataEntryException).MsgId
+        End Sub
     End Class
 
-    Public Class InvalidEntryAmountException
-        Inherits ApplicationException
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "مقدار وارد شده نادرست است"
-            End Get
-        End Property
+    'BPTChanged
+    Public Class FileNotExistException
+        Inherits BPTException
+
+        Public Sub New()
+            _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.FileNotExistException).MsgContent
+            _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.FileNotExistException).MsgId
+        End Sub
+
+        Public Sub New(YourFilePath As String)
+            _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.FileNotExistException).MsgContent + vbCrLf + YourFilePath
+            _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.FileNotExistException).MsgId
+        End Sub
+
     End Class
 
-    Public Class InvalidEntryNumberException
-        Inherits ApplicationException
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "تعداد وارد شده نادرست است"
-            End Get
-        End Property
+    'BPTChanged
+    Public Class UploadedImageSizeExeededException
+        Inherits BPTException
+
+        Public Sub New()
+            _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.UploadedImageSizeExeededException).MsgContent
+            _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.UploadedImageSizeExeededException).MsgId
+        End Sub
     End Class
+
+    'BPTChanged
+    Public Class PleaseReTryException
+        Inherits BPTException
+
+        Public Sub New()
+            _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.PleaseReTryException).MsgContent
+            _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.PleaseReTryException).MsgId
+        End Sub
+    End Class
+
+    'BPTChanged
+    Public Class AnyNotFoundException
+        Inherits BPTException
+
+        Public Sub New()
+            _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.AnyNotFoundException).MsgContent
+            _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.AnyNotFoundException).MsgId
+        End Sub
+    End Class
+
+    'BPTChanged
+    Public Class UnableConnectToAPIException
+        Inherits BPTException
+
+        Public Sub New()
+            _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.UnableConnectToAPIException).MsgContent
+            _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.UnableConnectToAPIException).MsgId
+        End Sub
+
+        Public Sub New(YourAPI As String)
+            _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.UnableConnectToAPIException).MsgContent + vbCrLf + YourAPI
+            _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.UnableConnectToAPIException).MsgId
+        End Sub
+    End Class
+
+
+
 
     Public Class GetNSSException
         Inherits ApplicationException
@@ -119,114 +169,5 @@ Namespace ExceptionManagement
             End Get
         End Property
     End Class
-
-    Public Class DataEntryException
-        Inherits ApplicationException
-
-        Private _Message = String.Empty
-
-        Public Sub New()
-            _Message = "اطلاعات وارد شده صحیح نیست،کلیه اطلاعات وارد شده را بررسی کنید"
-        End Sub
-
-        Public Sub New(YourMessage As String)
-            _Message = YourMessage
-        End Sub
-
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return _Message
-            End Get
-        End Property
-    End Class
-
-    Public Class FileNotExistException
-        Inherits ApplicationException
-
-        Private _FilePath = String.Empty
-        Public Sub New(YourFilePath As String)
-            _FilePath = YourFilePath
-        End Sub
-
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "فایل مورد نظر یافت نشد" + vbCrLf + _FilePath
-            End Get
-        End Property
-    End Class
-
-    Public Class UserNotAllowedRunThisProccessException
-        Inherits ApplicationException
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "کاربر مجوز دسترسی ندارد"
-            End Get
-        End Property
-    End Class
-
-    Public Class UploadedImageSizeExeededException
-        Inherits ApplicationException
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "اندازه تصویر ارسال شده بیش از حد مجاز است"
-            End Get
-        End Property
-    End Class
-
-    Public Class PleaseReTryException
-        Inherits BPTException
-
-        Public Sub New()
-            _Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.PleaseReTryException).MsgContent
-            _MessageCode = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.PleaseReTryException).MsgId
-        End Sub
-    End Class
-
-    Public Class AnyNotFoundException
-        Inherits BPTException
-
-        Public Sub New()
-            _Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.AnyNotFoundException).MsgContent
-            _MessageCode = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.AnyNotFoundException).MsgId
-        End Sub
-    End Class
-
-    Public Class UnableConnectToAPIException
-        Inherits ApplicationException
-
-        Private _Message = String.Empty
-
-        Public Sub New(YourMessage As String)
-            _Message = YourMessage
-        End Sub
-
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "ارتباط با سرویس مورد نظر بدرستی برقرار نیست" + vbCrLf + _Message
-            End Get
-        End Property
-    End Class
-
-    Public Class UnSuccessConnectionToAPIException
-        Inherits ApplicationException
-
-        Private _Message = String.Empty
-
-        Public Sub New(YourMessage As String)
-            _Message = YourMessage
-        End Sub
-
-        Public Overrides ReadOnly Property Message As String
-            Get
-                Return "ارتباط با سرویس مورد نظر موفقیت آمیز نیست" + vbCrLf + _Message
-            End Get
-        End Property
-    End Class
-
-    'BPTChanged
-    Public Class R2CoreExceptionsManager
-
-    End Class
-
 
 End Namespace

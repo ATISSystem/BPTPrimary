@@ -7,7 +7,7 @@ Imports R2Core.BaseStandardClass
 Imports R2Core.ComputersManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.ExceptionManagement
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2CoreTransportationAndLoadNotification.Announcements
 Imports R2CoreTransportationAndLoadNotification.Announcements.Exceptions
 Imports R2CoreTransportationAndLoadNotification.ConfigurationsManagement
@@ -119,7 +119,6 @@ Namespace Announcements
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationStandardAnnouncementHallAnnounceTimeTypeStructure
-        Inherits R2StandardStructure
 
         Public Sub New()
             MyBase.New()
@@ -767,8 +766,8 @@ Namespace Announcements
     Public Class R2CoreTransportationAndLoadNotificationAnnouncementsManager
 
         Private InstanceSqlDataBox As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -779,7 +778,7 @@ Namespace Announcements
                 Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
 
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -809,7 +808,7 @@ Namespace Announcements
 
         Public Function GetAnnouncements(YourImmediately As Boolean) As List(Of R2CoreTransportationAndLoadNotificationAnnouncement)
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -839,7 +838,7 @@ Namespace Announcements
 
         Public Function GetActiveAnnouncements(YourImmediately As Boolean) As List(Of R2CoreTransportationAndLoadNotificationAnnouncement)
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -937,7 +936,7 @@ Namespace Announcements
                 Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
 
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -967,7 +966,7 @@ Namespace Announcements
 
         Public Function GetAnnouncementSGsByAnnouncementIdJSON(YourAnnouncementId As Int64, YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -999,7 +998,7 @@ Namespace Announcements
 
         Public Function GetAnnouncementSGsByAnnouncementId(YourAnnouncementId As Int64, YourImmediately As Boolean) As List(Of R2CoreTransportationAndLoadNotificationAnnouncementSubGroup)
             Try
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -1106,7 +1105,7 @@ Namespace Announcements
 
         Public Function GetAnnouncementRelationAnnouncementSubGroups(YourAnnouncementId As Int64, YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -1261,7 +1260,7 @@ Namespace Announcements
 
         Public Function GetAllAnnouncementRelationProvinces(YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -1422,8 +1421,8 @@ Namespace AnnouncementTiming
 
     'BPTChanged
     Public Class R2CoreTransportationAndLoadNotificationAnnouncementTimingManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
         End Sub
 

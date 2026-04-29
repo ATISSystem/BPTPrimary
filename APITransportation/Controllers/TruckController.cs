@@ -7,12 +7,14 @@ using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
+using R2Core.LoggingManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
 using R2Core.SoftwareUserManagement;
 using R2CoreParkingSystem.Cars;
 using R2CoreParkingSystem.Drivers;
 using R2CoreParkingSystem.TrafficCardsManagement;
+using R2CoreTransportationAndLoadNotification.Logging;
 using R2CoreTransportationAndLoadNotification.TruckDrivers;
 using R2CoreTransportationAndLoadNotification.Trucks;
 using R2CoreTransportationAndLoadNotification.Trucks.Exceptions;
@@ -26,6 +28,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Services.Protocols;
@@ -37,10 +40,17 @@ namespace APITransportation.Controllers
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
         private R2DateTimeService _DateTimeService;
+        private ILogger _loggerService;
+        private Networking _Networking;
 
         public TruckController()
         {
-            try { _DateTimeService = new R2DateTimeService(); }
+            try
+            {
+                _DateTimeService = new R2DateTimeService();
+                _loggerService = new R2Core.LoggingManagement.R2CorenLogService();
+                _Networking = new Networking();
+            }
             catch (FileNotExistException ex)
             { throw ex; }
             catch (Exception ex)
@@ -196,6 +206,8 @@ namespace APITransportation.Controllers
 
                 var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService);
                 InstanceTrucks.SetComposedTruckInf(TruckId, TruckDriverId, MoneyWalletId, TurnId);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.SetComposedTruckInf, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TruckId) + ":" + TruckId+" "+ nameof(TruckDriverId) + ":" + TruckDriverId, MessageDetail2= nameof(TurnId) + ":" + TurnId+" "+ nameof(MoneyWalletId) + ":" + MoneyWalletId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent }), Encoding.UTF8, "application/json");

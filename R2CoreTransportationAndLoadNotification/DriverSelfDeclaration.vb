@@ -1,8 +1,6 @@
 ﻿
 
 
-Imports R2Core.BaseStandardClass
-Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
@@ -18,7 +16,6 @@ Imports System.Reflection
 Namespace DriverSelfDeclaration
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceDriverSelfDeclarationParameterStructure
-        Inherits R2StandardStructure
 
         Public Sub New()
             MyBase.New()
@@ -42,7 +39,7 @@ Namespace DriverSelfDeclaration
         End Sub
 
         Public Sub New(YourDSDId As Int64, YourDSDName As String, YourDSDTitle As String, YourDefaultValue As String, YourPersianKeyboard As Boolean, YourIsNumeric As Boolean, YourDecimalPoint As Boolean, YourHasAttachement As Boolean, YourMin As String, YourMax As String, YourDateTimeMilladi As DateTime, YourDateShamsi As String, YourTime As String, YourUserId As Int64, YourActive As Boolean, YourViewFlag As Boolean, YourDeleted As Boolean)
-            MyBase.New(YourDSDId, YourDSDName)
+            MyBase.New()
             _DSDId = YourDSDId
             _DSDName = YourDSDName
             _DSDTitle = YourDSDTitle
@@ -83,7 +80,6 @@ Namespace DriverSelfDeclaration
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationInstanceDriverSelfDeclarationExtendedStructure
-        Inherits R2StandardStructure
 
         Public Sub New()
             MyBase.New()
@@ -99,7 +95,7 @@ Namespace DriverSelfDeclaration
         End Sub
 
         Public Sub New(ByVal YourDSDId As Int64, YourDSDName As String, YourDSDTitle As String, YourDefaultValue As String, YourDSDValue As String, YourPersianKeyboard As Boolean, YourIsNumeric As Boolean, YourDecimalPoint As Boolean, YourHasAttachement As Boolean)
-            MyBase.New(YourDSDId, YourDSDName)
+            MyBase.New()
             _DSDId = YourDSDId
             _DSDName = YourDSDName
             _DSDTitle = YourDSDTitle
@@ -130,7 +126,7 @@ Namespace DriverSelfDeclaration
 
         'Private Function GetDSDIdFull(YourDSDId As Int64) As String
         '    Try
-        '        Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+        '        Dim InstancePublicProcedures = New R2Core.PublicProc.R2CorePublicProceduresManager
         '        Return InstancePublicProcedures.RepeatStr("0", 2 - YourDSDId.ToString().Length) + YourDSDId.ToString()
         '    Catch ex As Exception
         '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)

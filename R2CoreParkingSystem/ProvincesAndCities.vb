@@ -5,6 +5,7 @@ Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
+Imports R2Core.PublicProcedures
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SecurityAlgorithmsManagement.SQLInjectionPrevention
 Imports R2Core.SQLInjectionPrevention
@@ -52,7 +53,6 @@ Namespace ProvincesAndCities
         End Function
 
         Public Class R2StandardCityStructure
-            Inherits BaseStandardClass.R2StandardStructure
 
             Private mynCityCode As Int64
             Private myStrCityName As String
@@ -69,7 +69,7 @@ Namespace ProvincesAndCities
             End Sub
 
             Public Sub New(ByVal YournCityCode As Int64, ByVal YourStrCityName As String, ByVal YournDistance As Int64, ByVal YournProvince As Int64, YourActive As Boolean, YourViewFlag As Boolean)
-                MyBase.New(YournCityCode, YourStrCityName)
+                MyBase.New()
                 mynCityCode = YournCityCode
                 myStrCityName = YourStrCityName
                 mynDistance = YournDistance
@@ -278,9 +278,9 @@ Namespace ProvincesAndCities
     'BPTChanged
     Public Class R2CoreParkingSystemProvincesAndCitiesManager
 
-        Private _DateTimeService As IR2DateTimeService
+        Private _DateTimeService As IDateTimeService
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -303,7 +303,7 @@ Namespace ProvincesAndCities
         'BPTChanged
         Public Function GetListOfCitys_SearchIntroCharacters(YourSearchStr As String, YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchStr)
 
@@ -341,7 +341,7 @@ Namespace ProvincesAndCities
         'BPTChanged
         Public Function GetListOfProvinces_SearchIntroCharacters(YourSearchStr As String, YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchStr)
 

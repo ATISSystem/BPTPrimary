@@ -17,6 +17,7 @@ Imports R2Core.DateTimeProvider
 Imports R2Core.GeneralConfiguration
 Imports R2Core.SQLInjectionPrevention
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
+Imports R2Core.BaseClasses
 
 
 Namespace TurnRegisterRequest
@@ -315,8 +316,8 @@ Namespace TurnRegisterRequest
 
         Private _R2PrimaryFSWS = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub

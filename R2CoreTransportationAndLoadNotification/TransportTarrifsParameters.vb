@@ -6,7 +6,7 @@ Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SMS.SMSTypes
 Imports R2Core.SQLInjectionPrevention
@@ -307,8 +307,8 @@ Namespace TransportTariffsParameters
     Public Class R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager
 
         Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Private _DateTimeService As IDateTimeService
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -335,7 +335,7 @@ Namespace TransportTariffsParameters
 
         Public Function GetListofTransportTariffsParamsJSON(YourAnnouncementSGId As Int64) As String
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select Details.TPTPDId,TransportPriceTariffsParameters.TPTPTitle,Details.Mblgh as Cost,0 as Checked
@@ -356,7 +356,7 @@ Namespace TransportTariffsParameters
 
         Public Function GetListofTransportTariffsParamsByAnnouncementSGId(YourAnnouncementSGId As Int64) As List(Of R2CoreTransportationAndLoadNotificationTPTParamsDetails)
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select Details.TPTPDId,TransportPriceTariffsParameters.TPTPTitle,Details.Mblgh as Cost,0 as Checked
@@ -498,7 +498,7 @@ Namespace TransportTariffsParameters
 
         Public Function GetTransportPriceTarrifParametersJSON(YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim Ds As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -584,7 +584,7 @@ Namespace TransportTariffsParameters
 
         Public Function GetTransportPriceTarrifParametersDetailsJSON(YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim Ds As New DataSet
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter

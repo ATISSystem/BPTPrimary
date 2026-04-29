@@ -2,17 +2,19 @@
 
 
 Imports System.CodeDom
+Imports System.Data.SqlClient
 Imports System.Reflection
 Imports System.Web.Services.Protocols
 Imports System.Web.UI.WebControls
 Imports Newtonsoft.Json
+Imports StackExchange.Redis
+
 Imports R2Core.Caching
-Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.GeneralConfiguration
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2Core.SoftwareUserManagement
 
 Namespace Carousels
@@ -31,18 +33,25 @@ Namespace Carousels
 
     Public Class R2CoreCarouselsManager
 
-        Private _WS As R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
-        Private _DateTimeService As IR2DateTimeService
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
-            _DateTimeService = YourDateTimeService
+        Private _WS As R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
+        Private _DateTimeService As IDateTimeService
+        Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
+
+        Public Sub New(YourDateTimeService As IDateTimeService)
+            Try
+                _DateTimeService = YourDateTimeService
+                _WS = New R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService
+                InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
         End Sub
 
         Public Function GetCarousels(YourAllCarousels As Boolean) As String
             Try
-                Dim DS As DataSet
-                Dim InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
 
+                Dim DS As DataSet
                 If YourAllCarousels Then
                     If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                         "Select CId,CTitle,URL,Description,DateTimeMilladi,ShamsiDate,Time,Active from R2Primary.dbo.TblCarousels Where Deleted=0 Order By CId for JSON Path", 0, DS, New Boolean).GetRecordsCount = 0 Then
@@ -55,6 +64,8 @@ Namespace Carousels
                     End If
                 End If
                 Return InstancePublicProcedures.GetIntegratedJson(DS)
+            Catch ex As FileNotExistException
+                Throw ex
             Catch ex As AnyNotFoundException
                 Throw ex
             Catch ex As Exception
@@ -66,8 +77,10 @@ Namespace Carousels
             Try
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
 
-                Return _WS.WebMethodGetFile(RawGroups.R2CoreRawGroups.Carousels, YourCId.ToString + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreConfigurations.JPGBitmap, 0), _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
+                Return _WS.WebMethodGetFile(RawGroups.R2CoreRawGroups.Carousels, YourCId.ToString + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.Pictures, 0), _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
             Catch ex As SoapException
+                Throw New BPTSoapException(ex)
+            Catch ex As FileNotExistException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -92,14 +105,46 @@ Namespace Carousels
                 CmdSql.Parameters.Add("@URL", SqlDbType.NVarChar).Value = YourCarousel.URL
                 CmdSql.Parameters.Add("@Description", SqlDbType.NVarChar).Value = YourCarousel.Description
                 CmdSql.ExecuteNonQuery()
-                _WS.WebMethodSaveFile(RawGroups.R2CoreRawGroups.Carousels, CIdNew.ToString + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreConfigurations.JPGBitmap, 0), YourCarousel.Picture, _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
+                _WS.WebMethodSaveFile(RawGroups.R2CoreRawGroups.Carousels, CIdNew.ToString + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.Pictures, 0), YourCarousel.Picture, _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 CarouselsCachePreparing(YourSoftwareUser)
-            Catch ex As SoapException
-                CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            Catch ex As FileNotExistException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
                 Throw ex
+            Catch ex As CacheTypeNotFoundException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As RedisException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As BPTSoapException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As AnyNotFoundException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As SoapException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New BPTSoapException(ex)
             Catch ex As Exception
-                CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Sub
@@ -119,16 +164,48 @@ Namespace Carousels
                 CmdSql.Parameters.Add("@CId", SqlDbType.BigInt).Value = YourCarousel.CId
                 CmdSql.ExecuteNonQuery()
                 If YourCarousel.Picture IsNot Nothing Then
-                    _WS.WebMethodDeleteFile(RawGroups.R2CoreRawGroups.Carousels, YourCarousel.CId.ToString + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreConfigurations.JPGBitmap, 0), _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
-                    _WS.WebMethodSaveFile(RawGroups.R2CoreRawGroups.Carousels, YourCarousel.CId.ToString + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreConfigurations.JPGBitmap, 0), YourCarousel.Picture, _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
+                    _WS.WebMethodDeleteFile(RawGroups.R2CoreRawGroups.Carousels, YourCarousel.CId.ToString + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.Pictures, 0), _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
+                    _WS.WebMethodSaveFile(RawGroups.R2CoreRawGroups.Carousels, YourCarousel.CId.ToString + InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.Pictures, 0), YourCarousel.Picture, _WS.WebMethodLogin(YourSoftwareUser.UserShenaseh, YourSoftwareUser.UserPassword))
                 End If
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 CarouselsCachePreparing(YourSoftwareUser)
-            Catch ex As SoapException
-                CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            Catch ex As FileNotExistException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
                 Throw ex
+            Catch ex As CacheTypeNotFoundException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As RedisException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As BPTSoapException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As AnyNotFoundException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As SoapException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New BPTSoapException(ex)
             Catch ex As Exception
-                CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Sub
@@ -144,11 +221,43 @@ Namespace Carousels
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 CarouselsCachePreparing(YourSoftwareUser)
-            Catch ex As SoapException
-                CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+            Catch ex As FileNotExistException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
                 Throw ex
+            Catch ex As CacheTypeNotFoundException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As RedisException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As BPTSoapException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As AnyNotFoundException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As SoapException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New BPTSoapException(ex)
             Catch ex As Exception
-                CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Sub
@@ -165,8 +274,43 @@ Namespace Carousels
                 CmdSql.ExecuteNonQuery()
                 CmdSql.Transaction.Commit() : CmdSql.Connection.Close()
                 CarouselsCachePreparing(YourSoftwareUser)
+            Catch ex As FileNotExistException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As CacheTypeNotFoundException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As RedisException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As BPTSoapException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As AnyNotFoundException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As SoapException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw New BPTSoapException(ex)
             Catch ex As Exception
-                CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Sub
@@ -182,7 +326,15 @@ Namespace Carousels
                     Lst.Add(CarouselCache)
                 Next
                 InstanceCache.SetCache(InstanceCache.GetCacheType(R2CoreCacheTypes.Carousel).CacheTypeName, Lst, R2CoreCacheTypes.Carousel, R2Core.Caching.R2CoreCatchDataBases.Carousels, True)
-            Catch ex As SoapException
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As CacheTypeNotFoundException
+                Throw ex
+            Catch ex As RedisException
+                Throw ex
+            Catch ex As BPTSoapException
+                Throw ex
+            Catch ex As AnyNotFoundException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -195,6 +347,12 @@ Namespace Carousels
                 Dim Carousel = InstanceCache.GetCache(InstanceCache.GetCacheType(R2CoreCacheTypes.Carousel).CacheTypeName, R2CoreCatchDataBases.Carousels).ToString
                 If Carousel Is Nothing Then Throw New AnyNotFoundException
                 Return Carousel
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As CacheTypeNotFoundException
+                Throw ex
+            Catch ex As RedisException
+                Throw ex
             Catch ex As AnyNotFoundException
                 Throw ex
             Catch ex As Exception

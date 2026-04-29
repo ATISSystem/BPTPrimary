@@ -10,6 +10,17 @@ Namespace Logging
     Public MustInherit Class R2CoreParkingSystemLogTypes
         Inherits R2Core.LoggingManagement.R2CoreLogTypes
 
+        Public Shared ReadOnly Property EditingTrafficCardType As Int64 = 42
+        Public Shared ReadOnly Property RegisteringTrafficCardType As Int64 = 43
+        Public Shared ReadOnly Property EditingTrafficCard As Int64 = 44
+        Public Shared ReadOnly Property RegisteringTrafficCard As Int64 = 45
+        Public Shared ReadOnly Property RegisteringTrafficCost As Int64 = 46
+        Public Shared ReadOnly Property UnActivateTrafficGate As Int64 = 47
+        Public Shared ReadOnly Property ActivateTrafficGate As Int64 = 48
+        Public Shared ReadOnly Property RegisteringTrafficGate As Int64 = 49
+        Public Shared ReadOnly Property ChangeActivateStatusOfCity As Int64 = 76
+        Public Shared ReadOnly Property ChangeActivateStatusOfProvince As Int64 = 77
+
 
 
     End Class

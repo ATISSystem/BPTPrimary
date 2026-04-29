@@ -12,7 +12,7 @@ Imports R2Core.EntityRelationManagement
 Imports R2Core.ExceptionManagement
 Imports R2Core.GeneralConfiguration
 Imports R2Core.PermissionManagement
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SMS.SMSTypes.Exceptions
 Imports R2Core.SoftwareUserManagement
@@ -367,7 +367,7 @@ Namespace TruckDrivers
 
         Public Function GetTruckDriverJSON(YourTruckDriverId As Int64) As String
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select Top 1 Drivers.nIDDriver as DriverId,Persons.strPersonFullName as NameFamily,Persons.strNationalCode as NationalCode,Persons.strIDNO as MobileNumber,Persons.strFatherName as FatherName,Drivers.strDrivingLicenceNo as DrivingLicenceNo,Persons.strAddress as Address,Drivers.strSmartcardNo as SmartcardNo
@@ -384,7 +384,7 @@ Namespace TruckDrivers
 
         Public Function GetTruckDriver(YourTruckDriverId As Int64) As R2CoreTransportationAndLoadNotificationTruckDriver
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim DS As DataSet
                 If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                       "Select Top 1 Drivers.nIDDriver as DriverId,Persons.strPersonFullName as NameFamily,Persons.strNationalCode as NationalCode,Persons.strIDNO as MobileNumber,Persons.strFatherName as FatherName,Drivers.strDrivingLicenceNo as DrivingLicenceNo,Persons.strAddress as Address,Drivers.strSmartcardNo as SmartcardNo
@@ -527,7 +527,7 @@ Namespace TruckDrivers
 
         Public Function GetTruckDriverfromNationalCode(YourNationalCode As String, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTruckDriver
             Try
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourNationalCode)
 

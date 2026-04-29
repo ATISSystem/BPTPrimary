@@ -8,6 +8,7 @@ using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
+using R2Core.LoggingManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SecurityAlgorithmsManagement.AESAlgorithms;
 using R2Core.SessionManagement;
@@ -15,6 +16,7 @@ using R2Core.SoftwareUserManagement;
 using R2Core.WebProcessesManagement;
 using R2CoreParkingSystem.Drivers;
 using R2CoreParkingSystem.SMS.SMSOwners;
+using R2CoreTransportationAndLoadNotification.Logging;
 using R2CoreTransportationAndLoadNotification.TruckDrivers;
 using R2CoreTransportationAndLoadNotification.TruckDrivers.Exceptions;
 using System;
@@ -24,6 +26,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Services.Protocols;
@@ -35,10 +38,17 @@ namespace APITransportation.Controllers
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
         private R2DateTimeService _DateTimeService;
+        private ILogger _loggerService;
+        private Networking _Networking;
 
         public TruckDriverController()
         {
-            try { _DateTimeService = new R2DateTimeService(); }
+            try
+            {
+                _DateTimeService = new R2DateTimeService();
+                _loggerService = new R2Core.LoggingManagement.R2CorenLogService();
+                _Networking = new Networking();
+            }
             catch (FileNotExistException ex)
             { throw ex; }
             catch (Exception ex)
@@ -156,6 +166,8 @@ namespace APITransportation.Controllers
 
                 InstanceTruckDrivers.RegisteringTruckDriverMobileNumber(TruckDriverId, MobileNumber);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TruckDriverRegisteringMobileNumber, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TruckDriverId) + ":" + TruckDriverId,  MessageDetail2= nameof(MobileNumber) + ":" + MobileNumber, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -185,7 +197,9 @@ namespace APITransportation.Controllers
 
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
                 var InstanceSMSOwners = new R2CoreParkingSystemSMSOwnersManager(new SoftwareUserService(User.UserId), _DateTimeService);
-                InstanceSMSOwners.ActivateSMSOwner(InstanceTruckDrivers.GetSoftwareUserIdfromTruckDriverId(TruckDriverId,true ));
+                InstanceSMSOwners.ActivateSMSOwner(InstanceTruckDrivers.GetSoftwareUserIdfromTruckDriverId(TruckDriverId, true));
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.ActivateTruckDriverSMSOwner, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TruckDriverId) + ":" + TruckDriverId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -214,7 +228,9 @@ namespace APITransportation.Controllers
 
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
                 var InstanseSoftwareUsers = new R2CoreSoftwareUsersManager(_DateTimeService, new SoftwareUserService(User.UserId));
-                var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(InstanceTruckDrivers.GetSoftwareUserIdfromTruckDriverId(TruckDriverId,true ), User.UserId);
+                var SoftWareUserSecurity = InstanseSoftwareUsers.ResetSoftwareUserPassword(InstanceTruckDrivers.GetSoftwareUserIdfromTruckDriverId(TruckDriverId, true), User.UserId);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.ResetTruckDriverUserPassword, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TruckDriverId) + ":" + TruckDriverId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(SoftWareUserSecurity), Encoding.UTF8, "application/json");

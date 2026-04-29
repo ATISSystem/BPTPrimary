@@ -12,8 +12,8 @@ Namespace CalendarManagement
         Public Class R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager
 
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-            Private _DateTimeService As IR2DateTimeService
-            Public Sub New(YourDateTimeService As IR2DateTimeService)
+            Private _DateTimeService As IDateTimeService
+            Public Sub New(YourDateTimeService As IDateTimeService)
                 _DateTimeService = YourDateTimeService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
             End Sub

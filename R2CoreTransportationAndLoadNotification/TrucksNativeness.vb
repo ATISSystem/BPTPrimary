@@ -9,6 +9,7 @@ Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
 Imports R2Core.GeneralConfiguration
 Imports R2Core.PredefinedMessagesManagement
+Imports R2Core.PublicProcedures
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SQLInjectionPrevention
 Imports R2CoreParkingSystem.GeneralConfiguration
@@ -30,7 +31,6 @@ Namespace TrucksNativeness
     End Class
 
     Public Class R2CoreTransportationAndLoadNotificationStandardTruckNativenessTypeStructure
-        Inherits R2StandardStructure
         Public Sub New()
             MyBase.New()
             _NId = Int64.MinValue
@@ -46,7 +46,7 @@ Namespace TrucksNativeness
         End Sub
 
         Public Sub New(YourNId As Int64, YourNName As String, YourNTitle As String, YourNColor As Color, YourDateTimeMilladi As DateTime, YOurDateShamsi As String, YourTime As String, YourActive As Boolean, YourViewFlag As Boolean, YourDeleted As Boolean)
-            MyBase.New(YourNId, YourNName)
+            MyBase.New()
             _NId = YourNId
             _NName = YourNName
             _NTitle = YourNTitle
@@ -89,9 +89,9 @@ Namespace TrucksNativeness
     Public Class R2CoreTransportationAndLoadNotificationsTruckNativenessManager
 
         Private InstanceSqlDataBox As R2CoreSqlDataBOXManager
-        Private _DateTimeService As IR2DateTimeService
+        Private _DateTimeService As IDateTimeService
 
-        Public Sub New(YourDateTimeService As IR2DateTimeService)
+        Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
         End Sub
@@ -281,7 +281,7 @@ Namespace TrucksNativeness
 
         Public Function GetTruckNativenessTypes(YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager()
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager()
 
                 Dim Ds As New DataSet
                 If YourImmediately Then
@@ -322,7 +322,7 @@ Namespace TrucksNativeness
             Inherits BPTException
             Public Overrides ReadOnly Property Message As String
                 Get
-                    Return InstancePredefinedMessages.GetNSS(R2CoreTransportationAndLoadNotificationPredefinedMessages.UnIndigenousTrucks).MsgContent
+                    Return InstancePredefinedMessages.GetPredefinedMessage(R2CoreTransportationAndLoadNotificationPredefinedMessages.UnIndigenousTrucks).MsgContent
                 End Get
             End Property
         End Class

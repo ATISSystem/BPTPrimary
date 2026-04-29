@@ -20,7 +20,7 @@ Imports R2Core.ExceptionManagement
 Imports R2Core.LoggingManagement
 Imports R2Core.NetworkInternetManagement.Exceptions
 Imports R2Core.DesktopProcessesManagement
-Imports R2Core.PublicProc
+Imports R2Core.PublicProcedures
 Imports R2Core.ReportsManagement
 Imports R2Core.SoftwareUserManagement
 Imports R2Core.EntityRelationManagement
@@ -95,6 +95,8 @@ Imports System.Net
 Imports R2Core.DateTimeProvider
 Imports R2Core.SQLInjectionPrevention
 Imports R2CoreParkingSystem.Logging
+Imports R2Core.Networking.Exceptions
+Imports R2Core.Networking
 
 Namespace Rmto
     Public MustInherit Class RmtoWebService
@@ -116,7 +118,7 @@ Namespace Rmto
         Private Shared Function GetInf(ByVal YourInfoType As InfoType, ByVal YourDFP As String) As String()
             Try
                 'Dim InstanceLogging = New R2CoreInstanceLoggingManager
-                If Not R2Core.NetworkInternetManagement.R2CoreMClassComputerMessagesManagement.IsInternetAvailable() Then
+                If Not R2CoreNetworkingManager.IsInternetAvailable() Then
                     Throw New InternetIsnotAvailableException
                 End If
 
@@ -253,7 +255,7 @@ Namespace Rmto
 
         Private Shared Sub Authentication()
             Try
-                If Not R2Core.NetworkInternetManagement.R2CoreMClassComputerMessagesManagement.IsInternetAvailable() Then
+                If Not R2CoreNetworkingManager.IsInternetAvailable() Then
                     Throw New InternetIsnotAvailableException
                 End If
                 ''Dim UserName As String = "tr_web_service"
@@ -374,17 +376,6 @@ Namespace ReportManagement
 
 End Namespace
 
-Namespace ComputerMessages
-
-    Public MustInherit Class R2CoreTransportationAndLoadNotificationComputerMessageTypes
-        Inherits R2Core.ComputerMessagesManagement.R2CoreComputerMessageTypes
-        Public Shared ReadOnly EmergencyTurnRegisterRequestConfirmation As Int64 = 2
-        Public Shared ReadOnly TurnPrint As Int64 = 3
-        Public Shared ReadOnly ReserveTurnRegisterRequestConfirmation As Int64 = 7
-    End Class
-
-End Namespace
-
 Namespace FileShareRawGroupsManagement
 
     Public MustInherit Class R2CoreTransportationAndLoadNotificationRawGroups
@@ -426,7 +417,7 @@ Namespace TurnAttendance
         'Public Function GetTurnDateTimeDiferenceToToday(YourTurnId As Int64) As Int64
         '    Try
         '        Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationInstanceTurnsManager
-        '        Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+        '        Dim InstancePublicProcedures = New R2CorePublicProceduresManager
         '        Dim NSSTurn = InstanceTurns.GetNSSTurn(YourTurnId)
         '        Dim TurnDateTime As String = _DateTimeService.GetMilladiDateTimeFromShamsiDate(NSSTurn.EnterDate, NSSTurn.EnterTime)
         '        Return InstancePublicProcedures.GetDateDiff(DateInterval.Day, TurnDateTime, _DateTimeService.GetCurrentDateTimeMilladi())
@@ -671,28 +662,6 @@ Namespace TurnAttendance
 
 End Namespace
 
-Namespace ProcessesManagement
-
-    Public MustInherit Class R2CoreTransportationAndLoadNotificationProcesses
-        Inherits R2CoreDesktopProcesses
-
-        Public Shared ReadOnly FrmcLoadPermissions As Int64 = 24
-        Public Shared ReadOnly FrmcLoadCapacitor As Int64 = 44
-        Public Shared ReadOnly FrmcLoadAllocations As Int64 = 45
-        Public Shared ReadOnly FrmcBillOfLadingControl As Int64 = 62
-        Public Shared ReadOnly FrmcTruckDriverLoadAllocationsPriorityApplied As Int64 = 63
-        Public Shared ReadOnly FrmcLoadCapacitorMonitoring As Int64 = 64
-        Public Shared ReadOnly FrmcTransportCompniesManipulation As Int64 = 68
-        Public Shared ReadOnly FrmcMoneyWalletChargeByTransportCompany As Int64 = 72
-        Public Shared ReadOnly FrmcLoadingAndDischargingPlaces As Int64 = 75
-
-    End Class
-
-
-
-
-End Namespace
-
 Namespace EntityRelations
 
     Public MustInherit Class R2CoreTransportationAndLoadNotificationEntityRelationTypes
@@ -855,7 +824,6 @@ End Namespace
 
 Namespace Goods
     Public Class R2CoreTransportationAndLoadNotificationStandardGoodStructure
-        Inherits R2StandardStructure
         Public Sub New()
             MyBase.New()
             _GoodId = Int64.MinValue
@@ -866,7 +834,7 @@ Namespace Goods
         End Sub
 
         Public Sub New(ByVal YourGoodId As Int64, ByVal YourGoodName As String, YourViewFlag As Boolean, YourActive As Boolean, YourDeleted As Boolean)
-            MyBase.New(YourGoodId, YourGoodName)
+            MyBase.New()
             _GoodId = YourGoodId
             _GoodName = YourGoodName
             _ViewFlag = YourViewFlag
@@ -965,7 +933,7 @@ Namespace Products
 
         Public Function GetProducts_SearchIntroCharacters(YourSearchString As String, YourImmediately As Boolean) As String
             Try
-                Dim InstancePublicProcedures = New R2Core.PublicProc.R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                 Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                 InstanceSQLInjectionPrevention.GeneralAuthorization(YourSearchString)
 
@@ -1061,7 +1029,7 @@ Namespace TravelTime
         Public Function GetTravelTimes(YourLoaderTypeId As Int64, YourSourceCityId As Int64, YourTargetCityId As Int64, YourImmediately As Boolean) As String
             Try
                 Dim Ds As New DataSet
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
 
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter
@@ -1102,7 +1070,7 @@ Namespace TravelTime
         Public Function GetTravelTime(YourLoaderTypeId As Int64, YourSourceCityId As Int64, YourTargetCityId As Int64, YourImmediately As Boolean) As R2CoreTransportationAndLoadNotificationTravelTime
             Try
                 Dim Ds As New DataSet
-                Dim InstancePublicProcedures = New R2CoreInstancePublicProceduresManager
+                Dim InstancePublicProcedures = New R2CorePublicProceduresManager
 
                 If YourImmediately Then
                     Dim Da As New SqlClient.SqlDataAdapter

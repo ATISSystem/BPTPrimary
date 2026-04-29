@@ -4,8 +4,12 @@
 
 Imports Newtonsoft.Json
 Imports NLog
+Imports System.Reflection
+Imports System.Runtime.InteropServices.WindowsRuntime
+Imports System.Web.UI.WebControls.WebParts
+Imports StackExchange.Redis
+
 Imports R2Core.Caching
-Imports R2Core.ConfigurationManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
@@ -15,14 +19,13 @@ Imports R2Core.SecurityAlgorithmsManagement.AESAlgorithms
 Imports R2Core.SecurityAlgorithmsManagement.Captcha
 Imports R2Core.SecurityAlgorithmsManagement.Hashing
 Imports R2Core.SoftwareUserManagement
-Imports System.Reflection
-Imports System.Runtime.InteropServices.WindowsRuntime
-Imports System.Web.UI.WebControls.WebParts
+Imports R2Core.DatabaseManagement
+Imports R2Core.PredefinedMessagesManagement
 
 Namespace SessionManagement
 
 
-    Public Class R2CoreStandardSessionCaptchaBitMapStructure
+    Public Class R2CoreSessionCaptchaBitMap
 
         Public Sub New()
             MyBase.New()
@@ -65,25 +68,36 @@ Namespace SessionManagement
                 Dim InstanceMD5Hasher = New MD5Hasher
                 Dim SessionId = InstanceMD5Hasher.GenerateMD5String(_DateTimeService.GetCurrentDateTimeMilladi) + InstanceAESAlgorithms.GetSalt(12)
                 Return SessionId
+            Catch ex As AggregateException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Function
 
-        Public Function StartSession() As R2CoreStandardSessionCaptchaBitMapStructure
+        Public Function StartSession() As R2CoreSessionCaptchaBitMap
             Try
-                Dim InstanceCaptcha = New R2CoreInstanceCaptchaManager
+                Dim InstanceCaptcha = New R2CoreCaptchaManager
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 Dim InstanceCache = New R2CoreCacheManager(_DateTimeService)
 
                 Dim CaptchaWord = InstanceCaptcha.GenerateFakeWordNumeric(InstanceGeneralConfiguration.GetInt64Configuration(R2CoreGeneralConfigurations.DefaultConfigurationOfSoftwareUserSecurity, 6))
-
                 Dim CaptchaBitMap = InstanceCaptcha.GetCaptcha(CaptchaWord)
-
                 Dim SessionId = GetNewSessionId()
-
                 InstanceCache.SetCache(InstanceCache.GetCacheType(R2CoreCacheTypes.Session).CacheTypeName + SessionId, New R2CoreSessionIdCaptchaWord With {.SessionId = SessionId, .Captcha = CaptchaWord}, R2CoreCacheTypes.Session, R2CoreCatchDataBases.SoftwareUserSessions, False)
-                Return New R2CoreStandardSessionCaptchaBitMapStructure(SessionId, CaptchaBitMap)
+                Return New R2CoreSessionCaptchaBitMap(SessionId, CaptchaBitMap)
+            Catch ex As DataBaseException
+                Throw ex
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As UnableConnectToAPIException
+                Throw ex
+            Catch ex As AggregateException
+                Throw ex
+            Catch ex As CacheTypeNotFoundException
+                Throw ex
+            Catch ex As RedisException
+                Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
@@ -98,6 +112,12 @@ Namespace SessionManagement
                 Dim Content = JsonConvert.DeserializeObject(Of R2CoreSessionIdSoftwareUser)(Value)
                 If Content.SoftWareUser Is Nothing Then Throw New SessionOverException
                 Return Content.SoftWareUser
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As CacheTypeNotFoundException
+                Throw ex
+            Catch ex As RedisException
+                Throw ex
             Catch ex As SessionOverException
                 Throw ex
             Catch ex As Exception
@@ -113,6 +133,12 @@ Namespace SessionManagement
                 If Value Is Nothing Then Throw New SessionOverException
                 Dim Content = JsonConvert.DeserializeObject(Of R2CoreSessionIdCaptchaWord)(Value)
                 If YourCaptchaWord <> Content.Captcha Then Throw New CaptchaInvalidException
+            Catch ex As FileNotExistException
+                Throw ex
+            Catch ex As CacheTypeNotFoundException
+                Throw ex
+            Catch ex As RedisException
+                Throw ex
             Catch ex As CaptchaInvalidException
                 Throw ex
             Catch ex As SessionOverException
@@ -131,8 +157,8 @@ Namespace SessionManagement
         Inherits BPTException
 
         Public Sub New()
-            _Message = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.SessionOverException).MsgContent
-            _MessageCode = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.SessionOverException).MsgId
+            _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.SessionOverException).MsgContent
+            _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.SessionOverException).MsgId
         End Sub
     End Class
 
@@ -140,8 +166,8 @@ Namespace SessionManagement
         Inherits BPTException
 
         Public Sub New()
-            _Message = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.CaptchaInvalid).MsgContent
-            _MessageCode = InstancePredefinedMessages.GetNSS(R2Core.PredefinedMessagesManagement.R2CorePredefinedMessages.CaptchaInvalid).MsgId
+            _Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.CaptchaInvalid).MsgContent
+            _MessageCode = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.CaptchaInvalid).MsgId
         End Sub
     End Class
 

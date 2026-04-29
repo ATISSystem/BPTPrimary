@@ -19,6 +19,9 @@ using System.Reflection;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
+using R2Core.LoggingManagement;
+using R2CoreTransportationAndLoadNotification.Logging;
+using System.Web;
 
 namespace APITransportation.LoadCapacitor.Controllers
 {
@@ -26,11 +29,18 @@ namespace APITransportation.LoadCapacitor.Controllers
     public class TransportPriceTarrifParametersController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService;
+        private IDateTimeService _DateTimeService;
+        private ILogger _loggerService;
+        private Networking _Networking;
 
         public TransportPriceTarrifParametersController()
         {
-            try { _DateTimeService = new R2DateTimeService(); }
+            try
+            {
+                _DateTimeService = new R2DateTimeService();
+                _loggerService = new R2Core.LoggingManagement.R2CorenLogService();
+                _Networking = new Networking();
+            }
             catch (FileNotExistException ex)
             { throw ex; }
             catch (Exception ex)
@@ -101,7 +111,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
-            catch(TransportPriceTariffParameterDetailsforAHSGNotFoundException ex)
+            catch (TransportPriceTariffParameterDetailsforAHSGNotFoundException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -190,6 +200,8 @@ namespace APITransportation.LoadCapacitor.Controllers
                 var InstanceTransportTariffsParameters = new R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService);
                 InstanceTransportTariffsParameters.TransportPriceTarrifParameterRegistering(RawTPTParam);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TransportPriceTarrifParameterRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawTPTParam.TPTPTitle ) + ":" + RawTPTParam.TPTPTitle , UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -226,6 +238,8 @@ namespace APITransportation.LoadCapacitor.Controllers
                 var InstanceTransportTariffsParameters = new R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService);
                 InstanceTransportTariffsParameters.TransportPriceTarrifParameterEditing(RawTPTParam);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TransportPriceTarrifParameterEditing, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawTPTParam.TPTPId ) + ":" + RawTPTParam.TPTPId , UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -261,6 +275,8 @@ namespace APITransportation.LoadCapacitor.Controllers
 
                 var InstanceTransportTariffsParameters = new R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService);
                 InstanceTransportTariffsParameters.TransportPriceTarrifParameterDeleting(TPTPId);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TransportPriceTarrifParameterDeleting, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TPTPId) + ":" + TPTPId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -331,6 +347,8 @@ namespace APITransportation.LoadCapacitor.Controllers
                 var InstanceTransportTariffsParameters = new R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService);
                 InstanceTransportTariffsParameters.TransportPriceTarrifParameterDetailRegistering(RawTPTParamDetail);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TransportPriceTarrifParameterDetailRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawTPTParamDetail.TPTPDId) + ":" + RawTPTParamDetail.TPTPDId, MessageDetail2= nameof(RawTPTParamDetail.TPTPId ) + ":" + RawTPTParamDetail.TPTPId+" "+ nameof(RawTPTParamDetail.AnnouncementSGId ) + ":" + RawTPTParamDetail.AnnouncementSGId , MessageDetail3= nameof(RawTPTParamDetail.Cost) + ":" + RawTPTParamDetail.Cost , UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -366,6 +384,8 @@ namespace APITransportation.LoadCapacitor.Controllers
 
                 var InstanceTransportTariffsParameters = new R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService);
                 InstanceTransportTariffsParameters.TransportPriceTarrifParameterDetailEditing(RawTPTParamDetail);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TransportPriceTarrifParameterDetailEditing, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawTPTParamDetail.TPTPDId ) + ":" + RawTPTParamDetail.TPTPDId , UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
@@ -422,4 +442,14 @@ namespace APITransportation.LoadCapacitor.Controllers
         }
 
     }
+
+    public class Networking
+    {
+        public Networking() { }
+
+        public string GetClientIpAddress(System.Web.HttpContext YourHttpContext)
+        { return HttpContext.Current.Request.UserHostAddress; }
+
+    }
+
 }

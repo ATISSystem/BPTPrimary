@@ -5,10 +5,12 @@ using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
+using R2Core.LoggingManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SessionManagement;
 using R2Core.SoftwareUserManagement;
 using R2CoreTransportationAndLoadNotification.FactoriesAndProductionCentersManagement;
+using R2CoreTransportationAndLoadNotification.Logging;
 using R2CoreTransportationAndLoadNotification.TransportTariffs;
 using System;
 using System.Collections.Generic;
@@ -17,6 +19,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Services.Protocols;
@@ -27,11 +30,18 @@ namespace APITransportation.Controllers
     public class TariffsController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService;
+        private IDateTimeService _DateTimeService;
+        private ILogger _loggerService;
+        private Networking _Networking;
 
         public TariffsController()
         {
-            try { _DateTimeService = new R2DateTimeService(); }
+            try
+            {
+                _DateTimeService = new R2DateTimeService(); 
+                _loggerService = new R2Core.LoggingManagement.R2CorenLogService();
+                _Networking = new Networking();
+            }
             catch (FileNotExistException ex)
             { throw ex; }
             catch (Exception ex)
@@ -88,6 +98,9 @@ namespace APITransportation.Controllers
 
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService);
                 InstanceTransportTariffs.TariffRegistering(Tariff);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TariffRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Tariff.SourceCityId) + ":" + Tariff.SourceCityId+" "+ nameof(Tariff.TargetCityId ) + ":" + Tariff.TargetCityId , MessageDetail2 = nameof(Tariff.GoodId ) + ":" + Tariff.GoodId  + " " + nameof(Tariff.LoaderTypeId ) + ":" + Tariff.LoaderTypeId , MessageDetail3= nameof(Tariff.Tariff ) + ":" + Tariff.Tariff , UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -121,6 +134,9 @@ namespace APITransportation.Controllers
 
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService);
                 InstanceTransportTariffs.TariffsRegistering(Tariffs, AddPercentage);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TariffsRegisteringWithAddPercentage, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Tariffs) + ":" + Tariffs.Count,  MessageDetail2= nameof(AddPercentage) + ":" + AddPercentage , UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -153,6 +169,9 @@ namespace APITransportation.Controllers
 
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService);
                 InstanceTransportTariffs.TariffsDeactivate(Tariffs);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TariffsDeactivate, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Tariffs) + ":" + Tariffs.Count  , UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -185,6 +204,9 @@ namespace APITransportation.Controllers
 
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService);
                 InstanceTransportTariffs.TariffDeleting(Tariff);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TariffDeleting, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Tariff.SourceCityId) + ":" + Tariff.SourceCityId + " " + nameof(Tariff.TargetCityId) + ":" + Tariff.TargetCityId, MessageDetail2 = nameof(Tariff.GoodId) + ":" + Tariff.GoodId + " " + nameof(Tariff.LoaderTypeId) + ":" + Tariff.LoaderTypeId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
@@ -217,6 +239,9 @@ namespace APITransportation.Controllers
 
                 var InstanceTransportTariffs = new R2CoreTransportationAndLoadNotificationTransportTariffsManager(_DateTimeService);
                 InstanceTransportTariffs.TariffEditing(Tariff);
+
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TariffEditing, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Tariff.SourceCityId) + ":" + Tariff.SourceCityId+" "+ nameof(Tariff.TargetCityId ) + ":" + Tariff.TargetCityId , MessageDetail2= nameof(Tariff.GoodId ) + ":" + Tariff.GoodId +" "+ nameof(Tariff.LoaderTypeId ) + ":" + Tariff.LoaderTypeId , UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;

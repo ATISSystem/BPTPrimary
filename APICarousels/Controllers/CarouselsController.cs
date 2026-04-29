@@ -2,11 +2,11 @@
 using APICommon.Models;
 using Newtonsoft.Json;
 using R2Core.Carousels;
-using R2Core.ConfigurationManagement;
 using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
+using R2Core.LoggingManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SecurityAlgorithmsManagement.Exceptions;
 using R2Core.SessionManagement;
@@ -17,7 +17,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Services.Protocols;
@@ -28,11 +30,19 @@ namespace APICarousels.Controllers
     public class CarouselsController : ApiController
     {
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
-        private IR2DateTimeService _DateTimeService;
+        private IDateTimeService _DateTimeService;
+        private ILogger _loggerService;
+        private Networking _Networking;
+
 
         public CarouselsController()
         {
-            try { _DateTimeService = new R2DateTimeService(); }
+            try
+            {
+                _DateTimeService = new R2DateTimeService();
+                _loggerService = new R2Core.LoggingManagement.R2CorenLogService();
+                _Networking = new Networking();
+            }
             catch (FileNotExistException ex)
             { throw ex; }
             catch (Exception ex)
@@ -109,7 +119,7 @@ namespace APICarousels.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var Carousel = Content.RawCarousel;
 
@@ -118,8 +128,10 @@ namespace APICarousels.Controllers
                 var InstanceCarousels = new R2CoreCarouselsManager(_DateTimeService);
                 InstanceCarousels.CarouselRegistering(Carousel, User);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.CarouselRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Carousel.CTitle) + ":" + Carousel.CTitle, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SoapException ex)
@@ -141,7 +153,7 @@ namespace APICarousels.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var Carousel = Content.RawCarousel;
 
@@ -150,8 +162,10 @@ namespace APICarousels.Controllers
                 var InstanceCarousels = new R2CoreCarouselsManager(_DateTimeService);
                 InstanceCarousels.CarouselEditing(Carousel, User);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.CarouselEditing, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(Carousel.CId) + ":" + Carousel.CId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SoapException ex)
@@ -173,7 +187,7 @@ namespace APICarousels.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var CId = Content.CId;
 
@@ -182,8 +196,10 @@ namespace APICarousels.Controllers
                 var InstanceCarousels = new R2CoreCarouselsManager(_DateTimeService);
                 InstanceCarousels.CarouselDeleting(CId, User);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.CarouselDeleting, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(CId) + ":" + CId, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SoapException ex)
@@ -205,7 +221,7 @@ namespace APICarousels.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var CId = Content.CId;
                 var ActiveStatus = Content.ActiveStatus;
@@ -215,8 +231,10 @@ namespace APICarousels.Controllers
                 var InstanceCarousels = new R2CoreCarouselsManager(_DateTimeService);
                 InstanceCarousels.CarouselChangeActiveStatus(CId, ActiveStatus, User);
 
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.CarouselChangeActiveStatus, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(CId) + ":" + CId, MessageDetail2= nameof(ActiveStatus) + ":" + ActiveStatus, UserId = User.UserId });
+
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (SoapException ex)
@@ -238,7 +256,6 @@ namespace APICarousels.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
@@ -261,4 +278,14 @@ namespace APICarousels.Controllers
             { return _APICommon.CreateErrorContentMessage(ex); }
         }
     }
+
+    public class Networking
+    {
+        public Networking() { }
+
+        public string GetClientIpAddress(System.Web.HttpContext YourHttpContext)
+        { return HttpContext.Current.Request.UserHostAddress; }
+
+    }
+
 }

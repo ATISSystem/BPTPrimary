@@ -24,19 +24,20 @@ Imports PayanehClassLibrary.Logging
 Imports R2Core.GeneralConfiguration
 Imports R2CoreTransportationAndLoadNotification.GeneralConfiguration
 Imports R2CoreTransportationAndLoadNotification
+Imports R2Core.SQLInjectionPrevention
 
 Namespace TurnsCancellation
 
     'BPTChanged
     Public Class PayanehClassLibraryTurnsCancellationManager
 
-        Private _DateTimeService As IR2DateTimeService
+        Private _DateTimeService As IDateTimeService
         Private _InstanceSqlDataBox As R2CoreSqlDataBOXManager
         Private _InstanceLogging As R2CoreLoggingManager
         Private _loggerService As ILogger
 
 
-        Public Sub New(YourR2DateTimeService As IR2DateTimeService)
+        Public Sub New(YourR2DateTimeService As IDateTimeService)
             _DateTimeService = YourR2DateTimeService
             _InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
             _InstanceLogging = New R2CoreLoggingManager
@@ -182,7 +183,7 @@ Namespace TurnsCancellation
 
         Public Sub TurnsCancellation(YourSoftwareUserId As Int64)
             Try
-                Dim InstancePermissions = New R2CorePermissionsManager
+                Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
                 If Not InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.SoftwareUserCanExcecuteTurnsCancellation, YourSoftwareUserId, 0) Then Throw New PermissionException
 
                 Dim InstanceSpecializedPersianCalendar = New R2CoreTransportationAndLoadNotificationSpecializedPersianCalendarManager(_DateTimeService)
