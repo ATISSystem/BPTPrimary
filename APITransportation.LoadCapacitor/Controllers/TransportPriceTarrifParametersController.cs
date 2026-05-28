@@ -190,7 +190,7 @@ namespace APITransportation.LoadCapacitor.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var RawTPTParam = Content.RawTPTParam;
@@ -203,7 +203,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TransportPriceTarrifParameterRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawTPTParam.TPTPTitle ) + ":" + RawTPTParam.TPTPTitle , UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -228,7 +228,7 @@ namespace APITransportation.LoadCapacitor.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var RawTPTParam = Content.RawTPTParam;
@@ -241,7 +241,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TransportPriceTarrifParameterEditing, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawTPTParam.TPTPId ) + ":" + RawTPTParam.TPTPId , UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -266,7 +266,7 @@ namespace APITransportation.LoadCapacitor.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TPTPId = Content.TPTPId;
@@ -279,7 +279,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TransportPriceTarrifParameterDeleting, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TPTPId) + ":" + TPTPId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -337,7 +337,7 @@ namespace APITransportation.LoadCapacitor.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var RawTPTParamDetail = Content.RawTPTParamDetail;
@@ -350,7 +350,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TransportPriceTarrifParameterDetailRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawTPTParamDetail.TPTPDId) + ":" + RawTPTParamDetail.TPTPDId, MessageDetail2= nameof(RawTPTParamDetail.TPTPId ) + ":" + RawTPTParamDetail.TPTPId+" "+ nameof(RawTPTParamDetail.AnnouncementSGId ) + ":" + RawTPTParamDetail.AnnouncementSGId , MessageDetail3= nameof(RawTPTParamDetail.Cost) + ":" + RawTPTParamDetail.Cost , UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -375,7 +375,7 @@ namespace APITransportation.LoadCapacitor.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var RawTPTParamDetail = Content.RawTPTParamDetail;
@@ -388,7 +388,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TransportPriceTarrifParameterDetailEditing, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(RawTPTParamDetail.TPTPDId ) + ":" + RawTPTParamDetail.TPTPDId , UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)

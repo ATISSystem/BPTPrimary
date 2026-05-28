@@ -414,11 +414,14 @@ Namespace TurnRegisterRequest
                 Dim Strategy = New Turns.RealTimeTurnRegisteringStrategy(YourSeqTId, YourTruckId, TurnRegisterRequestId, YourSoftwareUserId, YourRequesterId, YourTurnType)
                 Strategy.DoStrategy()
                 YourTurnId = Strategy.GetTurnId
-                'ثبت رابطه نوبت با درخواست صدور نوبت از طریق فضانام مدیریت روابط نهادی
+                'ثبت رابطه نوبت با
+                'درخواست صدور نوبت از طریق فضانام مدیریت روابط نهادی
                 Dim InstanceEntityRelation = New R2CoreMClassEntityRelationManager
                 InstanceEntityRelation.RegisteringEntityRelation(New R2StandardEntityRelationStructure(Nothing, R2CoreTransportationAndLoadNotificationEntityRelationTypes.Turn_TurnRegisterRequest, YourTurnId, TurnRegisterRequestId, Nothing), RelationDeactiveTypes.BothDeactive)
 
                 Return TurnRegisterRequestId
+            Catch ex As CarTruckTravelTimeNotOverYetException
+                Throw ex
             Catch ex As DataBaseException
                 Throw ex
             Catch ex As MoneyWalletNotExistException

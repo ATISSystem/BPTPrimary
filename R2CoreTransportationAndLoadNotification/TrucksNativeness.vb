@@ -1,7 +1,9 @@
 ﻿
 
 
+Imports Newtonsoft.Json
 Imports R2Core.BaseStandardClass
+Imports R2Core.CachHelper
 Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
@@ -14,6 +16,7 @@ Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SQLInjectionPrevention
 Imports R2CoreParkingSystem.GeneralConfiguration
 Imports R2CoreTransportationAndLoadNotification.PredefinedMessages
+Imports R2CoreTransportationAndLoadNotification.PubSubMessaging
 Imports R2CoreTransportationAndLoadNotification.Trucks
 Imports R2CoreTransportationAndLoadNotification.Trucks.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TrucksNativeness.Exceptions
@@ -90,10 +93,13 @@ Namespace TrucksNativeness
 
         Private InstanceSqlDataBox As R2CoreSqlDataBOXManager
         Private _DateTimeService As IDateTimeService
+        Private _RCH As RedisConnectorHelper
+
 
         Public Sub New(YourDateTimeService As IDateTimeService)
             _DateTimeService = YourDateTimeService
             InstanceSqlDataBox = New R2CoreSqlDataBOXManager(_DateTimeService)
+            _RCH = New RedisConnectorHelper
         End Sub
 
 
@@ -192,6 +198,8 @@ Namespace TrucksNativeness
                 Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
                 Dim InstanceTruckNativeness = New R2CoreTransportationAndLoadNotificationsTruckNativenessManager(_DateTimeService)
                 Dim InstanceTrucks = New R2CoreTransportationAndLoadNotificationInstanceTrucksManager
+                Dim InstanceTurns = New R2CoreTransportationAndLoadNotificationTurnsManager(_DateTimeService)
+
                 Dim NSSTruck = InstanceTrucks.GetNSSTruck(YourTruckId)
                 'کنترل تغییر وضعیت بومی گری ناوگان بومی با پلاک بومی - که البته امکان پذیر نیست
                 Dim IndigenousTrucks() = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreParkingSystemGeneralConfigurations.IndigenousCars, 1).Split("-")
@@ -217,6 +225,14 @@ Namespace TrucksNativeness
                 TruckNativeness.TruckNativenessExpireDate = YourTruckNativenessExpireDate
                 TruckNativeness.TruckNativenessTypeId = newTruckNativenessTypeId
                 TruckNativeness.TruckNativenessTypeTitle = InstanceTruckNativeness.GetNSSTruckNativenessType(newTruckNativenessTypeId).NTitle
+
+                'PubSubMessaging
+                Try
+                    Dim _Subscriber = _RCH.Connection.GetSubscriber()
+                    _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(InstanceTurns.GetLastActiveTurnfromTruckId(YourTruckId, True)))
+                Catch ex As Exception
+                End Try
+
                 Return TruckNativeness
             Catch ex As IndigenousTruckChangeNativnessFailedException
                 Throw ex

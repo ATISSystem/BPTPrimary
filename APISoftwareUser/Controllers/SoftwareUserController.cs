@@ -867,6 +867,8 @@ namespace APISoftwareUser.Controllers
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (SessionOverException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
+            catch (SoftwareUserMoneyWalletNotFoundException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (Exception ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
         }

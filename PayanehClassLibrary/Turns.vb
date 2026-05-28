@@ -82,6 +82,7 @@ Imports R2CoreTransportationAndLoadNotification.GeneralConfiguration
 Imports R2CoreTransportationAndLoadNotification.ConfigurationOfLoadAnnouncement
 Imports Microsoft.VisualBasic.ApplicationServices
 Imports R2CoreTransportationAndLoadNotification
+Imports PayanehClassLibrary.AnnouncementsManagement
 
 
 Namespace CarTruckNobatManagement
@@ -1971,6 +1972,7 @@ Namespace Turns
                 Dim InstanceSequentialTurns = New R2CoreTransportationAndLoadNotificationSequentialTurnsManager
                 Dim InstanceTurnRegisterRequest = New PayanehClassLibraryTurnRegisterRequestManager(_DateTimeService)
                 Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
+                Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationAnnouncementTimingManager(_DateTimeService)
 
                 'ابتدا تولید رشته ساب کوری
                 'گروه های اعلام بار
@@ -1998,6 +2000,7 @@ Namespace Turns
                 If TotalTurn <> 0 Then
                     'کنترل زمان اجرای فرآیند
                     Dim TimeOfDay = _DateTimeService.GetCurrentTickofTime
+
                     If Convert.ToInt64((TimeOfDay - TimeSpan.Parse("00:45:00").Ticks) \ TimeSpan.Parse("00:30:00").Ticks) Mod 2 <> 0 Then Exit Try
 
                     Dim TotalTurnsSuccessed As Int64 = 0
@@ -2128,6 +2131,8 @@ Namespace Turns
                 Try
                     Dim TravelTime As Int64 = InstanceTurns.GetPossibleTruckTravelTime(YourTruckId)
                     If TravelTime < 0 Then Throw New CarTruckTravelTimeNotOverYetException(InstanceTurns.GetTruckTravelTimeFormated(YourTruckId))
+                Catch ex As CarTruckTravelTimeNotOverYetException
+                    Throw ex
                 Catch ex As CarTruckHasNotAnyLoadPermissionException
                 End Try
             Catch ex As MoneyWalletNotExistException
@@ -2147,7 +2152,8 @@ Namespace Turns
                                 OrElse TypeOf ex Is SequentialTurnIsNotActiveException _
                                 OrElse TypeOf ex Is TruckDriverNotFoundException _
                                 OrElse TypeOf ex Is DriverTruckInformationNotExistException _
-                                OrElse TypeOf ex Is LoadCapacitorLoadNotFoundException
+                                OrElse TypeOf ex Is LoadCapacitorLoadNotFoundException _
+                                OrElse TypeOf ex Is CarTruckTravelTimeNotOverYetException
                 Throw ex
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
@@ -2264,6 +2270,11 @@ Namespace Turns
                 Dim _Subscriber = _RCH.Connection.GetSubscriber()
                 _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(mynIdEnterExit))
 
+            Catch ex As CarTruckTravelTimeNotOverYetException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then
+                    CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()
+                End If
+                Throw ex
             Catch ex As RedisException
                 If CmdSql.Connection.State <> ConnectionState.Closed Then
                     CmdSql.Transaction.Rollback() : CmdSql.Connection.Close()

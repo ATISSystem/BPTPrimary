@@ -1426,7 +1426,7 @@ Namespace AnnouncementTiming
             _DateTimeService = YourDateTimeService
         End Sub
 
-        Public Function GetTiming(YourAnnouncementId As Int64, YourAnnouncementSGId As Int64, YourTime As String) As R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming
+        Public Function IsTiming(YourAnnouncementId As Int64, YourAnnouncementSGId As Int64, YourTime As String, YourVirtualAnnouncementTiming As Int64) As Boolean
             Try
                 Dim InstanceConfigurationOfLoadAnnouncement = New R2CoreTransportationAndLoadNotificationConfigurationOfLoadAnnouncementManager(_DateTimeService)
                 Dim InstanceAnnouncements = New R2CoreTransportationAndLoadNotificationAnnouncementsManager(_DateTimeService)
@@ -1442,28 +1442,88 @@ Namespace AnnouncementTiming
                 Dim SliceTruckDriverLoadAllocationTiming As Int64 = TruckDriverLoadAllocationTiming * 60
                 Dim SliceSedimentingTiming As Int64 = SedimentingTiming * 60
                 Dim SliceAutomaticTurnRegisteringTiming As Int64 = AutomaticTurnRegisteringTiming * 60
-                'قبل از شروع اعلام بار
-                If AnnouncemenetHallLastAnnounceTime = "00:00:00" Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InBeforAllProcesses
-                'در 5 ثانیه اول شروع تخصیص بار
-                If O1.TotalSeconds >= O2.TotalSeconds And O1.TotalSeconds < O2.TotalSeconds + 5 Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadAllocationRegistering
-                'در اسلایس تخصیص بار
-                If O1.TotalSeconds >= O2.TotalSeconds + 5 And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering
-                'در 5 ثانیه اول شروع صدور مجوز 
-                If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadPermissionRegistering
-                'در اسلایس صدور مجوز
-                If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadPermissionRegistering
-                'در 5 ثانیه اول شروع صدور نوبت خودکار
-                If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartAutomaticTurnRegistering
-                'در اسلایس صدور نوبت خودکار
-                If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 + SliceAutomaticTurnRegisteringTiming Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InAutomaticTurnRegistering
-                'در 5 ثانیه اول شروع رسوب بار
-                If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 + SliceAutomaticTurnRegisteringTiming And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 + SliceAutomaticTurnRegisteringTiming + 5 Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartSedimenting
-                'در اسلایس رسوب بار
-                If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 + SliceAutomaticTurnRegisteringTiming + 5 And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 + SliceAutomaticTurnRegisteringTiming + 5 + SliceSedimentingTiming Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InSedimenting
-                'پایان همه فرآیندها
-                If InstanceAnnouncements.IsThisAnnounceTimeLeastAnnounceTime(YourAnnouncementId, YourAnnouncementSGId, AnnouncemenetHallLastAnnounceTime) Then Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InEndOfAllProcesses
-                'در وسط دو اعلام بار قرار داریم البته بعد از تخصیص و صدور مجوز و صدور خودکار نوبت ها
-                Return R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InMiddleOfProcesses
+
+                If YourVirtualAnnouncementTiming = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InBeforAllProcesses Then
+                    'قبل از شروع اعلام بار
+                    If AnnouncemenetHallLastAnnounceTime = "00:00:00" Then
+                        Return True
+                    Else
+                        Return False
+                    End If
+                End If
+                If YourVirtualAnnouncementTiming = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadAllocationRegistering Then
+                    'در 5 ثانیه اول شروع تخصیص بار
+                    If O1.TotalSeconds >= O2.TotalSeconds And O1.TotalSeconds < O2.TotalSeconds + 5 Then
+                        Return True
+                    Else
+                        Return False
+                    End If
+                End If
+                If YourVirtualAnnouncementTiming = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
+                    'در اسلایس تخصیص بار
+                    If O1.TotalSeconds >= O2.TotalSeconds + 5 And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming Then
+                        Return True
+                    Else
+                        Return False
+                    End If
+                End If
+                If YourVirtualAnnouncementTiming = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadPermissionRegistering Then
+                    'در 5 ثانیه اول شروع صدور مجوز 
+                    If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 Then
+                        Return True
+                    Else
+                        Return False
+                    End If
+                End If
+                If YourVirtualAnnouncementTiming = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadPermissionRegistering Then
+                    'در اسلایس صدور مجوز
+                    If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming Then
+                        Return True
+                    Else
+                        Return False
+                    End If
+                End If
+                If YourVirtualAnnouncementTiming = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartAutomaticTurnRegistering Then
+                    'در 5 ثانیه اول شروع صدور نوبت خودکار
+                    If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 Then
+                        Return True
+                    Else
+                        Return False
+                    End If
+                End If
+                If YourVirtualAnnouncementTiming = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InAutomaticTurnRegistering Then
+                    'در اسلایس صدور نوبت خودکار
+                    If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceLoadPermissionTiming + 5 + SliceAutomaticTurnRegisteringTiming Then
+                        Return True
+                    Else
+                        Return False
+                    End If
+                End If
+                If YourVirtualAnnouncementTiming = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartSedimenting Then
+                    'در 5 ثانیه اول شروع رسوب بار
+                    If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 Then
+                        Return True
+                    Else
+                        Return False
+                    End If
+                End If
+                If YourVirtualAnnouncementTiming = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InSedimenting Then
+                    'در اسلایس رسوب بار
+                    If O1.TotalSeconds >= O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 And O1.TotalSeconds < O2.TotalSeconds + 5 + SliceTruckDriverLoadAllocationTiming + 5 + SliceSedimentingTiming Then
+                        Return True
+                    Else
+                        Return False
+                    End If
+                End If
+                If YourVirtualAnnouncementTiming = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InEndOfAllProcesses Then
+                    'پایان همه فرآیندها
+                    If InstanceAnnouncements.IsThisAnnounceTimeLeastAnnounceTime(YourAnnouncementId, YourAnnouncementSGId, AnnouncemenetHallLastAnnounceTime) Then
+                        Return True
+                    Else
+                        Return False
+                    End If
+                End If
+                Throw New Exception("بروز خطا در فرآیند تایمینگ")
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try

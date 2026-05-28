@@ -115,6 +115,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMSGeneralAnnounceSMSAutoma
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SMSGeneralAnnounceSMSAutomatedJobSetup", "SMSGeneralAnnounceSMSAutomatedJobSetup\SMSGeneralAnnounceSMSAutomatedJobSetup.vdproj", "{CD5AA077-A45F-B419-ED94-782D4262CBD8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoadPermissionsIssueingAutomatedJobs", "LoadPermissionsIssueingAutomatedJobs\LoadPermissionsIssueingAutomatedJobs.csproj", "{998560BA-F50B-4DCA-8CDE-662C59AD18C2}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "LoadPermissionsIssueingAutomatedJobsSetup", "LoadPermissionsIssueingAutomatedJobsSetup\LoadPermissionsIssueingAutomatedJobsSetup.vdproj", "{62512791-B91F-7AA8-2FBC-631609A1CA24}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -311,6 +315,12 @@ Global
 		{3DE3DBD9-0CD8-462A-8753-DE104A4E2F26}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CD5AA077-A45F-B419-ED94-782D4262CBD8}.Debug|Any CPU.ActiveCfg = Debug
 		{CD5AA077-A45F-B419-ED94-782D4262CBD8}.Release|Any CPU.ActiveCfg = Release
+		{998560BA-F50B-4DCA-8CDE-662C59AD18C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{998560BA-F50B-4DCA-8CDE-662C59AD18C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{998560BA-F50B-4DCA-8CDE-662C59AD18C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{998560BA-F50B-4DCA-8CDE-662C59AD18C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62512791-B91F-7AA8-2FBC-631609A1CA24}.Debug|Any CPU.ActiveCfg = Debug
+		{62512791-B91F-7AA8-2FBC-631609A1CA24}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

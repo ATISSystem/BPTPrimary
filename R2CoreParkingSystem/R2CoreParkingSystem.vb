@@ -43,7 +43,6 @@ Imports R2Core.EntityRelationManagement
 Imports R2CoreParkingSystem.EntityRelations
 Imports R2Core.PermissionManagement
 Imports R2CoreParkingSystem.SoftwareUsersManagement.Exceptions
-Imports R2Core.RequesterManagement
 Imports R2Core.PredefinedMessagesManagement
 Imports R2CoreParkingSystem.PredefinedMessagesManagement
 Imports R2CoreParkingSystem.AccountingManagement.ExceptionManagement
@@ -2759,7 +2758,7 @@ Namespace SoftwareUsersManagement
                 Dim MoneyWallet As R2CoreMoneyWallet
                 Try
                     MoneyWallet = InstanceMoneyWallet.GetMoneyWallet(YourSoftwareUser, False)
-                Catch ex As MoneyWalletNotExistException
+                Catch ex As SoftwareUserMoneyWalletNotFoundException
                     MoneyWallet = Nothing
                 Catch ex As Exception
                     Throw ex

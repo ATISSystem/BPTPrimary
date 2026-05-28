@@ -45,7 +45,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckPelakTruckSerial>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;

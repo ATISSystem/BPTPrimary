@@ -1,17 +1,4 @@
-﻿using R2Core.CachHelper;
-using R2Core.Caching;
-using R2Core.ConfigurationManagement;
-using R2Core.DateAndTimeManagement;
-using R2Core.DateTimeProvider;
-using R2Core.ExceptionManagement;
-using R2Core.GeneralConfiguration;
-using R2Core.PubSubMessaging;
-using R2Core.SoftwareUserManagement;
-using R2CoreTransportationAndLoadNotification.ConfigurationsManagement;
-using R2CoreTransportationAndLoadNotification.GeneralConfiguration;
-using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad;
-using R2CoreTransportationAndLoadNotification.PubSubMessaging;
-using R2CoreTransportationAndLoadNotification.Turns.TurnInfo;
+﻿
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
@@ -23,6 +10,21 @@ using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+
+using R2Core.CachHelper;
+using R2Core.Caching;
+using R2Core.DateAndTimeManagement;
+using R2Core.DateTimeProvider;
+using R2Core.ExceptionManagement;
+using R2Core.GeneralConfiguration;
+using R2Core.PubSubMessaging;
+using R2Core.SoftwareUserManagement;
+using R2CoreTransportationAndLoadNotification.ConfigurationsManagement;
+using R2CoreTransportationAndLoadNotification.GeneralConfiguration;
+using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad;
+using R2CoreTransportationAndLoadNotification.PubSubMessaging;
+using R2CoreTransportationAndLoadNotification.Turns.TurnInfo;
+
 
 namespace LoadListsPreparingAutomatedJob
 {

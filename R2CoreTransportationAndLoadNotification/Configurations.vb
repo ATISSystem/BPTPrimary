@@ -29,6 +29,7 @@ Namespace GeneralConfiguration
         Public Shared ReadOnly Property LoadingDischargingPlaces As Int64 = 93
         Public Shared ReadOnly Property TruckDriversAutomatedJobs As Int64 = 95
         Public Shared ReadOnly Property LoadListsPreparingAutomatedJob As Int64 = 98
+        Public Shared ReadOnly Property LoadPermissionsIssueingAutomatedJobs As Int64 = 100
 
 
 

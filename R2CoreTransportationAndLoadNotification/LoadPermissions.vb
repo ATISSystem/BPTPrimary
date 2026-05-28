@@ -9,8 +9,9 @@ Imports System.Globalization
 Imports System.Net.NetworkInformation
 Imports System.Text
 Imports System.Windows.Forms
+Imports Newtonsoft.Json
+Imports StackExchange.Redis
 
-Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateAndTimeManagement.CalendarManagement.PersianCalendar
@@ -20,7 +21,6 @@ Imports R2CoreParkingSystem.BlackList
 Imports R2CoreParkingSystem.Cars
 Imports R2CoreTransportationAndLoadNotification.Announcements
 Imports R2CoreTransportationAndLoadNotification.Announcements.Exceptions
-Imports R2CoreTransportationAndLoadNotification.ComputerMessages
 Imports R2CoreTransportationAndLoadNotification.ConfigurationsManagement
 Imports R2CoreTransportationAndLoadNotification.ConfigurationsManagement.Exceptions
 Imports R2CoreTransportationAndLoadNotification.LoadAllocation.Exceptions
@@ -52,14 +52,17 @@ Imports R2Core.PublicProcedures
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TransportTariffsParameters
 Imports R2CoreTransportationAndLoadNotification.SMS.SMSTypes
-Imports Newtonsoft.Json
 Imports R2Core.CachHelper
 Imports R2CoreTransportationAndLoadNotification.PubSubMessaging
-Imports StackExchange.Redis
 Imports R2Core.DateTimeProvider
 Imports R2Core.SQLInjectionPrevention
 Imports R2CoreTransportationAndLoadNotification.TransportCompanies
 Imports R2CoreTransportationAndLoadNotification.TransportCompanies.Exceptions
+Imports R2CoreTransportationAndLoadNotification.Turns.TurnAccounting
+Imports R2Core.GeneralConfiguration
+Imports R2CoreTransportationAndLoadNotification.GeneralConfiguration
+Imports R2CoreParkingSystem.SoftwareUsersManagement
+Imports R2Core.SoftwareUserManagement.Exceptions
 
 
 
@@ -70,12 +73,6 @@ Namespace LoadPermission
         TransportCompany = 1
         AnnouncementHall = 2
     End Enum
-
-    Public MustInherit Class R2CoreTransportationAndLoadNotificationLoadPermissionStatuses
-        Public Shared ReadOnly Property None As Int64 = 0
-        Public Shared ReadOnly Property Registered As Int64 = 1
-        Public Shared ReadOnly Property Cancelled As Int64 = 2
-    End Class
 
     Public Class R2CoreTransportationAndLoadNotificationStandardLoadPermissionStatusStructure
 
@@ -1323,7 +1320,13 @@ Namespace LoadPermission
         Public Property LoadPermissionRegisteringLocation As String
         Public Property UserId As Int64
         Public Property LoadPermissionStatusId As Int64
+    End Class
 
+    'BPTChanged
+    Public MustInherit Class R2CoreTransportationAndLoadNotificationLoadPermissionStatuses
+        Public Shared ReadOnly Property None As Int64 = 0
+        Public Shared ReadOnly Property Registered As Int64 = 1
+        Public Shared ReadOnly Property Cancelled As Int64 = 2
     End Class
 
     'BPTChanged
@@ -1387,7 +1390,7 @@ Namespace LoadPermission
                         "Select Top 1  Permission.nEstelamID as LoadId,Permission.nEnterExitId as TurnId,Permission.strExitDate as LoadPermissionDate,Permission.strExitTime as LoadPermissionTime ,
                                        Permission.strBarnameNo as LoadPermissionRegisteringLocation ,Permission.nUserIdExit as UserId,Permission.LoadPermissionStatus as LoadPermissionStatusId
                          from DBTransport.dbo.tbEnterExit as Permission
-                         Where Permission.strCardno=" & YourTruckId & " and Permission.TurnStatus=" & TurnStatuses.UsedLoadPermissionRegistered & " and  and Permission.LoadPermissionStatus=" & R2CoreTransportationAndLoadNotificationLoadPermissionStatuses.Registered & " 
+                         Where Permission.strCardno=" & YourTruckId & " and Permission.TurnStatus=" & TurnStatuses.UsedLoadPermissionRegistered & " and  Permission.LoadPermissionStatus=" & R2CoreTransportationAndLoadNotificationLoadPermissionStatuses.Registered & " 
                          Order By nEnterExitId Desc", 3600, DS, New Boolean).GetRecordsCount = 0 Then Throw New TruckHasNotAnyLoadPermissionException
                 End If
                 Return New R2CoreTransportationAndLoadNotificationLoadPermission With {.LoadId = DS.Tables(0).Rows(0).Item("LoadId"), .TurnId = DS.Tables(0).Rows(0).Item("TurnId"), .UserId = DS.Tables(0).Rows(0).Item("UserId"), .LoadPermissionDate = DS.Tables(0).Rows(0).Item("LoadPermissionDate"), .LoadPermissionTime = DS.Tables(0).Rows(0).Item("LoadPermissionTime"), .LoadPermissionRegisteringLocation = DS.Tables(0).Rows(0).Item("LoadPermissionRegisteringLocation"), .LoadPermissionStatusId = DS.Tables(0).Rows(0).Item("LoadPermissionStatusId")}
@@ -1471,8 +1474,8 @@ Namespace LoadPermission
                 'کنترل زمان 
                 Dim Load = InstanceLoad.GetLoadSimpleModel(InstanceLoadAllocation.GetLoadIdfromLoadAllocationId(YourLoadAllocationId), True)
                 Dim TurnId = InstanceLoadAllocation.GetTurnIdfromLoadAllocationId(YourLoadAllocationId)
-                Dim Timing = InstanceAnnouncementTiming.GetTiming(Load.AnnouncementGroupId, Load.AnnouncementSubGroupId, _DateTimeService.GetCurrentTime)
-                If Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadPermissionRegistering Then
+                If InstanceAnnouncementTiming.IsTiming(Load.AnnouncementGroupId, Load.AnnouncementSubGroupId, _DateTimeService.GetCurrentTime, R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadPermissionRegistering) Or
+                    InstanceAnnouncementTiming.IsTiming(Load.AnnouncementGroupId, Load.AnnouncementSubGroupId, _DateTimeService.GetCurrentTime, R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadPermissionRegistering) Then
                     Throw New LoadPermisionCancellationTimePassedException
                 End If
 
@@ -1552,6 +1555,83 @@ Namespace LoadPermission
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
             End Try
         End Function
+
+        Public Function GetTotalLoadPermissions(YourTruck As R2CoreTransportationAndLoadNotificationTruck) As Int64
+            Try
+                Dim DS As DataSet
+                Return InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                      "Select LoadAllocations.LAId from dbtransport.dbo.tbEnterExit as Turns
+                           Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations as LoadAllocations On Turns.nEnterExitId=LoadAllocations.TurnId 
+                       Where LoadAllocations.DateShamsi='" & _DateTimeService.GetCurrentShamsiDate & "' and LoadAllocations.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionSucceeded & " and Turns.strCardno=" & YourTruck.TruckId & "", 0, DS, New Boolean).GetRecordsCount
+            Catch ex As Exception
+                Throw ex
+            End Try
+        End Function
+
+        Public Sub LoadPermissionRegistering(YourLoadAllocation As R2CoreTransportationAndLoadNotificationLoadAllocation, YourSoftwareUser As R2CoreSoftwareUser)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
+            Try
+
+                Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
+                Dim InstanceSoftwareUsers = New R2CoreSoftwareUsersManager(_DateTimeService, Nothing)
+
+                CmdSql.Connection.Open()
+                CmdSql.Parameters.Add("@TurnId", SqlDbType.BigInt).Value = YourLoadAllocation.TurnId
+                CmdSql.Parameters.Add("@LoadId", SqlDbType.BigInt).Value = YourLoadAllocation.LoadId
+                CmdSql.Parameters.Add("@LoadPermissionedTurnStatusId", SqlDbType.BigInt).Value = TurnStatuses.UsedLoadPermissionRegistered
+                CmdSql.Parameters.Add("@LoadPermissionedTurnAccountTypeId", SqlDbType.BigInt).Value = TurnAccouningTypes.LoadPermissionIssued
+                CmdSql.Parameters.Add("@TotalLoadPermissionAllowed", SqlDbType.BigInt).Value = InstanceGeneralConfiguration.GetInt64Configuration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.BaseTransportationAndLoadNotificationSetting, 3)
+                CmdSql.Parameters.Add("@UsedLoadAllocationRegisteredTurnStatusId", SqlDbType.BigInt).Value = TurnStatuses.UsedLoadAllocationRegistered
+                CmdSql.Parameters.Add("@ResuscitationLoadAllocationCancelledTurnStatusId", SqlDbType.BigInt).Value = TurnStatuses.ResuscitationLoadAllocationCancelled
+                CmdSql.Parameters.Add("@RegisteredLoadStatusId", SqlDbType.BigInt).Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered
+                CmdSql.Parameters.Add("@FreeLinedLoadStatusId", SqlDbType.BigInt).Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.FreeLined
+                CmdSql.Parameters.Add("@SedimentedLoadStatusId", SqlDbType.BigInt).Value = R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented
+                CmdSql.Parameters.Add("@ReleasingLoadAccountTypeId", SqlDbType.BigInt).Value = R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Releasing
+                CmdSql.Parameters.Add("@SoftwareUserId", SqlDbType.BigInt).Value = YourSoftwareUser.UserId
+                CmdSql.Parameters.Add("@RequestLocation", SqlDbType.BigInt).Value = IIf(InstanceSoftwareUsers.GetUser(YourLoadAllocation.UserId, False).UserTypeId = R2CoreTransportationAndLoadNotificationSoftwareUserTypes.TransportCompany, R2CoreTransportationAndLoadNotificationLoadPermissionRegisteringLocation.TransportCompany, R2CoreTransportationAndLoadNotificationLoadPermissionRegisteringLocation.AnnouncementHall)
+                CmdSql.Parameters.Add("@IssuedLoadPermissionTypeId", SqlDbType.BigInt).Value = R2CoreTransportationAndLoadNotificationLoadPermissionStatuses.Registered
+
+                CmdSql.CommandType = CommandType.StoredProcedure
+                CmdSql.CommandText = "R2PrimaryTransportationAndLoadNotification.dbo.LoadPermissionRegistering"
+                CmdSql.ExecuteNonQuery()
+                CmdSql.Connection.Close()
+
+            Catch ex As SqlException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+            Catch ex As UserIdNotExistException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw ex
+            Catch ex As DataBaseException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw ex
+            Catch ex As FileNotExistException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw ex
+            Catch ex As UnableConnectToAPIException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw ex
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
+
+        'Private Sub SendingLoadPermissionSMS(YourLoad As R2CoreTransportationAndLoadNotificationLoad, YourSoftwareUser As R2CoreSoftwareUser)
+        '    Try
+        '        Dim InstanceSMSHandler = New R2CoreSMSHandlerManager(_DateTimeService, New SoftwareUserService)
+        '        Dim LstUser = New List(Of R2CoreSoftwareUser) From {YourSoftwareUser}
+        '        Dim LstCreationData = New List(Of SMSCreationData) From {New SMSCreationData With {.Data1 = YourCurrentDateTime.ShamsiDate + " " + YourCurrentDateTime.Time, .Data2 = YourNSSLoadCapacitorLoad.GoodTitle + " - " + YourNSSLoadCapacitorLoad.LoadTargetTitle, .Data3 = YourNSSLoadCapacitorLoad.TransportCompanyTitle}}
+        '        Dim SMSResult = InstanceSMSHandler.SendSMS(LstUser, R2CoreTransportationAndLoadNotificationSMSTypes.SendingLoadPermissionIssuedInfSMS, LstCreationData, True)
+        '        Dim SMSResultAnalyze = InstanceSMSHandler.GetSMSResultAnalyze(SMSResult)
+        '        'If Not SMSResultAnalyze = String.Empty Then Throw New 
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Sub
+
+
     End Class
 
 

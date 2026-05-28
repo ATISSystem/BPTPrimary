@@ -5,8 +5,9 @@ Imports System.Drawing.Printing
 Imports System.Reflection
 Imports System.Text
 Imports System.Windows.Forms
-Imports R2Core.BaseStandardClass
-Imports R2Core.ConfigurationManagement
+Imports Newtonsoft.Json
+Imports StackExchange.Redis
+
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.EntityRelationManagement
@@ -50,12 +51,10 @@ Imports R2CoreTransportationAndLoadNotification.Turns.SequentialTurns.Exceptions
 Imports R2CoreTransportationAndLoadNotification.TravelTime
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad.Exceptions
 Imports R2CoreTransportationAndLoadNotification.Turns.TurnAccounting
-Imports Newtonsoft.Json
 Imports R2CoreTransportationAndLoadNotification.Caching
 Imports R2CoreTransportationAndLoadNotification.Turns.TurnInfo
 Imports R2Core.CachHelper
 Imports R2CoreTransportationAndLoadNotification.PubSubMessaging
-Imports StackExchange.Redis
 Imports R2CoreTransportationAndLoadNotification.PredefinedMessages
 Imports R2Core.DateTimeProvider
 
@@ -208,16 +207,6 @@ Namespace LoadAllocation
             End Property
         End Class
 
-        Public Class LoadAllocationLoadPermissionRegisteringNotAllowedBecauseLoadAllocationStatusException
-            Inherits ApplicationException
-
-            Public Overrides ReadOnly Property Message As String
-                Get
-                    Return "صدور مجوز برای تخصیص بار با توجه به وضعیت فعلی تخصیص بارامکان پذیر نیست"
-                End Get
-            End Property
-        End Class
-
         Public Class LoadCapacitorLoadLoaderTypeViaSequentialTurnOfTurnNotAllowedException
             Inherits ApplicationException
 
@@ -309,6 +298,17 @@ Namespace LoadAllocation
         End Class
 
         'BPTChanged
+        Public Class LoadAllocationLoadPermissionRegisteringNotAllowedBecauseLoadAllocationStatusException
+            Inherits ApplicationException
+
+            Public Overrides ReadOnly Property Message As String
+                Get
+                    Return "صدور مجوز برای تخصیص بار با توجه به وضعیت فعلی تخصیص بارامکان پذیر نیست"
+                End Get
+            End Property
+        End Class
+
+        'BPTChanged
         Public Class LoadAllocationConditionsNotEstablishedException
             Inherits BPTException
 
@@ -319,6 +319,7 @@ Namespace LoadAllocation
             End Property
         End Class
 
+        'BPTChanged
         Public Class LoadAllocationTimeNotReachedException
             Inherits BPTException
             Public Overrides ReadOnly Property Message As String
@@ -328,6 +329,7 @@ Namespace LoadAllocation
             End Property
         End Class
 
+        'BPTChanged
         Public Class LoadAllocationNotFoundException
             Inherits BPTException
 
@@ -407,6 +409,9 @@ Namespace LoadAllocation
                         Throw New LoadAllocationTimeNotReachedException
                     End If
                 End If
+
+                'لیست سیاه
+                'این قسمت بعد از جلسه با سازمان و سیاست گذاری ایجاد می گردد
 
                 Dim Param As SqlClient.SqlParameter
                 Param = New SqlParameter("@YourTurnId", SqlDbType.BigInt) : Param.Value = YourTurnId
@@ -859,98 +864,196 @@ Namespace LoadAllocation
             End Try
         End Function
 
-        'Public Function LoadAllocationsLoadPermissionRegistering(YourSoftwareUserId As Int64) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure)
-        '    Try
-        '        Dim InstanceLoadCapacitorLoad = New R2CoreTransportationAndLoadNotificationInstanceLoadCapacitorLoadManager
-        '        Dim InstanceTiming = New R2CoreTransportationAndLoadNotificationInstanceAnnouncementTimingManager
-        '        Dim InstanceConfigurationOfAnnouncements = New R2CoreTransportationAndLoadNotificationInstanceConfigurationOfAnnouncementsManager
-        '        Dim InstanceLoadPermissionPrinting = New R2CoreTransportationAndLoadNotificationInstanceLoadPermissionPrintingManager
-        '        Dim InstanceConfigurations = New R2CoreInstanceConfigurationManager(_DateTimeService)
-        '        Dim InstancePermissions = New R2CoreInstansePermissionsManager
-        '        Dim FailedResultLst As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure) = New List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure)()
+        Public Function GetLoadAllocationsforLoadPermissionRegistering() As List(Of R2CoreTransportationAndLoadNotificationLoadAllocation)
+            Try
+                Dim DS As DataSet
+                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
+                     Select * from (Select Top 1000000 LoadAllocation.Priority, LoadAllocation.LAId, LoadAllocation.nEstelamId, LoadAllocation.TurnId, LoadAllocation.LAStatusId, LoadAllocation.LANote, LoadAllocation.DateTimeMilladi, LoadAllocation.DateShamsi, LoadAllocation.Time, LoadAllocation.UserId
+                                  From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations  as LoadAllocation 
+                                    Inner Join dbtransport.dbo.tbElam as Elam On LoadAllocation.nEstelamId=Elam.nEstelamID
+                                    Inner Join dbtransport.dbo.tbEnterExit as EnterExit On LoadAllocation.TurnId=EnterExit.nEnterExitId
+                                    Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AHs On Elam.AHId=AHs.AnnouncementId 
+                                    Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AHSGs On Elam.AHSGId =AHSGs.AnnouncementSGId  
+                                  Where LoadAllocation.DateShamsi ='" & _DateTimeService.GetCurrentShamsiDate & "' and LoadAllocation.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & " and Elam.LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " Order By LoadAllocation.TurnId Asc, LoadAllocation.Priority Asc) as DataBox1
+                    Union all
+                    Select * from (Select Top 1000000 LoadAllocation.Priority, LoadAllocation.LAId, LoadAllocation.nEstelamId, LoadAllocation.TurnId, LoadAllocation.LAStatusId, LoadAllocation.LANote, LoadAllocation.DateTimeMilladi, LoadAllocation.DateShamsi, LoadAllocation.Time, LoadAllocation.UserId
+                                   From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations  as LoadAllocation 
+                                     Inner Join dbtransport.dbo.tbElam as Elam On LoadAllocation.nEstelamId=Elam.nEstelamID
+                                     Inner Join dbtransport.dbo.tbEnterExit as EnterExit On LoadAllocation.TurnId=EnterExit.nEnterExitId
+                                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AHs On Elam.AHId=AHs.AnnouncementId 
+                                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementSubGroups as AHSGs On Elam.AHSGId =AHSGs.AnnouncementSGId  
+                                  Where LoadAllocation.DateShamsi ='" & _DateTimeService.GetCurrentShamsiDate & "' and LoadAllocation.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & " and Elam.LoadStatus<>" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " Order By LoadAllocation.TurnId Asc, LoadAllocation.Priority Asc) as DataBox2", 0, DS, New Boolean)
+                Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationLoadAllocation)
+                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+                    Lst.Add(New R2CoreTransportationAndLoadNotificationLoadAllocation With {.LAId = DS.Tables(0).Rows(Loopx).Item("LAId"), .LoadId = DS.Tables(0).Rows(Loopx).Item("nEstelamId"), .TurnId = DS.Tables(0).Rows(Loopx).Item("TurnId"), .LAStatusId = DS.Tables(0).Rows(Loopx).Item("LAStatusId"), .LANote = DS.Tables(0).Rows(Loopx).Item("LANote").trim, .Priority = DS.Tables(0).Rows(Loopx).Item("Priority"), .DateTimeMilladi = DS.Tables(0).Rows(Loopx).Item("DateTimeMilladi"), .DateShamsi = DS.Tables(0).Rows(Loopx).Item("DateShamsi"), .Time = DS.Tables(0).Rows(Loopx).Item("Time"), .UserId = DS.Tables(0).Rows(Loopx).Item("UserId")})
+                Next
+                Return Lst
+            Catch ex As Exception
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Function
 
-        '        'جلوگیری از خواندن تخصیص هایی که هنوز در بانک آفلاین(ریپلیکیشن) تغییر نکرده اند 
-        '        Threading.Thread.Sleep(60000)
+        Public Sub LoadAllocationLoadPermissionRegistering(YourLoadAllocation As R2CoreTransportationAndLoadNotificationLoadAllocation, YourCurrentDateTime As R2CoreDateAndTime, YourSoftwareUser As R2CoreSoftwareUser)
+            Dim CmdSql As New SqlClient.SqlCommand
+            CmdSql.Connection = R2PrimarySqlConnection.GetTransactionDBConnection()
+            Try
+                Dim InstanceLoadPermission = New R2CoreTransportationAndLoadNotificationLoadPermissionManager(_DateTimeService)
 
-        '        Dim Lst As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure) = GetLoadAllocationsforLoadPermissionRegistering()
-        '        If Lst.Count > 1000 Then
-        '            'فعال کردن ایز بیزی
-        '            InstanceSiteIsBusy.ActivateSiteIsBusy()
-        '        End If
+                'کنترل وضعیت تخصیص بار
+                If YourLoadAllocation.LAStatusId = R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.CancelledUser Or YourLoadAllocation.LAStatusId = R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionSucceeded Or YourLoadAllocation.LAStatusId = R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.CancelledSystem Or YourLoadAllocation.LAStatusId = R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionCancelled Then Throw New LoadAllocationLoadPermissionRegisteringNotAllowedBecauseLoadAllocationStatusException
 
-        '        Dim CurrentDateTime = New R2CoreDateAndTime With {.DateTimeMilladi = _DateTimeService.GetCurrentDateTimeMilladi, .ShamsiDate = _DateTimeService.GetCurrentShamsiDate, .Time = _DateTimeService.GetCurrentTime}
-        '        For Loopx As Int64 = 0 To Lst.Count - 1
-        '            Dim NSSLoadCapacitorLoad = InstanceLoadCapacitorLoad.GetNSSLoadCapacitorLoad(Lst(Loopx).nEstelamId, True)
-        '            Dim AHId As Int64 = NSSLoadCapacitorLoad.AHId
-        '            Dim AHSGId As Int64 = NSSLoadCapacitorLoad.AHSGId
+                Try
+                    InstanceLoadPermission.LoadPermissionRegistering(YourLoadAllocation, YourSoftwareUser)
+                    Try
+                        CmdSql.Connection.Open()
+                        CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations 
+                                              Set LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionSucceeded & ",LANote='مجوز صادر شده',DateTimeMilladi='" & YourCurrentDateTime.DateTimeMilladi & "',DateShamsi='" & YourCurrentDateTime.ShamsiDate & "',Time='" & YourCurrentDateTime.Time & "' 
+                                              Where LAId=" & YourLoadAllocation.LAId & ""
+                        CmdSql.ExecuteNonQuery()
+                        CmdSql.Connection.Close()
 
-        '            'کنترل مجوز کنترل تایمینگ در آزادسازی بار با توجه به وضعیت بار
-        '            If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.LoadPermissionUseTimeHandlingByLoadStatus, NSSLoadCapacitorLoad.LoadStatus, 0) Then
-        '                'کنترل تایمینگ - آیا زمان صدور مجوز برای زیرگروه سالن مورد نظر فرارسیده است
-        '                If InstanceTiming.IsTimingActive(AHId, AHSGId) Then
-        '                    If InstanceTiming.GetTiming(AHId, AHSGId, CurrentDateTime.Time) <> R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadPermissionRegistering Then
-        '                        Continue For
-        '                    End If
-        '                End If
-        '            End If
+                        'PubSubMessaging
+                        Dim _Subscriber = _RCH.Connection.GetSubscriber()
+                        _Subscriber.Publish(R2CoreTransportationAndLoadNotificationPubSubChannels.TurnInfo, JsonConvert.SerializeObject(YourLoadAllocation.TurnId))
 
-        '            Dim NSSLoadAllocation = Lst(Loopx)
-        '            Try
-        '                LoadAllocationLoadPermissionRegistering(NSSLoadAllocation, NSSLoadCapacitorLoad, CurrentDateTime, YourUserNSS)
-        '                'If InstanceConfigurationOfAnnouncements.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsLoadPermissionsSetting, NSSLoadCapacitorLoad.AHId, 2) Then
-        '                '    InstanceLoadPermissionPrinting.PrintLoadPermission(Lst(Loopx).LAId, YourUserNSS)
-        '                '    Threading.Thread.Sleep(InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsLoadAllocationsLoadPermissionRegisteringSetting, 0))
-        '                'End If
-        '            Catch ex As Exception When TypeOf ex Is TurnHandlingNotAllowedBecuaseTurnStatusException _
-        '                                  OrElse TypeOf ex Is LoadPermisionRegisteringFailedBecauseLoadCapacitorLoadIsNotReadyException _
-        '                                  OrElse TypeOf ex Is LoadPermisionRegisteringFailedBecauseTurnIsNotReadyException _
-        '                                  OrElse TypeOf ex Is PresentNotRegisteredInLast30MinuteException _
-        '                                  OrElse TypeOf ex Is PresentsNotEnoughException _
-        '                                  OrElse TypeOf ex Is LoadPermisionRegisteringFailedBecauseBlackListException _
-        '                                  OrElse TypeOf ex Is GetNSSException _
-        '                                  OrElse TypeOf ex Is TimingNotReachedException _
-        '                                  OrElse TypeOf ex Is LoadCapacitorLoadReleaseNotAllowedBecuasenCarNumException _
-        '                                  OrElse TypeOf ex Is LoadCapacitorLoadHandlingNotAllowedBecuaseLoadStatusException _
-        '                                  OrElse TypeOf ex Is LoadCapacitorLoadReleaseTimeNotReachedException _
-        '                                  OrElse TypeOf ex Is LoadAllocationLoadPermissionRegisteringNotAllowedBecauseLoadAllocationStatusException _
-        '                                  OrElse TypeOf ex Is TurnHandlingNotAllowedBecuaseTurnStatusException _
-        '                                  OrElse TypeOf ex Is GetNSSException _
-        '                                  OrElse TypeOf ex Is GetDataException _
-        '                                  OrElse TypeOf ex Is AnnouncementsubGroupNotFoundException _
-        '                                  OrElse TypeOf ex Is AnnouncementsubGroupRelationTruckNotExistException _
-        '                                  OrElse TypeOf ex Is TruckTotalLoadPermissionReachedException _
-        '                                  OrElse TypeOf ex Is ExeededNumberofLoadPermisionsWithOneTurnException
-        '                Try
-        '                    If NSSLoadAllocation.LAStatusId <> R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionFailed Then
-        '                        If InstanceConfigurationOfAnnouncements.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsLoadPermissionsSetting, NSSLoadCapacitorLoad.AHId, 2) Then
-        '                            Dim InstanceFailedLoadAllocationAnnouncePrinting = New R2CoreTransportationAndLoadNotificationInstanceFailedLoadAllocationAnnouncePrintingManager
-        '                            InstanceFailedLoadAllocationAnnouncePrinting.PrintFailedLoadAllocation(Lst(Loopx).LAId)
-        '                            Threading.Thread.Sleep(InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsLoadAllocationsLoadPermissionRegisteringSetting, 0))
-        '                        End If
-        '                    End If
-        '                    Lst(Loopx).LANote = ex.Message
-        '                    FailedResultLst.Add(Lst(Loopx))
-        '                Catch exx As Exception When TypeOf ex Is GetNSSException OrElse TypeOf ex Is GetDataException
-        '                End Try
-        '            End Try
-        '        Next
+                        '  ارسال اس ام اس آزاد سازی بار
+                        'باید از طریق پاب ساب انجام گیرد
+                        'Try
+                        '    Dim InstanceSoftwareUsers_TruckDriver = New R2CoreParkingSystemInstanceSoftwareUsersManager
+                        '    SendingLoadPermissionSMS(YourLoad, InstanceSoftwareUsers_TruckDriver.GetNSSSoftwareUser(NSSTruck.NSSCar))
+                        'Catch ex As Exception
+                        'End Try
 
-        '        'غیر فعال کردن ایز بیزی
-        '        InstanceSiteIsBusy.DeActivateSiteIsBusy()
+                    Catch ex As Exception
+                        Throw New Exception("Location:2:" + ex.Message)
+                    End Try
+                Catch ex As Exception When TypeOf ex Is TurnHandlingNotAllowedBecuaseTurnStatusException OrElse TypeOf ex Is LoadPermisionRegisteringFailedBecauseLoadCapacitorLoadIsNotReadyException OrElse TypeOf ex Is LoadPermisionRegisteringFailedBecauseTurnIsNotReadyException OrElse TypeOf ex Is PresentNotRegisteredInLast30MinuteException OrElse TypeOf ex Is PresentsNotEnoughException OrElse TypeOf ex Is LoadPermisionRegisteringFailedBecauseBlackListException OrElse TypeOf ex Is GetNSSException OrElse TypeOf ex Is LoadCapacitorLoadReleaseNotAllowedBecuasenCarNumException OrElse TypeOf ex Is LoadCapacitorLoadHandlingNotAllowedBecuaseLoadStatusException OrElse TypeOf ex Is LoadCapacitorLoadReleaseTimeNotReachedException OrElse TypeOf ex Is GetNSSException OrElse TypeOf ex Is GetDataException OrElse TypeOf ex Is AnnouncementsubGroupNotFoundException OrElse TypeOf ex Is AnnouncementsubGroupRelationTruckNotExistException OrElse TypeOf ex Is TruckTotalLoadPermissionReachedException OrElse TypeOf ex Is ExeededNumberofLoadPermisionsWithOneTurnException OrElse TypeOf ex Is DataBaseException
+                    'مارک تخصیص به حالت فی لد Falied
+                    Try
+                        CmdSql.Connection.Open()
+                        'CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations 
+                        '                          Set LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionFailed & ",LANote='" & ex.Message & "'  Where LAId=" & YourNSSLoadAllocation.LAId & ""
+                        'CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations 
+                        '                      Set LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionSucceeded & ",LANote='مجوز صادر شده',Time='" & YourCurrentDateTime.Time & "' Where LAId=" & YourNSSLoadAllocation.LAId & ""
+                        CmdSql.CommandText = "Update R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations 
+                                                  Set LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionFailed & ",LANote='" & ex.Message & "',
+                                                      DateTimeMilladi='" & YourCurrentDateTime.DateTimeMilladi & "',DateShamsi='" & YourCurrentDateTime.ShamsiDate & "',Time='" & YourCurrentDateTime.Time & "' 
+                                          Where LAId=" & YourLoadAllocation.LAId & ""
+                        CmdSql.ExecuteNonQuery()
+                        CmdSql.Connection.Close()
+                    Catch exy As Exception
+                        Throw New Exception("Location:3:" + exy.Message)
+                    End Try
+                    Throw ex
+                End Try
+            Catch ex As Exception When TypeOf ex Is TurnHandlingNotAllowedBecuaseTurnStatusException _
+                                       OrElse TypeOf ex Is LoadPermisionRegisteringFailedBecauseLoadCapacitorLoadIsNotReadyException _
+                                       OrElse TypeOf ex Is LoadPermisionRegisteringFailedBecauseTurnIsNotReadyException _
+                                       OrElse TypeOf ex Is PresentNotRegisteredInLast30MinuteException _
+                                       OrElse TypeOf ex Is PresentsNotEnoughException _
+                                       OrElse TypeOf ex Is LoadPermisionRegisteringFailedBecauseBlackListException _
+                                       OrElse TypeOf ex Is GetNSSException _
+                                       OrElse TypeOf ex Is LoadCapacitorLoadReleaseNotAllowedBecuasenCarNumException _
+                                       OrElse TypeOf ex Is LoadCapacitorLoadHandlingNotAllowedBecuaseLoadStatusException _
+                                       OrElse TypeOf ex Is LoadCapacitorLoadReleaseTimeNotReachedException _
+                                       OrElse TypeOf ex Is LoadAllocationLoadPermissionRegisteringNotAllowedBecauseLoadAllocationStatusException _
+                                       OrElse TypeOf ex Is TurnHandlingNotAllowedBecuaseTurnStatusException _
+                                       OrElse TypeOf ex Is GetNSSException _
+                                       OrElse TypeOf ex Is GetDataException _
+                                       OrElse TypeOf ex Is AnnouncementsubGroupNotFoundException _
+                                       OrElse TypeOf ex Is AnnouncementsubGroupRelationTruckNotExistException _
+                                       OrElse TypeOf ex Is TimingNotReachedException _
+                                       OrElse TypeOf ex Is TruckTotalLoadPermissionReachedException _
+                                       OrElse TypeOf ex Is ExeededNumberofLoadPermisionsWithOneTurnException _
+                                       OrElse TypeOf ex Is DataBaseException
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw ex
+            Catch ex As Exception
+                If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
 
-        '        Lst = Nothing
+        Public Sub LoadAllocationsLoadPermissionRegistering(YourSoftwareUser As R2CoreSoftwareUser)
+            Try
 
-        '        Return FailedResultLst
-        '    Catch ex As Exception
-        '        'غیر فعال کردن ایز بیزی
-        '        InstanceSiteIsBusy.DeActivateSiteIsBusy()
+                Dim InstanceLoad = New R2CoreTransportationAndLoadNotificationLoadManager(_DateTimeService)
+                Dim InstancePermissions = New R2CorePermissionsManager(_DateTimeService)
+                Dim InstanceTiming = New R2CoreTransportationAndLoadNotificationAnnouncementTimingManager(_DateTimeService)
 
-        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-        '    End Try
-        'End Function
+                'جلوگیری از خواندن تخصیص هایی که هنوز در بانک آفلاین(ریپلیکیشن) تغییر نکرده اند 
+                'Threading.Thread.Sleep(60000)
+
+                Dim Lst = GetLoadAllocationsforLoadPermissionRegistering()
+
+                Dim CurrentDateTime = New R2CoreDateAndTime() With {.DateTimeMilladi = _DateTimeService.GetCurrentDateTimeMilladi, .ShamsiDate = _DateTimeService.GetCurrentShamsiDate, .Time = _DateTimeService.GetCurrentTime}
+
+                For Loopx As Int64 = 0 To Lst.Count - 1
+                    Dim Load = InstanceLoad.GetLoad(Lst(Loopx).LoadId, True)
+                    Dim AnnouncementGroupId = Load.AnnouncementGroupId
+                    Dim AnnouncementSGId = Load.AnnouncementSubGroupId
+
+                    'کنترل مجوز کنترل تایمینگ در آزادسازی بار با توجه به وضعیت بار
+                    If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.LoadPermissionUseTimeHandlingByLoadStatus, Load.LoadStatusId, 0) Then
+                        'کنترل تایمینگ - آیا زمان صدور مجوز برای زیرگروه سالن مورد نظر فرارسیده است
+                        If Not InstanceTiming.IsTiming(AnnouncementGroupId, AnnouncementSGId, CurrentDateTime.Time, R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadPermissionRegistering) Then
+                            Continue For
+                        End If
+                    End If
+
+                    Dim LoadAllocation = Lst(Loopx)
+                    Try
+                        LoadAllocationLoadPermissionRegistering(LoadAllocation, CurrentDateTime, YourSoftwareUser)
+                    Catch ex As Exception When TypeOf ex Is TurnHandlingNotAllowedBecuaseTurnStatusException _
+                                          OrElse TypeOf ex Is LoadPermisionRegisteringFailedBecauseLoadCapacitorLoadIsNotReadyException _
+                                          OrElse TypeOf ex Is LoadPermisionRegisteringFailedBecauseTurnIsNotReadyException _
+                                          OrElse TypeOf ex Is PresentNotRegisteredInLast30MinuteException _
+                                          OrElse TypeOf ex Is PresentsNotEnoughException _
+                                          OrElse TypeOf ex Is LoadPermisionRegisteringFailedBecauseBlackListException _
+                                          OrElse TypeOf ex Is GetNSSException _
+                                          OrElse TypeOf ex Is TimingNotReachedException _
+                                          OrElse TypeOf ex Is LoadCapacitorLoadReleaseNotAllowedBecuasenCarNumException _
+                                          OrElse TypeOf ex Is LoadCapacitorLoadHandlingNotAllowedBecuaseLoadStatusException _
+                                          OrElse TypeOf ex Is LoadCapacitorLoadReleaseTimeNotReachedException _
+                                          OrElse TypeOf ex Is LoadAllocationLoadPermissionRegisteringNotAllowedBecauseLoadAllocationStatusException _
+                                          OrElse TypeOf ex Is TurnHandlingNotAllowedBecuaseTurnStatusException _
+                                          OrElse TypeOf ex Is GetNSSException _
+                                          OrElse TypeOf ex Is GetDataException _
+                                          OrElse TypeOf ex Is AnnouncementsubGroupNotFoundException _
+                                          OrElse TypeOf ex Is AnnouncementsubGroupRelationTruckNotExistException _
+                                          OrElse TypeOf ex Is TruckTotalLoadPermissionReachedException _
+                                          OrElse TypeOf ex Is ExeededNumberofLoadPermisionsWithOneTurnException _
+                                          OrElse TypeOf ex Is DataBaseException
+                        'Try
+                        '    If NSSLoadAllocation.LAStatusId <> R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.PermissionFailed Then
+                        '        If InstanceConfigurationOfAnnouncements.GetConfigBoolean(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsLoadPermissionsSetting, NSSLoadCapacitorLoad.AHId, 2) Then
+                        '            Dim InstanceFailedLoadAllocationAnnouncePrinting = New R2CoreTransportationAndLoadNotificationInstanceFailedLoadAllocationAnnouncePrintingManager
+                        '            InstanceFailedLoadAllocationAnnouncePrinting.PrintFailedLoadAllocation(Lst(Loopx).LAId)
+                        '            Threading.Thread.Sleep(InstanceConfigurations.GetConfigInt64(R2CoreTransportationAndLoadNotificationConfigurations.AnnouncementsLoadAllocationsLoadPermissionRegisteringSetting, 0))
+                        '        End If
+                        '    End If
+                        '    Lst(Loopx).LANote = ex.Message
+                        '    FailedResultLst.Add(Lst(Loopx))
+                        'Catch exx As Exception When TypeOf ex Is GetNSSException OrElse TypeOf ex Is GetDataException
+                        'End Try
+                    End Try
+                Next
+
+                'غیر فعال کردن ایز بیزی
+                'InstanceSiteIsBusy.DeActivateSiteIsBusy()
+
+                Lst = Nothing
+
+                'Return FailedResultLst
+            Catch ex As Exception
+                'غیر فعال کردن ایز بیزی
+                'InstanceSiteIsBusy.DeActivateSiteIsBusy()
+
+                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+            End Try
+        End Sub
 
     End Class
-
 
     Public Class R2CoreTransportationAndLoadNotificationStandardLoadAllocationStatusStructure
 
@@ -1921,36 +2024,36 @@ Namespace LoadAllocation
             End Try
         End Sub
 
-        Public Function GetLoadAllocationsforLoadPermissionRegistering(Optional YourAHId As Int64 = Int64.MinValue, Optional YourAHSGId As Int64 = Int64.MinValue) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure)
-            Try
-                Dim ComposeQueryAHId = IIf(YourAHId = Int64.MinValue, String.Empty, " And Elam.AHId=" & YourAHId & "")
-                Dim ComposeQueryAHSGId = IIf(YourAHSGId = Int64.MinValue, String.Empty, " And Elam.AHSGId=" & YourAHSGId & "")
-                Dim DS As DataSet
-                InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
-                    Select * from (Select Top 1000000 LoadAllocation.Priority, LoadAllocation.LAId, LoadAllocation.nEstelamId, LoadAllocation.TurnId, LoadAllocation.LAStatusId, LoadAllocation.LANote, LoadAllocation.DateTimeMilladi, LoadAllocation.DateShamsi, LoadAllocation.Time, LoadAllocation.UserId
-                                  From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations  as LoadAllocation 
-                                    Inner Join dbtransport.dbo.tbElam as Elam On LoadAllocation.nEstelamId=Elam.nEstelamID
-                                    Inner Join dbtransport.dbo.tbEnterExit as EnterExit On LoadAllocation.TurnId=EnterExit.nEnterExitId
-                                    Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AHs On Elam.AHId=AHs.AHId 
-                                    Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSGs On Elam.AHSGId =AHSGs.AHSGId  
-                                  Where LoadAllocation.DateShamsi ='" & _DateTimeService.GetCurrentShamsiDate() & "' and LoadAllocation.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & "" + ComposeQueryAHId + ComposeQueryAHSGId + " and Elam.LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " Order By LoadAllocation.TurnId Asc, LoadAllocation.Priority Asc) as DataBox1
-                    Union all
-                    Select * from (Select Top 1000000 LoadAllocation.Priority, LoadAllocation.LAId, LoadAllocation.nEstelamId, LoadAllocation.TurnId, LoadAllocation.LAStatusId, LoadAllocation.LANote, LoadAllocation.DateTimeMilladi, LoadAllocation.DateShamsi, LoadAllocation.Time, LoadAllocation.UserId
-                                   From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations  as LoadAllocation 
-                                     Inner Join dbtransport.dbo.tbElam as Elam On LoadAllocation.nEstelamId=Elam.nEstelamID
-                                     Inner Join dbtransport.dbo.tbEnterExit as EnterExit On LoadAllocation.TurnId=EnterExit.nEnterExitId
-                                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AHs On Elam.AHId=AHs.AHId 
-                                     Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSGs On Elam.AHSGId =AHSGs.AHSGId  
-                                  Where LoadAllocation.DateShamsi ='" & _DateTimeService.GetCurrentShamsiDate() & "' and LoadAllocation.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & "" + ComposeQueryAHId + ComposeQueryAHSGId + " and Elam.LoadStatus<>" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " Order By LoadAllocation.TurnId Asc, LoadAllocation.Priority Asc) as DataBox2", 0, DS, New Boolean)
-                Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure)
-                For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
-                    Lst.Add(New R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure(DS.Tables(0).Rows(Loopx).Item("LAId"), DS.Tables(0).Rows(Loopx).Item("nEstelamId"), DS.Tables(0).Rows(Loopx).Item("TurnId"), DS.Tables(0).Rows(Loopx).Item("LAStatusId"), DS.Tables(0).Rows(Loopx).Item("LANote").trim, DS.Tables(0).Rows(Loopx).Item("Priority"), DS.Tables(0).Rows(Loopx).Item("DateTimeMilladi"), DS.Tables(0).Rows(Loopx).Item("DateShamsi"), DS.Tables(0).Rows(Loopx).Item("Time"), DS.Tables(0).Rows(Loopx).Item("UserId")))
-                Next
-                Return Lst
-            Catch ex As Exception
-                Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
-            End Try
-        End Function
+        'Public Function GetLoadAllocationsforLoadPermissionRegistering(Optional YourAHId As Int64 = Int64.MinValue, Optional YourAHSGId As Int64 = Int64.MinValue) As List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure)
+        '    Try
+        '        Dim ComposeQueryAHId = IIf(YourAHId = Int64.MinValue, String.Empty, " And Elam.AHId=" & YourAHId & "")
+        '        Dim ComposeQueryAHSGId = IIf(YourAHSGId = Int64.MinValue, String.Empty, " And Elam.AHSGId=" & YourAHSGId & "")
+        '        Dim DS As DataSet
+        '        InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection, "
+        '            Select * from (Select Top 1000000 LoadAllocation.Priority, LoadAllocation.LAId, LoadAllocation.nEstelamId, LoadAllocation.TurnId, LoadAllocation.LAStatusId, LoadAllocation.LANote, LoadAllocation.DateTimeMilladi, LoadAllocation.DateShamsi, LoadAllocation.Time, LoadAllocation.UserId
+        '                          From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations  as LoadAllocation 
+        '                            Inner Join dbtransport.dbo.tbElam as Elam On LoadAllocation.nEstelamId=Elam.nEstelamID
+        '                            Inner Join dbtransport.dbo.tbEnterExit as EnterExit On LoadAllocation.TurnId=EnterExit.nEnterExitId
+        '                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AHs On Elam.AHId=AHs.AHId 
+        '                            Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSGs On Elam.AHSGId =AHSGs.AHSGId  
+        '                          Where LoadAllocation.DateShamsi ='" & _DateTimeService.GetCurrentShamsiDate() & "' and LoadAllocation.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & "" + ComposeQueryAHId + ComposeQueryAHSGId + " and Elam.LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " Order By LoadAllocation.TurnId Asc, LoadAllocation.Priority Asc) as DataBox1
+        '            Union all
+        '            Select * from (Select Top 1000000 LoadAllocation.Priority, LoadAllocation.LAId, LoadAllocation.nEstelamId, LoadAllocation.TurnId, LoadAllocation.LAStatusId, LoadAllocation.LANote, LoadAllocation.DateTimeMilladi, LoadAllocation.DateShamsi, LoadAllocation.Time, LoadAllocation.UserId
+        '                           From R2PrimaryTransportationAndLoadNotification.dbo.TblLoadAllocations  as LoadAllocation 
+        '                             Inner Join dbtransport.dbo.tbElam as Elam On LoadAllocation.nEstelamId=Elam.nEstelamID
+        '                             Inner Join dbtransport.dbo.tbEnterExit as EnterExit On LoadAllocation.TurnId=EnterExit.nEnterExitId
+        '                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncements as AHs On Elam.AHId=AHs.AHId 
+        '                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AHSGs On Elam.AHSGId =AHSGs.AHSGId  
+        '                          Where LoadAllocation.DateShamsi ='" & _DateTimeService.GetCurrentShamsiDate() & "' and LoadAllocation.LAStatusId=" & R2CoreTransportationAndLoadNotificationLoadAllocationStatuses.Registered & "" + ComposeQueryAHId + ComposeQueryAHSGId + " and Elam.LoadStatus<>" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " Order By LoadAllocation.TurnId Asc, LoadAllocation.Priority Asc) as DataBox2", 0, DS, New Boolean)
+        '        Dim Lst As New List(Of R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure)
+        '        For Loopx As Int64 = 0 To DS.Tables(0).Rows.Count - 1
+        '            Lst.Add(New R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure(DS.Tables(0).Rows(Loopx).Item("LAId"), DS.Tables(0).Rows(Loopx).Item("nEstelamId"), DS.Tables(0).Rows(Loopx).Item("TurnId"), DS.Tables(0).Rows(Loopx).Item("LAStatusId"), DS.Tables(0).Rows(Loopx).Item("LANote").trim, DS.Tables(0).Rows(Loopx).Item("Priority"), DS.Tables(0).Rows(Loopx).Item("DateTimeMilladi"), DS.Tables(0).Rows(Loopx).Item("DateShamsi"), DS.Tables(0).Rows(Loopx).Item("Time"), DS.Tables(0).Rows(Loopx).Item("UserId")))
+        '        Next
+        '        Return Lst
+        '    Catch ex As Exception
+        '        Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + vbCrLf + ex.Message)
+        '    End Try
+        'End Function
 
         'Public Sub LoadAllocationLoadPermissionRegistering(YourNSSLoadAllocation As R2CoreTransportationAndLoadNotificationStandardLoadAllocationStructure, YourNSSLoadCapacitorLoad As R2CoreTransportationAndLoadNotificationStandardLoadCapacitorLoadExtendedStructure, YourCurrentDateTime As R2CoreDateAndTime, YourUserNSS As R2CoreStandardSoftwareUserStructure)
         '    Dim CmdSql As New SqlClient.SqlCommand

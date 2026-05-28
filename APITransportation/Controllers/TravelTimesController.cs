@@ -7,7 +7,6 @@ using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
 using R2Core.LoggingManagement;
 using R2Core.PredefinedMessagesManagement;
-using R2Core.PublicProc;
 using R2Core.SessionManagement;
 using R2Core.SoftwareUserManagement;
 using R2CoreTransportationAndLoadNotification.Logging;
@@ -122,7 +121,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var TravelTime = Content.TravelTime;
@@ -135,7 +134,7 @@ namespace APITransportation.Controllers
                 _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TravelTimeRegistering, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TravelTime.SourceCityId) + ":" + TravelTime.SourceCityId + " " + nameof(TravelTime.TargetCityId) + ":" + TravelTime.TargetCityId, MessageDetail2 = nameof(TravelTime.LoaderTypeId) + ":" + TravelTime.LoaderTypeId+" "+ nameof(TravelTime.TravelTime ) + ":" + TravelTime.TravelTime , UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -157,7 +156,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var TravelTime = Content.TravelTime;
@@ -170,7 +169,7 @@ namespace APITransportation.Controllers
                 _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TravelTimeDeleting, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TravelTime.SourceCityId) + ":" + TravelTime.SourceCityId + " " + nameof(TravelTime.TargetCityId) + ":" + TravelTime.TargetCityId, MessageDetail2 = nameof(TravelTime.LoaderTypeId) + ":" + TravelTime.LoaderTypeId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -192,7 +191,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var TravelTime = Content.TravelTime;
@@ -205,7 +204,7 @@ namespace APITransportation.Controllers
                 _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TravelTimeEditing, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TravelTime.SourceCityId) + ":" + TravelTime.SourceCityId + " " + nameof(TravelTime.TargetCityId) + ":" + TravelTime.TargetCityId, MessageDetail2 = nameof(TravelTime.LoaderTypeId) + ":" + TravelTime.LoaderTypeId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -227,7 +226,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var TravelTime = Content.TravelTime;
@@ -240,7 +239,7 @@ namespace APITransportation.Controllers
                 _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TravelTimeChangeActivateStatus, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TravelTime.SourceCityId) + ":" + TravelTime.SourceCityId +" "+ nameof(TravelTime.TargetCityId ) + ":" + TravelTime.TargetCityId , MessageDetail2= nameof(TravelTime.LoaderTypeId ) + ":" + TravelTime.LoaderTypeId , UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)

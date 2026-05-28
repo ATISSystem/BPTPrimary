@@ -269,10 +269,10 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://smartcard.rmto.ir:9090/orawsv/TR_PUBLIC_WS/PKG_RMTO_WS%3fwsdl">
+    <WebReferenceUrl Include="http://smartcard.rmto.ir:9090/orawsv/TR_PUBLIC_WS/PKG_RMTO_WS">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\RmtoWS\</RelPath>
-      <UpdateFromURL>http://smartcard.rmto.ir:9090/orawsv/TR_PUBLIC_WS/PKG_RMTO_WS%3fwsdl</UpdateFromURL>
+      <UpdateFromURL>http://smartcard.rmto.ir:9090/orawsv/TR_PUBLIC_WS/PKG_RMTO_WS</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>

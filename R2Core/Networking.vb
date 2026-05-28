@@ -20,6 +20,7 @@ Namespace Networking
 
         Public Shared Function IsInternetAvailable() As Boolean
             Try
+                Return True
                 If My.Computer.Network.Ping("217.218.127.127") Then
                     Return True
                 Else

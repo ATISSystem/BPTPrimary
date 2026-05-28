@@ -1,6 +1,7 @@
 ﻿using APICommon.Models;
 using APITransportation.Models.Turn;
 using Newtonsoft.Json;
+using PayanehClassLibrary.CarTruckNobatManagement.Exceptions;
 using PayanehClassLibrary.TurnRegisterRequest;
 using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
@@ -48,7 +49,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
@@ -61,8 +62,10 @@ namespace APITransportation.Controllers
                 InstanceTurnRegisterRequest.RealTimeTurnRegisterRequest(SequentialTurnId, TruckId, ref TurnId, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_RealTimeTurnRegisterRequest, TurnType.Permanent, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
+            catch (CarTruckTravelTimeNotOverYetException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (MoneyWalletNotExistException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (TurnCostNotFoundException ex)
@@ -87,7 +90,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
@@ -101,7 +104,7 @@ namespace APITransportation.Controllers
                 InstanceTurnRegisterRequest.EmergencyTurnRegisterRequest(SequentialTurnId, TruckId, ref TurnId, Description, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_EmergencyTurnRegisterRequest, TurnType.Permanent, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
             catch (MoneyWalletNotExistException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -127,7 +130,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
@@ -144,7 +147,7 @@ namespace APITransportation.Controllers
                 InstanceTurnRegisterRequestPayaneh.ResuscitationReserveTurn(SequentialTurnId, TRR.TRRId, TruckId, R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_ResuscitationReserveTurn, TurnType.Permanent, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
             catch (MoneyWalletNotExistException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -170,7 +173,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
 
@@ -180,7 +183,7 @@ namespace APITransportation.Controllers
                 InstanceTurnRegisterRequest.ReserveTurnRegisterRequest(R2CoreTransportationAndLoadNotificationRequesters.TurnRegisterRequestController_ReserveTurnRegisterRequest, TurnType.Permanent, User.UserId);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
             catch (MoneyWalletNotExistException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }

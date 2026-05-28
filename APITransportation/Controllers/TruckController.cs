@@ -15,6 +15,7 @@ using R2CoreParkingSystem.Cars;
 using R2CoreParkingSystem.Drivers;
 using R2CoreParkingSystem.TrafficCardsManagement;
 using R2CoreTransportationAndLoadNotification.Logging;
+using R2CoreTransportationAndLoadNotification.Rmto;
 using R2CoreTransportationAndLoadNotification.TruckDrivers;
 using R2CoreTransportationAndLoadNotification.Trucks;
 using R2CoreTransportationAndLoadNotification.Trucks.Exceptions;
@@ -70,13 +71,26 @@ namespace APITransportation.Controllers
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                PayanehWebService.PayanehWebService _WS = new PayanehWebService.PayanehWebService();
-                var Truck = _WS.WebMethodGetTruckBySmartCarNofromRMTO(SmartCardNo, _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
+                PayanehClassLibrary.PayanehWS.R2CoreTransportationAndLoadNotificationTruck Truck;
 
-                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(Truck), Encoding.UTF8, "application/json");
-                return response;
+                try
+                {
+
+                    PayanehClassLibrary.PayanehWS.PayanehWebService _WS = new PayanehClassLibrary.PayanehWS.PayanehWebService();
+                    Truck = _WS.WebMethodGetTruckBySmartCarNofromRMTO(SmartCardNo, _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
+
+                    HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                    response.Content = new StringContent(JsonConvert.SerializeObject(Truck), Encoding.UTF8, "application/json");
+                    return response;
+                }
+                catch (RMTOWebServiceSmartCardLimitationException ex)
+                { throw ex; }
+                catch (Exception ex)
+                { throw new Exception("PayanehWS:" + ex.Message); }
+
             }
+            catch (RMTOWebServiceSmartCardLimitationException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -194,7 +208,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TruckId = Content.TruckId;
@@ -207,10 +221,10 @@ namespace APITransportation.Controllers
                 var InstanceTrucks = new R2CoreTransportationAndLoadNotificationTrucksManager(_DateTimeService);
                 InstanceTrucks.SetComposedTruckInf(TruckId, TruckDriverId, MoneyWalletId, TurnId);
 
-                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.SetComposedTruckInf, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TruckId) + ":" + TruckId+" "+ nameof(TruckDriverId) + ":" + TruckDriverId, MessageDetail2= nameof(TurnId) + ":" + TurnId+" "+ nameof(MoneyWalletId) + ":" + MoneyWalletId, UserId = User.UserId });
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.SetComposedTruckInf, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TruckId) + ":" + TruckId + " " + nameof(TruckDriverId) + ":" + TruckDriverId, MessageDetail2 = nameof(TurnId) + ":" + TurnId + " " + nameof(MoneyWalletId) + ":" + MoneyWalletId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent }), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(new { Message = InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent }), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)

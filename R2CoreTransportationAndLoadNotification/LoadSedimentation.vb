@@ -174,7 +174,7 @@ Namespace LoadSedimentation
 
         Private _DateTimeService As New R2DateTimeService
         Private _InstanceSqlDataBOX As R2CoreSqlDataBOXManager
-        Public Sub New(YourDateTimeService As R2DateTimeService)
+        Public Sub New(YourDateTimeService As IDateTimeService)
             Try
                 _DateTimeService = YourDateTimeService
                 _InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
@@ -215,7 +215,9 @@ Namespace LoadSedimentation
                         If Not IsActiveSedimenting(AnnouncementId, AnnouncementSGId) Then Continue For
 
                         'کنترل تایمینگ - آیا رسوب بار برای زیرگروه مورد نظر فرارسیده است
-                        If Not ((InstanceAnnouncementTiming.GetTiming(AnnouncementId, AnnouncementSGId, _DateTimeService.GetCurrentTime) = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadPermissionRegistering) Or (InstanceAnnouncementTiming.GetTiming(AnnouncementId, AnnouncementSGId, _DateTimeService.GetCurrentTime) = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InSedimenting)) Then
+                        If InstanceAnnouncementTiming.IsTiming(AnnouncementId, AnnouncementSGId, _DateTimeService.GetCurrentTime, R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartSedimenting) Or
+                           InstanceAnnouncementTiming.IsTiming(AnnouncementId, AnnouncementSGId, _DateTimeService.GetCurrentTime, R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InSedimenting) Then
+                        Else
                             Continue For
                         End If
 
@@ -231,7 +233,7 @@ Namespace LoadSedimentation
                         Dim LastAnnounceTime = InstanceAnnouncements.GetAnnouncemenetLastAnnounceTime(AnnouncementId, AnnouncementSGId).Time
                         CmdSql.Connection.Open()
                         CmdSql.CommandText = "Update dbtransport.dbo.tbElam Set bFlag=1,LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Sedimented & " 
-                                              Where (dDateElam='" & _DateTimeService.GetCurrentShamsiDate & "') and (LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered & " or LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.FreeLined & ") and AHId=" & AnnouncementId & " and AHSGId=" & AnnouncementSGId & " and (dTimeElam<='" & LastAnnounceTime & "') and nCarNum>0"
+                                              Where (dDateElam='" & _DateTimeService.GetCurrentShamsiDate & "') and LoadStatus=" & R2CoreTransportationAndLoadNotificationLoadCapacitorLoadStatuses.Registered & " and AHId=" & AnnouncementId & " and AHSGId=" & AnnouncementSGId & " and (dTimeElam<'" & LastAnnounceTime & "') and nCarNum>0"
                         CmdSql.ExecuteNonQuery()
                         CmdSql.Connection.Close()
 

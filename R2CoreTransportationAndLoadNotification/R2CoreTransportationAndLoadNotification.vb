@@ -143,11 +143,13 @@ Namespace Rmto
                 Else
                     Throw New RMTOWebServiceSmartCardInvalidException
                 End If
+
                 If Result(0) = "-1" Then
                     Throw New RMTOWebServiceSmartCardInvalidException
+                ElseIf Result(0).Contains("limitation") Then
+                    Throw New RMTOWebServiceSmartCardLimitationException
                 End If
                 Return Result
-
             Catch ex As ConnectionIsNotAvailableException
                 Throw ex
             Catch ex As InternetIsnotAvailableException
@@ -172,6 +174,8 @@ Namespace Rmto
                 NSSTruckDriver.NSSDriver.StrPersonFullName = ComposeString(4).Split(":")(1) + ";" + ComposeString(5).Split(":")(1)
                 NSSTruckDriver.NSSDriver.strDrivingLicenceNo = ComposeString(9).Split(":")(1)
                 Return NSSTruckDriver
+            Catch ex As RMTOWebServiceSmartCardLimitationException
+                Throw ex
             Catch ex As ConnectionIsNotAvailableException
                 Throw ex
             Catch ex As InternetIsnotAvailableException
@@ -213,6 +217,7 @@ Namespace Rmto
                 Dim NSSTruck As New R2CoreTransportationAndLoadNotificationStandardTruckStructure
                 NSSTruck.NSSCar = New R2StandardCarStructure()
                 NSSTruck.SmartCardNo = YourSmartCardNo
+
                 NSSTruck.NSSCar.StrCarNo = ComposeString(5).Split(":")(1) + ComposeString(6).Split(":")(1) + ComposeString(7).Split(":")(1)
                 NSSTruck.NSSCar.StrCarSerialNo = ComposeString(3).Split(":")(1)
                 NSSTruck.NSSCar.nIdCity = R2CoreParkingSystemMClassCitys.GetnCityCodeFromStrCityName(ComposeString(4).Split(":")(1))
@@ -288,11 +293,20 @@ Namespace Rmto
         End Property
     End Class
 
-    Public Class RMTOSmartCardSiteIsNotAvailableException
+    'Public Class RMTOSmartCardSiteIsNotAvailableException
+    '    Inherits ApplicationException
+    '    Public Overrides ReadOnly Property Message As String
+    '        Get
+    '            Return "دریافت خطا از سمت وب سرویس سازمان"
+    '        End Get
+    '    End Property
+    'End Class
+
+    Public Class RMTOWebServiceSmartCardLimitationException
         Inherits ApplicationException
         Public Overrides ReadOnly Property Message As String
             Get
-                Return "دریافت خطا از سمت وب سرویس سازمان"
+                Return "سقف درخواست از وب سرویس کارت هوشمند به اتمام رسیده است"
             End Get
         End Property
     End Class

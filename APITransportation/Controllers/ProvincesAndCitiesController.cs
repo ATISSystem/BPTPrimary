@@ -120,7 +120,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var ProvinceId = Content.ProvinceId;
                 var ProvineActive = Content.ProvinceActive;
@@ -133,7 +133,7 @@ namespace APITransportation.Controllers
                 _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreParkingSystemLogTypes.ChangeActivateStatusOfProvince, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(ProvinceId) + ":" + ProvinceId, MessageDetail2 = nameof(ProvineActive) + ":" + ProvineActive, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
@@ -152,7 +152,7 @@ namespace APITransportation.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var CityId = Content.CityId;
                 var CityActive = Content.CityActive;
@@ -165,7 +165,7 @@ namespace APITransportation.Controllers
                 _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreParkingSystemLogTypes.ChangeActivateStatusOfCity, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(CityId) + ":" + CityId, MessageDetail2 = nameof(CityActive) + ":" + CityActive, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage (R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json"); return response;
             }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }

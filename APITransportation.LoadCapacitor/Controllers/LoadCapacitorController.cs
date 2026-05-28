@@ -5,6 +5,7 @@ using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
 using R2Core.DateTimeProvider;
 using R2Core.ExceptionManagement;
+using R2Core.LoggingManagement;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SecurityAlgorithmsManagement.AESAlgorithms;
 using R2Core.SessionManagement;
@@ -13,6 +14,7 @@ using R2CoreTransportationAndLoadNotification.LoadCapacitor.Exceptions;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad.Exceptions;
 using R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoadManipulation;
+using R2CoreTransportationAndLoadNotification.Logging;
 using R2CoreTransportationAndLoadNotification.RequesterManagement;
 using R2CoreTransportationAndLoadNotification.TransportTariffsParameters;
 using R2CoreTransportationAndLoadNotification.TransportTariffsParameters.Exceptions;
@@ -37,10 +39,15 @@ namespace APITransportation.LoadCapacitor.Controllers
 
         private APICommon.APICommon _APICommon = new APICommon.APICommon();
         private IDateTimeService _DateTimeService;
+        private ILogger _ILogger;
 
         public LoadCapacitorController()
         {
-            try { _DateTimeService = new R2DateTimeService(); }
+            try
+            {
+                _DateTimeService = new R2DateTimeService();
+                _ILogger = new R2CorenLogService();
+            }
             catch (FileNotExistException ex)
             { throw ex; }
             catch (Exception ex)
@@ -142,6 +149,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 if (LoadStatusId == 0) { LoadStatusId = Int64.MinValue; }
                 if (LoadSourceCityId == 0) { LoadSourceCityId = Int64.MinValue; }
                 if (LoadTargetCityId == 0) { LoadTargetCityId = Int64.MinValue; }
+                if (ShamsiDate == string.Empty || ShamsiDate is null) { ShamsiDate = _DateTimeService.GetCurrentShamsiDate(); }
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
@@ -190,6 +198,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 if (LoadStatusId == 0) { LoadStatusId = Int64.MinValue; }
                 if (LoadSourceCityId == 0) { LoadSourceCityId = Int64.MinValue; }
                 if (LoadTargetCityId == 0) { LoadTargetCityId = Int64.MinValue; }
+                if (ShamsiDate == string.Empty || ShamsiDate is null) { ShamsiDate = _DateTimeService.GetCurrentShamsiDate(); }
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
@@ -238,6 +247,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 if (LoadStatusId == 0) { LoadStatusId = Int64.MinValue; }
                 if (LoadSourceCityId == 0) { LoadSourceCityId = Int64.MinValue; }
                 if (LoadTargetCityId == 0) { LoadTargetCityId = Int64.MinValue; }
+                if (ShamsiDate == string.Empty || ShamsiDate is null) { ShamsiDate = _DateTimeService.GetCurrentShamsiDate(); }
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
@@ -303,7 +313,7 @@ namespace APITransportation.LoadCapacitor.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var Load = Content.Load;
@@ -314,7 +324,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 var newLoadId = InstanceLoadManipulation.LoadRegistering(Load, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -340,7 +350,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var Load = Content.Load;
 
@@ -350,7 +360,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 InstanceLoadManipulation.LoadEditing(Load, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -376,7 +386,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var LoadId = Content.LoadId;
 
@@ -386,7 +396,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 InstanceLoadManipulation.LoadDeleting(LoadId, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -412,7 +422,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var LoadId = Content.LoadId;
 
@@ -422,7 +432,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 InstanceLoadManipulation.LoadCancelling(LoadId, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -448,7 +458,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var LoadId = Content.LoadId;
 
@@ -458,7 +468,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 InstanceLoadManipulation.LoadFreeLining(LoadId, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)
@@ -484,7 +494,7 @@ namespace APITransportation.LoadCapacitor.Controllers
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var SessionId = Content.SessionId;
                 var LoadId = Content.LoadId;
 
@@ -494,7 +504,7 @@ namespace APITransportation.LoadCapacitor.Controllers
                 InstanceLoadManipulation.LoadSedimenting(LoadId, User);
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (RedisException ex)

@@ -4,9 +4,8 @@ Imports System.Drawing
 Imports System.Drawing.Printing
 Imports System.Reflection
 Imports Newtonsoft.Json
-Imports R2Core.BaseStandardClass
+
 Imports R2Core.ComputersManagement
-Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.EntityRelationManagement
@@ -1275,11 +1274,35 @@ Namespace Turns
             End Try
         End Function
 
-        Public Function GetTop5TruckTurns(YourSoftwareUserId As Int64) As String
+        Public Function GetTop5TruckTurns(YourSoftwareUserId As Int64, YourImmediately As Boolean) As String
             Try
                 Dim InstancePublicProcedures = New R2CorePublicProceduresManager
-                Dim Ds As DataSet
-                If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
+                Dim Ds As New DataSet
+                If YourImmediately Then
+                    Dim Da As New SqlClient.SqlDataAdapter
+                    Da.SelectCommand = New SqlCommand(
+                    "Select  (Select Count(*) from dbtransport.dbo.tbEnterExit as TurnsX
+                               Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT On SUBSTRING(TurnsX.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS=SeqT.SeqTKeyWord Collate Arabic_CI_AI_WS
+                             Where SeqT.Active=1 and SeqT.Deleted=0 and SeqT.SeqTKeyWord Collate Arabic_CI_AI_WS=SUBSTRING(DataBox.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS and TurnsX.nEnterExitId<DataBox.nEnterExitId and (TurnsX.TurnStatus=1 or TurnsX.TurnStatus=7 or TurnsX.TurnStatus=8 or TurnsX.TurnStatus=9 or TurnsX.TurnStatus=10)) as TurnDistanceToValidity,
+							 DataBox.nEnterExitId as TurnId,DataBox.strEnterDate as TurnIssueDate,DataBox.strEnterTime as TurnIssueTime,DataBox.strPersonFullName as TruckDriver,DataBox.OtaghdarTurnNumber as SequentialTurn,DataBox.TurnStatusTitle,DataBox.LPString
+                    from
+                      (Select Top 5 Turns.nEnterExitId,Turns.StrEnterDate,Turns.StrEnterTime,Turns.nDriverCode,Turns.bFlagDriver,Turns.nUserIdEnter,Turns.OtaghdarTurnNumber,Turns.StrCardNo,
+                                    Turns.TurnStatus,Cars.strCarNo +'-'+ Cars.strCarSerialNo as LPString,Persons.strPersonFullName,TurnStatuses.TurnStatusTitle,SoftwareUsers.UserName as Username,Turns.RegisteringTimeStamp
+                       from R2Primary.dbo.TblSoftwareUsers as SoftwareUsers
+	                     Inner Join R2Primary.dbo.TblEntityRelations as EntityRelations On SoftwareUsers.UserId=EntityRelations.E1
+                         Inner Join dbtransport.dbo.TbPerson as Persons On EntityRelations.E2=Persons.nIDPerson 
+                         Inner Join dbtransport.dbo.TbCarAndPerson as CarAndPersons On Persons.nIDPerson=CarAndPersons.nIDPerson
+                         Inner Join dbtransport.dbo.TbCar as Cars On CarAndPersons.nIDCar=Cars.nIDCar 
+                         Inner Join dbtransport.dbo.tbEnterExit as Turns On Cars.nIDCar=Turns.strCardno 
+                         Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTurnStatuses as TurnStatuses On Turns.TurnStatus=TurnStatuses.TurnStatusId 
+                       Where SoftwareUsers.UserId=" & YourSoftwareUserId & " and SoftwareUsers.UserActive=1 and SoftwareUsers.Deleted=0 and EntityRelations.ERTypeId=" & R2CoreParkingSystemEntityRelationTypes.SoftwareUser_Driver & " and EntityRelations.RelationActive=1 and Cars.ViewFlag=1 and CarAndPersons.snRelation=2 
+                             and ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000')) 
+	                   Order By CarAndPersons.nIDCarAndPerson Desc,Turns.nEnterExitId Desc) as DataBox
+                    Order By DataBox.nEnterExitId Desc for json path")
+                    Da.SelectCommand.Connection = R2PrimarySqlConnection.GetSubscriptionDBConnection
+                    If Da.Fill(Ds) <= 0 Then Throw New TurnNotFoundException
+                Else
+                    If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                    "Select  (Select Count(*) from dbtransport.dbo.tbEnterExit as TurnsX
                                Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblSequentialTurns as SeqT On SUBSTRING(TurnsX.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS=SeqT.SeqTKeyWord Collate Arabic_CI_AI_WS
                              Where SeqT.Active=1 and SeqT.Deleted=0 and SeqT.SeqTKeyWord Collate Arabic_CI_AI_WS=SUBSTRING(DataBox.OtaghdarTurnNumber,1,1) Collate Arabic_CI_AI_WS and TurnsX.nEnterExitId<DataBox.nEnterExitId and (TurnsX.TurnStatus=1 or TurnsX.TurnStatus=7 or TurnsX.TurnStatus=8 or TurnsX.TurnStatus=9 or TurnsX.TurnStatus=10)) as TurnDistanceToValidity,
@@ -1298,6 +1321,7 @@ Namespace Turns
                              and ((DATEDIFF(SECOND,CarAndPersons.RelationTimeStamp,getdate())<240) or (CarAndPersons.RelationTimeStamp='2015-01-01 00:00:00.000')) 
 	                   Order By CarAndPersons.nIDCarAndPerson Desc,Turns.nEnterExitId Desc) as DataBox
                     Order By DataBox.nEnterExitId Desc for json path", 300, Ds, New Boolean).GetRecordsCount() = 0 Then Throw New TurnNotFoundException
+                End If
                 Return InstancePublicProcedures.GetIntegratedJson(Ds)
             Catch ex As TurnNotFoundException
                 Throw ex
@@ -1817,6 +1841,7 @@ Namespace Turns
             Public Shared ReadOnly Property TurnResuscitation = 2
             Public Shared ReadOnly Property TurnCancellation = 3
             Public Shared ReadOnly Property LoadAllocation = 4
+            Public Shared ReadOnly Property LoadPermissionIssued = 5
 
 
         End Class

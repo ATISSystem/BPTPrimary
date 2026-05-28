@@ -441,6 +441,8 @@ Namespace DriverTrucksManagement
                     PayanehClassLibraryMClassDriverTrucksManagement.UpdateDriverTruck(NSS)
                 End If
                 Return New R2CoreTransportationAndLoadNotificationTruckDriver With {.DriverId = NSS.NSSDriver.nIdPerson, .NameFamily = NSS.NSSDriver.StrPersonFullName, .NationalCode = NSS.NSSDriver.StrNationalCode, .MobileNumber = NSS.NSSDriver.StrIdNo, .FatherName = NSS.NSSDriver.StrFatherName, .DrivingLicenseNo = NSS.NSSDriver.strDrivingLicenceNo, .Address = NSS.NSSDriver.StrAddress, .SmartCardNo = NSS.StrSmartCardNo}
+            Catch ex As RMTOWebServiceSmartCardLimitationException
+                Throw ex
             Catch ex As SqlInjectionException
                 Throw ex
             Catch ex As InternetIsnotAvailableException
@@ -450,8 +452,6 @@ Namespace DriverTrucksManagement
             Catch ex As ConnectionIsNotAvailableException
                 Throw ex
             Catch ex As SoftwareUserMobileNumberAlreadyExistException
-                Throw ex
-            Catch ex As RMTOSmartCardSiteIsNotAvailableException
                 Throw ex
             Catch ex As GetDataException
                 Throw ex
@@ -788,6 +788,8 @@ Namespace CarTrucksManagement
                     PayanehClassLibraryMClassCarTrucksManagement.UpdateTruck(NSSTruckRmto)
                     Return New R2CoreTransportationAndLoadNotificationTruck With {.TruckId = NSSTruckRmto.NSSCar.nIdCar, .SmartCardNo = YourSmartCardNo, .Pelak = NSSTruckRmto.NSSCar.StrCarNo, .Serial = NSSTruckRmto.NSSCar.StrCarSerialNo, .LoaderTypeId = NSSTruckRmto.NSSCar.snCarType}
                 End If
+            Catch ex As RMTOWebServiceSmartCardLimitationException
+                Throw ex
             Catch ex As SqlInjectionException
                 Throw ex
             Catch ex As DataBaseException
@@ -797,8 +799,6 @@ Namespace CarTrucksManagement
             Catch ex As ConnectionIsNotAvailableException
                 Throw ex
             Catch ex As InternetIsnotAvailableException
-                Throw ex
-            Catch ex As RMTOSmartCardSiteIsNotAvailableException
                 Throw ex
             Catch ex As GetNSSException
                 Throw ex

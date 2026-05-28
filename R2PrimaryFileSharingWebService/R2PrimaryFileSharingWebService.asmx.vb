@@ -5,7 +5,6 @@ Imports System.ComponentModel
 Imports System.Drawing
 Imports System.Reflection
 
-Imports R2Core.BaseStandardClass
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.ExceptionManagement
 Imports R2Core.RawGroups
@@ -14,6 +13,9 @@ Imports R2Core.SecurityAlgorithmsManagement.Exceptions
 Imports R2Core.SoftwareUserManagement
 Imports R2Core.SoftwareUserManagement.Exceptions
 Imports System.Xml
+Imports R2Core.DateTimeProvider
+Imports R2Core.SQLInjectionPrevention
+Imports R2Core.BaseClasses
 
 ' To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line.
 ' <System.Web.Script.Services.ScriptService()> _
@@ -23,7 +25,9 @@ Imports System.Xml
 Public Class R2PrimaryFileSharingWebService
     Inherits System.Web.Services.WebService
 
-    Private Shared _ExchangeKeyManager As New ExchangeKeyManager
+    Private Shared _DateTimeService As New R2DateTimeService
+    Private Shared _SoftwareUserService As New SoftwareUserService
+    Private Shared _ExchangeKeyManager As New ExchangeKeyManager(_DateTimeService, _SoftwareUserService)
 
 
     <WebMethod()>
@@ -43,7 +47,7 @@ Public Class R2PrimaryFileSharingWebService
     Public Sub WebMethodSaveFile(YourRawGroupId As Int64, YourFileName As String, YourFile As Byte(), YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            Dim RGFileHolder = New R2CoreRawGroupFileHolder(YourRawGroupId, New R2CoreFile(YourFileName), YourFile)
+            Dim RGFileHolder = New R2CoreRawGroupFileHolder(YourRawGroupId, New R2CoreFile(YourFileName), YourFile, _DateTimeService)
             RGFileHolder.SaveFile()
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw GetSoapExeption(ex)
@@ -58,7 +62,7 @@ Public Class R2PrimaryFileSharingWebService
     Public Function WebMethodGetFile(YourRawGroupId As Int64, YourFileName As String, YourExchangeKey As Int64) As Byte()
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            Dim RGFileHolder = New R2CoreRawGroupFileHolder(YourRawGroupId, New R2CoreFile(YourFileName))
+            Dim RGFileHolder = New R2CoreRawGroupFileHolder(YourRawGroupId, New R2CoreFile(YourFileName), _DateTimeService)
             Dim FileByteArray As Byte() = Nothing
             RGFileHolder.GetFile(FileByteArray)
             Return FileByteArray
@@ -75,7 +79,7 @@ Public Class R2PrimaryFileSharingWebService
     Public Function WebMethodIOFileExist(YourRawGroupId As Int64, YourFileName As String, YourExchangeKey As Int64) As Boolean
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            Dim RGFileHolder = New R2CoreRawGroupFileHolder(YourRawGroupId, New R2CoreFile(YourFileName))
+            Dim RGFileHolder = New R2CoreRawGroupFileHolder(YourRawGroupId, New R2CoreFile(YourFileName), _DateTimeService)
             Return RGFileHolder.ExistIOFile()
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw GetSoapExeption(ex)
@@ -90,7 +94,7 @@ Public Class R2PrimaryFileSharingWebService
     Public Sub WebMethodDeleteFile(YourRawGroupId As Int64, YourFileName As String, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            Dim RGFileHolder = New R2CoreRawGroupFileHolder(YourRawGroupId, New R2CoreFile(YourFileName))
+            Dim RGFileHolder = New R2CoreRawGroupFileHolder(YourRawGroupId, New R2CoreFile(YourFileName), _DateTimeService)
             RGFileHolder.DeleteFile()
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw GetSoapExeption(ex)
@@ -105,7 +109,7 @@ Public Class R2PrimaryFileSharingWebService
     Public Sub WebMethodDeleteFileButKeepDeleted(YourRawGroupId As Int64, YourFileName As String, YourExchangeKey As Int64)
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            Dim RGFileHolder = New R2CoreRawGroupFileHolder(YourRawGroupId, New R2CoreFile(YourFileName))
+            Dim RGFileHolder = New R2CoreRawGroupFileHolder(YourRawGroupId, New R2CoreFile(YourFileName), _DateTimeService)
             RGFileHolder.DeleteFileButKeepDeleted()
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw GetSoapExeption(ex)

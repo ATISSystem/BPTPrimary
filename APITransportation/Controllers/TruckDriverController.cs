@@ -2,7 +2,6 @@
 using APICommon.Models;
 using APITransportation.Models;
 using APITransportation.Models.TruckDriver;
-using APITransportation.PayanehWebService;
 using Newtonsoft.Json;
 using R2Core.DatabaseManagement;
 using R2Core.DateAndTimeManagement;
@@ -17,6 +16,7 @@ using R2Core.WebProcessesManagement;
 using R2CoreParkingSystem.Drivers;
 using R2CoreParkingSystem.SMS.SMSOwners;
 using R2CoreTransportationAndLoadNotification.Logging;
+using R2CoreTransportationAndLoadNotification.Rmto;
 using R2CoreTransportationAndLoadNotification.TruckDrivers;
 using R2CoreTransportationAndLoadNotification.TruckDrivers.Exceptions;
 using System;
@@ -57,26 +57,36 @@ namespace APITransportation.Controllers
 
         [HttpPost]
         [Route("api/GetTruckDriverfromRMTO")]
-        public HttpResponseMessage GetTruckDriverfromRMTO()
+        public HttpResponseMessage GetTruckDriverfromRMTO([FromBody] APITransportationSessionIdTruckDriverNationalCode Content)
         {
             try
             {
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationInstanceTruckDriversManager();
-                var Content = JsonConvert.DeserializeObject<APITransportationSessionIdTruckDriverNationalCode>(Request.Content.ReadAsStringAsync().Result);
                 var SessionId = Content.SessionId;
                 var TruckDriverNationalCode = Content.TruckDriverNationalCode;
 
                 var User = InstanceSession.ConfirmSession(SessionId);
 
-                PayanehWebService.PayanehWebService _WS = new PayanehWebService.PayanehWebService();
-                var TruckDriver = _WS.WebMethodGetTruckDriverByNationalCodefromRMTO(TruckDriverNationalCode, _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
+                try
+                {
+                    PayanehClassLibrary.PayanehWS.PayanehWebService _WS = new PayanehClassLibrary.PayanehWS.PayanehWebService();
+                    var TruckDriver = _WS.WebMethodGetTruckDriverByNationalCodefromRMTO(TruckDriverNationalCode, _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
 
-                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(TruckDriver), Encoding.UTF8, "application/json");
-                return response;
+                    HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                    response.Content = new StringContent(JsonConvert.SerializeObject(TruckDriver), Encoding.UTF8, "application/json");
+                    return response;
+
+                }
+                catch (RMTOWebServiceSmartCardLimitationException ex)
+                { throw ex; }
+                catch (Exception ex)
+                { throw new Exception("PayanehWS:" + ex.Message); }
+
             }
+            catch (RMTOWebServiceSmartCardLimitationException ex)
+            { return _APICommon.CreateErrorContentMessage(ex); }
             catch (DataBaseException ex)
             { return _APICommon.CreateErrorContentMessage(ex); }
             catch (AnyNotFoundException ex)
@@ -154,7 +164,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var InstanceSoftwareUsers = new R2CoreInstanseSoftwareUsersManager(_DateTimeService);
                 var InstanceTruckDrivers = new R2CoreTransportationAndLoadNotificationTruckDriversManager();
@@ -166,10 +176,10 @@ namespace APITransportation.Controllers
 
                 InstanceTruckDrivers.RegisteringTruckDriverMobileNumber(TruckDriverId, MobileNumber);
 
-                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TruckDriverRegisteringMobileNumber, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TruckDriverId) + ":" + TruckDriverId,  MessageDetail2= nameof(MobileNumber) + ":" + MobileNumber, UserId = User.UserId });
+                _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.TruckDriverRegisteringMobileNumber, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TruckDriverId) + ":" + TruckDriverId, MessageDetail2 = nameof(MobileNumber) + ":" + MobileNumber, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.RegisteringInformationSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -188,7 +198,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
                 var SessionId = Content.SessionId;
                 var TruckDriverId = Convert.ToInt64(Content.TruckDriverId);
@@ -202,7 +212,7 @@ namespace APITransportation.Controllers
                 _loggerService.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreTransportationAndLoadNotificationLogTypes.ActivateTruckDriverSMSOwner, Description = _Networking.GetClientIpAddress(HttpContext.Current), MessageDetail1 = nameof(TruckDriverId) + ":" + TruckDriverId, UserId = User.UserId });
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)
@@ -250,7 +260,7 @@ namespace APITransportation.Controllers
         {
             try
             {
-                var InstancePredefinedMessages = new R2CoreMClassPredefinedMessagesManager(_DateTimeService);
+                var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
                 var InstanceSession = new R2CoreSessionManager();
 
                 var SessionId = Content.SessionId;
@@ -263,7 +273,7 @@ namespace APITransportation.Controllers
                 InstanseSoftwareUsers.SendWebSiteLink(InstanceTruckDrivers.GetSoftwareUserfromTruckDriverId(TruckDriverId));
 
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetNSS(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
+                response.Content = new StringContent(JsonConvert.SerializeObject(InstancePredefinedMessages.GetPredefinedMessage(R2CorePredefinedMessages.ProcessSuccessed).MsgContent), Encoding.UTF8, "application/json");
                 return response;
             }
             catch (DataBaseException ex)

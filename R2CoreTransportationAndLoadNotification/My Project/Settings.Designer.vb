@@ -15,7 +15,7 @@ Option Explicit On
 Namespace My
     
     <Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute(),  _
-     Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.3.0.0"),  _
+     Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.13.0.0"),  _
      Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>  _
     Partial Friend NotInheritable Class MySettings
         Inherits Global.System.Configuration.ApplicationSettingsBase
@@ -57,7 +57,7 @@ Namespace My
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("http://smartcard.rmto.ir:9090/orawsv/TR_PUBLIC_WS/PKG_RMTO_WS")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("http://172.30.5.151:9090/orawsv/TR_PUBLIC_WS/PKG_RMTO_WS")>  _
         Public ReadOnly Property R2CoreTransportationAndLoadNotification_RmtoWS_PKG_RMTO_WSService() As String
             Get
                 Return CType(Me("R2CoreTransportationAndLoadNotification_RmtoWS_PKG_RMTO_WSService"),String)

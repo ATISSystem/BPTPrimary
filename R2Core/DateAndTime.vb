@@ -1627,7 +1627,8 @@ Namespace DateAndTimeManagement
 
         Public Function GetMilladiDateTimeFromShamsiDate(ByVal YourShamsiDate As String, YourTime As String) As Date
             Try
-                Return PC.ToDateTime(Mid(YourShamsiDate, 1, 4), Mid(YourShamsiDate, 6, 2), Mid(YourShamsiDate, 9, 2), Mid(YourTime, 1, 2), Mid(YourTime, 4, 2), Mid(YourTime, 7, 2), 0).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
+                'Return PC.ToDateTime(Mid(YourShamsiDate, 1, 4), Mid(YourShamsiDate, 6, 2), Mid(YourShamsiDate, 9, 2), Mid(YourTime, 1, 2), Mid(YourTime, 4, 2), Mid(YourTime, 7, 2), 0).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
+                Return PC.ToDateTime(Mid(YourShamsiDate, 1, 4), Mid(YourShamsiDate, 6, 2), Mid(YourShamsiDate, 9, 2), Mid(YourTime, 1, 2), Mid(YourTime, 4, 2), Mid(YourTime, 7, 2), 0)
             Catch ex As Exception
                 Throw New Exception(MethodBase.GetCurrentMethod().ReflectedType.FullName + "." + MethodBase.GetCurrentMethod().Name + ex.Message)
             End Try

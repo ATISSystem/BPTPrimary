@@ -3,14 +3,16 @@ Imports System.Reflection
 Imports System.Web.Services
 Imports System.Web.Services.Protocols
 Imports System.Xml
+
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
 Imports R2Core.ExceptionManagement
-Imports R2Core.HumanResourcesManagement.Personnel
-Imports R2Core.MoneyWallet.PaymentRequests
+Imports R2Core.PaymentRequests
 Imports R2Core.SecurityAlgorithmsManagement
 Imports R2Core.SecurityAlgorithmsManagement.Exceptions
+Imports R2Core.SoftwareUserManagement
 Imports R2Core.SoftwareUserManagement.Exceptions
+Imports R2Core.SQLInjectionPrevention
 Imports R2CoreLPR.LicensePlateManagement
 Imports R2CoreParkingSystem.Cars
 Imports R2CoreParkingSystem.EnterExitManagement
@@ -27,8 +29,10 @@ Imports R2CoreTransportationAndLoadNotification.ReportManagement
 Public Class R2PrimaryWebService
     Inherits System.Web.Services.WebService
 
-    Private Shared _DateTimeService = New R2DateTimeService
-    Private Shared _ExchangeKeyManager As New ExchangeKeyManager
+    Private Shared _DateTimeService As New R2DateTimeService
+    Private Shared _SoftwareUserService As New SoftwareUserService
+    Private Shared _ExchangeKeyManager As New ExchangeKeyManager(_DateTimeService, _SoftwareUserService)
+
 
     <WebMethod()>
     Public Function WebMethodLogin(YourUserShenaseh As String, YourUserPassword As String) As Int64
@@ -297,7 +301,7 @@ Public Class R2PrimaryWebService
     Public Function WebMethodPaymentRequest(YourMCSSId As Int64, YourAmount As Int64, YourSoftwareUserId As Int64, YourExchangeKey As Int64) As Int64
         Try
             _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
-            Dim InstancePaymentRequests = New R2Core.MoneyWallet.PaymentRequests.R2CoreInstansePaymentRequestsManager(_DateTimeService)
+            Dim InstancePaymentRequests = New R2CoreInstansePaymentRequestsManager(_DateTimeService)
             Dim PayId = InstancePaymentRequests.PaymentRequest(YourMCSSId, YourAmount, YourSoftwareUserId)
             Return PayId
         Catch ex As ExchangeKeyTimeRangePassedException

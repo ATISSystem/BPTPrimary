@@ -3,7 +3,6 @@
 Imports System.Data.SqlClient
 Imports System.Reflection
 
-Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider

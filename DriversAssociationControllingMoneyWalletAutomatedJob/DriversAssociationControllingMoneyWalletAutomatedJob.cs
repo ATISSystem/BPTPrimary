@@ -1,11 +1,12 @@
-﻿using PayanehClassLibrary.ConfigurationManagement;
+﻿
+using PayanehClassLibrary.ConfigurationManagement;
 using PayanehClassLibrary.DriversAssociationControllingMoneyWalletAutomatedJobService;
 using PayanehClassLibrary.GeneralConfiguration;
 using PayanehClassLibrary.TruckersAssociationControllingMoneyWalletAutomatedJobService;
-using R2Core.ConfigurationManagement;
 using R2Core.DateTimeProvider;
 using R2Core.GeneralConfiguration;
 using R2Core.SoftwareUserManagement;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

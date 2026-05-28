@@ -60,6 +60,7 @@ Imports System.Net
 Imports R2Core.GeneralConfiguration
 Imports R2CoreTransportationAndLoadNotification.GeneralConfiguration
 Imports R2CoreTransportationAndLoadNotification.ConfigurationOfLoadAnnouncement
+Imports R2Core.LoggingManagement
 
 
 Namespace LoadCapacitor
@@ -1811,10 +1812,12 @@ Namespace LoadCapacitor
 
             Private InstanceSqlDataBOX As R2CoreSqlDataBOXManager
             Private _DateTimeService As IDateTimeService
+            Private _ILogger As ILogger
             Private _RCH As RedisConnectorHelper
 
             Public Sub New(YourR2DateTimeService As IDateTimeService)
                 _DateTimeService = YourR2DateTimeService
+                _ILogger = New R2CorenLogService
                 InstanceSqlDataBOX = New R2CoreSqlDataBOXManager(_DateTimeService)
                 _RCH = New RedisConnectorHelper
             End Sub
@@ -2023,13 +2026,12 @@ Namespace LoadCapacitor
                     Dim InstanceSQLInjectionPrevention = New R2CoreSQLInjectionPreventionManager(_DateTimeService)
                     InstanceSQLInjectionPrevention.GeneralAuthorization(YourShamsiDate)
 
-                    If YourShamsiDate = String.Empty Then YourShamsiDate = _DateTimeService.GetCurrentShamsiDate
-
                     Dim InstancePublicProcedures = New R2CorePublicProceduresManager
                     Dim DSLoads As DataSet = Nothing
                     'کامپوزیت ساب کووری
                     Dim SubQuery As String = String.Empty
-                    If YourAnnouncementGroupId <> Int64.MinValue Then SubQuery += " and Loads.AHSGId=" & YourAnnouncementGroupId & ""
+                    If YourAnnouncementGroupId <> Int64.MinValue Then SubQuery += " and Loads.AHId=" & YourAnnouncementGroupId & ""
+                    If YourAnnouncementSubGroupId <> Int64.MinValue Then SubQuery += " and Loads.AHSGId=" & YourAnnouncementSubGroupId & ""
                     If YourInventory = Boolean.FalseString Then SubQuery += " and Loads.nCarNumKol>0"
                     If YourShamsiDate = String.Empty Then
                         SubQuery += " and Loads.dDateElam=R2Primary.dbo.BPTCOGregorianToPersian(GETDATE())"
@@ -2069,6 +2071,7 @@ Namespace LoadCapacitor
                          Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblProvinces as Provinces On MyLoads.ProvinceId=Provinces.ProvinceId  
                          Order By ProvinceName,MyLoads.TargetCityTitle 
                          for JSON Auto"
+
                     If InstanceSqlDataBOX.GetDataBOX(R2PrimarySqlConnection.GetSubscriptionDBConnection,
                            SqlQuery, 0, DSLoads, New Boolean).GetRecordsCount = 0 Then Throw New AnyNotFoundException
                     Return InstancePublicProcedures.GetIntegratedJson(DSLoads)
@@ -2092,6 +2095,7 @@ Namespace LoadCapacitor
                     Dim SubQuery As String = String.Empty
                     If YourTransportCompanyId <> Int64.MinValue Then SubQuery += " and Loads.nCompCode=" & YourTransportCompanyId & ""
                     If YourAnnouncementGroupId <> Int64.MinValue Then SubQuery += " and Loads.AHSGId=" & YourAnnouncementGroupId & ""
+                    If YourAnnouncementSubGroupId <> Int64.MinValue Then SubQuery += " and Loads.AHSGId=" & YourAnnouncementSubGroupId & ""
                     If YourInventory = Boolean.FalseString Then SubQuery += " and Loads.nCarNumKol>0"
                     If YourShamsiDate = String.Empty Then
                         SubQuery += " and Loads.dDateElam=R2Primary.dbo.BPTCOGregorianToPersian(GETDATE())"
@@ -2147,6 +2151,7 @@ Namespace LoadCapacitor
                     Dim DSLoads As DataSet = Nothing
                     'کامپوزیت ساب کووری
                     Dim SubQuery As String = String.Empty
+                    If YourAnnouncementGroupId <> Int64.MinValue Then SubQuery += " and Loads.AHId=" & YourAnnouncementGroupId & ""
                     If YourAnnouncementSubGroupId <> Int64.MinValue Then SubQuery += " and Loads.AHSGId=" & YourAnnouncementSubGroupId & ""
                     If YourTransportCompanyId <> Int64.MinValue Then SubQuery += " and Loads.nCompCode=" & YourTransportCompanyId & ""
                     If YourInventory = Boolean.FalseString Then SubQuery += " and Loads.nCarNumKol>0"
@@ -2334,10 +2339,11 @@ Namespace LoadCapacitor
             Public Sub LoadTotalValidate(YourLoad As R2CoreTransportationAndLoadNotificationLoad)
                 Try
                     Dim InstanceConfigurationOfLoadAnnouncement = New R2CoreTransportationAndLoadNotificationConfigurationOfLoadAnnouncementManager(_DateTimeService)
-                    'بررسی تناژ بار
+                    'بررسی تعداد بار
                     Dim IsActive As Boolean = InstanceConfigurationOfLoadAnnouncement.GetBooleanConfiguration(R2CoreTransportationAndLoadNotificationConfigurationOfLoadAnnouncements.LoadCapacitor, 0, YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId)
-                    Dim LoadTotalMaximum As Double = InstanceConfigurationOfLoadAnnouncement.GetBooleanConfiguration(R2CoreTransportationAndLoadNotificationConfigurationOfLoadAnnouncements.LoadCapacitor, 2, YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId)
+                    Dim LoadTotalMaximum As Double = InstanceConfigurationOfLoadAnnouncement.GetInt64Configuration(R2CoreTransportationAndLoadNotificationConfigurationOfLoadAnnouncements.LoadCapacitor, 2, YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId)
                     If IsActive And YourLoad.TotalNumber > LoadTotalMaximum Then Throw New LoadTotalInvalidException
+                    If YourLoad.TotalNumber < 1 Then Throw New LoadTotalInvalidException
                 Catch ex As LoadTotalInvalidException
                     Throw ex
                 Catch ex As Exception
@@ -3589,6 +3595,7 @@ Namespace LoadCapacitor
                     Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService)
                     Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
                     Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTimeService)
+                    Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationAnnouncementTimingManager(_DateTimeService)
 
                     'کنترل فعال بودن مبدا بارگیری و محل تخلیه
                     If InstanceLoadingAndDischargingPlaces.IsActiveLoadingPlace(YourLoad.LoadingPlaceId) = False Then Throw New LoadingPlaceIsUnActiveException
@@ -3643,14 +3650,11 @@ Namespace LoadCapacitor
                     Else
                         'اعلام بار برای امروز و برای زیرگروه مورد نظر فعال است ولی آیا در تاریخ امروز  و برای زیرگروه مورد نظراعلام بار تعطیل نیست
                         If InstanceSpecializedPersianCalendar.IsActiveTodayLoadAnnounce Then Throw New LoadRegisteringforShamsiDateNotAllowedException(_DateTimeService.GetCurrentShamsiDate)
-
-                        Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationAnnouncementTimingManager(_DateTimeService)
-                        Dim Timing = InstanceAnnouncementTiming.GetTiming(YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId, _DateTimeService.GetCurrentTime)
                         If _DateTimeService.GetCurrentTime() > InstanceAnnouncements.GetAnnouncementLeastAnnounceTime(YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId).Time Then
                             Throw New LoadRegisterTimePassedException
                         End If
-                        If Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadAllocationRegistering Or
-                           Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
+                        If InstanceAnnouncementTiming.IsTiming(YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId, _DateTimeService.GetCurrentTime, R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadAllocationRegistering) Or
+                           InstanceAnnouncementTiming.IsTiming(YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId, _DateTimeService.GetCurrentTime, R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering) Then
                             Throw New LoadRegisterTimePassedException
                         End If
                     End If
@@ -3843,6 +3847,7 @@ Namespace LoadCapacitor
                     Dim InstanceTransportTariffsParameters = New R2CoreTransportationAndLoadNotificationTransportTariffsParametersManager(_DateTimeService)
                     Dim Hasher = New R2Core.SecurityAlgorithmsManagement.Hashing.SHAHasher
                     Dim InstanceTurnCancellation As New R2CoreTransportationAndLoadNotificationTurnCancellationManager(_DateTimeService)
+                    Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationAnnouncementTimingManager(_DateTimeService)
 
                     Dim LastLoad = InstanceLoad.GetLoadSimpleModel(YourLoad.LoadId, True)
 
@@ -3866,7 +3871,6 @@ Namespace LoadCapacitor
                     Else
                         InstanceLoad.LoadTonajValidate(YourLoad)
                     End If
-
 
                     'کنترل تعداد بار 
                     InstanceLoad.LoadTotalValidate(YourLoad)
@@ -3903,18 +3907,16 @@ Namespace LoadCapacitor
                     Else
                         'اعلام بار برای امروز و برای زیرگروه مورد نظر فعال است ولی آیا در تاریخ امروز  و برای زیرگروه مورد نظراعلام بار تعطیل نیست
                         If InstanceSpecializedPersianCalendar.IsActiveTodayLoadAnnounce Then Throw New LoadRegisteringforShamsiDateNotAllowedException(_DateTimeService.GetCurrentShamsiDate)
-
-                        Dim InstanceAnnouncementTiming = New R2CoreTransportationAndLoadNotificationAnnouncementTimingManager(_DateTimeService)
-                        Dim Timing = InstanceAnnouncementTiming.GetTiming(YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId, _DateTimeService.GetCurrentTime)
-                        If _DateTimeService.GetCurrentTime() > InstanceAnnouncements.GetAnnouncementLeastAnnounceTime(YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId).Time Then
-                            If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanEditLoadCapacitorLoadAfterLoadAnnounce, YourSoftwareUser.UserId, 0) Then
-                            Else
+                        If InstancePermissions.ExistPermission(R2CoreTransportationAndLoadNotificationPermissionTypes.UserCanEditLoadCapacitorLoadAfterLoadAnnounce, YourSoftwareUser.UserId, 0) Then
+                        Else
+                            If _DateTimeService.GetCurrentTime() >= InstanceAnnouncements.GetAnnouncementLeastAnnounceTime(YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId).Time Then
                                 Throw New LoadRegisterTimePassedException
+                            Else
+                                If InstanceAnnouncementTiming.IsTiming(YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId, _DateTimeService.GetCurrentTime, R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadAllocationRegistering) Or
+                                   InstanceAnnouncementTiming.IsTiming(YourLoad.AnnouncementGroupId, YourLoad.AnnouncementSubGroupId, _DateTimeService.GetCurrentTime, R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering) Then
+                                    Throw New LoadRegisterTimePassedException
+                                End If
                             End If
-                        End If
-                        If Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.StartLoadAllocationRegistering Or
-                           Timing = R2CoreTransportationAndLoadNotificationVirtualAnnouncementTiming.InLoadAllocationRegistering Then
-                            Throw New LoadRegisterTimePassedException
                         End If
                     End If
 
@@ -3925,7 +3927,8 @@ Namespace LoadCapacitor
                         Tariff = InstanceTransportTariffs.GetTransportTariff(YourLoad.SourceCityId, YourLoad.TargetCityId, loaderTypeId, YourLoad.GoodId)
                         Tariff = InstanceTransportTariffs.GetUltimateTransportTariff(YourLoad.AnnouncementSubGroupId, YourLoad.Tonaj, Tariff)
                         Tariff = Tariff + InstanceTransportTariffsParameters.GetTotalofTransportTariffsParameters(YourLoad)
-                    Catch exx As TransportPriceTariffNotFoundException
+                    Catch ex As Exception
+                        Throw ex
                     End Try
 
                     'کنترل وضعیت بار
@@ -3933,6 +3936,14 @@ Namespace LoadCapacitor
 
                     'کنترل تاریخ بار
                     If LastLoad.AnnounceDate <> _DateTimeService.GetCurrentShamsiDate Then Throw New LoadRegisterTimePassedException
+
+                    'تنظیم مقدار باقیمانده بار
+                    Dim ReminderTotal As Int64 = 0
+                    If LastLoad.TotalNumber = YourLoad.TotalNumber Then
+                        ReminderTotal = InstanceLoad.GetLoadReminder(LastLoad.LoadId, True)
+                    Else
+                        ReminderTotal = YourLoad.TotalNumber
+                    End If
 
                     'ثبت بار
                     Dim P As SqlClient.SqlParameter
@@ -3951,6 +3962,8 @@ Namespace LoadCapacitor
                     P = New SqlClient.SqlParameter("@nUserId", SqlDbType.BigInt) : P.Value = YourSoftwareUser.UserId
                     CmdSql.Parameters.Add(P)
                     P = New SqlClient.SqlParameter("@nCarNumKol", SqlDbType.Int) : P.Value = YourLoad.TotalNumber
+                    CmdSql.Parameters.Add(P)
+                    P = New SqlClient.SqlParameter("@nCarNum", SqlDbType.Int) : P.Value = ReminderTotal
                     CmdSql.Parameters.Add(P)
                     P = New SqlClient.SqlParameter("@StrPriceSug", SqlDbType.VarChar) : P.Value = Tariff
                     CmdSql.Parameters.Add(P)
@@ -3994,6 +4007,9 @@ Namespace LoadCapacitor
                 Catch ex As SqlException
                     If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                     Throw R2CoreDatabaseManager.GetEquivalenceMessage(ex)
+                Catch ex As LoadHandlingNotAllowedBecuaseLoadStatusException
+                    If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
+                    Throw ex
                 Catch ex As LoadNotFoundException
                     If CmdSql.Connection.State <> ConnectionState.Closed Then CmdSql.Connection.Close()
                     Throw ex
@@ -4716,7 +4732,7 @@ Namespace LoadCapacitor
                     YourTransaction.ExecuteNonQuery()
 
                     'ثبت اکانت
-                    'InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(YourNSSLoadCapacitorLoad.nEstelamId, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Releasing, 1, Nothing, Nothing, Nothing, YourUserNSS.UserId))
+                    InstanceLoadCapacitorAccounting.InsertAccounting(New R2CoreTransportationAndLoadNotificationStandardLoadCapacitorAccountingStructure(YourNSSLoadCapacitorLoad.nEstelamId, R2CoreTransportationAndLoadNotificationLoadCapacitorAccountingTypes.Releasing, 1, Nothing, Nothing, Nothing, YourUserNSS.UserId))
                 Catch ex As LoadCapacitorLoadReleaseNotAllowedBecuasenCarNumException
                     Throw ex
                 Catch ex As LoadCapacitorLoadHandlingNotAllowedBecuaseLoadStatusException
@@ -4921,8 +4937,9 @@ Namespace LoadCapacitor
             Public Sub ChangingStatusOfTommorowLoads(YourSoftwareUserId As Int64)
                 Try
                     Dim InstanceGeneralConfiguration = New R2CoreGeneralConfigurationManager(_DateTimeService)
-
                     Dim TimeOfDay = _DateTimeService.GetCurrentTickofTime
+                    If TimeOfDay > 0 And TimeOfDay < 1 Then Return
+
                     Dim StartTime = TimeSpan.Parse(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.TommorowLoads, 0)).Ticks
                     Dim EndTime = TimeSpan.Parse(InstanceGeneralConfiguration.GetStringConfiguration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.TommorowLoads, 1)).Ticks
                     If Not (TimeOfDay >= StartTime And TimeOfDay <= EndTime) Then

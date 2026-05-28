@@ -720,8 +720,8 @@ Namespace MoneyWalletChargeManagement
                 If Amount > MaxChargeAmount Then Throw New ChargingAmountInvalidException
 
                 Dim WS = New R2Core.R2PrimaryWS.R2PrimaryWebService()
-                'Dim PayId = WS.WebMethodPaymentRequest(R2CoreMonetaryCreditSupplySources.AqayepardakhtPaymentGate, Amount, YourUserId, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword))
-                Dim PayId = WS.WebMethodPaymentRequest(R2CoreMonetaryCreditSupplySources.ZarrinPalPaymentGate, YourAmount, YourUserId, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword))
+                Dim PayId = WS.WebMethodPaymentRequest(R2CoreMonetaryCreditSupplySources.AqayepardakhtPaymentGate, Amount, YourUserId, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword))
+                'Dim PayId = WS.WebMethodPaymentRequest(R2CoreMonetaryCreditSupplySources.ZarrinPalPaymentGate, YourAmount, YourUserId, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword))
                 'Dim PayId = WS.WebMethodPaymentRequest(R2CoreMonetaryCreditSupplySources.ShepaPaymentGate, YourAmount, YourUserId, WS.WebMethodLogin(R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserShenaseh, R2CoreMClassSoftwareUsersManagement.GetNSSSystemUser().UserPassword))
                 Dim InstancePaymentRequests = New R2CoreInstansePaymentRequestsManager(_DateTimeService)
                 Dim NSSPaymentRequest = InstancePaymentRequests.GetNSSPayment(PayId)
@@ -729,8 +729,8 @@ Namespace MoneyWalletChargeManagement
                     System.Threading.Thread.Sleep(500) : NSSPaymentRequest = InstancePaymentRequests.GetNSSPayment(PayId)
                 End While
                 If NSSPaymentRequest.Authority <> String.Empty Then
-                    'Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceConfiguration.GetConfigString(R2CoreConfigurations.AqayepardakhtPaymentGate, 2)})
-                    Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ZarrinPalPaymentGate, 2)})
+                    Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.AqayepardakhtPaymentGate, 2)})
+                    'Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceGeneralConfiguration.GetStringConfiguration(R2CoreGeneralConfigurations.ZarrinPalPaymentGate, 2)})
                     'Return JsonConvert.SerializeObject(New With {.Authority = NSSPaymentRequest.Authority, .PaymentURI = InstanceConfiguration.GetConfigString(R2CoreConfigurations.ShepaPaymentGate, 2)})
                 Else
                     Throw New PaymentWebServiceConnectingException(NSSPaymentRequest.PaymentErrors)

@@ -14,6 +14,7 @@ Imports R2CoreParkingSystem.EnterExitManagement
 Imports R2CoreParkingSystem.MoneyWalletManagement.Exceptions
 Imports R2CoreParkingSystem.TrafficCardsManagement.ExceptionManagement
 Imports R2CoreTransportationAndLoadNotification.LoadAllocation
+Imports R2CoreTransportationAndLoadNotification.LoadAllocation.Exceptions
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.Exceptions
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad
 Imports R2CoreTransportationAndLoadNotification.LoadCapacitor.LoadCapacitorLoad.Exceptions
@@ -74,6 +75,8 @@ Namespace LoadAllocations
             Catch ex As MoneyWalletNotExistException
                 Throw ex
             Catch ex As TurnCostNotFoundException
+                Throw ex
+            Catch ex As LoadAllocationConditionsNotEstablishedException
                 Throw ex
             Catch ex As Exception When TypeOf ex Is RequesterNotAllowTurnIssueBySeqTException _
                                 OrElse TypeOf ex Is RequesterNotAllowTurnIssueByLastLoadPermissionedException _

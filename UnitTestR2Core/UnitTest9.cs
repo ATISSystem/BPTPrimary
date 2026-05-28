@@ -40,6 +40,12 @@ using R2Core.Devices;
 using R2Core.PredefinedMessagesManagement;
 using R2Core.SMS.SMSHandling.Exceptions;
 using R2Core.BaseClasses;
+using R2Core.SQLInjectionPrevention;
+using R2Core.LoggingManagement;
+using System.Security.Claims;
+using R2CoreTransportationAndLoadNotification.LoadAllocation;
+using R2CoreTransportationAndLoadNotification.LoadSedimentation;
+
 
 namespace UnitTestR2Core
 {
@@ -47,12 +53,17 @@ namespace UnitTestR2Core
     public class UnitTest9
     {
         IDateTimeService _DateTimeService;
+        ILogger _ILogger;
+        ISoftwareUserService _SoftwareUserService;
+
         R2CoreSqlDataBOXManager _InstanceSqlDataBOX;
 
         [TestMethod]
         public void TestMethod1()
         {
             _DateTimeService = new R2DateTimeService();
+            _ILogger = new R2Core.LoggingManagement.R2CorenLogService();
+            _SoftwareUserService = new R2Core.SoftwareUserManagement.SoftwareUserService();
             _InstanceSqlDataBOX = new R2CoreSqlDataBOXManager(_DateTimeService);
             PayanehWebService.PayanehWebService _WSp = new PayanehWebService.PayanehWebService();
             var _WS = new R2Core.R2PrimaryFileSharingWebService.R2PrimaryFileSharingWebService();
@@ -65,18 +76,44 @@ namespace UnitTestR2Core
             var InstanceTestAPIs = new TestAPIs();
             var InstanceDevice = new R2CoreDeviceManager(_DateTimeService);
             var InstancePredefinedMessages = new R2CorePredefinedMessagesManager(_DateTimeService);
-            var InsatnceRawGroups = new R2CoreRawGroupsManager (_DateTimeService);
+            var InsatnceRawGroups = new R2CoreRawGroupsManager(_DateTimeService);
             var InstancePermissions = new R2CorePermissionsManager(_DateTimeService);
             var InstancePaymentRequests = new R2Core.PaymentRequests.R2CoreInstansePaymentRequestsManager(_DateTimeService);
             var InstanceSession = new R2Core.SessionManagement.R2CoreSessionManager();
+            var InstanceSQLInjectionPrevention = new R2CoreSQLInjectionPreventionManager(_DateTimeService);
+
             try
             {
+                var rosobbar = new R2CoreTransportationAndLoadNotificationLoadSedimentationManager(_DateTimeService);
+                rosobbar.SedimentingProcess(_SoftwareUserService.SystemUserId);
+
+
+
+                PayanehClassLibrary.DriverTrucksManagement.PayanehClassLibraryMClassDriverTrucksManagement.GetDriverTruckfromRMTOAndInsertUpdateLocalDataBaseByNationalCode("2571062042");
+                PayanehClassLibraryMClassCarTrucksManagement.GetNSSTruckBySmartCardNoWithUpdatingfromRMTO("4178164");
+
+                var InstanceLoadAllocation = new R2CoreTransportationAndLoadNotificationLoadAllocationManager(_DateTimeService);
+                InstanceLoadAllocation.GetLoadAllocationsforLoadPermissionRegistering();
+                InstanceLoadAllocation.LoadAllocationsLoadPermissionRegistering(instanceSoftwareUsers.GetSystemUser());
+
+
+                return;
+
+
+                var x5cvb = R2CoreTransportationAndLoadNotification.Rmto.RmtoWebService.GetNSSTruck("4178165");
+
+                var X = _DateTimeService.GetTickofTime(System.Convert.ToDateTime("2026-05-07 00:05:00"));
+
+
+                _ILogger.RegisterInfLog(new R2CoreRawLog { LogTypeId = R2CoreLogTypes.CarouselEditing, MessageDetail1 = "123" });
+
+
+                InstanceSQLInjectionPrevention.GeneralAuthorization("er");
 
                 InstanceSession.StartSession();
 
                 //R2CoreTransportationAndLoadNotification.Rmto.RmtoWebService.GetNSSTruckDriver("123");
 
-                R2CoreTransportationAndLoadNotification.Rmto.RmtoWebService.GetNSSTruck("4178165");
 
                 //PayanehClassLibraryMClassDriverTrucksManagement.GetDriverTruckfromRMTOAndInsertUpdateLocalDataBaseByNationalCode("4172014607");
                 //var Truck = _WS.WebMethodGetTruckBySmartCarNofromRMTO("2548574", _WS.WebMethodLogin(InstanceSoftwareUsers.GetNSSSystemUser().UserShenaseh, InstanceSoftwareUsers.GetNSSSystemUser().UserPassword));
@@ -92,9 +129,9 @@ namespace UnitTestR2Core
                 //var WantedSoftwareUser = InstanceSoftwareUsers.GetNSSUserUnChangeable(new R2CoreSoftwareUserMobile("09132043148"));
                 try
                 {
-                    var xop = InstanceTestAPIs.TestGetAllDevices(true );
+                    var xop = InstanceTestAPIs.TestGetAllDevices(true);
                 }
-                catch (AggregateException  ex)
+                catch (AggregateException ex)
                 {
                     ;
                 }
@@ -214,7 +251,7 @@ namespace UnitTestR2Core
             var y = xcvb.GetTrafficRecords(90, true);
 
 
-            var InstanceSession = new R2Core.SessionManagement.R2CoreSessionManager();
+            //var InstanceSession = new R2Core.SessionManagement.R2CoreSessionManager();
             var SessionStartBox = InstanceSession.StartSession();
 
             var InstanceSqlDataBOX = new R2CoreSqlDataBOXManager(_DateTimeService);

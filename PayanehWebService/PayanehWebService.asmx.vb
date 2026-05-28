@@ -23,6 +23,8 @@ Imports R2CoreTransportationAndLoadNotification.Trucks
 Imports System.ServiceModel
 Imports System.Net
 Imports R2Core.SQLInjectionPrevention
+Imports R2Core.DateTimeProvider
+Imports R2Core.SoftwareUserManagement
 
 
 ' To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line.
@@ -33,7 +35,9 @@ Imports R2Core.SQLInjectionPrevention
 Public Class PayanehWebService
     Inherits System.Web.Services.WebService
 
-    Private Shared _ExchangeKeyManager As New ExchangeKeyManager
+    Private Shared _DateTimeService As New R2DateTimeService
+    Private Shared _SoftwareUserService As New SoftwareUserService
+    Private Shared _ExchangeKeyManager As New ExchangeKeyManager(_DateTimeService, _SoftwareUserService)
 
     <WebMethod()>
     Public Function WebMethodLogin(YourUserShenaseh As String, YourUserPassword As String) As Int64
@@ -349,8 +353,10 @@ Public Class PayanehWebService
     <WebMethod()>
     Public Function WebMethodGetTruckDriverByNationalCodefromRMTO(YourNationalCode As String, YourExchangeKey As Int64) As R2CoreTransportationAndLoadNotificationTruckDriver
         Try
-            Dim NSS = _ExchangeKeyManager.GetNSSUser(YourExchangeKey)
+            _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
             Return PayanehClassLibraryMClassDriverTrucksManagement.GetDriverTruckfromRMTOAndInsertUpdateLocalDataBaseByNationalCode(YourNationalCode)
+        Catch ex As RMTOWebServiceSmartCardLimitationException
+            Throw GetSoapExeption(ex)
         Catch ex As SoftwareUserMobileNumberAlreadyExistException
             Throw GetSoapExeption(ex)
         Catch ex As ExchangeKeyTimeRangePassedException
@@ -359,10 +365,8 @@ Public Class PayanehWebService
             Throw GetSoapExeption(ex)
         Catch ex As GetNSSException
             Throw GetSoapExeption(ex)
-        Catch ex As RMTOSmartCardSiteIsNotAvailableException
-            Throw GetSoapExeption(ex)
         Catch ex As WebException
-            Throw GetSoapExeption(New RMTOSmartCardSiteIsNotAvailableException)
+            Throw GetSoapExeption(ex)
         Catch ex As Exception
             Throw GetSoapExeption(ex)
         End Try
@@ -371,9 +375,9 @@ Public Class PayanehWebService
     <WebMethod()>
     Public Function WebMethodGetTruckBySmartCarNofromRMTO(YourSmartCardNo As String, YourExchangeKey As Int64) As R2CoreTransportationAndLoadNotificationTruck
         Try
-            Dim NSS = _ExchangeKeyManager.GetNSSUser(YourExchangeKey)
+            _ExchangeKeyManager.AuthenticationExchangeKey(YourExchangeKey)
             Return PayanehClassLibraryMClassCarTrucksManagement.GetNSSTruckBySmartCardNoWithUpdatingfromRMTO(YourSmartCardNo)
-        Catch ex As RMTOSmartCardSiteIsNotAvailableException
+        Catch ex As RMTOWebServiceSmartCardLimitationException
             Throw GetSoapExeption(ex)
         Catch ex As ExchangeKeyTimeRangePassedException
             Throw GetSoapExeption(ex)
@@ -382,7 +386,7 @@ Public Class PayanehWebService
         Catch ex As GetNSSException
             Throw GetSoapExeption(ex)
         Catch ex As WebException
-            Throw GetSoapExeption(New RMTOSmartCardSiteIsNotAvailableException)
+            Throw GetSoapExeption(ex)
         Catch ex As GetDataException
             Throw GetSoapExeption(ex)
         Catch ex As Exception

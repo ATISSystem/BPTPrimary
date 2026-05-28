@@ -1,12 +1,4 @@
-﻿using R2Core.ConfigurationManagement;
-using R2Core.DateTimeProvider;
-using R2Core.GeneralConfiguration;
-using R2Core.SMS.SMSSendRecive;
-using R2Core.SoftwareUserManagement;
-using R2CoreTransportationAndLoadNotification.ConfigurationOfLoadAnnouncement;
-using R2CoreTransportationAndLoadNotification.ConfigurationsManagement;
-using R2CoreTransportationAndLoadNotification.GeneralConfiguration;
-using R2CoreTransportationAndLoadNotification.LoadSedimentation;
+﻿
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,6 +9,14 @@ using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+
+using R2Core.DateTimeProvider;
+using R2Core.GeneralConfiguration;
+using R2Core.SMS.SMSSendRecive;
+using R2Core.SoftwareUserManagement;
+using R2CoreTransportationAndLoadNotification.ConfigurationOfLoadAnnouncement;
+using R2CoreTransportationAndLoadNotification.GeneralConfiguration;
+using R2CoreTransportationAndLoadNotification.LoadSedimentation;
 
 namespace LoadSedimentingAutomatedJob
 {
@@ -53,7 +53,7 @@ namespace LoadSedimentingAutomatedJob
                     {
                         var InstanceGeneralConfiguration = new R2CoreGeneralConfigurationManager(_DateTimeService);
                         InstanceSoftwareUsers.AuthenticationUserByPinCode(_SystemUser);
-                        _AutomatedJobsTimer.Interval = InstanceGeneralConfiguration.GetInt64Configuration(R2CoreTransportationAndLoadNotificationConfigurationOfLoadAnnouncements.LoadSedimentation, 0) * 1000;
+                        _AutomatedJobsTimer.Interval = InstanceGeneralConfiguration.GetInt64Configuration(R2CoreTransportationAndLoadNotificationGeneralConfigurations.LoadSedimentationAutomatedJob, 0) * 1000;
                         _FailStatus = false;
                         EventLog.WriteEntry("LoadSedimentingAutomatedJob", "LoadSedimentingAutomatedJob.Interval=" + _AutomatedJobsTimer.Interval.ToString(), EventLogEntryType.SuccessAudit);
                     }

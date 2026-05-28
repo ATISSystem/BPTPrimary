@@ -1,7 +1,6 @@
 ﻿
 
 
-Imports R2Core.ConfigurationManagement
 Imports R2Core.DatabaseManagement
 Imports R2Core.DateAndTimeManagement
 Imports R2Core.DateTimeProvider
@@ -363,7 +362,7 @@ Namespace TransportTariffsParameters
                        from R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParametersDetails as Details
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblAnnouncementsubGroups as AnnouncementsubGroups On Details.AHSGId=AnnouncementsubGroups.AnnouncementSGId 
                             Inner Join R2PrimaryTransportationAndLoadNotification.dbo.TblTransportPriceTariffsParameters as TransportPriceTariffsParameters On Details.TPTPId=TransportPriceTariffsParameters.TPTPId 
-                       Where AnnouncementsubGroups.AnnouncementSGId =" & YourAnnouncementSGId & " AND AnnouncementsubGroups.Active=1 AND Details.RelationActive=1 AND TransportPriceTariffsParameters.Active=1 AND TransportPriceTariffsParameters.Deleted=0
+                       Where AnnouncementsubGroups.AnnouncementSGId =" & YourAnnouncementSGId & " AND AnnouncementsubGroups.Active=1 AND Details.RelationActive=1 AND TransportPriceTariffsParameters.Active=1
                        Order By TransportPriceTariffsParameters.TPTPId", 32767, DS, New Boolean).GetRecordsCount = 0 Then
                     Throw New TransportPriceTariffParameterDetailsforAHSGNotFoundException
                 End If
